@@ -1,19 +1,17 @@
 # 04. Solution Strategy
 
-## Estrategia principal
+## Core Strategy
 
-La solucion debe construirse como una plataforma de gestion de personajes centrada en dominio, con experiencia guiada para el jugador y puntos claros de extension para contenido y sesiones conectadas.
+Adventure Vault Character follows a local-first Android architecture organized around stable domain capabilities instead of screens alone. The strategy is to keep the player experience responsive and dependable offline while making later synchronization an extension of the local model rather than a replacement for it.
 
-## Lineas de estrategia
+## Strategic Decisions
 
-- Modelar primero el dominio del personaje y sus cambios de estado.
-- Separar contenido de juego, progreso del personaje y sesion activa.
-- Disenar integraciones pensando en evolucion futura hacia multiples sistemas.
-- Mantener una frontera clara entre app del jugador y app del master.
-- Documentar decisiones desde el inicio para evitar arquitectura implicita.
+- Keep character state authoritative on the device.
+- Separate user interface logic from domain logic for character management, dice mechanics, and content import.
+- Use modular boundaries so future features can evolve without destabilizing core gameplay flows.
+- Treat XML import as a dedicated capability with validation and mapping responsibilities.
+- Prepare integration seams for Adventure Vault Master without introducing premature backend complexity.
 
-## Principios
+## Expected Architectural Shape
 
-- Simpleza antes que completitud.
-- Extensibilidad antes que rigidez especifica de DND.
-- Claridad documental antes que detalle tecnico prematuro.
+The solution is centered on one Android application that contains distinct logical containers for user interaction, persistence, dice mechanics, and XML import. This keeps the initial architecture simple while preserving room for future synchronization adapters and richer rule handling.

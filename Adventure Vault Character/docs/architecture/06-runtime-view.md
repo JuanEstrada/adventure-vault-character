@@ -1,23 +1,24 @@
 # 06. Runtime View
 
-## Escenario 1: creacion guiada de personaje
+## Scenario 1: Character Creation
 
-1. El jugador inicia sesion.
-2. La app presenta una guia asistida.
-3. La app consulta reglas y opciones del contenido disponible.
-4. El jugador confirma elecciones.
-5. El sistema persiste el personaje inicial.
+1. The player starts character creation inside the Android application.
+2. The Character Manager collects the selected race, class, attributes, and initial equipment.
+3. The Local Database persists the new character and related state.
+4. The Character Sheet Renderer displays the created character with derived statistics.
 
-## Escenario 2: conexion a sesion del master
+## Scenario 2: Dice Roll with Modifiers
 
-1. El jugador selecciona un personaje.
-2. La app solicita conectarse a una sesion usando un identificador asociado.
-3. El servicio de sesion valida la conexion.
-4. La app refleja estado y cambios del personaje durante la partida.
+1. The player triggers a dice roll from a character action or dedicated roller screen.
+2. The Dice Roller requests the relevant modifiers from the Character Manager or current character state.
+3. The Dice Engine executes the D20 roll and applies the modifiers.
+4. The result is returned immediately to the Android App.
+5. The Character Sheet Renderer or roll result view presents the final value to the player.
 
-## Escenario 3: subida de nivel
+## Scenario 3: Importing XML Content
 
-1. El personaje recibe experiencia o milestone.
-2. El sistema detecta que puede subir de nivel.
-3. La app ejecuta una guia asistida de progresion.
-4. El sistema aplica nuevas caracteristicas y actualiza el personaje.
+1. The player selects an XML file from device storage.
+2. The XML Import Module reads the file and performs schema and content validation.
+3. The Import Processor transforms the XML content into internal entities.
+4. The Local Database stores the imported content.
+5. The Android App exposes the imported rules content to character creation and ongoing character management flows.

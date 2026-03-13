@@ -1,32 +1,39 @@
-# 01. Introduction And Goals
+# 01. Introduction and Goals
 
-## Resumen
+## Purpose
 
-Adventure Vault Character busca ayudar a jugadores de rol a gestionar sus personajes de forma persistente, guiada y conectada con una sesion activa.
+Adventure Vault Character is an Android application for Dungeons & Dragons players who need a reliable character companion during play. The application brings together character management, dice rolling, spell tracking, inventory handling, statistics management, and rules content import in a single local-first experience.
 
-## Objetivos de negocio
+## Problems the System Solves
 
-- Permitir que un jugador cree y administre su personaje desde una app dedicada.
-- Reducir friccion en tareas frecuentes como nivelar, gestionar inventario, conjuros y experiencia.
-- Preparar una base extensible para soportar mas sistemas ademas de DND.
+Players often rely on a fragmented combination of paper sheets, mobile notes, PDFs, and web tools during sessions. That fragmentation slows down game flow, increases mistakes in D20 calculations, and makes it harder to keep character state consistent across inventory, spells, hit points, modifiers, and level progression.
 
-## Objetivos de arquitectura
+Adventure Vault Character addresses these problems by providing:
 
-- Separar claramente producto, dominio, interfaz, integraciones y decisiones tecnicas.
-- Permitir evolucion futura hacia varios sistemas de juego y contenido importado.
-- Hacer visibles las decisiones clave desde etapas tempranas.
-- Mantener trazabilidad entre alcance de producto, vistas C4 y ADR.
+- a structured digital character record that remains available offline
+- automated D20 mechanics, including dice rolls and modifier application
+- consistent management of spells, inventory, and derived statistics
+- import of rules-related content through XML for extensibility
+- architectural readiness for future interaction with a Dungeon Master application
 
-## Supuestos iniciales
+## Business and Product Goals
 
-- El repositorio aun no contiene una implementacion tecnica consolidada.
-- La primera version se enfoca en la experiencia del jugador.
-- La app del master existira por separado y se integrara mediante contratos aun no definidos.
-- La primera iteracion puede comenzar como monolito modular siempre que preserve limites claros entre dominios.
+- Improve the speed and reliability of player interactions during game sessions.
+- Reduce manual calculation errors in common D20 mechanics.
+- Provide a usable offline experience on Android devices.
+- Establish a technical foundation that can later participate in synchronization and DM interaction.
 
-## Stakeholders principales
+## Architecture Goals
 
-- Jugadores: usan la app para crear y gestionar personajes.
-- Equipo de producto: define alcance, experiencia y priorizacion.
-- Equipo tecnico: implementa y evoluciona la solucion.
-- Futuro equipo de master: integrara su propia app con la experiencia del jugador.
+- Keep the application fully functional without network connectivity.
+- Separate core gameplay capabilities into maintainable modules.
+- Support future synchronization without requiring a redesign of the local domain model.
+- Isolate imported rules content from application logic so new content can be added safely.
+- Preserve clear boundaries between the player application and the future DM application.
+
+## Stakeholders
+
+- Players: primary users of Adventure Vault Character.
+- Product owner: responsible for scope, usability, and feature prioritization.
+- Android developers: responsible for implementation, testing, and maintainability.
+- Future Adventure Vault Master team: responsible for later integration points.

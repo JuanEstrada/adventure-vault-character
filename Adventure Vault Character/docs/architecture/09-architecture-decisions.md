@@ -1,20 +1,10 @@
 # 09. Architecture Decisions
 
-## Resumen
+The following ADRs capture the initial architectural decisions for Adventure Vault Character:
 
-Las decisiones de arquitectura se registran formalmente en `adr/`. Esta seccion funciona como indice y resumen, no como reemplazo de los ADR.
+- [ADR-001-use-kotlin-for-android.md](../adr/ADR-001-use-kotlin-for-android.md)
+- [ADR-002-offline-first-architecture.md](../adr/ADR-002-offline-first-architecture.md)
+- [ADR-003-use-room-database.md](../adr/ADR-003-use-room-database.md)
+- [ADR-004-separate-player-and-dm-apps.md](../adr/ADR-004-separate-player-and-dm-apps.md)
 
-## Decisiones iniciales
-
-- `0001`: adoptar Docs-as-Code para mantener la documentacion dentro del repositorio.
-- `0002`: usar `arc42` como estructura principal de arquitectura y `C4` como modelo de vistas.
-
-## Regla de mantenimiento
-
-Cuando una decision cambie el alcance, los bloques del sistema o las integraciones externas, deben revisarse tambien `03-context-and-scope.md`, `05-building-block-view.md` y las vistas de `c4/`.
-
-## Referencias
-
-- Ver [ADR README](./adr/README.md)
-- Ver [0001 Use Docs As Code For Architecture](./adr/0001-use-docs-as-code-for-architecture.md)
-- Ver [0002 Adopt arc42 Plus C4](./adr/0002-adopt-arc42-plus-c4.md)
+These decisions establish the implementation language, local-first operating model, persistence strategy, and application boundary between the player and future DM products.

@@ -1,21 +1,55 @@
 # 05. Building Block View
 
-## Bloques principales propuestos
+## Level 1: System
 
-- `Cliente de jugador`: interfaz para login, creacion guiada, consulta y edicion.
-- `API de Adventure Vault`: punto de entrada de aplicacion para operaciones del cliente.
-- `Servicio de personajes`: logica para crear, leer y actualizar personajes.
-- `Servicio de contenido`: acceso a clases, razas, spells, items y monstruos.
-- `Servicio de importacion`: procesa y valida contenido agregado por XML.
-- `Servicio de sesion`: coordina la conexion del personaje con una sesion del master.
-- `Persistencia`: almacenamiento de personajes, progreso y contenido importado.
+### Adventure Vault Character
 
-## Relacion con C4
+Adventure Vault Character is the complete player-facing Android system. It stores and manages character state locally, automates D20 mechanics, and imports rules content through XML.
 
-Estos bloques corresponden a la descomposicion mostrada en `c4/container-view.md` y `c4/component-view-backend.md`. Si cambia un nombre o una responsabilidad aqui, debe cambiar tambien en esas vistas.
+## Level 2: Containers
 
-## Observaciones
+### Android App
 
-- Esta descomposicion es inicial y debera validarse cuando exista implementacion real.
-- Si el sistema comienza como monolito, estos bloques pueden vivir como modulos internos antes de separarse fisicamente.
-- `Servicio de sesion` describe la capacidad de integracion desde la app de jugador; no implica que la app del master forme parte del mismo repositorio.
+The Android App contains the user interface, application flow, domain orchestration, and integration with local services.
+
+### Local Database
+
+The Local Database stores characters, inventory, spells, imported content, and supporting metadata using Room over SQLite.
+
+### Dice Engine
+
+The Dice Engine encapsulates D20 roll execution, modifier application, and deterministic business rules related to rolling outcomes.
+
+### XML Import Module
+
+The XML Import Module validates, parses, maps, and stores imported rules content.
+
+## Level 3: Components
+
+### Character Manager
+
+Responsible for creating, updating, and retrieving character data, including base attributes and progression-related state.
+
+### Dice Roller
+
+Responsible for invoking dice calculations, applying modifiers, and returning roll results suitable for session-time interaction.
+
+### Spell Manager
+
+Responsible for spell slot tracking, prepared spells, and spell-related state attached to characters.
+
+### Inventory Manager
+
+Responsible for items, quantities, equipment state, and inventory effects on the character.
+
+### Character Sheet Renderer
+
+Responsible for presenting character state consistently to the player, including derived values and rule-driven summaries.
+
+### Import Processor
+
+Responsible for validating XML input, transforming source content into internal models, and storing imported entities safely.
+
+## Decomposition Notes
+
+The Level 3 components are logical components inside the Android application. They do not imply separate deployable units. The modular codebase should still preserve these responsibilities explicitly so later synchronization or DM integration can attach to stable domain boundaries.

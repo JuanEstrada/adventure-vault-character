@@ -1,30 +1,17 @@
 # 10. Quality Requirements
 
-## Atributos prioritarios
+## Offline Availability
 
-### Mantenibilidad
+The application must remain fully usable for core player tasks without network connectivity, including character viewing, character updates, dice rolling, spell tracking, inventory management, and access to previously imported content.
 
-La solucion debe ser facil de extender en reglas, contenido y flujos sin reescribir la base del sistema.
+## Fast Interaction During Sessions
 
-### Claridad
+Common session-time operations such as opening a character sheet, applying inventory changes, checking spell information, and executing a D20 roll must feel immediate on a typical Android device.
 
-La experiencia del jugador y la arquitectura deben ser entendibles para que el proyecto pueda crecer sin deuda conceptual innecesaria.
+## Maintainability
 
-### Extensibilidad
+The architecture must support continued development by keeping domain logic, persistence logic, and presentation concerns clearly separated across modules and components.
 
-El sistema debe poder evolucionar desde DND hacia otros sistemas de juego sin duplicar completamente UI, persistencia e integraciones.
+## Extensibility for New Rules
 
-### Consistencia de datos
-
-Los cambios en personajes, inventario, experiencia y nivel deben preservarse correctamente.
-
-### Integrabilidad
-
-La conexion con una futura app del master debe apoyarse en contratos claros y aislados de la interfaz.
-
-## Escenarios de calidad iniciales
-
-- Un cambio en reglas de progresion debe concentrarse en el modulo de reglas y no requerir rehacer vistas principales del cliente.
-- La importacion de contenido XML debe validar estructura y origen antes de permitir su uso por personajes existentes.
-- La integracion con la sesion del master debe poder evolucionar sin modificar el modelo central del personaje.
-- Una nueva integracion con otro sistema de juego debe reutilizar la mayor parte de la estructura de aplicacion y persistencia.
+The architecture must allow new rules content, new D20 mechanics variants, and future Dungeons & Dragons content changes to be introduced without widespread changes across the application.

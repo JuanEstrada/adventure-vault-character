@@ -1,26 +1,22 @@
 # 07. Deployment View
 
-## Vision inicial
+## Deployment Assumption
 
-Todavia no hay una arquitectura de despliegue confirmada. Como base de trabajo, se asume una solucion con estos nodos logicos:
+Adventure Vault Character runs entirely on a user-owned Android device in the current architecture.
 
-- cliente de jugador
-- backend de aplicacion
-- almacenamiento persistente
-- servicio de autenticacion
-- servicio externo de sesion del master
+## Deployment Structure
 
-## Direccion esperada
+### Android Device
 
-- El cliente puede evolucionar como aplicacion web o cliente multiplataforma.
-- El backend deberia exponer APIs claras para personajes, contenido y sesiones.
-- La persistencia debe soportar progreso transaccional del personaje y contenido importado.
-- La integracion con la sesion del master debe aislarse detras de contratos de aplicacion, no mezclarse con la interfaz de usuario.
+The Android device hosts:
 
-## Pendientes concretos
+- the Adventure Vault Character Android application
+- the local Room database backed by SQLite
+- locally available imported XML content files or imported content records
 
-- Seleccion de plataforma de despliegue
-- estrategia de observabilidad
-- manejo de secretos y configuracion
-- necesidades offline o sincronizacion parcial
-- contrato de integracion entre la app del jugador y el contexto del master
+## Operational Characteristics
+
+- The application must remain usable with no network connection.
+- All core session-time interactions occur on-device.
+- No mandatory backend runtime is assumed.
+- Future synchronization capabilities must be introduced without changing the fundamental on-device deployment model.

@@ -1,23 +1,20 @@
-# 11. Risks And Technical Debt
+# 11. Risks and Technical Debt
 
-## Riesgos actuales
+## Rule Changes Across D&D Versions
 
-- El dominio esta descrito de forma preliminar y puede cambiar al validarlo con usuarios.
-- La conexion con la app del master aun no tiene contrato definido.
-- El soporte futuro a multiples sistemas puede quedar comprometido si la primera version se acopla demasiado a DND.
-- La importacion XML puede introducir inconsistencias si no se define un modelo claro de validacion.
-- La documentacion puede divergir si no se actualizan en conjunto `03-context-and-scope.md`, `05-building-block-view.md`, `c4/` y `adr/`.
+Different editions and content variations may redefine core mechanics, spell behavior, modifiers, or data structures. If domain rules are encoded too rigidly, the application may become expensive to adapt.
 
-## Deuda tecnica potencial
+## XML Schema Evolution
 
-- Mezclar logica de reglas con interfaz.
-- Duplicar definiciones de contenido entre fuentes base e importadas.
-- Documentar arquitectura aspiracional sin marcar que aun no esta implementada.
-- Dejar el servicio de sesion como concepto ambiguo entre modulo interno e integracion externa.
+External XML formats may evolve over time or vary across sources. Tight coupling between import logic and a single schema version would increase maintenance cost and import failure risk.
 
-## Mitigaciones
+## Synchronization Complexity
 
-- Mantener ADR pequenos y frecuentes.
-- Revisar y actualizar C4 cuando aparezcan nuevos limites del sistema.
-- Separar desde temprano dominio, integraciones y experiencia de usuario.
-- Marcar de forma explicita que partes son alcance actual y que partes son direccion futura.
+Supporting future synchronization and potential real-time interaction with Adventure Vault Master will introduce identity mapping, conflict handling, data ownership, and session consistency concerns.
+
+## Potential Technical Debt Areas
+
+- embedding rules logic inside UI layers
+- coupling imported content models directly to persistence entities
+- assuming future synchronization will match current local identifiers exactly
+- over-optimizing for backend scenarios before the local-first application is mature
