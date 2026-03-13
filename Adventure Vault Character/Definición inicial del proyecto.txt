@@ -1,0 +1,5 @@
+1. Adventure Vault Character
+2. Una app para llevar el control de tus personajes en la campañas de DND ( pudiendo en un futuro expandirse no solo a DND si no a cualquier sistema de juegos )
+3.  Deberás hacer login, en el menú principal tendrás acceso directo a tus personajes o crear uno nuevo mediante una guía asistida, podrás ver el contenido gratuito de DND y el contenido que hayas agregado mediante XML( clases, razas, spells, items y monstruos) una vez escogido el personaje o al finalizar la creación debe haber un botón para conectarte a la sesión del master, en la que se indicara el estado actual de tu personaje mediante un ID relacionado con el nombre del personaje. dentro de la sesión podrás interactuar con tu personaje, modificarlo, modificar items, spells, ganar experiencia(dada por el master al finalizar encuentros, milestones, aventuras etc. además de las características que adquieras por subir de nivel mediante una guía asistida.  agregar y modificar contenido mediante xml.
+4. Jugadores ( la app para master estara separada)
+5.  
