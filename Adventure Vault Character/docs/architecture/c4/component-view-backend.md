@@ -11,7 +11,7 @@ flowchart TD
     CharacterService --> Rules["Motor de reglas del sistema"]
     ContentService --> Catalog["Catalogo de contenido"]
     ImportService --> Validation["Validacion de contenido"]
-    SessionService --> Sync["Sincronizacion de sesion"]
+    SessionService --> Sync["Adaptador de sesion del master"]
 ```
 
 ## Responsabilidades
@@ -20,4 +20,4 @@ flowchart TD
 - `Motor de reglas del sistema`: encapsula reglas del juego.
 - `Servicio de contenido`: entrega catalogos disponibles.
 - `Servicio de importacion XML`: valida e integra contenido agregado.
-- `Servicio de sesion`: coordina estado compartido con el master.
+- `Servicio de sesion`: coordina el intercambio con el contexto del master a traves de un adaptador aislado.

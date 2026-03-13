@@ -2,7 +2,7 @@
 
 ## Resumen
 
-Adventure Vault busca ayudar a jugadores de rol a gestionar sus personajes de forma persistente, guiada y conectada con una sesion activa.
+Adventure Vault Character busca ayudar a jugadores de rol a gestionar sus personajes de forma persistente, guiada y conectada con una sesion activa.
 
 ## Objetivos de negocio
 
@@ -12,9 +12,17 @@ Adventure Vault busca ayudar a jugadores de rol a gestionar sus personajes de fo
 
 ## Objetivos de arquitectura
 
-- Separar claramente producto, dominio, interfaz y decisiones tecnicas.
+- Separar claramente producto, dominio, interfaz, integraciones y decisiones tecnicas.
 - Permitir evolucion futura hacia varios sistemas de juego y contenido importado.
 - Hacer visibles las decisiones clave desde etapas tempranas.
+- Mantener trazabilidad entre alcance de producto, vistas C4 y ADR.
+
+## Supuestos iniciales
+
+- El repositorio aun no contiene una implementacion tecnica consolidada.
+- La primera version se enfoca en la experiencia del jugador.
+- La app del master existira por separado y se integrara mediante contratos aun no definidos.
+- La primera iteracion puede comenzar como monolito modular siempre que preserve limites claros entre dominios.
 
 ## Stakeholders principales
 

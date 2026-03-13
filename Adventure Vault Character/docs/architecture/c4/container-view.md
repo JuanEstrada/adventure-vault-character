@@ -6,13 +6,14 @@
 flowchart LR
     Player["Jugador"] --> Client["Cliente de jugador"]
     Client --> Api["API de Adventure Vault"]
-    Api --> Character["Modulo de personajes"]
-    Api --> Content["Modulo de contenido"]
-    Api --> Session["Modulo de sesion"]
-    Api --> Import["Modulo de importacion XML"]
-    Character --> Db["Base de datos"]
+    Api --> Character["Servicio de personajes"]
+    Api --> Content["Servicio de contenido"]
+    Api --> Session["Servicio de sesion"]
+    Api --> Import["Servicio de importacion XML"]
+    Character --> Db["Persistencia"]
     Content --> Db
     Import --> Db
+    Session --> ExternalSession["Servicio externo de sesion del master"]
     Session --> Db
 ```
 
@@ -20,4 +21,5 @@ flowchart LR
 
 - `Cliente de jugador`: interfaz principal del usuario.
 - `API de Adventure Vault`: punto de entrada de la logica de aplicacion.
-- `Modulos internos`: separaciones conceptuales que pueden vivir dentro de un mismo despliegue al inicio.
+- `Servicio de sesion`: capacidad interna de integracion desde la app del jugador.
+- `Servicio externo de sesion del master`: sistema fuera del alcance actual del repositorio.
