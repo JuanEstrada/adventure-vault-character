@@ -8,10 +8,19 @@ Adventure Vault Character is the current project in scope. It is an Android appl
 
 ## Documentation
 
-- Architecture documentation: [docs/architecture/01-introduction-and-goals.md](docs/architecture/01-introduction-and-goals.md)
+- Documentation hub: [docs/README.md](docs/README.md)
+- Architecture index: [docs/architecture/README.md](docs/architecture/README.md)
 - Architecture decisions: [docs/adr/ADR-001-use-kotlin-for-android.md](docs/adr/ADR-001-use-kotlin-for-android.md)
 - C4 textual diagrams: [docs/diagrams/context.md](docs/diagrams/context.md)
+- Current project state: [docs/project/PROJECT_SNAPSHOT.md](docs/project/PROJECT_SNAPSHOT.md)
 
 ## Scope Status
 
 The current architecture documentation covers Adventure Vault Character in detail. Adventure Vault Master is treated as a future related system whose integration needs influence today’s design decisions, especially around offline operation, synchronization readiness, and modular boundaries.
+
+## Repository Status
+
+The repository currently contains the project documentation baseline rather
+than an Android implementation. The main immediate value is in the arc42
+architecture set, ADR history, diagrams, and planning documents that define
+the first implementation steps.

@@ -20,6 +20,11 @@ Additional technologies may be defined as the project evolves.
 
 ## Documentation Structure
 
+### Documentation Hub
+Location: `docs/README.md`
+
+Use this file as the primary entry point for repository documentation.
+
 ### Architecture (arc42)
 Location: `docs/architecture/`
 
@@ -69,12 +74,13 @@ This file contains the current operational state of the project:
 Always read this file first before proposing new work.
 
 ## How AI Should Navigate This Project
-1. Read `docs/project/PROJECT_SNAPSHOT.md` first.
-2. Use `docs/adr/` before suggesting changes to architecture.
-3. Use `docs/architecture/` for formal architecture understanding.
-4. Use `docs/diagrams/` for structural views.
-5. Do not duplicate existing documentation.
-6. Reference existing documents instead of rewriting them.
+1. Read `docs/README.md` first for navigation.
+2. Read `docs/project/PROJECT_SNAPSHOT.md` to understand the current state.
+3. Use `docs/adr/` before suggesting changes to architecture.
+4. Use `docs/architecture/` for formal architecture understanding.
+5. Use `docs/diagrams/` for structural views.
+6. Do not duplicate existing documentation.
+7. Reference existing documents instead of rewriting them.
 
 ## Development Philosophy
 - Offline-first design

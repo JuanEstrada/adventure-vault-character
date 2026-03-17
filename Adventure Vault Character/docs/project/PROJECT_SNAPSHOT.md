@@ -1,13 +1,13 @@
 # Adventure Vault Character – Project Snapshot
 
 ## Last Update
-2026-03-14
+2026-03-17
 
 ## Project Phase
 Architecture
 
 ## Current Focus
-Establishing the documentation foundation and project structure for future implementation.
+Consolidating the documentation entry points and preparing the repository for implementation planning.
 
 ## Project Summary
 Adventure Vault Character is an Android application for Dungeons & Dragons players to create, manage, and use their characters. The project is designed with an offline-first architecture and is part of a larger ecosystem that may include a separate Dungeon Master application.
@@ -77,6 +77,7 @@ Adventure Vault Character is an Android application for Dungeons & Dragons playe
 - arc42 documentation sections have been created.
 - Initial ADR structure has been created.
 - C4-related diagram documentation files have been created.
+- Documentation navigation has been improved with central index pages.
 - Core strategic decisions have been documented:
   - Kotlin for Android
   - Offline-first architecture
@@ -86,8 +87,8 @@ Adventure Vault Character is an Android application for Dungeons & Dragons playe
 
 ## Work In Progress
 - Defining implementation-oriented project workflow.
-- Preparing the repository to support future AI-assisted continuity.
 - Transitioning from architecture definition to implementation planning.
+- Consolidating repository-level documentation for faster contributor onboarding.
 
 ## Pending Work
 - Define the first implementation slice of the application.
@@ -97,6 +98,7 @@ Adventure Vault Character is an Android application for Dungeons & Dragons playe
 - Define the first development milestones.
 - Align architecture documents with implementation priorities.
 - Start codebase scaffolding if not yet created.
+- Add implementation documentation once source code exists.
 
 ## Next Recommended Steps
 1. Define the MVP scope for Adventure Vault Character.
@@ -109,7 +111,7 @@ Adventure Vault Character is an Android application for Dungeons & Dragons playe
 ## Risks or Unknowns
 - MVP scope is not yet explicitly consolidated in this file.
 - Core domain model is not yet finalized.
-- Implementation status of the actual codebase is not yet documented.
+- The repository still contains documentation only; no Android source tree is present yet.
 - Future synchronization/network features are not yet defined for implementation.
 - Legal and content-boundary constraints for D&D-related material may require later refinement.
 
@@ -124,4 +126,4 @@ Use this snapshot as the current project state. Do not restart the architecture 
 - Core domain entity definitions
 - Initial package/module structure
 - Implementation roadmap tied to milestones
-- Current codebase status
+- Initial Android project scaffolding and module layout
