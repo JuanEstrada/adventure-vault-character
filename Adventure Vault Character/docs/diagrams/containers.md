@@ -1,26 +1,29 @@
 # Container Diagram Description
 
+This file is a lightweight container view. The source of truth for container
+responsibilities remains
+[../architecture/05-building-block-view.md](../architecture/05-building-block-view.md).
+
 ## C4 Level 2 Containers
 
-### Android App
+```mermaid
+flowchart LR
+    App[Android App<br/>Compose UI, Navigation, ViewModels]
+    Dice[Dice Engine]
+    Import[XML Import Module]
+    Db[(Local Database<br/>Room / SQLite)]
 
-The main Android application container presents screens, coordinates user actions, invokes domain services, and exposes the player experience.
+    App --> Dice
+    App --> Import
+    App --> Db
+    Import --> Db
+```
 
-### Local Database
+## Responsibilities
 
-The Local Database stores characters, spells, inventory, imported content, and related metadata using Room over SQLite.
-
-### Dice Engine
-
-The Dice Engine performs D20 rolls and applies modifiers based on the current character state and game actions.
-
-### XML Import Module
-
-The XML Import Module validates and transforms XML content into internal representations that can be consumed by the Android App and stored in the Local Database.
-
-## Relationships
-
-- The Android App uses the Local Database for persistent local state.
-- The Android App calls the Dice Engine to execute game mechanics.
-- The Android App calls the XML Import Module to process imported content.
-- The XML Import Module stores validated content in the Local Database.
+- Android App: renders Compose screens, manages navigation, and coordinates use
+  cases through screen state.
+- Dice Engine: performs D20 mechanics and modifier application.
+- XML Import Module: validates, parses, and maps imported rules content.
+- Local Database: stores characters, inventory, spells, imported content, and
+  supporting metadata.

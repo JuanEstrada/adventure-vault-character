@@ -1,35 +1,47 @@
 # Component Diagram Description
 
+This file is a lightweight component view of the Android app. The source of
+truth for component responsibilities remains
+[../architecture/05-building-block-view.md](../architecture/05-building-block-view.md).
+
 ## C4 Level 3 Components Inside the Android App
 
-### Character Manager
+```mermaid
+flowchart TD
+    Compose[Compose UI Layer]
+    Nav[Navigation Coordinator]
+    Vm[Screen ViewModels]
+    Character[Character Manager]
+    DiceRoller[Dice Roller]
+    Spell[Spell Manager]
+    Inventory[Inventory Manager]
+    Import[Import Processor]
+    Dice[Dice Engine]
+    Xml[XML Import Module]
+    Db[(Local Database)]
 
-Handles character lifecycle operations and coordinates access to character-related state.
+    Compose --> Nav
+    Compose --> Vm
+    Vm --> Character
+    Vm --> DiceRoller
+    Vm --> Spell
+    Vm --> Inventory
+    Vm --> Import
+    DiceRoller --> Dice
+    Character --> Db
+    Spell --> Db
+    Inventory --> Db
+    Import --> Xml
+    Import --> Db
+```
 
-### Dice Roller
+## Responsibilities
 
-Collects roll parameters, requests rule data, and delegates computation to the Dice Engine.
-
-### Spell Manager
-
-Maintains spell-related state and exposes spell information for gameplay and display.
-
-### Inventory Manager
-
-Maintains items, equipment state, and inventory-driven character changes.
-
-### Character Sheet Renderer
-
-Builds a consistent player-facing representation of character information, including derived values.
-
-### Import Processor
-
-Coordinates XML validation, transformation, and persistence of imported content.
-
-## Key Relationships
-
-- Character Manager reads and writes character state through the Local Database.
-- Dice Roller obtains relevant character modifiers from Character Manager and executes rolls through the Dice Engine.
-- Spell Manager and Inventory Manager update character-adjacent state stored in the Local Database.
-- Character Sheet Renderer reads consolidated state from the character-related components.
-- Import Processor uses the XML Import Module to add rules content to the Local Database.
+- Compose UI Layer: declarative screen rendering and reusable UI components.
+- Navigation Coordinator: route definitions and screen transitions.
+- Screen ViewModels: lifecycle-aware screen state and user intent handling.
+- Character Manager: character lifecycle and derived character data access.
+- Dice Roller: prepares roll requests and uses the Dice Engine.
+- Spell Manager: spell-related state and queries.
+- Inventory Manager: item state and equipment effects.
+- Import Processor: imported content orchestration, validation, and persistence.

@@ -1,13 +1,15 @@
 # Adventure Vault Character – Project Snapshot
 
 ## Last Update
-2026-03-17
+2026-03-18
 
 ## Project Phase
 Architecture
 
 ## Current Focus
-Consolidating the documentation entry points and preparing the repository for implementation planning.
+Preparing the repository for implementation planning with clearer
+documentation boundaries, Compose-aware architecture views, and dedicated spec
+entry points.
 
 ## Project Summary
 Adventure Vault Character is an Android application for Dungeons & Dragons players to create, manage, and use their characters. The project is designed with an offline-first architecture and is part of a larger ecosystem that may include a separate Dungeon Master application.
@@ -81,6 +83,10 @@ Adventure Vault Character is an Android application for Dungeons & Dragons playe
 - Initial ADR structure has been created.
 - C4-related diagram documentation files have been created.
 - Documentation navigation has been improved with central index pages.
+- Project and ADR index pages have been added.
+- A dedicated specs directory has been added for implementation-facing
+  requirements.
+- Diagram views have been aligned with the Compose-based architecture.
 - Core strategic decisions have been documented:
   - Kotlin for Android
   - Offline-first architecture
@@ -92,7 +98,8 @@ Adventure Vault Character is an Android application for Dungeons & Dragons playe
 ## Work In Progress
 - Defining implementation-oriented project workflow.
 - Transitioning from architecture definition to implementation planning.
-- Consolidating repository-level documentation for faster contributor onboarding.
+- Consolidating repository-level documentation for faster contributor
+  onboarding.
 
 ## Pending Work
 - Define the first implementation slice of the application.
@@ -121,10 +128,13 @@ Adventure Vault Character is an Android application for Dungeons & Dragons playe
 - Legal and content-boundary constraints for D&D-related material may require later refinement.
 
 ## Context for Future AI Sessions
-Adventure Vault Character is an Android app for Dungeons & Dragons character management. The project already has architecture documentation based on arc42, ADRs for key decisions, and C4-related diagram files. Confirmed decisions include Kotlin, Jetpack Compose, offline-first architecture, Room database, and separation between player and DM apps. The current phase is architecture transitioning into implementation planning. The next step is to define the MVP, core domain entities, and first implementation milestone.
+See `docs/project/AI_SESSION_GUIDE.md` for operational continuity guidance.
 
 ## Continuation Prompt
-Use this snapshot as the current project state. Do not restart the architecture analysis. Continue from the implementation planning stage, identify the most logical next step, and keep all new work aligned with the existing arc42, ADR, and C4 documentation.
+Use this snapshot as the current project state. Continue from the
+implementation planning stage, identify the most logical next step, and keep
+all new work aligned with the existing architecture, ADR, diagram, and specs
+documentation.
 
 ## Information That Still Needs Consolidation
 - Final MVP feature list

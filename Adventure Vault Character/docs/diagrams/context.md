@@ -1,24 +1,28 @@
 # Context Diagram Description
 
+This file is a lightweight diagram view of the system context. The source of
+truth for scope and boundaries remains
+[../architecture/03-context-and-scope.md](../architecture/03-context-and-scope.md).
+
 ## C4 Level 1 Context
 
-### Primary Actor
+```mermaid
+flowchart LR
+    Player[Player]
+    App[Adventure Vault Character]
+    Xml[XML Content Source]
+    Dm[Adventure Vault Master]
+    Android[Android Platform Services]
 
-- Player: uses Adventure Vault Character on an Android device before and during play.
+    Player --> App
+    Xml --> App
+    App -. future sync/session data .-> Dm
+    Android --> App
+```
 
-### System
+## Relationships
 
-- Adventure Vault Character: the player-facing Android application.
-
-### External Systems
-
-- XML Content Source: provides importable rules content in XML format.
-- Adventure Vault Master: future Dungeon Master application that may later exchange synchronized or session-time data.
-- Android Platform Services: device-level operating environment used by the application.
-
-### Relationships
-
-- The Player interacts directly with Adventure Vault Character.
-- Adventure Vault Character reads XML content from XML Content Source files selected on the device.
-- Adventure Vault Character is designed to exchange data with Adventure Vault Master in future versions.
-- Adventure Vault Character runs within Android Platform Services.
+- Player uses the app on a single Android device.
+- XML content is imported from user-selected files.
+- Adventure Vault Master remains an external future peer system.
+- Android platform services host application lifecycle, storage, and execution.

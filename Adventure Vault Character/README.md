@@ -9,8 +9,9 @@ Adventure Vault Character is the current project in scope. It is an Android appl
 ## Documentation
 
 - Documentation hub: [docs/README.md](docs/README.md)
+- Project docs index: [docs/project/README.md](docs/project/README.md)
 - Architecture index: [docs/architecture/README.md](docs/architecture/README.md)
-- Architecture decisions: [docs/adr/ADR-001-use-kotlin-for-android.md](docs/adr/ADR-001-use-kotlin-for-android.md)
+- Architecture decisions: [docs/adr/README.md](docs/adr/README.md)
 - C4 textual diagrams: [docs/diagrams/context.md](docs/diagrams/context.md)
 - Current project state: [docs/project/PROJECT_SNAPSHOT.md](docs/project/PROJECT_SNAPSHOT.md)
 

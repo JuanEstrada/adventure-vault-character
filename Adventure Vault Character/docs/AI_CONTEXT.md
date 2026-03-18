@@ -75,14 +75,20 @@ This file contains the current operational state of the project:
 
 Always read this file first before proposing new work.
 
+### AI Session Guidance
+Location: `docs/project/AI_SESSION_GUIDE.md`
+
+Use this file for the AI-specific working sequence and continuity rules.
+
 ## How AI Should Navigate This Project
 1. Read `docs/README.md` first for navigation.
 2. Read `docs/project/PROJECT_SNAPSHOT.md` to understand the current state.
-3. Use `docs/adr/` before suggesting changes to architecture.
-4. Use `docs/architecture/` for formal architecture understanding.
-5. Use `docs/diagrams/` for structural views.
-6. Do not duplicate existing documentation.
-7. Reference existing documents instead of rewriting them.
+3. Read `docs/project/AI_SESSION_GUIDE.md` for AI session continuity.
+4. Use `docs/adr/` before suggesting changes to architecture.
+5. Use `docs/architecture/` for formal architecture understanding.
+6. Use `docs/diagrams/` for structural views.
+7. Do not duplicate existing documentation.
+8. Reference existing documents instead of rewriting them.
 
 ## Development Philosophy
 - Offline-first design

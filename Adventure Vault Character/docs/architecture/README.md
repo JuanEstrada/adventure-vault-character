@@ -24,15 +24,12 @@ structure.
 
 ## Related Architecture Artifacts
 
-- ADRs: [ADR-001](../adr/ADR-001-use-kotlin-for-android.md),
-  [ADR-002](../adr/ADR-002-offline-first-architecture.md),
-  [ADR-003](../adr/ADR-003-use-room-database.md),
-  [ADR-004](../adr/ADR-004-separate-player-and-dm-apps.md),
-  [ADR-005](../adr/ADR-005-use-jetpack-compose-for-ui.md)
+- ADRs: [ADR Index](../adr/README.md)
 - Diagrams: [Context](../diagrams/context.md),
   [Containers](../diagrams/containers.md),
   [Components](../diagrams/components.md)
 - Project state: [Project Snapshot](../project/PROJECT_SNAPSHOT.md)
+- Specifications: [Specifications Index](../specs/README.md)
 
 ## Recommended Reading Path
 

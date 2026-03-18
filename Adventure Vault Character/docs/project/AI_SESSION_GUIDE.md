@@ -1,0 +1,34 @@
+# AI Session Guide
+
+Use this file when continuing work in future AI-assisted sessions.
+
+## Start Here
+
+1. Read [PROJECT_SNAPSHOT.md](PROJECT_SNAPSHOT.md) for the current project
+   state.
+2. Use [../README.md](../README.md) for documentation navigation.
+3. Read [../adr/README.md](../adr/README.md) before changing architectural
+   direction.
+4. Use [../architecture/README.md](../architecture/README.md) for the formal
+   architecture baseline.
+5. Use [../specs/README.md](../specs/README.md) for implementation-facing
+   product specs.
+
+## Current Architectural Baseline
+
+- Platform: Android
+- Language: Kotlin
+- UI: Jetpack Compose
+- Persistence: Room over SQLite
+- Architecture: offline-first
+- Product boundary: separate player and DM applications
+
+## Working Rules
+
+- Do not duplicate documentation when an existing source-of-truth document
+  already covers the topic.
+- Treat accepted ADRs as active constraints.
+- Keep architecture docs aligned with implementation planning.
+- Prefer updating index pages when adding new documents.
+- Record new product requirements in `docs/specs/` when they are accepted for
+  implementation planning.
