@@ -99,6 +99,7 @@ Adventure Vault Character is an Android application for Dungeons & Dragons playe
 - Align architecture documents with implementation priorities.
 - Start codebase scaffolding if not yet created.
 - Add implementation documentation once source code exists.
+- Evaluate future usability specs such as guided help for new players.
 
 ## Next Recommended Steps
 1. Define the MVP scope for Adventure Vault Character.
@@ -127,3 +128,4 @@ Use this snapshot as the current project state. Do not restart the architecture 
 - Initial package/module structure
 - Implementation roadmap tied to milestones
 - Initial Android project scaffolding and module layout
+- Future-facing usability specs in `docs/project/FUTURE_SPECS.md`

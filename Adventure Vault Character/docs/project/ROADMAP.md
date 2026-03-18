@@ -26,6 +26,7 @@
 - Import or structured content loading
 - Roll history
 - Offline quality improvements
+- Optional contextual help text for new players
 
 ## Phase 5 – Ecosystem Expansion
 - Preparation for Adventure Vault Master integration
