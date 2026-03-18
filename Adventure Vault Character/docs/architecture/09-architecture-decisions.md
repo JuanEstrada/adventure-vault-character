@@ -6,5 +6,6 @@ The following ADRs capture the initial architectural decisions for Adventure Vau
 - [ADR-002-offline-first-architecture.md](../adr/ADR-002-offline-first-architecture.md)
 - [ADR-003-use-room-database.md](../adr/ADR-003-use-room-database.md)
 - [ADR-004-separate-player-and-dm-apps.md](../adr/ADR-004-separate-player-and-dm-apps.md)
+- [ADR-005-use-jetpack-compose-for-ui.md](../adr/ADR-005-use-jetpack-compose-for-ui.md)
 
-These decisions establish the implementation language, local-first operating model, persistence strategy, and application boundary between the player and future DM products.
+These decisions establish the implementation language, local-first operating model, persistence strategy, UI approach, and application boundary between the player and future DM products.

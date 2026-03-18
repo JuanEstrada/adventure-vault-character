@@ -23,3 +23,10 @@ Even without a backend, the internal data model should distinguish between local
 ## Android Application Architecture
 
 Jetpack-aligned patterns should be used for lifecycle awareness, persistence integration, and clear separation between presentation and domain responsibilities.
+
+## Compose UI Model
+
+User interface development should follow Jetpack Compose patterns with
+state-driven rendering, unidirectional data flow, and minimal business logic in
+composables. Screen state should be produced by application-layer components and
+rendered declaratively by the UI layer.

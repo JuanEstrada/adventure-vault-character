@@ -13,6 +13,7 @@ The project is part of a broader product vision that includes two separate appli
 ## Technology Stack
 - Platform: Android
 - Language: Kotlin
+- UI: Jetpack Compose
 - Architecture approach: Offline-first
 - Local database: Room
 
@@ -52,6 +53,7 @@ Current ADRs:
 - `ADR-002-offline-first-architecture.md`
 - `ADR-003-use-room-database.md`
 - `ADR-004-separate-player-and-dm-apps.md`
+- `ADR-005-use-jetpack-compose-for-ui.md`
 
 ### Diagrams (C4 Model)
 Location: `docs/diagrams/`

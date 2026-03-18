@@ -25,6 +25,9 @@ Adventure Vault Character is an Android application for Dungeons & Dragons playe
 - Separate Player and DM apps  
   → `docs/adr/ADR-004-separate-player-and-dm-apps.md`
 
+- Use Jetpack Compose for UI  
+  → `docs/adr/ADR-005-use-jetpack-compose-for-ui.md`
+
 ## Architecture Documentation
 - Introduction and goals  
   → `docs/architecture/01-introduction-and-goals.md`
@@ -82,6 +85,7 @@ Adventure Vault Character is an Android application for Dungeons & Dragons playe
   - Kotlin for Android
   - Offline-first architecture
   - Room database
+  - Jetpack Compose for UI
   - Separate Player and DM apps
 - AI-oriented repository context structure has been defined.
 
@@ -117,7 +121,7 @@ Adventure Vault Character is an Android application for Dungeons & Dragons playe
 - Legal and content-boundary constraints for D&D-related material may require later refinement.
 
 ## Context for Future AI Sessions
-Adventure Vault Character is an Android app for Dungeons & Dragons character management. The project already has architecture documentation based on arc42, ADRs for key decisions, and C4-related diagram files. Confirmed decisions include Kotlin, offline-first architecture, Room database, and separation between player and DM apps. The current phase is architecture transitioning into implementation planning. The next step is to define the MVP, core domain entities, and first implementation milestone.
+Adventure Vault Character is an Android app for Dungeons & Dragons character management. The project already has architecture documentation based on arc42, ADRs for key decisions, and C4-related diagram files. Confirmed decisions include Kotlin, Jetpack Compose, offline-first architecture, Room database, and separation between player and DM apps. The current phase is architecture transitioning into implementation planning. The next step is to define the MVP, core domain entities, and first implementation milestone.
 
 ## Continuation Prompt
 Use this snapshot as the current project state. Do not restart the architecture analysis. Continue from the implementation planning stage, identify the most logical next step, and keep all new work aligned with the existing arc42, ADR, and C4 documentation.

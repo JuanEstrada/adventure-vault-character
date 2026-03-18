@@ -15,6 +15,7 @@
 - The codebase is expected to be modular.
 - Kotlin is the implementation language.
 - The Android Jetpack ecosystem is the assumed application foundation.
+- Jetpack Compose is the primary UI technology.
 - Local persistence is based on Room over SQLite.
 - The architecture must remain local-first.
 
