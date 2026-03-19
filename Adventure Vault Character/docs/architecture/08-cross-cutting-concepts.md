@@ -30,3 +30,14 @@ User interface development should follow Jetpack Compose patterns with
 state-driven rendering, unidirectional data flow, and minimal business logic in
 composables. Screen state should be produced by application-layer components and
 rendered declaratively by the UI layer.
+
+## Decision Priority
+
+When architectural or implementation concerns compete, the project should use
+the following decision order:
+
+1. Exactitud de reglas
+2. Alineación con decisiones y lineamientos del proyecto
+3. Escalabilidad futura
+4. Simplicidad y mantenibilidad de implementación
+5. Optimización avanzada

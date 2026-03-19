@@ -97,6 +97,16 @@ Use this file for the AI-specific working sequence and continuity rules.
 - Architectural decisions documented as ADRs
 - Documentation maintained as code
 
+## Decision Priority
+
+When two implementation or design options conflict, use this priority order:
+
+1. Exactitud de reglas
+2. Alineación con decisiones y lineamientos del proyecto
+3. Escalabilidad futura
+4. Simplicidad y mantenibilidad de implementación
+5. Optimización avanzada
+
 ## Quick Context Block
 Project: Adventure Vault Character  
 Platform: Android  

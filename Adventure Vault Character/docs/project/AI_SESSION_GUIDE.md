@@ -32,3 +32,13 @@ Use this file when continuing work in future AI-assisted sessions.
 - Prefer updating index pages when adding new documents.
 - Record new product requirements in `docs/specs/` when they are accepted for
   implementation planning.
+
+## Decision Priority
+
+When a tradeoff is required, evaluate options in this order:
+
+1. Exactitud de reglas
+2. Alineación con decisiones y lineamientos del proyecto
+3. Escalabilidad futura
+4. Simplicidad y mantenibilidad de implementación
+5. Optimización avanzada
