@@ -1,1 +1,4 @@
 local-ui-assets/
+local-assets/
+.agents/
+skills-lock.json
