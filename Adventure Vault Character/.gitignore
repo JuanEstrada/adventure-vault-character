@@ -2,3 +2,8 @@ local-ui-assets/
 local-assets/
 .agents/
 skills-lock.json
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/

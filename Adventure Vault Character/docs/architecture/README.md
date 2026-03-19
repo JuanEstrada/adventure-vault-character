@@ -45,5 +45,6 @@ If you are new to the project, read the sections in this order:
 ## Current State
 
 The architecture describes the intended implementation of the player-facing
-Android application. It should be treated as the baseline for future codebase
-scaffolding, MVP definition, and implementation planning.
+Flutter application targeting Android first. It should be treated as the
+baseline for future codebase scaffolding, MVP definition, and implementation
+planning.

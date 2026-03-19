@@ -2,11 +2,13 @@
 
 ## Status
 
-Accepted
+Superseded by [ADR-007](ADR-007-use-drift-for-local-persistence.md)
 
 ## Context
 
-Adventure Vault Character needs durable local storage for characters, spells, inventory, imported rules content, and supporting metadata. The persistence approach must work well on Android and fit a local-first model.
+Adventure Vault Character originally planned local persistence around the
+Android-native toolchain and needed structured storage for characters, spells,
+inventory, imported rules content, and supporting metadata.
 
 ## Decision
 
@@ -14,4 +16,6 @@ Use Room as the primary local persistence mechanism, backed by SQLite.
 
 ## Consequences
 
-Room provides a structured Android-native persistence layer with strong support for local data access patterns and schema evolution. The architecture must still prevent persistence entities from leaking directly into all domain and UI layers.
+This decision fit the original native Android direction. It remains part of
+the architecture history, but it is no longer active after adopting Flutter
+and Drift in ADR-006 and ADR-007.

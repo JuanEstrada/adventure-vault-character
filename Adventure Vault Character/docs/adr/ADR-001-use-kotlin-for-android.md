@@ -2,11 +2,13 @@
 
 ## Status
 
-Accepted
+Superseded by [ADR-006](ADR-006-use-flutter-for-client-application.md)
 
 ## Context
 
-Adventure Vault Character is an Android application that needs a maintainable, modern implementation language aligned with the Android ecosystem, local persistence libraries, and modular application design.
+Adventure Vault Character originally targeted a native Android stack and
+needed a maintainable implementation language aligned with the Android
+ecosystem, local persistence libraries, and modular application design.
 
 ## Decision
 
@@ -14,4 +16,6 @@ Use Kotlin as the primary language for Adventure Vault Character.
 
 ## Consequences
 
-Kotlin aligns naturally with Android Jetpack libraries, supports concise and expressive domain modeling, and improves maintainability compared with older Android language choices. The team should standardize Kotlin-based patterns and testing approaches across modules.
+This decision established the first Android-native implementation baseline for
+the project. It is preserved for historical traceability but is no longer the
+active direction after the move to Flutter and Dart in ADR-006.

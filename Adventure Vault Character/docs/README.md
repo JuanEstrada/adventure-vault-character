@@ -7,8 +7,8 @@ implementation begins.
 
 ## Start Here
 
-- [Project Index](project/README.md): current status, roadmap, future specs, and
-  AI session guidance.
+- [Project Index](project/README.md): current status, roadmap, future specs,
+  and AI session guidance.
 - [Project Snapshot](project/PROJECT_SNAPSHOT.md): current phase, completed
   work, pending work, and next recommended steps.
 - [Project Guidelines](project/PROJECT_GUIDELINES.md): official product and
@@ -49,6 +49,6 @@ implementation begins.
 
 ## Repository Status
 
-At the time of this update, the repository contains documentation and project
-planning artifacts only. No Android application source tree has been
-scaffolded in this repository yet.
+At the time of this update, the repository contains documentation, project
+planning artifacts, and a minimal manual Flutter bootstrap. Full platform
+scaffolding still needs to be generated once the Flutter SDK is available.

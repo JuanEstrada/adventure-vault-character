@@ -1,21 +1,25 @@
-# AI Context – Adventure Vault Character
+# AI Context - Adventure Vault Character
 
 ## Project Overview
-Adventure Vault Character is an Android application for managing Dungeons & Dragons characters.
+Adventure Vault Character is an Android-first Flutter application for managing
+Dungeons & Dragons characters.
 
-The application is designed with an offline-first approach and focuses on allowing players to create, manage, and use characters efficiently during tabletop sessions.
+The application is designed with an offline-first approach and focuses on
+allowing players to create, manage, and use characters efficiently during
+tabletop sessions.
 
-The project is part of a broader product vision that includes two separate applications:
+The project is part of a broader product vision that includes two separate
+applications:
 
-- Adventure Vault Character (player-focused app)
-- Adventure Vault Master (Dungeon Master-focused app)
+- Adventure Vault Character, player-focused app
+- Adventure Vault Master, Dungeon Master-focused app
 
 ## Technology Stack
-- Platform: Android
-- Language: Kotlin
-- UI: Jetpack Compose
+- Platform: Android-first Flutter client
+- Framework: Flutter
+- Language: Dart
 - Architecture approach: Offline-first
-- Local database: Room
+- Local database: Drift over SQLite
 
 Additional technologies may be defined as the project evolves.
 
@@ -48,12 +52,11 @@ Location: `docs/adr/`
 
 This folder contains architecture decision records.
 
-Current ADRs:
-- `ADR-001-use-kotlin-for-android.md`
+Current accepted ADRs:
 - `ADR-002-offline-first-architecture.md`
-- `ADR-003-use-room-database.md`
 - `ADR-004-separate-player-and-dm-apps.md`
-- `ADR-005-use-jetpack-compose-for-ui.md`
+- `ADR-006-use-flutter-for-client-application.md`
+- `ADR-007-use-drift-for-local-persistence.md`
 
 ### Diagrams (C4 Model)
 Location: `docs/diagrams/`
@@ -115,10 +118,11 @@ When two implementation or design options conflict, use this priority order:
 5. Optimización avanzada
 
 ## Quick Context Block
-Project: Adventure Vault Character  
-Platform: Android  
-Language: Kotlin  
-Architecture: Offline-first  
-Database: Room  
-Documentation: arc42 + ADR + C4  
+Project: Adventure Vault Character
+Platform: Android-first Flutter client
+Framework: Flutter
+Language: Dart
+Architecture: Offline-first
+Database: Drift over SQLite
+Documentation: arc42 + ADR + C4
 Project State: `docs/project/PROJECT_SNAPSHOT.md`

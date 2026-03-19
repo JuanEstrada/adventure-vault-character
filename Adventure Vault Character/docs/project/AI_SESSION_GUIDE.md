@@ -18,10 +18,10 @@ Use this file when continuing work in future AI-assisted sessions.
 
 ## Current Architectural Baseline
 
-- Platform: Android
-- Language: Kotlin
-- UI: Jetpack Compose
-- Persistence: Room over SQLite
+- Platform: Android-first Flutter client
+- Framework: Flutter
+- Language: Dart
+- Persistence: Drift over SQLite
 - Architecture: offline-first
 - Product boundary: separate player and DM applications
 

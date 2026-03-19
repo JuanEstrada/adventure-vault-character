@@ -16,7 +16,7 @@ flowchart LR
 
     Player --> App
     Xml --> App
-    App -. future sync/session data .-> Dm
+    App -. future sync or session data .-> Dm
     Android --> App
 ```
 

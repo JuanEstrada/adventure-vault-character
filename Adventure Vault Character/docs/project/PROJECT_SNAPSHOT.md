@@ -1,18 +1,21 @@
-# Adventure Vault Character – Project Snapshot
+# Adventure Vault Character - Project Snapshot
 
 ## Last Update
-2026-03-18
+2026-03-19
 
 ## Project Phase
 Architecture
 
 ## Current Focus
 Preparing the repository for implementation planning with clearer
-documentation boundaries, Compose-aware architecture views, and dedicated spec
-entry points.
+documentation boundaries, Flutter-aligned architecture views, and dedicated
+spec entry points.
 
 ## Project Summary
-Adventure Vault Character is an Android application for Dungeons & Dragons players to create, manage, and use their characters. The project is designed with an offline-first architecture and is part of a larger ecosystem that may include a separate Dungeon Master application.
+Adventure Vault Character is an Android-first Flutter application for Dungeons
+& Dragons players to create, manage, and use their characters. The project is
+designed with an offline-first architecture and is part of a larger ecosystem
+that may include a separate Dungeon Master application.
 
 ## Project Guidelines
 
@@ -20,70 +23,68 @@ Official project rules and decision criteria are defined in
 `docs/project/PROJECT_GUIDELINES.md`.
 
 ## Confirmed Architectural Decisions
-- Use Kotlin for Android  
-  → `docs/adr/ADR-001-use-kotlin-for-android.md`
+- Use Flutter and Dart for the client application
+  -> `docs/adr/ADR-006-use-flutter-for-client-application.md`
 
-- Use offline-first architecture  
-  → `docs/adr/ADR-002-offline-first-architecture.md`
+- Use offline-first architecture
+  -> `docs/adr/ADR-002-offline-first-architecture.md`
 
-- Use Room as local database  
-  → `docs/adr/ADR-003-use-room-database.md`
+- Use Drift over SQLite as local database
+  -> `docs/adr/ADR-007-use-drift-for-local-persistence.md`
 
-- Separate Player and DM apps  
-  → `docs/adr/ADR-004-separate-player-and-dm-apps.md`
-
-- Use Jetpack Compose for UI  
-  → `docs/adr/ADR-005-use-jetpack-compose-for-ui.md`
+- Separate Player and DM apps
+  -> `docs/adr/ADR-004-separate-player-and-dm-apps.md`
 
 ## Architecture Documentation
-- Introduction and goals  
-  → `docs/architecture/01-introduction-and-goals.md`
+- Introduction and goals
+  -> `docs/architecture/01-introduction-and-goals.md`
 
-- Constraints  
-  → `docs/architecture/02-constraints.md`
+- Constraints
+  -> `docs/architecture/02-constraints.md`
 
-- Context and scope  
-  → `docs/architecture/03-context-and-scope.md`
+- Context and scope
+  -> `docs/architecture/03-context-and-scope.md`
 
-- Solution strategy  
-  → `docs/architecture/04-solution-strategy.md`
+- Solution strategy
+  -> `docs/architecture/04-solution-strategy.md`
 
-- Building block view  
-  → `docs/architecture/05-building-block-view.md`
+- Building block view
+  -> `docs/architecture/05-building-block-view.md`
 
-- Runtime view  
-  → `docs/architecture/06-runtime-view.md`
+- Runtime view
+  -> `docs/architecture/06-runtime-view.md`
 
-- Deployment view  
-  → `docs/architecture/07-deployment-view.md`
+- Deployment view
+  -> `docs/architecture/07-deployment-view.md`
 
-- Cross-cutting concepts  
-  → `docs/architecture/08-cross-cutting-concepts.md`
+- Cross-cutting concepts
+  -> `docs/architecture/08-cross-cutting-concepts.md`
 
-- Architecture decisions summary  
-  → `docs/architecture/09-architecture-decisions.md`
+- Architecture decisions summary
+  -> `docs/architecture/09-architecture-decisions.md`
 
-- Quality requirements  
-  → `docs/architecture/10-quality-requirements.md`
+- Quality requirements
+  -> `docs/architecture/10-quality-requirements.md`
 
-- Risks and technical debt  
-  → `docs/architecture/11-risks-and-technical-debt.md`
+- Risks and technical debt
+  -> `docs/architecture/11-risks-and-technical-debt.md`
 
-- Glossary  
-  → `docs/architecture/12-glossary.md`
+- Glossary
+  -> `docs/architecture/12-glossary.md`
 
 ## Diagram Documentation (C4)
-- System Context  
-  → `docs/diagrams/context.md`
+- System Context
+  -> `docs/diagrams/context.md`
 
-- Containers  
-  → `docs/diagrams/containers.md`
+- Containers
+  -> `docs/diagrams/containers.md`
 
-- Components  
-  → `docs/diagrams/components.md`
+- Components
+  -> `docs/diagrams/components.md`
 
 ## Work Completed
 - Initial project documentation structure has been defined.
+- A minimal manual Flutter bootstrap has been added to the repository.
 - arc42 documentation sections have been created.
 - Initial ADR structure has been created.
 - C4-related diagram documentation files have been created.
@@ -91,12 +92,11 @@ Official project rules and decision criteria are defined in
 - Project and ADR index pages have been added.
 - A dedicated specs directory has been added for implementation-facing
   requirements.
-- Diagram views have been aligned with the Compose-based architecture.
+- Diagram views have been aligned with the Flutter-based architecture.
 - Core strategic decisions have been documented:
-  - Kotlin for Android
+  - Flutter and Dart for the client application
   - Offline-first architecture
-  - Room database
-  - Jetpack Compose for UI
+  - Drift over SQLite
   - Separate Player and DM apps
 - AI-oriented repository context structure has been defined.
 
@@ -109,11 +109,11 @@ Official project rules and decision criteria are defined in
 ## Pending Work
 - Define the first implementation slice of the application.
 - Define the core domain model for characters.
-- Define the initial application modules/packages.
+- Define the initial application modules and package boundaries.
 - Define the MVP scope.
 - Define the first development milestones.
 - Align architecture documents with implementation priorities.
-- Start codebase scaffolding if not yet created.
+- Start Flutter codebase scaffolding if not yet created.
 - Add implementation documentation once source code exists.
 - Evaluate future usability specs such as guided help for new players.
 
@@ -121,16 +121,19 @@ Official project rules and decision criteria are defined in
 1. Define the MVP scope for Adventure Vault Character.
 2. Define the core domain entities for the character system.
 3. Define the first implementation milestone.
-4. Create the initial Android project structure.
+4. Create the initial Flutter project structure.
 5. Map architecture decisions to implementation tasks.
 6. Update this snapshot after each relevant project session.
 
 ## Risks or Unknowns
 - MVP scope is not yet explicitly consolidated in this file.
 - Core domain model is not yet finalized.
-- The repository still contains documentation only; no Android source tree is present yet.
-- Future synchronization/network features are not yet defined for implementation.
-- Legal and content-boundary constraints for D&D-related material may require later refinement.
+- The repository has only a minimal manual Flutter bootstrap; full generated
+  platform scaffolding is still missing.
+- Future synchronization and network features are not yet defined for
+  implementation.
+- Legal and content-boundary constraints for D&D-related material may require
+  later refinement.
 
 ## Context for Future AI Sessions
 See `docs/project/AI_SESSION_GUIDE.md` for operational continuity guidance.
@@ -144,7 +147,7 @@ documentation.
 ## Information That Still Needs Consolidation
 - Final MVP feature list
 - Core domain entity definitions
-- Initial package/module structure
+- Initial package and module structure
 - Implementation roadmap tied to milestones
-- Initial Android project scaffolding and module layout
+- Initial Flutter project scaffolding and module layout
 - Future-facing usability specs in `docs/project/FUTURE_SPECS.md`

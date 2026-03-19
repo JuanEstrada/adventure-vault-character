@@ -8,10 +8,10 @@ responsibilities remains
 
 ```mermaid
 flowchart LR
-    App[Android App<br/>Compose UI, Navigation, ViewModels]
+    App[Flutter App<br/>Widgets, Navigation, State Controllers]
     Dice[Dice Engine]
     Import[XML Import Module]
-    Db[(Local Database<br/>Room / SQLite)]
+    Db[(Local Database<br/>Drift / SQLite)]
 
     App --> Dice
     App --> Import
@@ -21,8 +21,8 @@ flowchart LR
 
 ## Responsibilities
 
-- Android App: renders Compose screens, manages navigation, and coordinates use
-  cases through screen state.
+- Flutter App: renders screens, manages navigation, and coordinates use cases
+  through screen state.
 - Dice Engine: performs D20 mechanics and modifier application.
 - XML Import Module: validates, parses, and maps imported rules content.
 - Local Database: stores characters, inventory, spells, imported content, and

@@ -1,8 +1,8 @@
 # Adventure Vault Project Guidelines
 
 This document defines the baseline product and technical guidelines that every
-proposal, specification, architectural decision, and implementation change must
-follow.
+proposal, specification, architectural decision, and implementation change
+must follow.
 
 ## Product Guidelines
 
@@ -27,18 +27,19 @@ follow.
 
 1. Accepted ADRs are active project constraints and should be followed unless a
    new ADR changes direction.
-2. Jetpack Compose is the primary UI technology.
-3. Rule logic must not live in composables or purely visual layers.
-4. Local persistence must use Room over SQLite.
-5. Design should support future growth without introducing premature
+2. Flutter is the primary client application framework.
+3. Dart is the primary implementation language.
+4. Rule logic must not live in widgets or purely visual layers.
+5. Local persistence must use Drift over SQLite.
+6. Design should support future growth without introducing premature
    complexity.
-6. Favor maintainability and clarity before advanced optimization.
-7. Documentation is part of the product and must stay aligned with changes in
+7. Favor maintainability and clarity before advanced optimization.
+8. Documentation is part of the product and must stay aligned with changes in
    architecture, scope, and implementation planning.
-8. New accepted features should be reflected in the appropriate project docs:
+9. New accepted features should be reflected in the appropriate project docs:
    ADRs, arc42 sections, specs, roadmap, and project snapshot as needed.
-9. Simplicity is preferred only when it does not compromise rule correctness,
-   architecture, or future extensibility.
+10. Simplicity is preferred only when it does not compromise rule correctness,
+    architecture, or future extensibility.
 
 ## Decision Priority
 

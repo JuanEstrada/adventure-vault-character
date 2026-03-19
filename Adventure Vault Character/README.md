@@ -1,10 +1,17 @@
 # Adventure Vault
 
-Adventure Vault is a family of Android applications intended to support tabletop role-playing sessions, starting with Dungeons & Dragons. The product vision includes one application for players and one future application for Dungeon Masters.
+Adventure Vault is a family of applications intended to support tabletop
+role-playing sessions, starting with Dungeons & Dragons. The product vision
+includes one application for players and one future application for Dungeon
+Masters.
 
 ## Adventure Vault Character
 
-Adventure Vault Character is the current project in scope. It is an Android application for players who need to create and manage characters, roll dice with modifiers, track spells and inventory, maintain character statistics, and import rules content through XML while remaining fully usable offline.
+Adventure Vault Character is the current project in scope. It is an
+Android-first Flutter application for players who need to create and manage
+characters, roll dice with modifiers, track spells and inventory, maintain
+character statistics, and import rules content through XML while remaining
+fully usable offline.
 
 ## Documentation
 
@@ -17,11 +24,13 @@ Adventure Vault Character is the current project in scope. It is an Android appl
 
 ## Scope Status
 
-The current architecture documentation covers Adventure Vault Character in detail. Adventure Vault Master is treated as a future related system whose integration needs influence today’s design decisions, especially around offline operation, synchronization readiness, and modular boundaries.
+The current architecture documentation covers Adventure Vault Character in
+detail. Adventure Vault Master is treated as a future related system whose
+integration needs influence today's design decisions, especially around
+offline operation, synchronization readiness, and modular boundaries.
 
 ## Repository Status
 
-The repository currently contains the project documentation baseline rather
-than an Android implementation. The main immediate value is in the arc42
-architecture set, ADR history, diagrams, and planning documents that define
-the first implementation steps.
+The repository now contains the project documentation baseline plus a minimal
+manual Flutter bootstrap. Full platform scaffolding still needs to be
+generated once the Flutter SDK is available in the environment.

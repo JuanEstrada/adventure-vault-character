@@ -2,7 +2,8 @@
 
 ## Deployment Assumption
 
-Adventure Vault Character runs entirely on a user-owned Android device in the current architecture.
+Adventure Vault Character runs entirely on a user-owned Android device in the
+current architecture.
 
 ## Deployment Structure
 
@@ -10,8 +11,8 @@ Adventure Vault Character runs entirely on a user-owned Android device in the cu
 
 The Android device hosts:
 
-- the Adventure Vault Character Android application
-- the local Room database backed by SQLite
+- the Adventure Vault Character Flutter application
+- the local Drift database backed by SQLite
 - locally available imported XML content files or imported content records
 
 ## Operational Characteristics
@@ -19,4 +20,5 @@ The Android device hosts:
 - The application must remain usable with no network connection.
 - All core session-time interactions occur on-device.
 - No mandatory backend runtime is assumed.
-- Future synchronization capabilities must be introduced without changing the fundamental on-device deployment model.
+- Future synchronization capabilities must be introduced without changing the
+  fundamental on-device deployment model.
