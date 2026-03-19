@@ -6,12 +6,14 @@ Use this file when continuing work in future AI-assisted sessions.
 
 1. Read [PROJECT_SNAPSHOT.md](PROJECT_SNAPSHOT.md) for the current project
    state.
-2. Use [../README.md](../README.md) for documentation navigation.
-3. Read [../adr/README.md](../adr/README.md) before changing architectural
+2. Read [PROJECT_GUIDELINES.md](PROJECT_GUIDELINES.md) before proposing new
+   features, architecture changes, or implementation tradeoffs.
+3. Use [../README.md](../README.md) for documentation navigation.
+4. Read [../adr/README.md](../adr/README.md) before changing architectural
    direction.
-4. Use [../architecture/README.md](../architecture/README.md) for the formal
+5. Use [../architecture/README.md](../architecture/README.md) for the formal
    architecture baseline.
-5. Use [../specs/README.md](../specs/README.md) for implementation-facing
+6. Use [../specs/README.md](../specs/README.md) for implementation-facing
    product specs.
 
 ## Current Architectural Baseline

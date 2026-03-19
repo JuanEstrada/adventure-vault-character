@@ -11,6 +11,8 @@ implementation begins.
   AI session guidance.
 - [Project Snapshot](project/PROJECT_SNAPSHOT.md): current phase, completed
   work, pending work, and next recommended steps.
+- [Project Guidelines](project/PROJECT_GUIDELINES.md): official product and
+  technical rules for evaluating proposals.
 - [Future Specs](project/FUTURE_SPECS.md): candidate features intentionally
   deferred for later planning.
 - [Specifications Index](specs/README.md): accepted or in-planning functional
@@ -27,6 +29,7 @@ implementation begins.
 | --- | --- | --- |
 | Project index | Central navigation for planning docs | [Project Index](project/README.md) |
 | Project state | Current status and next steps | [Project Snapshot](project/PROJECT_SNAPSHOT.md) |
+| Project guidelines | Official decision and implementation rules | [Project Guidelines](project/PROJECT_GUIDELINES.md) |
 | Future features | Deferred or speculative feature candidates | [Future Specs](project/FUTURE_SPECS.md) |
 | Specifications | Accepted or in-planning functional specs | [Specifications Index](specs/README.md) |
 | Architecture | arc42-based system description | [Architecture Index](architecture/README.md) |
@@ -37,10 +40,11 @@ implementation begins.
 ## Recommended Reading Order
 
 1. Read the [Project Snapshot](project/PROJECT_SNAPSHOT.md).
-2. Review the [Project Index](project/README.md).
-3. Review the [Architecture Index](architecture/README.md).
-4. Scan the key [ADRs](adr/README.md).
-5. Use the [Roadmap](project/ROADMAP.md) to connect architecture to delivery
+2. Review the [Project Guidelines](project/PROJECT_GUIDELINES.md).
+3. Review the [Project Index](project/README.md).
+4. Review the [Architecture Index](architecture/README.md).
+5. Scan the key [ADRs](adr/README.md).
+6. Use the [Roadmap](project/ROADMAP.md) to connect architecture to delivery
    planning.
 
 ## Repository Status

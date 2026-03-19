@@ -14,6 +14,11 @@ entry points.
 ## Project Summary
 Adventure Vault Character is an Android application for Dungeons & Dragons players to create, manage, and use their characters. The project is designed with an offline-first architecture and is part of a larger ecosystem that may include a separate Dungeon Master application.
 
+## Project Guidelines
+
+Official project rules and decision criteria are defined in
+`docs/project/PROJECT_GUIDELINES.md`.
+
 ## Confirmed Architectural Decisions
 - Use Kotlin for Android  
   → `docs/adr/ADR-001-use-kotlin-for-android.md`
