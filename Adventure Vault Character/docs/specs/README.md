@@ -11,6 +11,18 @@ between high-level architecture and the roadmap.
 
 - [MVP Scope](mvp-scope.md): initial delivery boundary for the first
   implementation slice.
+- [Bootstrap Screen](bootstrap-screen.md): startup screen, initialization
+  rules, and initial route decision.
+- [Character List Screen](character-list-screen.md): first durable home screen
+  for returning players.
+- [Empty State Screen](empty-state-screen.md): no-data entry point for first
+  use and zero-character states.
+- [Create Character Screen](create-character-screen.md): minimum viable
+  character creation flow.
+- [Character Sheet Screen](character-sheet-screen.md): main post-creation and
+  post-selection character destination.
+- [Initial Navigation Flow](initial-navigation-flow.md): canonical route flow
+  from app launch to stable destination screens.
 - [Feature Template](feature-template.md): structure for future feature specs.
 
 ## Usage Rules

@@ -1,9 +1,10 @@
 # Documentation Hub
 
 This repository currently contains the documentation baseline for
-Adventure Vault Character. It captures the target architecture,
-architectural decisions, diagrams, and project planning needed before
-implementation begins.
+Adventure Vault Character together with the generated Flutter project
+scaffolding. It captures the target architecture, architectural
+decisions, diagrams, and project planning that now guide the first
+implementation slices.
 
 ## Start Here
 
@@ -50,5 +51,6 @@ implementation begins.
 ## Repository Status
 
 At the time of this update, the repository contains documentation, project
-planning artifacts, and a minimal manual Flutter bootstrap. Full platform
-scaffolding still needs to be generated once the Flutter SDK is available.
+planning artifacts, and generated Flutter scaffolding for Android, iOS, web,
+desktop, and tests. The codebase still needs its first real implementation
+slice, dependency setup, and a clean green baseline for tests and analysis.

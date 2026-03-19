@@ -4,12 +4,12 @@
 2026-03-19
 
 ## Project Phase
-Architecture
+Early implementation bootstrap
 
 ## Current Focus
-Preparing the repository for implementation planning with clearer
-documentation boundaries, Flutter-aligned architecture views, and dedicated
-spec entry points.
+Aligning the generated Flutter project with the documented architecture,
+stabilizing the repository baseline, and preparing the first MVP
+implementation slice.
 
 ## Project Summary
 Adventure Vault Character is an Android-first Flutter application for Dungeons
@@ -84,7 +84,7 @@ Official project rules and decision criteria are defined in
 
 ## Work Completed
 - Initial project documentation structure has been defined.
-- A minimal manual Flutter bootstrap has been added to the repository.
+- Generated Flutter project scaffolding has been added to the repository.
 - arc42 documentation sections have been created.
 - Initial ADR structure has been created.
 - C4-related diagram documentation files have been created.
@@ -99,12 +99,16 @@ Official project rules and decision criteria are defined in
   - Drift over SQLite
   - Separate Player and DM apps
 - AI-oriented repository context structure has been defined.
+- Platform directories are present for Android, iOS, web, Windows, Linux,
+  macOS, and Flutter test support.
+- A minimal application bootstrap screen exists in `lib/main.dart`.
 
 ## Work In Progress
-- Defining implementation-oriented project workflow.
-- Transitioning from architecture definition to implementation planning.
+- Defining the first implementation-oriented workflow and package boundaries.
 - Consolidating repository-level documentation for faster contributor
   onboarding.
+- Cleaning up generated starter artifacts that still conflict with the current
+  application bootstrap.
 
 ## Pending Work
 - Define the first implementation slice of the application.
@@ -113,23 +117,32 @@ Official project rules and decision criteria are defined in
 - Define the MVP scope.
 - Define the first development milestones.
 - Align architecture documents with implementation priorities.
-- Start Flutter codebase scaffolding if not yet created.
+- Replace remaining starter-template placeholders in code, tests, and platform
+  metadata.
 - Add implementation documentation once source code exists.
 - Evaluate future usability specs such as guided help for new players.
+- Add the first production dependencies required by the accepted architecture,
+  starting with persistence and state boundaries.
 
 ## Next Recommended Steps
 1. Define the MVP scope for Adventure Vault Character.
 2. Define the core domain entities for the character system.
 3. Define the first implementation milestone.
-4. Create the initial Flutter project structure.
-5. Map architecture decisions to implementation tasks.
-6. Update this snapshot after each relevant project session.
+4. Fix the broken starter test and restore a green `flutter analyze` and
+   `flutter test` baseline.
+5. Replace example Android identifiers and other generated placeholder
+   metadata.
+6. Map architecture decisions to implementation tasks and update this snapshot
+   after each relevant project session.
 
 ## Risks or Unknowns
 - MVP scope is not yet explicitly consolidated in this file.
 - Core domain model is not yet finalized.
-- The repository has only a minimal manual Flutter bootstrap; full generated
-  platform scaffolding is still missing.
+- The repository has generated platform scaffolding, but the application code
+  is still only a minimal bootstrap and does not yet realize the documented
+  architecture.
+- The current baseline is not green because the generated widget test still
+  references the old counter template app.
 - Future synchronization and network features are not yet defined for
   implementation.
 - Legal and content-boundary constraints for D&D-related material may require
@@ -140,8 +153,8 @@ See `docs/project/AI_SESSION_GUIDE.md` for operational continuity guidance.
 
 ## Continuation Prompt
 Use this snapshot as the current project state. Continue from the
-implementation planning stage, identify the most logical next step, and keep
-all new work aligned with the existing architecture, ADR, diagram, and specs
+early implementation stage, identify the most logical next step, and keep all
+new work aligned with the existing architecture, ADR, diagram, and specs
 documentation.
 
 ## Information That Still Needs Consolidation
@@ -149,5 +162,5 @@ documentation.
 - Core domain entity definitions
 - Initial package and module structure
 - Implementation roadmap tied to milestones
-- Initial Flutter project scaffolding and module layout
+- Initial production-ready Flutter module layout
 - Future-facing usability specs in `docs/project/FUTURE_SPECS.md`

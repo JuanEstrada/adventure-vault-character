@@ -1,7 +1,7 @@
 # Project Documentation Index
 
 This directory contains project-state documents used to move from architecture
-definition into implementation planning.
+definition into early implementation.
 
 ## Documents
 

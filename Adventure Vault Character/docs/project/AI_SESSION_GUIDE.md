@@ -31,9 +31,19 @@ Use this file when continuing work in future AI-assisted sessions.
   already covers the topic.
 - Treat accepted ADRs as active constraints.
 - Keep architecture docs aligned with implementation planning.
+- Keep project-state docs aligned with the actual repository contents.
 - Prefer updating index pages when adding new documents.
 - Record new product requirements in `docs/specs/` when they are accepted for
   implementation planning.
+
+## Current Repository Reality
+
+- Flutter platform scaffolding is already present for Android, iOS, web, and
+  desktop targets.
+- `lib/main.dart` is still a minimal bootstrap screen, not an MVP
+  implementation.
+- The default widget test is stale and currently breaks `flutter analyze` and
+  `flutter test` until it is updated or replaced.
 
 ## Decision Priority
 

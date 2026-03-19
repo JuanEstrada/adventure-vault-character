@@ -31,6 +31,7 @@ offline operation, synchronization readiness, and modular boundaries.
 
 ## Repository Status
 
-The repository now contains the project documentation baseline plus a minimal
-manual Flutter bootstrap. Full platform scaffolding still needs to be
-generated once the Flutter SDK is available in the environment.
+The repository now contains the project documentation baseline plus a generated
+Flutter project with platform scaffolding for Android, iOS, web, desktop, and
+tests. The application code is still at an early bootstrap stage and remains
+well before the first functional MVP slice.

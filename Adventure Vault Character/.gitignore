@@ -3,6 +3,9 @@ local-assets/
 .agents/
 skills-lock.json
 .dart_tool/
+.idea/
+.metadata
+*.iml
 .flutter-plugins
 .flutter-plugins-dependencies
 .packages
