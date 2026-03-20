@@ -12,11 +12,16 @@ between high-level architecture and the roadmap.
 - [MVP Scope](mvp-scope.md): initial delivery boundary for the first
   implementation slice.
 - [Bootstrap Screen](bootstrap-screen.md): startup screen, initialization
-  rules, and initial route decision.
-- [Character List Screen](character-list-screen.md): first durable home screen
-  for returning players.
+  rules, preload behavior, and splash timing.
+- [Access Screen](access-screen.md): dummy online login plus supported offline
+  continuation path.
+- [Main Menu Screen](main-menu-screen.md): central home hub with top menus,
+  character cards, and create entry.
+- [Character List Screen](character-list-screen.md): earlier list-focused spec
+  retained as reference while the main menu hub replaces it.
 - [Empty State Screen](empty-state-screen.md): no-data entry point for first
-  use and zero-character states.
+  use and zero-character states. Retained as reference while main menu is now
+  the primary hub.
 - [Create Character Screen](create-character-screen.md): minimum viable
   character creation flow.
 - [Character Sheet Screen](character-sheet-screen.md): main post-creation and

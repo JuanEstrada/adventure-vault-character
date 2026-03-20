@@ -7,9 +7,8 @@
 Early implementation bootstrap
 
 ## Current Focus
-Aligning the generated Flutter project with the documented architecture,
-stabilizing the repository baseline, and preparing the first MVP
-implementation slice.
+Consolidating the first MVP flow decisions for startup, access, main menu, and
+guided character creation before opening implementation in `lib/`.
 
 ## Project Summary
 Adventure Vault Character is an Android-first Flutter application for Dungeons
@@ -102,47 +101,47 @@ Official project rules and decision criteria are defined in
 - Platform directories are present for Android, iOS, web, Windows, Linux,
   macOS, and Flutter test support.
 - A minimal application bootstrap screen exists in `lib/main.dart`.
+- The repository baseline is green for `flutter analyze` and `flutter test`.
+- The initial MVP screen specs have been expanded with startup, access, main
+  menu, and guided-creation decisions.
 
 ## Work In Progress
 - Defining the first implementation-oriented workflow and package boundaries.
 - Consolidating repository-level documentation for faster contributor
   onboarding.
-- Cleaning up generated starter artifacts that still conflict with the current
-  application bootstrap.
+- Consolidating the first real MVP scope around offline local access.
 
 ## Pending Work
-- Define the first implementation slice of the application.
 - Define the core domain model for characters.
 - Define the initial application modules and package boundaries.
-- Define the MVP scope.
 - Define the first development milestones.
 - Align architecture documents with implementation priorities.
-- Replace remaining starter-template placeholders in code, tests, and platform
-  metadata.
 - Add implementation documentation once source code exists.
 - Evaluate future usability specs such as guided help for new players.
 - Add the first production dependencies required by the accepted architecture,
   starting with persistence and state boundaries.
+- Decide whether guided character creation needs one more required step before
+  save.
+- Define the first character sheet contents.
 
 ## Next Recommended Steps
-1. Define the MVP scope for Adventure Vault Character.
-2. Define the core domain entities for the character system.
-3. Define the first implementation milestone.
-4. Fix the broken starter test and restore a green `flutter analyze` and
-   `flutter test` baseline.
-5. Replace example Android identifiers and other generated placeholder
-   metadata.
-6. Map architecture decisions to implementation tasks and update this snapshot
-   after each relevant project session.
+1. Decide whether guided creation ends at race, name, class, level, and
+   experience, or requires one more mandatory step.
+2. Define the first character sheet contents.
+3. Define the core domain entities for the character system.
+4. Define the initial application modules and package boundaries.
+5. Map the approved MVP flow into implementation tasks in `lib/`.
+6. Update this snapshot after each relevant project session.
 
 ## Risks or Unknowns
-- MVP scope is not yet explicitly consolidated in this file.
+- MVP scope is now materially outlined but still needs final closure on the
+  guided-creation stopping point.
 - Core domain model is not yet finalized.
 - The repository has generated platform scaffolding, but the application code
   is still only a minimal bootstrap and does not yet realize the documented
   architecture.
-- The current baseline is not green because the generated widget test still
-  references the old counter template app.
+- The compendium-backed creation flow introduces a dependency on structured
+  local content modeling that is not yet implemented.
 - Future synchronization and network features are not yet defined for
   implementation.
 - Legal and content-boundary constraints for D&D-related material may require
@@ -158,7 +157,6 @@ new work aligned with the existing architecture, ADR, diagram, and specs
 documentation.
 
 ## Information That Still Needs Consolidation
-- Final MVP feature list
 - Core domain entity definitions
 - Initial package and module structure
 - Implementation roadmap tied to milestones

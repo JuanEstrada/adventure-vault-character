@@ -6,16 +6,16 @@ Draft
 
 ## Summary
 
-The bootstrap screen is the first route shown when the app launches. Its job
-is to initialize local application services, verify that the local persistence
-layer is available, and decide the next route without exposing startup
-complexity to the user.
+The bootstrap screen is the first route shown when the app launches. It acts
+as the splash screen for the MVP, performs the minimum startup work required
+for local use, and only exits once initialization is complete and the minimum
+display duration has elapsed.
 
 ## Goals
 
 - Provide a deterministic startup path for every app launch.
 - Initialize only the dependencies required to reach the first usable screen.
-- Route the user to the correct next screen based on local app state.
+- Route the user to the access screen after startup completes.
 - Surface recoverable startup failures clearly.
 
 ## In Scope
@@ -23,14 +23,16 @@ complexity to the user.
 - First visual route displayed at app launch
 - Initialization of app-level dependencies required for local use
 - Local database availability check
-- Initial route decision
+- Local character summary preload
+- XML index preload without loading full content
+- Splash minimum-duration rule
 - Loading and startup error states
 
 ## Out of Scope
 
 - Full onboarding content
-- Character creation form logic
-- Character list interaction details
+- Character creation flow
+- Main menu interaction details
 - Remote networking or account checks
 
 ## Entry Conditions
@@ -40,8 +42,7 @@ complexity to the user.
 
 ## Exit Paths
 
-- Navigate to the character list when character data exists.
-- Navigate to the empty-state screen when no characters exist.
+- Navigate to the access screen when startup succeeds.
 - Navigate to a startup recovery state when initialization fails.
 
 ## Primary Actions
@@ -52,23 +53,27 @@ complexity to the user.
 ## Required Data
 
 - Result of local storage initialization
-- Whether at least one character exists locally
+- Preloaded local character summaries
+- XML content index metadata
 - Optional startup error information
 
 ## UI States
 
 - Loading: app branding plus startup progress indication
-- Success with existing data: immediate navigation to character list
-- Success with no data: immediate navigation to empty-state screen
+- Success: navigate to the access screen after startup completes
 - Error: failure message plus retry action
 
 ## User Flows
 
 1. User opens the app.
 2. Bootstrap screen appears immediately.
-3. App initializes local dependencies and local persistence.
-4. App checks whether local character records exist.
-5. App routes to character list or empty-state screen.
+3. App loads local configuration.
+4. App loads saved character summaries.
+5. App loads the XML content index, but not full content payloads.
+6. The splash remains visible for at least 2 seconds.
+7. If startup takes longer than 2 seconds, the splash remains visible until
+   work completes.
+8. App routes to the access screen.
 
 ### Error Recovery Flow
 
@@ -82,8 +87,9 @@ complexity to the user.
 - The bootstrap screen is always the first route on cold start.
 - The app never shows a blank screen while startup work is happening.
 - Startup completes without requiring network access.
-- A user with existing characters is routed to the character list.
-- A user with no characters is routed to the empty-state screen.
+- The splash stays visible for at least 2 seconds.
+- The splash stays visible longer if startup work has not finished yet.
+- Startup success always routes to the access screen.
 - Recoverable startup failures present a retry option.
 
 ## Architectural Notes

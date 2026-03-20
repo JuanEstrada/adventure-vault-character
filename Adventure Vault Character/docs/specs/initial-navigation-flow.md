@@ -8,7 +8,7 @@ Draft
 
 This specification defines the canonical first-run and returning-user
 navigation flow from app launch until the user reaches a stable destination
-screen. It ties together bootstrap, empty state, character list, create
+screen. It ties together splash/bootstrap, access, main menu, create
 character, and character sheet behavior.
 
 ## Goals
@@ -16,13 +16,13 @@ character, and character sheet behavior.
 - Define a single authoritative early navigation flow.
 - Remove ambiguity about which screen appears first in each startup case.
 - Ensure first-run and returning-user states are handled explicitly.
+- Preserve a future-facing login placeholder without blocking offline use.
 
 ## In Scope
 
 - Cold-start route order
-- Route decisions based on local data presence
-- Transition rules between bootstrap, empty state, character list, create
-  character, and character sheet
+- Transition rules between bootstrap, access, main menu, create character,
+  and character sheet
 - Basic failure routing during startup
 
 ## Out of Scope
@@ -35,14 +35,19 @@ character, and character sheet behavior.
 ## Route Rules
 
 - App launch always enters the bootstrap screen first.
+- Bootstrap loads local config, saved character summaries, and the XML index.
+- Bootstrap remains visible for at least 2 seconds and longer if startup work
+  is still running.
 - If initialization fails, the app stays in a startup recovery state.
-- If initialization succeeds and no local characters exist, route to the
-  empty-state screen.
-- If initialization succeeds and local characters exist, route to the
-  character list screen.
+- If initialization succeeds, route to the access screen.
+- The access screen shows a dummy online login plus `Continuar offline`.
+- Choosing `Continuar offline` routes to the main menu.
+- The main menu always shows `Compendio`, `Reglas`, and `Settings` in the
+  upper area.
+- The main menu always shows `Crear personaje nuevo`.
+- If characters exist, the main menu also shows character cards.
+- If the user selects a character card, route to that character sheet.
 - If the user creates a character successfully, route to the new character
-  sheet.
-- If the user selects a character from the list, route to that character
   sheet.
 
 ## Canonical Flows
@@ -51,16 +56,20 @@ character, and character sheet behavior.
 
 1. App launch
 2. Bootstrap
-3. Empty state
-4. Create character
-5. Character sheet
+3. Access screen
+4. Continue offline
+5. Main menu
+6. Create character
+7. Character sheet
 
 ### Returning User Flow
 
 1. App launch
 2. Bootstrap
-3. Character list
-4. Character sheet
+3. Access screen
+4. Continue offline
+5. Main menu
+6. Character sheet
 
 ### Startup Failure Flow
 
@@ -75,6 +84,7 @@ character, and character sheet behavior.
 - The initial route sequence is documented and deterministic.
 - First-run and returning-user cases do not share ambiguous route logic.
 - Bootstrap owns startup decisions, not downstream feature screens.
+- Access screen preserves offline continuation as the supported MVP path.
 - Character creation success transitions directly into a stable post-create
   destination.
 

@@ -19,11 +19,12 @@ Goal: make the app start, initialize, route, and close predictably.
 
 ### Screens and Flows
 
-- Bootstrap or splash screen
+- Splash or bootstrap screen
 - Startup dependency initialization
-- Local storage initialization
-- Initial route decision
-- Empty-state entry when no characters exist
+- Local configuration load
+- Saved character summary load
+- XML content index load without full content preload
+- Access screen after splash
 - App resume from background
 - App close and state persistence
 
@@ -41,17 +42,19 @@ useful first screen even before deep gameplay features exist.
 
 ### Screens and Flows
 
-- Welcome or first-run entry screen
-- Character list screen
-- Empty character list state
-- Create character entry point
+- Access screen with dummy online login
+- Continue offline action
+- Main menu or home hub
+- Top menu entries for compendium, rules, and settings
+- Character cards in the main menu
+- Always-visible create character entry point
 - Basic character detail shell
 
 ### Expected Outcomes
 
 - A new user can understand the first available action immediately.
 - A returning user can find existing characters quickly.
-- The app has a clear “home” screen for subsequent milestones.
+- The app has a clear home hub for subsequent milestones.
 
 ## Phase 2 - Character Creation and Core Data
 
@@ -59,10 +62,12 @@ Goal: support creation and editing of a valid character record.
 
 ### Screens and Flows
 
-- Character creation flow
-- Core identity screen
-- Attributes or stats screen
-- Class and level basics
+- Guided character creation flow
+- Race selection from compendium data
+- Name entry
+- Class selection
+- Level and experience synchronization
+- Class progression table and feature preview
 - Save or cancel flow
 - Edit existing character flow
 
@@ -71,6 +76,7 @@ Goal: support creation and editing of a valid character record.
 - Characters can be created, stored locally, reopened, and updated.
 - Validation rules exist for required fields and invalid values.
 - Character creation and editing boundaries are documented screen by screen.
+- Progression rules are explicit during class and level selection.
 
 ## Phase 3 - Character Sheet and Session Use
 
@@ -196,11 +202,10 @@ Every new screen spec added under `docs/specs/` should eventually document:
 
 ## Suggested Next Documentation Steps
 
-1. Define the canonical app flow from bootstrap to character list or first-run
-   screen.
-2. Define the first MVP screens in detail:
-   bootstrap, character list, empty state, create character, character sheet.
-3. Add one screen spec per priority screen under `docs/specs/`.
+1. Confirm whether the first guided creation flow needs an additional required
+   step after race, name, class, level, and experience.
+2. Define the first character sheet contents in detail.
+3. Add or refine screen specs around access, main menu, and guided creation.
 4. Keep this roadmap aligned with `PROJECT_SNAPSHOT.md` and the MVP scope.
 
 ## Current Priority
