@@ -16,6 +16,7 @@ fully usable offline.
 ## Documentation
 
 - Documentation hub: [docs/README.md](docs/README.md)
+- Session resume: [docs/project/SESSION_RESUME.md](docs/project/SESSION_RESUME.md)
 - Project docs index: [docs/project/README.md](docs/project/README.md)
 - Architecture index: [docs/architecture/README.md](docs/architecture/README.md)
 - Architecture decisions: [docs/adr/README.md](docs/adr/README.md)

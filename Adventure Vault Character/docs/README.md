@@ -8,6 +8,8 @@ implementation slices.
 
 ## Start Here
 
+- [Session Resume](project/SESSION_RESUME.md): single-file handoff for
+  resuming a project session.
 - [Project Index](project/README.md): current status, roadmap, future specs,
   and AI session guidance.
 - [Project Snapshot](project/PROJECT_SNAPSHOT.md): current phase, completed
@@ -28,6 +30,7 @@ implementation slices.
 
 | Area | Purpose | Entry Point |
 | --- | --- | --- |
+| Session continuity | Single-file project handoff | [Session Resume](project/SESSION_RESUME.md) |
 | Project index | Central navigation for planning docs | [Project Index](project/README.md) |
 | Project state | Current status and next steps | [Project Snapshot](project/PROJECT_SNAPSHOT.md) |
 | Project guidelines | Official decision and implementation rules | [Project Guidelines](project/PROJECT_GUIDELINES.md) |
@@ -36,11 +39,10 @@ implementation slices.
 | Architecture | arc42-based system description | [Architecture Index](architecture/README.md) |
 | ADRs | Decision record history | [ADR Index](adr/README.md) |
 | Diagrams | C4 textual views | [Context Diagram](diagrams/context.md) |
-| AI continuity | Guidance for future AI-assisted sessions | [AI Context](AI_CONTEXT.md) |
 
 ## Recommended Reading Order
 
-1. Read the [Project Snapshot](project/PROJECT_SNAPSHOT.md).
+1. Read the [Session Resume](project/SESSION_RESUME.md).
 2. Review the [Project Guidelines](project/PROJECT_GUIDELINES.md).
 3. Review the [Project Index](project/README.md).
 4. Review the [Architecture Index](architecture/README.md).
@@ -53,4 +55,5 @@ implementation slices.
 At the time of this update, the repository contains documentation, project
 planning artifacts, and generated Flutter scaffolding for Android, iOS, web,
 desktop, and tests. The codebase still needs its first real implementation
-slice, dependency setup, and a clean green baseline for tests and analysis.
+slice, but the current repository baseline is green for `flutter analyze` and
+`flutter test`.

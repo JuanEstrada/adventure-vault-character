@@ -7,6 +7,7 @@ definition into early implementation.
 
 | Document | Purpose |
 | --- | --- |
+| [SESSION_RESUME.md](SESSION_RESUME.md) | Single-file handoff to resume the next work session. |
 | [PROJECT_SNAPSHOT.md](PROJECT_SNAPSHOT.md) | Current phase, status, and next recommended steps. |
 | [PROJECT_GUIDELINES.md](PROJECT_GUIDELINES.md) | Official product and technical guidelines for proposals and implementation. |
 | [ROADMAP.md](ROADMAP.md) | Phase-based delivery direction. |
@@ -15,8 +16,9 @@ definition into early implementation.
 
 ## Recommended Reading Order
 
-1. [PROJECT_SNAPSHOT.md](PROJECT_SNAPSHOT.md)
+1. [SESSION_RESUME.md](SESSION_RESUME.md)
 2. [PROJECT_GUIDELINES.md](PROJECT_GUIDELINES.md)
-3. [ROADMAP.md](ROADMAP.md)
-4. [../specs/README.md](../specs/README.md)
-5. [FUTURE_SPECS.md](FUTURE_SPECS.md)
+3. [PROJECT_SNAPSHOT.md](PROJECT_SNAPSHOT.md)
+4. [ROADMAP.md](ROADMAP.md)
+5. [../specs/README.md](../specs/README.md)
+6. [FUTURE_SPECS.md](FUTURE_SPECS.md)
