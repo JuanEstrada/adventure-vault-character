@@ -12,7 +12,9 @@ Define the first implementation slice of Adventure Vault Character.
   sheet.
 - Establish the app's startup, access, home, and first character-creation
   experience.
-- Use compendium-backed race and class data during guided character creation.
+- Use compendium-backed race, background, and class data during guided
+  character creation.
+- Support guided ability score determination before the first save.
 
 ## In Scope
 
@@ -25,12 +27,18 @@ Define the first implementation slice of Adventure Vault Character.
 - Always-visible `Crear personaje nuevo` entry point
 - Guided create-character flow
 - Race selection from compendium data
+- Background selection from compendium data
 - Name capture
+- Ability score determination
+- Random ability score generation with manual assignment
+- Point-buy ability score assignment
 - Class selection
 - Level selection
 - Experience entry with automatic level recalculation
 - Experience reset to level minimum when level changes
 - Progress percentage toward next level
+- Background bonuses and social perks visible on the character sheet
+- Final ability scores visible on the character sheet
 - Character sheet as post-create and post-selection destination
 - Local persistence for created characters
 
@@ -59,9 +67,11 @@ Define the first implementation slice of Adventure Vault Character.
 6. User chooses `Continuar offline`.
 7. App routes to the main menu.
 8. User chooses `Crear personaje nuevo`.
-9. User completes the guided race, name, class, level, and experience flow.
+9. User completes the guided race, name, background, ability score, class,
+   level, and experience flow.
 10. App creates the character locally.
-11. App opens the character sheet.
+11. App opens the character sheet, including background information relevant
+    to play and the final ability score block.
 
 ### Returning User Offline Flow
 
@@ -82,9 +92,16 @@ Define the first implementation slice of Adventure Vault Character.
   `Crear personaje nuevo`.
 - Existing characters appear as cards in the main menu when present.
 - Character creation uses compendium-backed race data.
+- Character creation uses compendium-backed background data.
+- Character creation requires a complete ability score assignment.
+- The MVP ability score step supports random generation with manual
+  assignment and point buy with visible remaining points.
 - Class progression, class features, and level thresholds are visible during
   class selection.
 - Experience and level stay synchronized.
+- The character sheet shows the selected background plus its bonuses and
+  social perks.
+- The character sheet shows the six final ability scores.
 - Successful creation persists locally and opens the character sheet.
 
 ## Dependencies on Architecture Decisions
@@ -95,7 +112,9 @@ Define the first implementation slice of Adventure Vault Character.
 
 ## Open Questions For Next Session
 
-- Whether any additional creation step is mandatory after race, name, class,
-  level, and experience
+- How background bonuses and social perks should be represented in the first
+  character view model and persisted model
+- How ability score methods and score-assignment provenance should be
+  represented in the first character view model and persisted model
 - What exact data fields must be visible in the first character sheet
 - How compendium, rules, and settings should behave inside the MVP shell

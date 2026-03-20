@@ -21,6 +21,7 @@ later gameplay-support features.
 ## In Scope
 
 - Read-only presentation of core character information
+- Visible presentation of selected background details relevant to play
 - Entry from character list and create character flow
 - Refresh from local persisted data
 - Navigation entry points for future related screens
@@ -52,6 +53,10 @@ later gameplay-support features.
 ## Required Data
 
 - Character identity summary
+- Selected background summary
+- Background bonuses and social perks
+- Final ability scores with per-ability modifiers
+- Ability score generation method summary
 - Core stats and derived summary fields
 - Locally persisted character state for the selected record
 - Optional local load error information
@@ -81,6 +86,10 @@ later gameplay-support features.
 - The selected character can be loaded fully offline.
 - The screen presents enough core information to serve as the main home for a
   selected character.
+- The selected background, its bonuses, and its social perks are visible on
+  the character sheet.
+- The six final ability scores and their modifiers are visible on the
+  character sheet.
 - A missing or deleted character record is handled explicitly.
 - The character sheet can serve as the hub for future in-session features.
 

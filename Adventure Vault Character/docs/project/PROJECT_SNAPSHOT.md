@@ -57,34 +57,55 @@ opening real implementation in `lib/`.
 
 - Defining the first implementation-oriented workflow.
 - Defining the first package and module boundaries.
-- Closing the minimum-valid-character definition for the MVP.
+- Translating the updated minimum-valid-character definition for the MVP into
+  domain and UI scope.
 
 ## Pending Work
 
-- Decide whether guided character creation needs one additional mandatory step
-  before save.
 - Define the first character sheet contents.
 - Define the core domain model for characters.
 - Define the initial application modules and package boundaries.
+- Define how background bonuses and social perks should be represented in
+  persistence and in the first character sheet view model.
+- Define how ability score methods, assigned values, and modifiers should be
+  represented in persistence and in the first character sheet view model.
 - Add the first production dependencies required by the accepted architecture.
 - Map the approved MVP flow into implementation tasks in `lib/`.
 - Add implementation documentation once production code exists.
 
+## Newly Confirmed MVP Decision
+
+- Guided character creation includes background as a mandatory compendium-
+  backed choice.
+- Background contributes player-facing bonuses and social perks that must be
+  visible on the character sheet.
+- Guided character creation includes a mandatory ability score step.
+- The MVP ability score step supports random generation with manual
+  assignment and point buy with visible remaining budget.
+
 ## Next Recommended Steps
 
-1. Close the minimum-valid-character decision for guided creation.
-2. Define the first character sheet contents from that decision.
-3. Derive the first domain entities and module boundaries.
-4. Break the approved MVP flow into implementation tasks in `lib/`.
-5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
+1. Define the first character sheet contents from the confirmed race, name,
+   background, ability scores, class, level, and experience set.
+2. Derive the first domain entities and module boundaries.
+3. Break the approved MVP flow into implementation tasks in `lib/`.
+4. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
+
+## Next Session Guardrail
+
+- Resume by defining only the first character sheet contents.
+- Do not advance into domain modeling or implementation until that screen
+  scope is explicitly confirmed in-session.
 
 ## Risks and Unknowns
 
-- The MVP is materially outlined but still blocked by the unresolved stopping
-  point of guided creation.
 - The first domain model is not yet finalized.
 - The compendium-backed creation flow depends on structured local content
   modeling that does not yet exist.
+- Background bonuses and social perks still need a normalized representation
+  that preserves fidelity without pushing rules logic into widgets.
+- Ability score method state and assignment provenance still need a normalized
+  representation that supports validation and later editing.
 - Future sync and network features remain out of implementation scope.
 - Legal and content-boundary constraints for D&D-related material may still
   need refinement later.

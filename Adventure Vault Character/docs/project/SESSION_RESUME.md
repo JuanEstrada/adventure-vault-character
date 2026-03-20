@@ -99,44 +99,60 @@ Primary references:
 - The main menu must expose `Compendio`, `Reglas`, `Settings`, and
   `Crear personaje nuevo`.
 - Character creation is guided, not a free-form advanced builder.
-- Creation currently includes race, name, class, level, and experience.
-- Race and class data are compendium-backed.
+- Creation currently includes race, name, background, ability scores, class,
+  level, and experience.
+- Race, background, and class data are compendium-backed.
+- Ability scores are part of the minimum valid character record.
 - Experience and level must stay synchronized.
+- Background bonuses and social perks must be shown on the character sheet.
+- Final ability scores and their modifiers must be shown on the character
+  sheet.
 - Successful creation persists locally and opens the character sheet.
 
 ## Main Open Product Decisions
 
 These are the highest-value unresolved items:
 
-1. Decide whether guided creation needs one additional mandatory step before
-   save.
-2. Define the exact minimum contents of the first character sheet.
-3. Define the first core domain model for characters.
-4. Define the first package and module boundaries for `lib/`.
+1. Define the exact minimum contents of the first character sheet.
+2. Define the first core domain model for characters.
+3. Define the first package and module boundaries for `lib/`.
+4. Define how background bonuses and social perks should be represented in
+   persistence and view models.
+5. Define how ability score methods and assigned values should be represented
+   in persistence and view models.
 
-The most important open question is the first one, because it defines the
-minimum valid character record in the domain.
+Resolved MVP decision:
 
-Current interpretation of that open question:
-
-- If the MVP goal is fast local save plus later editing, then no additional
-  mandatory step is required.
-- If the MVP goal is that the first saved character is already session-usable,
-  then attributes are the strongest candidate for an additional required step.
-
-No final decision has been committed yet in the docs.
+- Guided creation does require one additional mandatory step before save:
+  background selection.
+- The reason is product-driven, not heavy rules automation: background brings
+  bonuses and social perks from the compendium that the player must be able to
+  review later on the character sheet.
+- Guided creation also requires a mandatory ability score step before save.
+- The MVP ability score step is based on the builder reference UI and supports
+  at least random generation with manual assignment and point buy with visible
+  remaining budget.
 
 ## Recommended Next Step
 
 Do not jump straight into UI implementation.
 
-The next logical session should close the minimum-valid-character definition:
+The next logical session should use the updated minimum-valid-character
+definition:
 
-1. Decide whether guided creation stops at race, name, class, level, and
-   experience, or adds one more mandatory step.
-2. Define the first character sheet contents from that decision.
-3. Derive the initial domain entities from those required fields.
-4. Only then open implementation tasks in `lib/`.
+1. Define the first character sheet contents from race, name, background,
+   ability scores, class, level, and experience.
+2. Derive the initial domain entities from those required fields.
+3. Define how background bonuses and social perks are stored and rendered.
+4. Define how ability score methods, assigned values, and modifiers are stored
+   and rendered.
+5. Only then open implementation tasks in `lib/`.
+
+Next-session starting point:
+
+- Start only with the first character sheet contents.
+- Do not advance to domain modeling or implementation until that scope is
+  explicitly confirmed in-session.
 
 ## If You Need More Detail
 

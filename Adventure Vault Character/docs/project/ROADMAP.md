@@ -64,7 +64,9 @@ Goal: support creation and editing of a valid character record.
 
 - Guided character creation flow
 - Race selection from compendium data
+- Background selection from compendium data
 - Name entry
+- Ability score method selection and assignment
 - Class selection
 - Level and experience synchronization
 - Class progression table and feature preview
@@ -76,6 +78,10 @@ Goal: support creation and editing of a valid character record.
 - Characters can be created, stored locally, reopened, and updated.
 - Validation rules exist for required fields and invalid values.
 - Character creation and editing boundaries are documented screen by screen.
+- Background-derived player-facing information is preserved and surfaced in
+  the character sheet.
+- Ability score choices are captured in a way that preserves both final values
+  and the selected creation method.
 - Progression rules are explicit during class and level selection.
 
 ## Phase 3 - Character Sheet and Session Use
@@ -85,6 +91,8 @@ Goal: support the primary in-session experience once a character exists.
 ### Screens and Flows
 
 - Character sheet overview
+- Background summary with bonuses and social perks
+- Ability score block with final values and modifiers
 - Derived combat values section
 - Skills and saving throws view
 - Hit points and temporary state updates
@@ -202,8 +210,8 @@ Every new screen spec added under `docs/specs/` should eventually document:
 
 ## Suggested Next Documentation Steps
 
-1. Confirm whether the first guided creation flow needs an additional required
-   step after race, name, class, level, and experience.
+1. Confirm the exact persisted and displayed shape of background and ability
+   score data in the first character model and character sheet.
 2. Define the first character sheet contents in detail.
 3. Add or refine screen specs around access, main menu, and guided creation.
 4. Keep this roadmap aligned with `PROJECT_SNAPSHOT.md` and the MVP scope.

@@ -8,8 +8,9 @@ Draft
 
 The create character screen is a guided flow, not a free-form form. It must
 let the user create a valid initial character record using compendium-backed
-choices for race and class, then open the character sheet immediately after
-local persistence succeeds.
+choices for race, class, and background, plus a complete ability score
+selection, then open the character sheet immediately after local persistence
+succeeds.
 
 ## Goals
 
@@ -22,8 +23,14 @@ local persistence succeeds.
 
 - Character creation entry flow
 - Guided race and name step
+- Guided background step
+- Guided ability score step
 - Guided class, level, and experience step
 - Compendium-backed race list
+- Compendium-backed background list
+- Ability score method selection
+- Random ability score generation and assignment
+- Point-buy ability score assignment
 - Class progression display
 - Validation for required data
 - Save and cancel actions
@@ -50,6 +57,8 @@ local persistence succeeds.
 
 - Enter core character identity data
 - Select race from compendium data
+- Select background from compendium data
+- Determine ability scores
 - Select class
 - Set level
 - Enter experience
@@ -60,9 +69,14 @@ local persistence succeeds.
 
 - Character name
 - Selected race from the compendium
+- Selected background from the compendium
+- Ability scores for Strength, Dexterity, Constitution, Intelligence, Wisdom,
+  and Charisma
+- Selected ability score generation method
 - Selected class
 - Level
 - Experience
+- Background bonuses and social perks summary
 - Class progression data
 - Experience thresholds by level
 - Validation state for required fields
@@ -81,18 +95,28 @@ local persistence succeeds.
 1. User enters the create character flow.
 2. App shows the guided step for race and name.
 3. The user chooses a race from compendium-backed options and enters a name.
-4. App continues to class and progression selection.
-5. The user chooses a class and level.
-6. The screen shows the class progression table and class features for the
+4. App continues to background selection.
+5. The user chooses a background from compendium-backed options.
+6. App shows the background summary, including bonuses and social perks that
+   must remain visible later in the character sheet.
+7. App continues to ability score determination.
+8. The user chooses an available ability score method.
+9. If the user selects random generation, the app generates a visible score
+   set and lets the user assign each value across the six abilities.
+10. If the user selects point buy, the app shows the remaining budget and lets
+   the user adjust each ability within the allowed range.
+11. App continues to class and progression selection.
+12. The user chooses a class and level.
+13. The screen shows the class progression table and class features for the
    current level.
-7. The user enters experience, or changes level directly.
-8. If experience changes, level recalculates from the progression thresholds.
-9. If level changes, experience is reset to the minimum required for that
+14. The user enters experience, or changes level directly.
+15. If experience changes, level recalculates from the progression thresholds.
+16. If level changes, experience is reset to the minimum required for that
    level.
-10. The screen shows the percentage of progress toward the next level.
-11. User saves the character.
-12. App stores the record locally.
-13. App navigates to the created character sheet.
+17. The screen shows the percentage of progress toward the next level.
+18. User saves the character.
+19. App stores the record locally.
+20. App navigates to the created character sheet.
 
 ### Cancel Flow
 
@@ -106,6 +130,12 @@ local persistence succeeds.
 - A valid character can be created fully offline.
 - Required fields are clearly identified.
 - Race choices come from the compendium data set.
+- Background choices come from the compendium data set.
+- Background bonuses and social perks are visible before save.
+- The user must complete all six ability scores before save is enabled.
+- The MVP supports at least two ability score methods: random generation with
+  manual assignment and point buy with visible remaining points.
+- The selected ability score method and final assigned values are persisted.
 - Class progression and level-appropriate class features are visible during
   creation.
 - Changing experience recalculates level automatically.
@@ -120,8 +150,11 @@ local persistence succeeds.
 
 - Creation rules should be owned by application or domain boundaries, not
   widgets.
+- Ability score method logic, point budget rules, and assignment validation
+  must be owned outside widgets.
 - Persistence must align with the local Drift-backed model from `ADR-007`.
-- This flow depends on compendium-backed race and class progression data.
+- This flow depends on compendium-backed race, background, and class
+  progression data.
 - This flow becomes the basis for later edit-character behavior.
 - Related roadmap phases: Phase 1 and Phase 2 in
   `docs/project/ROADMAP.md`.
