@@ -56,8 +56,17 @@ Verified on 2026-03-23:
   SQLite database.
 - The first persisted schema is intentionally minimal and currently stores the
   fields required to render main-menu character cards.
+- The Drift schema is now at `v2` and already includes additive fields for
+  `background`, `ability scores`, `experience`, and `hit points`, ready for
+  the next builder slice.
 - A first vertical slice now supports `create -> save -> card -> open sheet`
   with a minimal character record: `name`, `race`, `class`, and `level`.
+- The create-character UI now uses a first guided draft with explicit sections
+  for `Race + name`, `Background`, `Ability scores`, and
+  `Class / level / experience`.
+- The repository save path now persists the draft's `background`,
+  `ability scores`, `experience`, and initial `hit points`, even though the
+  richer sheet mapping is still pending.
 - `test/widget_test.dart` covers the offline path into the main menu.
 
 This means the repository has moved beyond the single-screen bootstrap and now

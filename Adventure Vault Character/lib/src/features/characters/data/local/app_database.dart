@@ -10,9 +10,42 @@ class Characters extends Table {
 
   TextColumn get raceName => text().named('race_name')();
 
+  TextColumn get backgroundId => text().named('background_id').nullable()();
+
+  TextColumn get backgroundName => text().named('background_name').nullable()();
+
+  TextColumn get backgroundSummary => text().named('background_summary').nullable()();
+
+  TextColumn get abilityScoreMethod =>
+      text().named('ability_score_method').nullable()();
+
+  TextColumn get abilityScoreProvenance =>
+      text().named('ability_score_provenance').nullable()();
+
+  IntColumn get strength => integer().nullable()();
+
+  IntColumn get dexterity => integer().nullable()();
+
+  IntColumn get constitution => integer().nullable()();
+
+  IntColumn get intelligence => integer().nullable()();
+
+  IntColumn get wisdom => integer().nullable()();
+
+  IntColumn get charisma => integer().nullable()();
+
   TextColumn get className => text().named('class_name')();
 
   IntColumn get level => integer()();
+
+  IntColumn get experience => integer().nullable()();
+
+  IntColumn get currentHitPoints => integer().named('current_hit_points').nullable()();
+
+  IntColumn get maximumHitPoints => integer().named('maximum_hit_points').nullable()();
+
+  IntColumn get temporaryHitPoints =>
+      integer().named('temporary_hit_points').nullable()();
 
   TextColumn get portraitAssetPath => text().named('portrait_asset_path').nullable()();
 
@@ -38,5 +71,58 @@ class AppDatabase extends _$AppDatabase {
       );
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (migrator, from, to) async {
+          if (from < 2) {
+            await customStatement(
+              'ALTER TABLE characters ADD COLUMN background_id TEXT NULL',
+            );
+            await customStatement(
+              'ALTER TABLE characters ADD COLUMN background_name TEXT NULL',
+            );
+            await customStatement(
+              'ALTER TABLE characters ADD COLUMN background_summary TEXT NULL',
+            );
+            await customStatement(
+              'ALTER TABLE characters ADD COLUMN ability_score_method TEXT NULL',
+            );
+            await customStatement(
+              'ALTER TABLE characters ADD COLUMN ability_score_provenance TEXT NULL',
+            );
+            await customStatement(
+              'ALTER TABLE characters ADD COLUMN strength INTEGER NULL',
+            );
+            await customStatement(
+              'ALTER TABLE characters ADD COLUMN dexterity INTEGER NULL',
+            );
+            await customStatement(
+              'ALTER TABLE characters ADD COLUMN constitution INTEGER NULL',
+            );
+            await customStatement(
+              'ALTER TABLE characters ADD COLUMN intelligence INTEGER NULL',
+            );
+            await customStatement(
+              'ALTER TABLE characters ADD COLUMN wisdom INTEGER NULL',
+            );
+            await customStatement(
+              'ALTER TABLE characters ADD COLUMN charisma INTEGER NULL',
+            );
+            await customStatement(
+              'ALTER TABLE characters ADD COLUMN experience INTEGER NULL',
+            );
+            await customStatement(
+              'ALTER TABLE characters ADD COLUMN current_hit_points INTEGER NULL',
+            );
+            await customStatement(
+              'ALTER TABLE characters ADD COLUMN maximum_hit_points INTEGER NULL',
+            );
+            await customStatement(
+              'ALTER TABLE characters ADD COLUMN temporary_hit_points INTEGER NULL',
+            );
+          }
+        },
+      );
 }

@@ -32,6 +32,8 @@ void main() {
     WidgetTester tester,
   ) async {
     final repository = InMemoryCharacterRepository.empty();
+    await tester.binding.setSurfaceSize(const Size(1200, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
       AdventureVaultApp(
@@ -48,11 +50,15 @@ void main() {
     await tester.tap(find.text('Crear personaje nuevo'));
     await tester.pumpAndSettle();
 
+    expect(find.text('Background'), findsWidgets);
+    expect(find.text('Ability Scores'), findsOneWidget);
+
     await tester.enterText(
       find.byType(TextFormField).first,
       'Aelar',
     );
-    await tester.tap(find.text('Guardar personaje'));
+    final saveButton = find.widgetWithText(FilledButton, 'Guardar draft');
+    await tester.tap(saveButton);
     await tester.pumpAndSettle();
 
     expect(find.text('Resumen'), findsOneWidget);
