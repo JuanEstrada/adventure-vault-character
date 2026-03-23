@@ -67,6 +67,8 @@ Verified on 2026-03-23:
 - The repository save path now persists the draft's `background`,
   `ability scores`, `experience`, and initial `hit points`, even though the
   richer sheet mapping is still pending.
+- Draft save now runs through a non-widget validator that reports missing
+  sections using builder-facing names before persistence.
 - `test/widget_test.dart` covers the offline path into the main menu.
 
 This means the repository has moved beyond the single-screen bootstrap and now

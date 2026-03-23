@@ -1,5 +1,6 @@
 import 'package:adventure_vault_character/src/core/navigation/app_screen.dart';
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_draft_validator.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:flutter/foundation.dart';
@@ -54,10 +55,15 @@ class AppState {
 }
 
 class AppController extends ChangeNotifier {
-  AppController({required CharacterRepository characterRepository})
-      : _characterRepository = characterRepository;
+  AppController({
+    required CharacterRepository characterRepository,
+    CharacterDraftValidator characterDraftValidator =
+        const CharacterDraftValidator(),
+  })  : _characterRepository = characterRepository,
+        _characterDraftValidator = characterDraftValidator;
 
   final CharacterRepository _characterRepository;
+  final CharacterDraftValidator _characterDraftValidator;
 
   AppState _state = const AppState.initial();
 
@@ -109,6 +115,15 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> createCharacter(CreateCharacterInput input) async {
+    final validation = _characterDraftValidator.validate(input);
+    if (!validation.isValid) {
+      _state = _state.copyWith(
+        errorMessage: validation.toUserMessage(),
+      );
+      notifyListeners();
+      return;
+    }
+
     _state = _state.copyWith(isSavingCharacter: true, clearError: true);
     notifyListeners();
 

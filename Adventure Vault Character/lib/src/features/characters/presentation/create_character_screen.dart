@@ -128,8 +128,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Este paso ya captura Background y Ability Scores en el draft, '
-                'aunque la validacion fuerte del builder queda para el paso siguiente.',
+                'Este draft ya captura Background y Ability Scores y ahora se '
+                'valida por secciones antes de persistir.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
