@@ -24,8 +24,15 @@ between high-level architecture and the roadmap.
   the primary hub.
 - [Create Character Screen](create-character-screen.md): minimum viable
   character creation flow.
+- [Character Card](character-card.md): proposed main-menu summary card for
+  saved characters and the bridge into the character sheet.
 - [Character Sheet Screen](character-sheet-screen.md): main post-creation and
   post-selection character destination.
+- [First Character Sheet Contents](first-character-sheet-contents.md):
+  proposed exact minimum contents for the first usable character sheet.
+- [Initial Character Domain Model](initial-character-domain-model.md):
+  proposed first character aggregate, ability score model, equipment model,
+  and persistence boundaries for MVP implementation.
 - [Initial Navigation Flow](initial-navigation-flow.md): canonical route flow
   from app launch to stable destination screens.
 - [Feature Template](feature-template.md): structure for future feature specs.

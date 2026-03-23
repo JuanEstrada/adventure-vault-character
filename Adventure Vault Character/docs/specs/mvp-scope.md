@@ -26,21 +26,28 @@ Define the first implementation slice of Adventure Vault Character.
 - Character cards for existing local characters
 - Always-visible `Crear personaje nuevo` entry point
 - Guided create-character flow
+- Character builder overview with XML load action
 - Race selection from compendium data
 - Background selection from compendium data
 - Name capture
 - Ability score determination
-- Random ability score generation with manual assignment
-- Point-buy ability score assignment
+- Generated score-set assignment
+- Manual point allocation with visible remaining budget
+- Equipment selection after ability score acceptance
+- Starting money setup for equipment purchasing
+- Compendium-backed equipment item selection
+- Quantity and cost confirmation for equipment purchasing
 - Class selection
 - Level selection
 - Experience entry with automatic level recalculation
+- Final finishing-details step before save
 - Experience reset to level minimum when level changes
 - Progress percentage toward next level
 - Background bonuses and social perks visible on the character sheet
 - Final ability scores visible on the character sheet
 - Character sheet as post-create and post-selection destination
 - Local persistence for created characters
+- Character loading from XML through the builder entry point
 
 ## Out of Scope
 
@@ -67,10 +74,12 @@ Define the first implementation slice of Adventure Vault Character.
 6. User chooses `Continuar offline`.
 7. App routes to the main menu.
 8. User chooses `Crear personaje nuevo`.
-9. User completes the guided race, name, background, ability score, class,
-   level, and experience flow.
-10. App creates the character locally.
-11. App opens the character sheet, including background information relevant
+9. App shows the builder overview with creation sections and a visible XML
+   load action.
+10. User completes the guided race, name, background, ability score,
+    equipment, class, level, experience, and finishing-details flow.
+11. App creates the character locally.
+12. App opens the character sheet, including background information relevant
     to play and the final ability score block.
 
 ### Returning User Offline Flow
@@ -90,12 +99,25 @@ Define the first implementation slice of Adventure Vault Character.
 - `Continuar offline` is visible on the access screen.
 - Main menu always shows `Compendio`, `Reglas`, `Settings`, and
   `Crear personaje nuevo`.
+- The builder entry exposes a visible XML load action from its overview
+  screen.
 - Existing characters appear as cards in the main menu when present.
 - Character creation uses compendium-backed race data.
 - Character creation uses compendium-backed background data.
 - Character creation requires a complete ability score assignment.
-- The MVP ability score step supports random generation with manual
-  assignment and point buy with visible remaining points.
+- The MVP ability score step supports generated set assignment and manual
+  point allocation with visible remaining points.
+- After ability scores are accepted, the guided flow continues into equipment
+  selection before class and level completion.
+- The equipment step shows available money, item-category selection, and
+  quantity-and-cost confirmation for chosen equipment.
+- After class and progression selection, the guided flow continues into a
+  final finishing-details step before save.
+- The finalize action validates `Race + name`, `Background`,
+  `Ability scores`, and `Class / level / experience`, and blocks save if any
+  are incomplete.
+- Finalizing from finishing details persists the character and makes it appear
+  in the main-menu character cards.
 - Class progression, class features, and level thresholds are visible during
   class selection.
 - Experience and level stay synchronized.

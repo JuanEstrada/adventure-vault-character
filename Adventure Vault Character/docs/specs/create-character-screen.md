@@ -12,6 +12,10 @@ choices for race, class, and background, plus a complete ability score
 selection, then open the character sheet immediately after local persistence
 succeeds.
 
+The flow should begin from a builder overview screen that shows the major
+creation sections and exposes entry actions for loading a character from XML
+or advancing into the guided creation path.
+
 ## Goals
 
 - Give first-time users a direct path from the main menu to a usable
@@ -22,16 +26,25 @@ succeeds.
 ## In Scope
 
 - Character creation entry flow
+- Character builder overview screen
 - Guided race and name step
 - Guided background step
 - Guided ability score step
+- Guided equipment step
 - Guided class, level, and experience step
+- Guided finishing-details step
 - Compendium-backed race list
 - Compendium-backed background list
 - Ability score method selection
-- Random ability score generation and assignment
-- Point-buy ability score assignment
+- Generated score-set assignment
+- Manual point allocation across the six abilities
+- Starter equipment currency roll or equivalent starting-money setup
+- Equipment category selection
+- Item selection from compendium-backed equipment data
+- Quantity and cost confirmation for equipment purchase
 - Class progression display
+- Final narrative and appearance details capture
+- Load-character entry action from XML file
 - Validation for required data
 - Save and cancel actions
 - Navigation to the created character after success
@@ -41,7 +54,6 @@ succeeds.
 - Assisted preference-based character wizard
 - Name generator
 - Full advanced character builder logic
-- Import-driven character creation
 - Multi-step onboarding guidance beyond the essentials
 
 ## Entry Conditions
@@ -52,30 +64,42 @@ succeeds.
 
 - Save successfully and navigate to the character sheet
 - Cancel and return to the previous route
+- Load a character from XML and continue through the corresponding import path
 
 ## Primary Actions
 
+- Review the builder sections from the overview screen
+- Load a character from XML
 - Enter core character identity data
 - Select race from compendium data
 - Select background from compendium data
 - Determine ability scores
+- Select starting equipment
 - Select class
 - Set level
 - Enter experience
+- Add finishing details
 - Confirm creation
 - Cancel creation
 
 ## Required Data
 
+- Builder section summaries or labels
 - Character name
 - Selected race from the compendium
 - Selected background from the compendium
 - Ability scores for Strength, Dexterity, Constitution, Intelligence, Wisdom,
   and Charisma
 - Selected ability score generation method
+- Method-specific ability score provenance
+- Starting money summary for equipment purchasing
+- Selected equipment entries
 - Selected class
 - Level
 - Experience
+- Optional portrait reference
+- Optional appearance details
+- Optional finishing narrative details
 - Background bonuses and social perks summary
 - Class progression data
 - Experience thresholds by level
@@ -83,9 +107,13 @@ succeeds.
 
 ## UI States
 
+- Overview ready: builder sections and entry actions are visible
 - Ready: empty or partially completed form
 - Validation error: missing or invalid required fields
+- Finalize validation error: the app lists which required builder sections are
+  still incomplete
 - Rules preview: class progression and class features update as level changes
+- Finishing details ready: optional final details can be added or skipped
 - Saving: local persistence write in progress
 - Success: character created and navigation continues to character sheet
 - Save error: local persistence failure with retry path
@@ -93,30 +121,59 @@ succeeds.
 ## User Flows
 
 1. User enters the create character flow.
-2. App shows the guided step for race and name.
-3. The user chooses a race from compendium-backed options and enters a name.
-4. App continues to background selection.
-5. The user chooses a background from compendium-backed options.
-6. App shows the background summary, including bonuses and social perks that
+2. App shows the character builder overview screen with the main creation
+   sections and top actions.
+3. The overview includes a visible action to load a character from XML.
+4. If the user chooses guided creation instead of XML loading, the app opens
+   the first guided section.
+5. The user chooses a race from compendium-backed options and enters a name.
+6. App continues to background selection.
+7. The user chooses a background from compendium-backed options.
+8. App shows the background summary, including bonuses and social perks that
    must remain visible later in the character sheet.
-7. App continues to ability score determination.
-8. The user chooses an available ability score method.
-9. If the user selects random generation, the app generates a visible score
-   set and lets the user assign each value across the six abilities.
-10. If the user selects point buy, the app shows the remaining budget and lets
-   the user adjust each ability within the allowed range.
-11. App continues to class and progression selection.
-12. The user chooses a class and level.
-13. The screen shows the class progression table and class features for the
+9. App continues to ability score determination.
+10. The user chooses an available ability score method.
+11. The ability score screen shows all six abilities at once.
+12. If the user selects generated set assignment, the app presents a visible
+    score set and lets the user assign each value across the six abilities.
+13. If the user selects manual point allocation, the app shows the remaining
+    budget and lets the user adjust each ability within the allowed range.
+14. The user accepts the final ability scores.
+15. App continues to equipment selection.
+16. The equipment screen shows a summary of available starting money and the
+    current choice for major categories such as armor, weapons, gear, and
+    equipment packs.
+17. The user opens a category and sees a selectable item list.
+18. The user can review item summaries such as type, rule-relevant value, and
+    cost before selecting.
+19. If the user selects a purchasable item, the app allows quantity
+    adjustment and shows total cost against available money before confirm.
+20. App updates the chosen equipment summary after confirmation.
+21. App continues to class and progression selection.
+22. The user chooses a class and level.
+23. The screen shows the class progression table and class features for the
    current level.
-14. The user enters experience, or changes level directly.
-15. If experience changes, level recalculates from the progression thresholds.
-16. If level changes, experience is reset to the minimum required for that
+24. The user enters experience, or changes level directly.
+25. If experience changes, level recalculates from the progression thresholds.
+26. If level changes, experience is reset to the minimum required for that
    level.
-17. The screen shows the percentage of progress toward the next level.
-18. User saves the character.
-19. App stores the record locally.
-20. App navigates to the created character sheet.
+27. The screen shows the percentage of progress toward the next level.
+28. App continues to finishing details.
+29. The finishing details screen allows optional portrait, appearance, and
+    narrative-character fields before save.
+30. The user can add or skip fields such as age, height, weight, eyes, skin,
+    hair, alignment, faction, personality traits, ideals, bonds, and flaws.
+31. The finishing-details screen exposes a visible finalize action based on
+    the builder reference.
+32. When the user taps finalize, the app validates these required builder
+    sections: `Race + name`, `Background`, `Ability scores`, and
+    `Class / level / experience`.
+33. If any required section is incomplete, the app blocks finalization and
+    shows a message explaining exactly which sections are still missing.
+34. Only when the required points pass validation does the app persist the
+    character locally.
+35. The saved character appears in the main-menu character cards.
+36. App navigates to the created character sheet.
 
 ### Cancel Flow
 
@@ -133,14 +190,33 @@ succeeds.
 - Background choices come from the compendium data set.
 - Background bonuses and social perks are visible before save.
 - The user must complete all six ability scores before save is enabled.
-- The MVP supports at least two ability score methods: random generation with
-  manual assignment and point buy with visible remaining points.
+- The MVP supports at least two ability score methods: generated set
+  assignment and manual point allocation with visible remaining points.
 - The selected ability score method and final assigned values are persisted.
+- Method-specific provenance for the chosen ability score mode is preserved.
+- The builder overview screen exposes a visible XML load action.
+- After ability scores are accepted, the flow continues to equipment
+  selection before class and progression.
+- The equipment step shows available money and current selections by category.
+- Equipment choices are made from compendium-backed item data.
+- Item purchase confirmation shows quantity, total cost, and remaining or
+  available money context before confirmation.
+- The selected equipment entries are persisted with the created character.
 - Class progression and level-appropriate class features are visible during
   creation.
 - Changing experience recalculates level automatically.
 - Changing level resets experience to the minimum required for that level.
 - Progress toward the next level is visible.
+- After class, level, and experience are set, the flow continues to a final
+  finishing-details step before save.
+- Finishing details can be completed or skipped without invalidating the
+  minimum MVP character record.
+- If entered, finishing details are persisted with the created character.
+- The finalize action validates `Race + name`, `Background`,
+  `Ability scores`, and `Class / level / experience` before save.
+- If validation fails, the user sees a message that states what is missing.
+- Finalizing from the finishing-details screen persists the character and adds
+  it to the main-menu character cards.
 - Invalid submissions are blocked with visible feedback.
 - Successful creation persists locally and opens the character sheet.
 - Canceling does not create a partial persisted character unless explicitly
@@ -152,9 +228,31 @@ succeeds.
   widgets.
 - Ability score method logic, point budget rules, and assignment validation
   must be owned outside widgets.
+- Finalize validation must resolve required-point failures into user-facing
+  section names or equivalent clear missing-item messages, not raw internal
+  errors only.
 - Persistence must align with the local Drift-backed model from `ADR-007`.
+- The visual interaction for the ability score step should use
+  `local-ui-assets/character-builder/10_builder_ability_scores.jpg` as a
+  flow reference, especially the always-visible six-ability layout and the
+  split between generated-set assignment and manual allocation.
+- The builder overview screen should use
+  `local-ui-assets/character-builder/00_builder_main_menu.jpg` as a flow
+  reference, especially the visible section list plus top-level `LOAD` action
+  for XML character loading.
+- The visual interaction for the equipment step should use
+  `local-ui-assets/character-builder/11_builder_equipment.jpg`,
+  `local-ui-assets/character-builder/12_builder_equipment_chain_mail_owned.jpg`,
+  and
+  `local-ui-assets/character-builder/13_builder_equipment_chain_mail_detail.jpg`
+  as flow references for summary, category item selection, and quantity-cost
+  confirmation.
+- The visual interaction for the finishing-details step should use
+  `local-ui-assets/character-builder/14_builder_finishing_details.jpg` as a
+  flow reference for the final optional character-enrichment screen and its
+  finalize action.
 - This flow depends on compendium-backed race, background, and class
-  progression data.
+  progression data, plus compendium-backed equipment data.
 - This flow becomes the basis for later edit-character behavior.
 - Related roadmap phases: Phase 1 and Phase 2 in
   `docs/project/ROADMAP.md`.

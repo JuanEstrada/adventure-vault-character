@@ -22,6 +22,7 @@ rules, settings, existing character cards, and character creation.
 - Character cards for existing local characters
 - Persistent `Crear personaje nuevo` entry point
 - Navigation to character sheet from character cards
+- Entry into character import from XML through the builder flow
 
 ## Out of Scope
 
@@ -39,12 +40,14 @@ rules, settings, existing character cards, and character creation.
 
 - Open character sheet from a character card
 - Open create character guided flow
+- Open load-character-from-XML flow from the builder entry
 - Open future compendium, rules, or settings screens
 
 ## Primary Actions
 
 - Open an existing character
 - Create a new character
+- Start character loading from XML
 - Enter compendium
 - Enter rules
 - Enter settings
@@ -53,6 +56,9 @@ rules, settings, existing character cards, and character creation.
 
 - Local list of character summaries for card display
 - Top-level navigation actions
+
+Character cards should use summary data defined by the character-card
+specification, not full character-detail payloads.
 
 ## UI States
 
@@ -67,6 +73,10 @@ rules, settings, existing character cards, and character creation.
 - `Crear personaje nuevo` is always visible, even when characters already
   exist.
 - Tapping a character card opens that character's sheet directly.
+- Character cards show the minimum saved-character summary needed for quick
+  recognition.
+- The create-character entry leads to a builder overview that exposes a
+  visible XML load action.
 - The screen works fully offline.
 
 ## Architectural Notes
@@ -75,5 +85,7 @@ rules, settings, existing character cards, and character creation.
   home.
 - Character cards should use summary data produced by application boundaries,
   not raw persistence entities.
+- Character-card details should stay aligned with
+  `docs/specs/character-card.md`.
 - Related roadmap phases: Phase 1 and Phase 2 in
   `docs/project/ROADMAP.md`.

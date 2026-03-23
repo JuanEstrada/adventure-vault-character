@@ -30,3 +30,39 @@ Dragons terminology, character sheets, or common in-session actions.
   current architecture baseline.
 - A later iteration can decide whether the help is implemented as tooltips,
   inline callouts, or a lightweight onboarding layer.
+
+## FS-002: Backup and Restore
+
+### Summary
+
+Add a future backup and restore capability that lets the user export and
+recover local characters, compendium data, and app-level information.
+
+### Goal
+
+Protect offline-first player data and make device migration or recovery
+possible without requiring cloud sync.
+
+### Expected Behavior
+
+- The player can create a backup of local characters.
+- The player can create a backup of imported or locally stored compendium
+  content.
+- The player can create a backup of app-level information such as local
+  configuration and supported metadata.
+- The player can restore from a previously created backup package.
+- Backup and restore remain available without network access.
+
+### Candidate Backup Scope
+
+- characters and related character-owned data
+- compendium imports or indexes needed by the app
+- app settings and local configuration
+
+### Notes
+
+- This should be treated as a future recovery and migration feature, not MVP.
+- The feature should align with the offline-first architecture and local
+  source-of-truth rule.
+- A later iteration should define backup format, encryption needs, versioning,
+  partial restore behavior, and validation rules.
