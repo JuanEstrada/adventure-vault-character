@@ -42,3 +42,7 @@ between high-level architecture and the roadmap.
 - Put accepted or in-planning specs here.
 - Keep deferred ideas in [../project/FUTURE_SPECS.md](../project/FUTURE_SPECS.md).
 - Link architecture-impacting changes back to ADRs when needed.
+- When a spec references visual examples, those usually come from
+  `local-ui-assets/`.
+- Source rule files, XML examples, and other raw reference materials live in
+  `local-assets/`.

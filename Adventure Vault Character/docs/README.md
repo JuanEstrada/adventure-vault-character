@@ -58,3 +58,14 @@ real app shell under `lib/src/`. The current codebase already implements the
 startup path `bootstrap -> access -> main menu`, and the next slice is local
 persistence plus `create -> save -> card -> open sheet`. The repository
 baseline is green for `flutter analyze` and `flutter test`.
+
+## Local Reference Assets
+
+- `local-ui-assets/` contains visual reference images used by multiple specs
+  as UI direction examples.
+- `local-assets/` contains source reference material such as XML samples and
+  imported rule-content documents.
+- Specs may reference `local-ui-assets/` directly when describing layouts or
+  interaction flows.
+- `local-assets/` is project reference material and should not be assumed to
+  be part of the app runtime asset bundle.
