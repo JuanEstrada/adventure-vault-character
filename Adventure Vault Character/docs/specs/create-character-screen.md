@@ -30,8 +30,8 @@ or advancing into the guided creation path.
 - Guided race and name step
 - Guided background step
 - Guided ability score step
-- Guided equipment step
 - Guided class, level, and experience step
+- Guided equipment step
 - Guided finishing-details step
 - Compendium-backed race list
 - Compendium-backed background list
@@ -76,10 +76,10 @@ or advancing into the guided creation path.
 - Select race from compendium data
 - Select background from compendium data
 - Determine ability scores
-- Select starting equipment
 - Select class
 - Set level
 - Enter experience
+- Select starting equipment
 - Add finishing details
 - Confirm creation
 - Cancel creation
@@ -143,25 +143,25 @@ or advancing into the guided creation path.
 14. If the user selects manual point allocation, the app shows the remaining
     budget and lets the user adjust each ability within the allowed range.
 15. The user accepts the final ability scores.
-16. App continues to equipment selection.
-17. The equipment screen shows a summary of available starting money and the
+16. App continues to class and progression selection.
+17. The user chooses a class and level.
+18. The screen shows the class progression table and class features for the
+   current level.
+19. The user enters experience, or changes level directly.
+20. If experience changes, level recalculates from the progression thresholds.
+21. If level changes, experience is reset to the minimum required for that
+   level.
+22. The screen shows the percentage of progress toward the next level.
+23. App continues to equipment selection.
+24. The equipment screen shows a summary of available starting money and the
     current choice for major categories such as armor, weapons, gear, and
     equipment packs.
-18. The user opens a category and sees a selectable item list.
-19. The user can review item summaries such as type, rule-relevant value, and
+25. The user opens a category and sees a selectable item list.
+26. The user can review item summaries such as type, rule-relevant value, and
     cost before selecting.
-20. If the user selects a purchasable item, the app allows quantity
+27. If the user selects a purchasable item, the app allows quantity
     adjustment and shows total cost against available money before confirm.
-21. App updates the chosen equipment summary after confirmation.
-22. App continues to class and progression selection.
-23. The user chooses a class and level.
-24. The screen shows the class progression table and class features for the
-   current level.
-25. The user enters experience, or changes level directly.
-26. If experience changes, level recalculates from the progression thresholds.
-27. If level changes, experience is reset to the minimum required for that
-   level.
-28. The screen shows the percentage of progress toward the next level.
+28. App updates the chosen equipment summary after confirmation.
 29. App continues to finishing details.
 30. The finishing details screen allows optional portrait, appearance, and
     narrative-character fields before save.
@@ -201,8 +201,10 @@ or advancing into the guided creation path.
 - The builder overview screen exposes a visible XML load action.
 - The XML load action is treated as a documented builder entry point, not as
   a fully implemented MVP import requirement.
-- After ability scores are accepted, the flow continues to equipment
-  selection before class and progression.
+- After ability scores are accepted, the flow continues to class and
+  progression before equipment selection.
+- Class, level, and experience are established before finishing details and
+  before final save.
 - The equipment step shows available money and current selections by category.
 - Equipment choices are made from compendium-backed item data.
 - Item purchase confirmation shows quantity, total cost, and remaining or
@@ -213,10 +215,12 @@ or advancing into the guided creation path.
 - Changing experience recalculates level automatically.
 - Changing level resets experience to the minimum required for that level.
 - Progress toward the next level is visible.
-- After class, level, and experience are set, the flow continues to a final
-  finishing-details step before save.
+- After class, level, experience, and equipment are set, the flow continues
+  to a final finishing-details step before save.
 - Finishing details can be completed or skipped without invalidating the
   minimum MVP character record.
+- `Alignment` is captured in finishing details rather than in a separate
+  standalone MVP step.
 - If entered, finishing details are persisted with the created character.
 - The finalize action validates `Race + name`, `Background`,
   `Ability scores`, and `Class / level / experience` before save.

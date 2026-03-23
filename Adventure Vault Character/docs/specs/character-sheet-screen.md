@@ -33,6 +33,7 @@ replacing the core screen structure.
 - Navigation entry points for future related screens
 - Header and panel-navigation layout for the first character sheet
 - MVP population of the abilities and features-style panels
+- MVP hit-points presentation in the combat panel
 
 ## Out of Scope
 
@@ -178,7 +179,8 @@ the first character sheet.
 MVP expectation:
 
 - the panel can exist as a structural destination
-- it should use a simple placeholder state in MVP
+- it must show a real hit-points block in MVP
+- it may still use placeholder content for deeper combat features
 - it should not require full combat-system implementation
 
 ### Equipment Panel
@@ -200,6 +202,8 @@ MVP expectation:
 - Error: local read failed and user needs a retry path
 - Partial panel population: the layout exists, but some non-MVP panels expose
   only minimal or placeholder content
+- Combat partial population: hit points are real MVP content even if other
+  combat features are still placeholders
 
 ## User Flows
 
@@ -229,8 +233,8 @@ MVP expectation:
   the character sheet.
 - The six final ability scores and their modifiers are visible on the
   character sheet.
-- `Combat` and `Equipment` may appear as simple placeholders in MVP without
-  blocking approval of the first sheet.
+- The combat panel shows current, maximum, and temporary hit points in MVP.
+- `Equipment` may still appear as a simple placeholder in MVP.
 - The character sheet can be opened from the character card without layout
   mismatch or a separate temporary detail screen.
 - A missing or deleted character record is handled explicitly.

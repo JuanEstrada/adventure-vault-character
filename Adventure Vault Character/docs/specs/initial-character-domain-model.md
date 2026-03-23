@@ -64,6 +64,7 @@ The first `Character` aggregate should contain:
 - `race`
 - `background`
 - `abilityScores`
+- `hitPoints`
 - `equipment`
 - `classProgression`
 - `finishingDetails`
@@ -262,6 +263,24 @@ Rules:
 - MVP equipment data should support category summaries and later expansion
   into richer inventory state.
 
+## Hit Points Model
+
+The first hit-points model must support real MVP rendering and persistence for
+the combat panel.
+
+Minimum fields:
+
+- `current`
+- `maximum`
+- `temporary`
+
+Rules:
+
+- current hit points must persist across app reopen
+- temporary hit points must persist across app reopen
+- maximum hit points must be available for character-sheet rendering
+- deeper combat state can remain outside MVP
+
 ## Class Progression Model
 
 For MVP, class and level data can remain intentionally compact while still
@@ -345,6 +364,7 @@ The first character aggregate should enforce these invariants:
 - all six final ability scores exist
 - exactly one supported ability score method is selected
 - the ability score provenance matches the selected method
+- hit-point values are internally consistent
 - equipment money values are internally consistent
 - selected equipment entries do not exceed available money
 - a class is selected
@@ -420,6 +440,9 @@ The first character-sheet mapper should be able to derive:
 - ability score method label
 - proficiency bonus
 - progress toward next level
+- current hit points
+- maximum hit points
+- temporary hit points
 
 Equipment is intentionally not required on the first character sheet even
 though it is part of the saved aggregate.
@@ -434,6 +457,7 @@ Finishing details are also not required on the first character sheet.
 - Ability score method and provenance are preserved distinctly.
 - Background bonuses and social perks remain distinct in persistence and
   mapping.
+- Hit points can be persisted and rendered as real MVP character-sheet data.
 - Equipment purchases can be represented with money context and owned entries.
 - Optional finishing details can be stored without affecting MVP validity.
 - The model can expand later toward fuller inventory and character systems

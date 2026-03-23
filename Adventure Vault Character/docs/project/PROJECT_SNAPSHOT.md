@@ -1,7 +1,7 @@
 # Adventure Vault Character - Project Snapshot
 
 ## Last Update
-2026-03-19
+2026-03-23
 
 ## Role of This Document
 
@@ -17,9 +17,9 @@ Early implementation bootstrap
 
 ## Current Focus
 
-Closing the remaining MVP decisions around startup, access, main menu,
-guided character creation, and the first usable character sheet before
-opening real implementation in `lib/`.
+Translating the now-documented MVP flow, first character-sheet layout, and
+initial character-domain proposal into implementation boundaries for `lib/`
+and Drift.
 
 ## Repository State
 
@@ -49,7 +49,12 @@ opening real implementation in `lib/`.
 - Core strategic decisions documented and aligned to Flutter, offline-first,
   Drift, and separate player/DM products.
 - MVP-oriented specs expanded for bootstrap, access, main menu, navigation,
-  and guided character creation.
+  guided character creation, character cards, and character sheet layout.
+- The first character sheet contents are defined in proposal form.
+- The first character-domain model is defined in proposal form.
+- The builder flow now covers overview, XML-load entry point visibility,
+  ability scores, class/level/experience, equipment, finishing details, and
+  finalize validation.
 - Session continuity simplified around a single handoff file:
   `docs/project/SESSION_RESUME.md`.
 
@@ -57,18 +62,15 @@ opening real implementation in `lib/`.
 
 - Defining the first implementation-oriented workflow.
 - Defining the first package and module boundaries.
-- Translating the updated minimum-valid-character definition for the MVP into
-  domain and UI scope.
+- Translating the documented MVP flow and proposed domain model into
+  persistence and application structure.
 
 ## Pending Work
 
-- Define the first character sheet contents.
-- Define the core domain model for characters.
 - Define the initial application modules and package boundaries.
-- Define how background bonuses and social perks should be represented in
-  persistence and in the first character sheet view model.
-- Define how ability score methods, assigned values, and modifiers should be
-  represented in persistence and in the first character sheet view model.
+- Define the first Drift schema from the proposed character model.
+- Define application services and mappers for character creation, card
+  summaries, and character-sheet rendering.
 - Add the first production dependencies required by the accepted architecture.
 - Map the approved MVP flow into implementation tasks in `lib/`.
 - Add implementation documentation once production code exists.
@@ -80,22 +82,30 @@ opening real implementation in `lib/`.
 - Background contributes player-facing bonuses and social perks that must be
   visible on the character sheet.
 - Guided character creation includes a mandatory ability score step.
-- The MVP ability score step supports random generation with manual
-  assignment and point buy with visible remaining budget.
+- The MVP ability score step supports generated set assignment and manual
+  point allocation with visible remaining budget.
+- Guided creation places class/level/experience before equipment.
+- Guided creation includes equipment and finishing-details before save.
+- Finalization validates required creation sections before persistence.
+- The builder overview exposes `LOAD` for XML as a documented entry point, not
+  a required MVP import implementation.
+- The first character sheet uses a panel-based layout.
+- The first character sheet includes real hit-points content.
+- `Equipment` can remain a simple placeholder panel in the first sheet.
 
 ## Next Recommended Steps
 
-1. Define the first character sheet contents from the confirmed race, name,
-   background, ability scores, class, level, and experience set.
-2. Derive the first domain entities and module boundaries.
+1. Define the first `lib/` package and module boundaries.
+2. Define the first Drift schema from the proposed domain model.
 3. Break the approved MVP flow into implementation tasks in `lib/`.
 4. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
 ## Next Session Guardrail
 
-- Resume by defining only the first character sheet contents.
-- Do not advance into domain modeling or implementation until that screen
-  scope is explicitly confirmed in-session.
+- Resume by defining implementation boundaries, not by reopening closed MVP
+  flow decisions.
+- Use the approved flow and proposed domain-model docs as the working basis
+  unless a new product decision replaces them.
 
 ## Risks and Unknowns
 

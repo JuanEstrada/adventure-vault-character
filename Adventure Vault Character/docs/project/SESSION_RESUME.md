@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-03-19
+Last updated: 2026-03-23
 
 This is the single file to read first when resuming work on Adventure Vault
 Character. It consolidates the current product, architecture, repository
@@ -61,8 +61,11 @@ pre-MVP in implementation terms.
 Early implementation bootstrap.
 
 The project has strong documentation coverage, but `lib/` still does not
-implement the first MVP shell. The current work is still about closing the
-remaining MVP decisions before opening real feature implementation.
+implement the first MVP shell. The current work has advanced from basic MVP
+uncertainty into implementation preparation: the main product flow, the first
+character sheet structure, and the first character-domain proposal are now
+documented, and the next step is to translate them into package boundaries,
+persistence, and application tasks.
 
 ## MVP Slice In Focus
 
@@ -76,10 +79,20 @@ Canonical MVP flow:
 3. Access screen
 4. `Continuar offline`
 5. Main menu
-6. `Crear personaje nuevo`
-7. Guided character creation
-8. Local save
-9. Character sheet
+6. Character cards visible when saved characters exist
+7. `Crear personaje nuevo`
+8. Builder overview
+9. Optional visible `LOAD` entry point for XML
+10. Guided creation: `Race + name`
+11. Guided creation: `Background`
+12. Guided creation: `Ability scores`
+13. Guided creation: `Class / level / experience`
+14. Guided creation: `Equipment`
+15. Guided creation: `Finishing details`
+16. Finalize validation
+17. Local save
+18. Character card appears in main menu
+19. Character sheet
 
 Primary references:
 
@@ -98,28 +111,46 @@ Primary references:
   `Continuar offline`.
 - The main menu must expose `Compendio`, `Reglas`, `Settings`, and
   `Crear personaje nuevo`.
+- The main menu uses character cards as the saved-character entry point.
 - Character creation is guided, not a free-form advanced builder.
-- Creation currently includes race, name, background, ability scores, class,
-  level, and experience.
+- The builder begins from an overview screen and exposes a visible `LOAD`
+  entry for future XML import work.
+- Full XML import behavior is not required for MVP completion.
+- Creation currently includes race, name, background, ability scores,
+  class, level, experience, equipment, and finishing details.
 - Race, background, and class data are compendium-backed.
 - Ability scores are part of the minimum valid character record.
 - Experience and level must stay synchronized.
+- Finalization validates `Race + name`, `Background`, `Ability scores`, and
+  `Class / level / experience`.
+- Successful finalization persists locally, adds the character to the main-menu
+  card list, and opens the character sheet.
 - Background bonuses and social perks must be shown on the character sheet.
 - Final ability scores and their modifiers must be shown on the character
   sheet.
-- Successful creation persists locally and opens the character sheet.
+- Current, maximum, and temporary hit points must be shown on the character
+  sheet.
+- The first character sheet uses a panel-based layout.
+- `Abilities` and `Features / Notes` carry real MVP content.
+- `Combat` carries real hit-points content in MVP, while deeper combat
+  features may still remain placeholders.
+- `Equipment` may exist as a simple placeholder panel in MVP even though
+  equipment is captured during creation.
+- The first character card uses a library-style layout with portrait or
+  placeholder plus a short identity summary.
 
 ## Main Open Product Decisions
 
 These are the highest-value unresolved items:
 
-1. Define the exact minimum contents of the first character sheet.
-2. Define the first core domain model for characters.
-3. Define the first package and module boundaries for `lib/`.
-4. Define how background bonuses and social perks should be represented in
-   persistence and view models.
-5. Define how ability score methods and assigned values should be represented
-   in persistence and view models.
+1. Define the first package and module boundaries for `lib/`.
+2. Define the first Drift schema from the proposed domain model.
+3. Define application services and task breakdown for `create -> save -> card
+   -> open sheet`.
+4. Decide when XML import moves from documented entry point into a real
+   implementation slice.
+5. Decide when deeper `Combat` features and the `Equipment` panel move from
+   MVP-minimal states into populated panels.
 
 Resolved MVP decision:
 
@@ -130,29 +161,38 @@ Resolved MVP decision:
   review later on the character sheet.
 - Guided creation also requires a mandatory ability score step before save.
 - The MVP ability score step is based on the builder reference UI and supports
-  at least random generation with manual assignment and point buy with visible
-  remaining budget.
+  generated set assignment and manual point allocation with visible remaining
+  budget.
+- Guided creation places class, level, and experience before equipment.
+- Guided creation includes an equipment step before final save.
+- Guided creation includes a finishing-details step before final save.
+- `Alignment` is captured inside finishing details for MVP.
+- The `LOAD` XML action remains visible in the builder overview, but full XML
+  import behavior is deferred.
+- The first character sheet contents and the first domain-model proposal are
+  documented in `docs/specs/first-character-sheet-contents.md` and
+  `docs/specs/initial-character-domain-model.md`.
 
 ## Recommended Next Step
 
 Do not jump straight into UI implementation.
 
-The next logical session should use the updated minimum-valid-character
-definition:
+The next logical session should use the documented MVP flow and domain
+proposal:
 
-1. Define the first character sheet contents from race, name, background,
-   ability scores, class, level, and experience.
-2. Derive the initial domain entities from those required fields.
-3. Define how background bonuses and social perks are stored and rendered.
-4. Define how ability score methods, assigned values, and modifiers are stored
-   and rendered.
-5. Only then open implementation tasks in `lib/`.
+1. Define the first `lib/` package and module boundaries.
+2. Define the first Drift schema from the proposed character model.
+3. Define application services and mapping boundaries for character creation,
+   character-card summaries, and character-sheet view models.
+4. Break the approved MVP flow into concrete implementation tasks in `lib/`.
+5. Keep `HP` in scope as real MVP character-sheet data, not as a deferred
+   combat placeholder.
 
 Next-session starting point:
 
-- Start only with the first character sheet contents.
-- Do not advance to domain modeling or implementation until that scope is
-  explicitly confirmed in-session.
+- Start with package boundaries and persistence planning.
+- Use the accepted flow specs and proposed domain-model docs as the source of
+  truth unless a new decision replaces them.
 
 ## If You Need More Detail
 

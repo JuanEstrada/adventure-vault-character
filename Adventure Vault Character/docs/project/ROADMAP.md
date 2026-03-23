@@ -63,12 +63,17 @@ Goal: support creation and editing of a valid character record.
 ### Screens and Flows
 
 - Guided character creation flow
+- Character builder overview screen
+- Visible XML-load entry point in the builder overview
 - Race selection from compendium data
 - Background selection from compendium data
 - Name entry
 - Ability score method selection and assignment
 - Class selection
 - Level and experience synchronization
+- Equipment selection and purchase confirmation
+- Finishing-details step
+- Finalize validation before save
 - Class progression table and feature preview
 - Save or cancel flow
 - Edit existing character flow
@@ -82,6 +87,10 @@ Goal: support creation and editing of a valid character record.
   the character sheet.
 - Ability score choices are captured in a way that preserves both final values
   and the selected creation method.
+- Equipment choices are captured and persisted as part of the initial
+  character record.
+- Finishing details can enrich the character record without blocking MVP
+  validity.
 - Progression rules are explicit during class and level selection.
 
 ## Phase 3 - Character Sheet and Session Use
@@ -91,12 +100,13 @@ Goal: support the primary in-session experience once a character exists.
 ### Screens and Flows
 
 - Character sheet overview
+- Panel-based character sheet navigation
 - Background summary with bonuses and social perks
 - Ability score block with final values and modifiers
-- Derived combat values section
-- Skills and saving throws view
-- Hit points and temporary state updates
-- Notes or lightweight session annotations
+- Hit-points block in the combat panel
+- Features or notes-style panel
+- Combat panel with MVP hit-points content
+- Equipment panel placeholder in MVP
 
 ### Expected Outcomes
 
@@ -210,10 +220,9 @@ Every new screen spec added under `docs/specs/` should eventually document:
 
 ## Suggested Next Documentation Steps
 
-1. Confirm the exact persisted and displayed shape of background and ability
-   score data in the first character model and character sheet.
-2. Define the first character sheet contents in detail.
-3. Add or refine screen specs around access, main menu, and guided creation.
+1. Define the first `lib/` package and module boundaries.
+2. Define the first Drift schema from the proposed character model.
+3. Break the approved MVP flow into implementation tasks.
 4. Keep this roadmap aligned with `PROJECT_SNAPSHOT.md` and the MVP scope.
 
 ## Current Priority

@@ -179,13 +179,36 @@ These fields are already implied by the MVP creation flow and can be derived
 deterministically from level and experience without introducing broader combat
 or resource systems.
 
+### 5. Hit Points Summary
+
+The first character sheet must show a real hit-points block as part of MVP.
+
+It must show:
+
+- current hit points
+- maximum hit points
+- temporary hit points
+
+This block is required because hit points are core in-session information and
+must not be deferred behind a placeholder-only combat panel.
+
+## Hit Points Representation Rules
+
+The first persisted and mapped model must preserve:
+
+- current hit points
+- maximum hit points
+- temporary hit points
+
+The first MVP should allow the app to reopen and render hit-point state
+correctly from local persistence.
+
 ## Explicitly Excluded From The First Sheet
 
 The first character sheet should not require these fields for MVP approval:
 
 - armor class
 - initiative
-- hit points
 - saving throws
 - skills list
 - attacks
@@ -209,6 +232,9 @@ The first character sheet view model must be able to supply, at minimum:
 - experience
 - level progress summary
 - proficiency bonus
+- current hit points
+- maximum hit points
+- temporary hit points
 - background summary
 - background bonuses collection
 - background social perks collection
@@ -224,6 +250,7 @@ The first character sheet view model must be able to supply, at minimum:
 - All six final ability scores and their modifiers are visible on the sheet.
 - The chosen ability score generation method is visible on the sheet.
 - Level and experience are visible together.
+- Current, maximum, and temporary hit points are visible on the sheet.
 - The first sheet does not depend on combat, inventory, or spell systems.
 - The defined contents are sufficient to derive the first character domain
   model and initial persistence shape.

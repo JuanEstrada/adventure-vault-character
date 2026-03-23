@@ -33,16 +33,17 @@ Define the first implementation slice of Adventure Vault Character.
 - Ability score determination
 - Generated score-set assignment
 - Manual point allocation with visible remaining budget
-- Equipment selection after ability score acceptance
-- Starting money setup for equipment purchasing
-- Compendium-backed equipment item selection
-- Quantity and cost confirmation for equipment purchasing
 - Class selection
 - Level selection
 - Experience entry with automatic level recalculation
+- Equipment selection after class and progression selection
+- Starting money setup for equipment purchasing
+- Compendium-backed equipment item selection
+- Quantity and cost confirmation for equipment purchasing
 - Final finishing-details step before save
 - Experience reset to level minimum when level changes
 - Progress percentage toward next level
+- Hit points visible on the character sheet
 - Background bonuses and social perks visible on the character sheet
 - Final ability scores visible on the character sheet
 - Character sheet as post-create and post-selection destination
@@ -79,7 +80,7 @@ Define the first implementation slice of Adventure Vault Character.
 10. The XML load action exists as a documented entry point, but full import
     behavior is not required for MVP completion.
 11. User completes the guided race, name, background, ability score,
-    equipment, class, level, experience, and finishing-details flow.
+    class, level, experience, equipment, and finishing-details flow.
 12. App creates the character locally.
 13. App opens the character sheet, including background information relevant
     to play and the final ability score block.
@@ -110,8 +111,8 @@ Define the first implementation slice of Adventure Vault Character.
 - Character creation requires a complete ability score assignment.
 - The MVP ability score step supports generated set assignment and manual
   point allocation with visible remaining points.
-- After ability scores are accepted, the guided flow continues into equipment
-  selection before class and level completion.
+- After ability scores are accepted, the guided flow continues into class and
+  progression selection before equipment completion.
 - The equipment step shows available money, item-category selection, and
   quantity-and-cost confirmation for chosen equipment.
 - After class and progression selection, the guided flow continues into a
@@ -124,6 +125,7 @@ Define the first implementation slice of Adventure Vault Character.
 - Class progression, class features, and level thresholds are visible during
   class selection.
 - Experience and level stay synchronized.
+- The character sheet shows current, maximum, and temporary hit points.
 - The character sheet shows the selected background plus its bonuses and
   social perks.
 - The character sheet shows the six final ability scores.
@@ -135,11 +137,11 @@ Define the first implementation slice of Adventure Vault Character.
 - `ADR-006`: Flutter and Dart client baseline
 - `ADR-007`: Drift over SQLite local persistence
 
-## Open Questions For Next Session
+## Implementation Follow-Up
 
-- How background bonuses and social perks should be represented in the first
-  character view model and persisted model
-- How ability score methods and score-assignment provenance should be
-  represented in the first character view model and persisted model
-- What exact data fields must be visible in the first character sheet
-- How compendium, rules, and settings should behave inside the MVP shell
+- Confirm the first Drift schema from the proposed character model.
+- Confirm package and module boundaries for `lib/`.
+- Define application services and mappers for creation, card summaries, and
+  character-sheet rendering.
+- Decide when XML import moves from documented entry point to implemented
+  import flow.
