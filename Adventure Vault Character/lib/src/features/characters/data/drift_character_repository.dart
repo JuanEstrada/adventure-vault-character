@@ -1,5 +1,6 @@
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
+import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_mapper.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
@@ -9,11 +10,14 @@ import 'package:drift/drift.dart';
 class DriftCharacterRepository implements CharacterRepository {
   DriftCharacterRepository({
     required AppDatabase database,
+    required CompendiumRepository compendiumRepository,
     CharacterSheetMapper characterSheetMapper = const CharacterSheetMapper(),
   })  : _database = database,
+        _compendiumRepository = compendiumRepository,
         _characterSheetMapper = characterSheetMapper;
 
   final AppDatabase _database;
+  final CompendiumRepository _compendiumRepository;
   final CharacterSheetMapper _characterSheetMapper;
 
   @override
@@ -112,6 +116,7 @@ class DriftCharacterRepository implements CharacterRepository {
       return null;
     }
 
-    return _characterSheetMapper.map(row);
+    final catalog = await _compendiumRepository.loadCatalog();
+    return _characterSheetMapper.map(row, catalog);
   }
 }

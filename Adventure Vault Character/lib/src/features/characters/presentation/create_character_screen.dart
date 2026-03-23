@@ -1,9 +1,10 @@
-import 'package:adventure_vault_character/src/features/compendium/data/sample_compendium.dart';
+import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:flutter/material.dart';
 
 class CreateCharacterScreen extends StatefulWidget {
   const CreateCharacterScreen({
+    required this.catalog,
     required this.isSaving,
     required this.errorMessage,
     required this.onCancel,
@@ -11,6 +12,7 @@ class CreateCharacterScreen extends StatefulWidget {
     super.key,
   });
 
+  final CompendiumCatalog catalog;
   final bool isSaving;
   final String? errorMessage;
   final VoidCallback onCancel;
@@ -40,10 +42,10 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     'Charisma': 10,
   };
 
-  String _selectedRace = kSampleRaceOptions.first;
-  SampleBackgroundOption _selectedBackground = kSampleBackgroundOptions.first;
+  late String _selectedRace;
+  late CompendiumBackground _selectedBackground;
   String _selectedAbilityMethod = 'generatedSetAssignment';
-  String _selectedClass = kSampleClassOptions.first;
+  late String _selectedClass;
   int _selectedLevel = 1;
 
   static const List<String> _abilityOrder = <String>[
@@ -59,6 +61,14 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   void dispose() {
     _nameController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedRace = widget.catalog.races.first;
+    _selectedBackground = widget.catalog.backgrounds.first;
+    _selectedClass = widget.catalog.classes.first;
   }
 
   void _submit() {
@@ -163,7 +173,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                               labelText: 'Raza',
                               border: OutlineInputBorder(),
                             ),
-                            items: kSampleRaceOptions
+                            items: widget.catalog.races
                                 .map(
                                   (race) => DropdownMenuItem<String>(
                                     value: race,
@@ -189,16 +199,16 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          DropdownButtonFormField<SampleBackgroundOption>(
+                          DropdownButtonFormField<CompendiumBackground>(
                             initialValue: _selectedBackground,
                             decoration: const InputDecoration(
                               labelText: 'Background',
                               border: OutlineInputBorder(),
                             ),
-                            items: kSampleBackgroundOptions
+                            items: widget.catalog.backgrounds
                                 .map(
                                   (background) =>
-                                      DropdownMenuItem<SampleBackgroundOption>(
+                                      DropdownMenuItem<CompendiumBackground>(
                                     value: background,
                                     child: Text(background.name),
                                   ),
@@ -258,8 +268,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                           _AbilityGrid(
                             abilities: _abilityOrder,
                             options: _selectedAbilityMethod == 'generatedSetAssignment'
-                                ? kGeneratedAbilityScoreSet
-                                : kManualAbilityScoreOptions,
+                                ? widget.catalog.generatedAbilityScoreSet
+                                : widget.catalog.manualAbilityScoreOptions,
                             values: _selectedAbilityMethod == 'generatedSetAssignment'
                                 ? _generatedAssignments
                                 : _manualAssignments,
@@ -288,7 +298,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                               labelText: 'Clase',
                               border: OutlineInputBorder(),
                             ),
-                            items: kSampleClassOptions
+                            items: widget.catalog.classes
                                 .map(
                                   (characterClass) => DropdownMenuItem<String>(
                                     value: characterClass,

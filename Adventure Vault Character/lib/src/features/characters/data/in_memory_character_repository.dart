@@ -2,15 +2,23 @@ import 'package:adventure_vault_character/src/features/characters/data/character
 import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
-import 'package:adventure_vault_character/src/features/compendium/data/sample_compendium.dart';
+import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 
 class InMemoryCharacterRepository implements CharacterRepository {
-  InMemoryCharacterRepository.empty() : _summaries = <CharacterSummary>[];
+  InMemoryCharacterRepository.empty({
+    required CompendiumRepository compendiumRepository,
+  })
+      : _summaries = <CharacterSummary>[],
+        _compendiumRepository = compendiumRepository;
 
-  InMemoryCharacterRepository.seeded(List<CharacterSummary> summaries)
-      : _summaries = List<CharacterSummary>.from(summaries);
+  InMemoryCharacterRepository.seeded(
+    List<CharacterSummary> summaries, {
+    required CompendiumRepository compendiumRepository,
+  })  : _summaries = List<CharacterSummary>.from(summaries),
+        _compendiumRepository = compendiumRepository;
 
   final List<CharacterSummary> _summaries;
+  final CompendiumRepository _compendiumRepository;
 
   @override
   Future<List<CharacterSummary>> getCharacterSummaries() async {
@@ -48,7 +56,8 @@ class InMemoryCharacterRepository implements CharacterRepository {
       return null;
     }
 
-    final background = kSampleBackgroundOptions.first;
+    final catalog = await _compendiumRepository.loadCatalog();
+    final background = catalog.backgrounds.first;
 
     return CharacterSheetViewData(
       id: summary.id,
@@ -75,7 +84,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
         AbilityScoreRowViewData(label: 'Wisdom', score: 10, modifier: 0),
         AbilityScoreRowViewData(label: 'Charisma', score: 8, modifier: -1),
       ],
-      equipmentSummary: equipmentSummaryForClass(summary.className),
+      equipmentSummary: catalog.equipmentSummaryForClass(summary.className),
     );
   }
 }

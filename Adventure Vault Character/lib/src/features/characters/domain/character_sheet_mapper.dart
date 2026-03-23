@@ -1,12 +1,12 @@
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
-import 'package:adventure_vault_character/src/features/compendium/data/sample_compendium.dart';
+import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 
 class CharacterSheetMapper {
   const CharacterSheetMapper();
 
-  CharacterSheetViewData map(Character row) {
-    final background = findSampleBackgroundById(row.backgroundId);
+  CharacterSheetViewData map(Character row, CompendiumCatalog catalog) {
+    final background = catalog.backgroundById(row.backgroundId);
 
     return CharacterSheetViewData(
       id: row.id,
@@ -39,7 +39,7 @@ class CharacterSheetMapper {
         _abilityRow('Wisdom', row.wisdom),
         _abilityRow('Charisma', row.charisma),
       ],
-      equipmentSummary: equipmentSummaryForClass(row.className),
+      equipmentSummary: catalog.equipmentSummaryForClass(row.className),
     );
   }
 

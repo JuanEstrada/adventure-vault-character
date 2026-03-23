@@ -4,6 +4,8 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
+import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
+import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:flutter/foundation.dart';
 
 @immutable
@@ -13,6 +15,7 @@ class AppState {
     required this.isInitializing,
     required this.isSavingCharacter,
     required this.characterSummaries,
+    required this.compendiumCatalog,
     required this.selectedCharacterSheet,
     this.errorMessage,
   });
@@ -22,6 +25,7 @@ class AppState {
         isInitializing = true,
         isSavingCharacter = false,
         characterSummaries = const <CharacterSummary>[],
+        compendiumCatalog = null,
         selectedCharacterSheet = null,
         errorMessage = null;
 
@@ -29,6 +33,7 @@ class AppState {
   final bool isInitializing;
   final bool isSavingCharacter;
   final List<CharacterSummary> characterSummaries;
+  final CompendiumCatalog? compendiumCatalog;
   final CharacterSheetViewData? selectedCharacterSheet;
   final String? errorMessage;
 
@@ -37,6 +42,7 @@ class AppState {
     bool? isInitializing,
     bool? isSavingCharacter,
     List<CharacterSummary>? characterSummaries,
+    CompendiumCatalog? compendiumCatalog,
     CharacterSheetViewData? selectedCharacterSheet,
     String? errorMessage,
     bool clearSelectedCharacter = false,
@@ -47,6 +53,7 @@ class AppState {
       isInitializing: isInitializing ?? this.isInitializing,
       isSavingCharacter: isSavingCharacter ?? this.isSavingCharacter,
       characterSummaries: characterSummaries ?? this.characterSummaries,
+      compendiumCatalog: compendiumCatalog ?? this.compendiumCatalog,
       selectedCharacterSheet: clearSelectedCharacter
           ? null
           : selectedCharacterSheet ?? this.selectedCharacterSheet,
@@ -58,12 +65,15 @@ class AppState {
 class AppController extends ChangeNotifier {
   AppController({
     required CharacterRepository characterRepository,
+    required CompendiumRepository compendiumRepository,
     CharacterDraftValidator characterDraftValidator =
         const CharacterDraftValidator(),
   })  : _characterRepository = characterRepository,
+        _compendiumRepository = compendiumRepository,
         _characterDraftValidator = characterDraftValidator;
 
   final CharacterRepository _characterRepository;
+  final CompendiumRepository _compendiumRepository;
   final CharacterDraftValidator _characterDraftValidator;
 
   AppState _state = const AppState.initial();
@@ -75,11 +85,13 @@ class AppController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final compendiumCatalog = await _compendiumRepository.loadCatalog();
       final summaries = await _characterRepository.getCharacterSummaries();
       _state = _state.copyWith(
         screen: AppScreen.access,
         isInitializing: false,
         characterSummaries: summaries,
+        compendiumCatalog: compendiumCatalog,
         clearError: true,
       );
     } catch (_) {

@@ -1,0 +1,86 @@
+{
+  "races": [
+    "Human",
+    "Dragonborn (Black)",
+    "Elf",
+    "Dwarf",
+    "Halfling"
+  ],
+  "classes": [
+    "Fighter",
+    "Ranger",
+    "Wizard",
+    "Rogue",
+    "Cleric"
+  ],
+  "backgrounds": [
+    {
+      "id": "acolyte",
+      "name": "Acolyte",
+      "summary": "Has servido en un templo y actuas como intermediario entre lo sagrado y el mundo mortal.",
+      "bonuses": [
+        "Skills: Insight, Religion",
+        "Languages: any two of your choice"
+      ],
+      "socialPerks": [
+        "Shelter of the Faithful",
+        "Temple support"
+      ]
+    },
+    {
+      "id": "soldier",
+      "name": "Soldier",
+      "summary": "Tu entrenamiento militar te da disciplina, presencia y experiencia siguiendo cadenas de mando.",
+      "bonuses": [
+        "Chain of command",
+        "Martial routine"
+      ],
+      "socialPerks": [
+        "Barracks familiarity",
+        "Veteran rapport"
+      ]
+    },
+    {
+      "id": "wanderer",
+      "name": "Wanderer",
+      "summary": "Pasaste anos en camino, resolviendo problemas con recursos limitados y trato con desconocidos.",
+      "bonuses": [
+        "Pathfinding",
+        "Travel resilience"
+      ],
+      "socialPerks": [
+        "Road gossip",
+        "Campfire trust"
+      ]
+    }
+  ],
+  "generatedAbilityScoreSet": [15, 14, 13, 12, 10, 8],
+  "manualAbilityScoreOptions": [8, 9, 10, 11, 12, 13, 14, 15],
+  "equipmentSummariesByClass": {
+    "Fighter": {
+      "statusLabel": "MVP minimal",
+      "description": "La hoja ya reserva un espacio para el loadout del personaje, con foco futuro en armas, armadura y gear.",
+      "highlightItems": [
+        "Weapon loadout pending",
+        "Armor summary pending",
+        "Gear list pending"
+      ]
+    },
+    "Wizard": {
+      "statusLabel": "MVP minimal",
+      "description": "El detalle de implementos arcanos y gear inicial sigue pendiente de mapeo completo en la hoja.",
+      "highlightItems": [
+        "Arcane focus pending",
+        "Gear list pending"
+      ]
+    },
+    "Ranger": {
+      "statusLabel": "MVP minimal",
+      "description": "El panel ya reserva espacio para armas, pack de viaje y equipo de exploracion del ranger.",
+      "highlightItems": [
+        "Travel gear pending",
+        "Weapon loadout pending"
+      ]
+    }
+  }
+}

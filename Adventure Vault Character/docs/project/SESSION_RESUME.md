@@ -69,12 +69,17 @@ Verified on 2026-03-23:
   richer sheet mapping is still pending.
 - Draft save now runs through a non-widget validator that reports missing
   sections using builder-facing names before persistence.
+- A dedicated `CompendiumRepository` boundary now sits between the app and
+  local catalog data.
+- The current app catalog loads from `assets/compendium/catalog.json`
+  instead of direct widget or mapper constants.
 - `test/widget_test.dart` covers the offline path into the main menu.
 
 This means the repository has moved beyond the single-screen bootstrap and now
 has real local persistence scaffolding and a minimal end-to-end character
-creation slice, but the full guided builder and MVP-complete character sheet
-are still pending.
+creation slice. The next major improvement is replacing the curated local
+catalog asset with a generated or parsed source from `local-assets` while the
+guided builder keeps expanding toward MVP completeness.
 
 ## Current Phase
 
@@ -83,8 +88,9 @@ Implementation shell established.
 The project has moved from documentation-only preparation into a real app
 shell. The startup path, access screen, main menu shell, and character-summary
 repository boundary now exist in code. The next step is to build on the new
-Drift boundary by expanding the minimal saved-character slice into the approved
-guided create-character flow and a richer character sheet.
+Drift boundary and the new compendium repository by expanding the minimal
+saved-character slice into the approved guided create-character flow and a
+richer character sheet.
 
 ## MVP Slice In Focus
 
@@ -197,20 +203,25 @@ Resolved MVP decision:
 The next logical session should build on the current shell instead of
 restructuring it again:
 
-1. Expand the current minimal create flow toward the approved guided builder
+1. Replace the curated compendium catalog asset with a generated or parsed
+   source derived from `local-assets`.
+2. Expand the current minimal create flow toward the approved guided builder
    sections.
-2. Add write-side application services and mapping boundaries for character
+3. Add write-side application services and mapping boundaries for character
    creation, character-card summaries, and character-sheet view models.
-3. Extend the first Drift schema toward the approved MVP character model.
-4. Break the approved `create -> save -> card -> open sheet` flow into
+4. Extend the first Drift schema toward the approved MVP character model.
+5. Break the approved `create -> save -> card -> open sheet` flow into
    concrete implementation tasks in `lib/`.
-5. Keep `HP` in scope as real MVP character-sheet data, not as a deferred
+6. Keep `HP` in scope as real MVP character-sheet data, not as a deferred
    combat placeholder.
 
 Next-session starting point:
 
 - Start from the existing Drift schema, repository boundary, and minimal
   create/save/open flow.
+- Use `assets/compendium/catalog.json` plus the `CompendiumRepository`
+  boundary as the active source of truth for local catalog data until a
+  generator or parser replaces that asset.
 - Use the accepted flow specs and proposed domain-model docs as the source of
   truth unless a new decision replaces them.
 

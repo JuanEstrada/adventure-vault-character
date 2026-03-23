@@ -1,5 +1,8 @@
 import 'package:adventure_vault_character/src/app/adventure_vault_app.dart';
 import 'package:adventure_vault_character/src/features/characters/data/in_memory_character_repository.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
+import 'package:adventure_vault_character/src/features/compendium/data/in_memory_compendium_repository.dart';
+import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,7 +12,10 @@ void main() {
   ) async {
     await tester.pumpWidget(
       AdventureVaultApp(
-        characterRepository: InMemoryCharacterRepository.empty(),
+        characterRepository: InMemoryCharacterRepository.empty(
+          compendiumRepository: const InMemoryCompendiumRepository(_testCatalog),
+        ),
+        compendiumRepository: const InMemoryCompendiumRepository(_testCatalog),
       ),
     );
     await tester.pumpAndSettle();
@@ -31,13 +37,17 @@ void main() {
   testWidgets('create flow saves character and opens sheet', (
     WidgetTester tester,
   ) async {
-    final repository = InMemoryCharacterRepository.empty();
+    const compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
+    final repository = InMemoryCharacterRepository.empty(
+      compendiumRepository: compendiumRepository,
+    );
     await tester.binding.setSurfaceSize(const Size(1200, 1800));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
       AdventureVaultApp(
         characterRepository: repository,
+        compendiumRepository: compendiumRepository,
       ),
     );
     await tester.pumpAndSettle();
@@ -80,3 +90,50 @@ void main() {
     expect(find.textContaining('Human  •  Fighter  •  Lv 1'), findsOneWidget);
   });
 }
+
+const _testCatalog = CompendiumCatalog(
+  races: <String>[
+    'Human',
+    'Dragonborn (Black)',
+    'Elf',
+    'Dwarf',
+    'Halfling',
+  ],
+  classes: <String>[
+    'Fighter',
+    'Ranger',
+    'Wizard',
+    'Rogue',
+    'Cleric',
+  ],
+  backgrounds: <CompendiumBackground>[
+    CompendiumBackground(
+      id: 'acolyte',
+      name: 'Acolyte',
+      summary:
+          'Has servido en un templo y actuas como intermediario entre lo sagrado y el mundo mortal.',
+      bonuses: <String>[
+        'Skills: Insight, Religion',
+        'Languages: any two of your choice',
+      ],
+      socialPerks: <String>[
+        'Shelter of the Faithful',
+        'Temple support',
+      ],
+    ),
+  ],
+  generatedAbilityScoreSet: <int>[15, 14, 13, 12, 10, 8],
+  manualAbilityScoreOptions: <int>[8, 9, 10, 11, 12, 13, 14, 15],
+  equipmentSummariesByClass: <String, EquipmentSummaryViewData>{
+    'Fighter': EquipmentSummaryViewData(
+      statusLabel: 'MVP minimal',
+      description:
+          'La hoja ya reserva un espacio para el loadout del personaje, con foco futuro en armas, armadura y gear.',
+      highlightItems: <String>[
+        'Weapon loadout pending',
+        'Armor summary pending',
+        'Gear list pending',
+      ],
+    ),
+  },
+);

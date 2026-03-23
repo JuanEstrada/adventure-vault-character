@@ -9,13 +9,20 @@ import 'package:adventure_vault_character/src/features/characters/data/drift_cha
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/presentation/character_sheet_screen.dart';
 import 'package:adventure_vault_character/src/features/characters/presentation/create_character_screen.dart';
+import 'package:adventure_vault_character/src/features/compendium/data/asset_compendium_repository.dart';
+import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/main_menu/presentation/main_menu_screen.dart';
 import 'package:flutter/material.dart';
 
 class AdventureVaultApp extends StatefulWidget {
-  const AdventureVaultApp({super.key, this.characterRepository});
+  const AdventureVaultApp({
+    super.key,
+    this.characterRepository,
+    this.compendiumRepository,
+  });
 
   final CharacterRepository? characterRepository;
+  final CompendiumRepository? compendiumRepository;
 
   @override
   State<AdventureVaultApp> createState() => _AdventureVaultAppState();
@@ -28,17 +35,26 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
   @override
   void initState() {
     super.initState();
-    final repository = widget.characterRepository ?? _createDefaultRepository();
+    final compendiumRepository =
+        widget.compendiumRepository ?? AssetCompendiumRepository();
+    final repository = widget.characterRepository ??
+        _createDefaultRepository(compendiumRepository);
     _controller = AppController(
       characterRepository: repository,
+      compendiumRepository: compendiumRepository,
     );
     _controller.initialize();
   }
 
-  CharacterRepository _createDefaultRepository() {
+  CharacterRepository _createDefaultRepository(
+    CompendiumRepository compendiumRepository,
+  ) {
     final database = AppDatabase();
     _ownedDatabase = database;
-    return DriftCharacterRepository(database: database);
+    return DriftCharacterRepository(
+      database: database,
+      compendiumRepository: compendiumRepository,
+    );
   }
 
   @override
@@ -83,6 +99,7 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
                 onOpenCharacter: _controller.openCharacter,
               ),
             AppScreen.createCharacter => CreateCharacterScreen(
+                catalog: state.compendiumCatalog!,
                 isSaving: state.isSavingCharacter,
                 errorMessage: state.errorMessage,
                 onCancel: _controller.openMainMenu,

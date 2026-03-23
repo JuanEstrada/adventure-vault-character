@@ -38,7 +38,9 @@ character-sheet mapping, and a more realistic local compendium seed.
   missing builder sections with user-facing labels.
 - The character sheet now renders mapped MVP data for identity, background,
   abilities, progression, hit points, and a structured equipment summary.
-- A local sample compendium seed now draws from `local-assets` examples
+- A dedicated `CompendiumRepository` now loads a normalized local catalog
+  asset for races, classes, backgrounds, and equipment summaries.
+- The current local compendium catalog draws from `local-assets` examples
   instead of only invented placeholder values.
 - Widget coverage exists for the offline continuation path into the main menu.
 
@@ -73,8 +75,9 @@ character-sheet mapping, and a more realistic local compendium seed.
 - A first non-widget validator now protects draft persistence by section.
 - A first character-sheet view-model mapper now derives MVP sheet content from
   persisted records.
-- Sample compendium data is now centralized under `lib/src/features/compendium`
-  and seeded from local asset examples for background, race, and class.
+- Local catalog data is now centralized under `lib/src/features/compendium`
+  behind a repository boundary and seeded from local asset examples for
+  background, race, and class.
 - Session continuity simplified around a single handoff file:
   `docs/project/SESSION_RESUME.md`.
 
@@ -91,8 +94,8 @@ character-sheet mapping, and a more realistic local compendium seed.
   toward the proposed character model.
 - Define application services and mappers for full guided character creation,
   card summaries, and character-sheet rendering.
-- Decide when the local sample compendium seed becomes a parsed XML-backed
-  source instead of curated in-code data.
+- Decide when the local normalized compendium catalog becomes a generated or
+  parsed XML-backed source instead of curated asset data.
 - Map the approved MVP flow into implementation tasks in `lib/`.
 - Add implementation documentation once production code exists.
 
@@ -118,8 +121,8 @@ character-sheet mapping, and a more realistic local compendium seed.
 
 1. Expand the current minimal create/save flow toward the approved guided
    builder sections.
-2. Replace sample compendium constants with a parsed or normalized local
-   content source.
+2. Replace the curated local compendium catalog with a generated or parsed
+   source from `local-assets`.
 3. Extend the schema toward the remaining required MVP character fields.
 4. Break the approved MVP flow into implementation tasks in `lib/`.
 5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
