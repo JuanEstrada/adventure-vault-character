@@ -13,22 +13,23 @@ and delivery risks.
 
 ## Project Phase
 
-Early implementation bootstrap
+Implementation shell established
 
 ## Current Focus
 
-Translating the now-documented MVP flow, first character-sheet layout, and
-initial character-domain proposal into implementation boundaries for `lib/`
-and Drift.
+Extending the first coded app shell into Drift persistence and the
+create-character flow.
 
 ## Repository State
 
 - Flutter scaffolding is present for Android, iOS, web, Windows, Linux,
   and macOS.
-- `lib/main.dart` is still a minimal bootstrap screen.
-- The current repository baseline is green for `flutter analyze` and
-  `flutter test`.
-- The codebase is still pre-MVP from an implementation standpoint.
+- `lib/` now includes the first feature-first app shell under `lib/src/`.
+- The app implements `bootstrap -> access -> main menu` with controller-driven
+  state.
+- Character-summary loading is abstracted behind a repository and currently
+  uses an in-memory stub.
+- Widget coverage exists for the offline continuation path into the main menu.
 
 ## Active Architecture Constraints
 
@@ -55,19 +56,21 @@ and Drift.
 - The builder flow now covers overview, XML-load entry point visibility,
   ability scores, class/level/experience, equipment, finishing details, and
   finalize validation.
+- The first production app shell is implemented in `lib/src/` with package
+  boundaries for app, navigation, bootstrap, access, main menu, and character
+  summary data.
 - Session continuity simplified around a single handoff file:
   `docs/project/SESSION_RESUME.md`.
 
 ## Work In Progress
 
-- Defining the first implementation-oriented workflow.
-- Defining the first package and module boundaries.
-- Translating the documented MVP flow and proposed domain model into
-  persistence and application structure.
+- Replacing the in-memory character-summary boundary with real local
+  persistence.
+- Translating the documented MVP flow and proposed domain model into Drift
+  schema and application services.
 
 ## Pending Work
 
-- Define the initial application modules and package boundaries.
 - Define the first Drift schema from the proposed character model.
 - Define application services and mappers for character creation, card
   summaries, and character-sheet rendering.
@@ -95,15 +98,16 @@ and Drift.
 
 ## Next Recommended Steps
 
-1. Define the first `lib/` package and module boundaries.
-2. Define the first Drift schema from the proposed domain model.
+1. Define the first Drift schema from the proposed domain model.
+2. Replace the in-memory character repository with a Drift-backed
+   implementation.
 3. Break the approved MVP flow into implementation tasks in `lib/`.
 4. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
 ## Next Session Guardrail
 
-- Resume by defining implementation boundaries, not by reopening closed MVP
-  flow decisions.
+- Resume by extending the current shell into persistence and creation flow,
+  not by reopening closed MVP flow decisions.
 - Use the approved flow and proposed domain-model docs as the working basis
   unless a new product decision replaces them.
 

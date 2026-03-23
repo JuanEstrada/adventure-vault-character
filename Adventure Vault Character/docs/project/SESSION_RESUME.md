@@ -44,28 +44,30 @@ Primary references:
 
 ## Repository Reality
 
-Verified on 2026-03-19:
+Verified on 2026-03-23:
 
 - Flutter project scaffolding exists for Android, iOS, web, Windows, Linux,
   and macOS.
-- `lib/main.dart` is still a minimal bootstrap screen.
-- `test/widget_test.dart` exists and matches the current bootstrap screen.
-- `flutter analyze` passes.
-- `flutter test` passes.
+- `lib/` now contains the first feature-first application shell under
+  `lib/src/`.
+- The app now implements the startup path `bootstrap -> access -> main menu`
+  with controller-driven state and repository boundaries.
+- Character summaries currently come from an in-memory repository stub, not
+  Drift.
+- `test/widget_test.dart` covers the offline path into the main menu.
 
-This means the repository baseline is currently green, but the app is still
-pre-MVP in implementation terms.
+This means the repository has moved beyond the single-screen bootstrap, but
+character creation, persistence, and the character sheet are still pending.
 
 ## Current Phase
 
-Early implementation bootstrap.
+Implementation shell established.
 
-The project has strong documentation coverage, but `lib/` still does not
-implement the first MVP shell. The current work has advanced from basic MVP
-uncertainty into implementation preparation: the main product flow, the first
-character sheet structure, and the first character-domain proposal are now
-documented, and the next step is to translate them into package boundaries,
-persistence, and application tasks.
+The project has moved from documentation-only preparation into a real app
+shell. The startup path, access screen, main menu shell, and character-summary
+repository boundary now exist in code. The next step is to replace the
+in-memory boundary with Drift-backed persistence and then implement the
+create-character slice.
 
 ## MVP Slice In Focus
 
@@ -143,13 +145,12 @@ Primary references:
 
 These are the highest-value unresolved items:
 
-1. Define the first package and module boundaries for `lib/`.
-2. Define the first Drift schema from the proposed domain model.
-3. Define application services and task breakdown for `create -> save -> card
+1. Define the first Drift schema from the proposed domain model.
+2. Define application services and task breakdown for `create -> save -> card
    -> open sheet`.
-4. Decide when XML import moves from documented entry point into a real
+3. Decide when XML import moves from documented entry point into a real
    implementation slice.
-5. Decide when deeper `Combat` features and the `Equipment` panel move from
+4. Decide when deeper `Combat` features and the `Equipment` panel move from
    MVP-minimal states into populated panels.
 
 Resolved MVP decision:
@@ -175,22 +176,21 @@ Resolved MVP decision:
 
 ## Recommended Next Step
 
-Do not jump straight into UI implementation.
+The next logical session should build on the current shell instead of
+restructuring it again:
 
-The next logical session should use the documented MVP flow and domain
-proposal:
-
-1. Define the first `lib/` package and module boundaries.
-2. Define the first Drift schema from the proposed character model.
-3. Define application services and mapping boundaries for character creation,
+1. Add the first Drift schema from the proposed character model.
+2. Add application services and mapping boundaries for character creation,
    character-card summaries, and character-sheet view models.
-4. Break the approved MVP flow into concrete implementation tasks in `lib/`.
+3. Replace the in-memory character repository with a Drift-backed repository.
+4. Break the approved `create -> save -> card -> open sheet` flow into
+   concrete implementation tasks in `lib/`.
 5. Keep `HP` in scope as real MVP character-sheet data, not as a deferred
    combat placeholder.
 
 Next-session starting point:
 
-- Start with package boundaries and persistence planning.
+- Start with Drift schema and repository replacement.
 - Use the accepted flow specs and proposed domain-model docs as the source of
   truth unless a new decision replaces them.
 
