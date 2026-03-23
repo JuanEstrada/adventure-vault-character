@@ -89,7 +89,7 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
                 onSave: _controller.createCharacter,
               ),
             AppScreen.characterSheet => CharacterSheetScreen(
-                character: state.selectedCharacter!,
+                character: state.selectedCharacterSheet!,
                 onBack: _controller.openMainMenu,
               ),
           };

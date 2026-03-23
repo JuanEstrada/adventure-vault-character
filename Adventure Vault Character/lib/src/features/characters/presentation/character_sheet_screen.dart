@@ -1,4 +1,4 @@
-import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
 import 'package:flutter/material.dart';
 
 class CharacterSheetScreen extends StatelessWidget {
@@ -8,7 +8,7 @@ class CharacterSheetScreen extends StatelessWidget {
     super.key,
   });
 
-  final CharacterSummary character;
+  final CharacterSheetViewData character;
   final VoidCallback onBack;
 
   @override
@@ -43,7 +43,7 @@ class CharacterSheetScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${character.raceName}  •  ${character.className}  •  Nivel ${character.level}',
+                  '${character.raceName}  •  ${character.className}  •  Nivel ${character.level}  •  XP ${character.experience}',
                   style: theme.textTheme.titleMedium,
                 ),
               ],
@@ -70,7 +70,7 @@ class CharacterSheetScreen extends StatelessWidget {
                   children: [
                     Expanded(child: _IdentityPanel(character: character)),
                     const SizedBox(width: 16),
-                    const Expanded(child: _PlaceholderPanel()),
+                    Expanded(child: _DetailsPanel(character: character)),
                   ],
                 );
               }
@@ -79,7 +79,7 @@ class CharacterSheetScreen extends StatelessWidget {
                 children: [
                   _IdentityPanel(character: character),
                   const SizedBox(height: 16),
-                  const _PlaceholderPanel(),
+                  _DetailsPanel(character: character),
                 ],
               );
             },
@@ -93,7 +93,7 @@ class CharacterSheetScreen extends StatelessWidget {
 class _IdentityPanel extends StatelessWidget {
   const _IdentityPanel({required this.character});
 
-  final CharacterSummary character;
+  final CharacterSheetViewData character;
 
   @override
   Widget build(BuildContext context) {
@@ -116,6 +116,15 @@ class _IdentityPanel extends StatelessWidget {
             _FactRow(label: 'Raza', value: character.raceName),
             _FactRow(label: 'Clase', value: character.className),
             _FactRow(label: 'Nivel', value: character.level.toString()),
+            _FactRow(label: 'XP', value: character.experience.toString()),
+            _FactRow(
+              label: 'Prof.',
+              value: '+${character.proficiencyBonus}',
+            ),
+            _FactRow(
+              label: 'Progress',
+              value: '${character.levelProgressPercent}%',
+            ),
           ],
         ),
       ),
@@ -153,8 +162,10 @@ class _FactRow extends StatelessWidget {
   }
 }
 
-class _PlaceholderPanel extends StatelessWidget {
-  const _PlaceholderPanel();
+class _DetailsPanel extends StatelessWidget {
+  const _DetailsPanel({required this.character});
+
+  final CharacterSheetViewData character;
 
   @override
   Widget build(BuildContext context) {
@@ -167,18 +178,69 @@ class _PlaceholderPanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Estado MVP',
+              'Abilities',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 12),
             Text(
-              'La hoja ya abre desde una card real guardada en Drift. '
-              'Abilities, Combat, Equipment y Features / Notes todavia usan '
-              'contenido placeholder en este slice minimo.',
+              character.abilityScoreMethodLabel,
               style: theme.textTheme.bodyLarge,
             ),
+            const SizedBox(height: 12),
+            ...character.abilityRows.map(
+              (row) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    SizedBox(width: 120, child: Text(row.label)),
+                    Text('${row.score}'),
+                    const SizedBox(width: 12),
+                    Text(
+                      row.modifier >= 0
+                          ? '+${row.modifier}'
+                          : row.modifier.toString(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Features / Notes',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              character.backgroundName,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(character.backgroundSummary, style: theme.textTheme.bodyLarge),
+            const SizedBox(height: 12),
+            Text('Bonuses', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            ...character.backgroundBonuses.map((item) => Text('• $item')),
+            const SizedBox(height: 12),
+            Text('Social perks', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            ...character.backgroundSocialPerks.map((item) => Text('• $item')),
+            const SizedBox(height: 20),
+            Text(
+              'Combat',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _FactRow(label: 'Current HP', value: '${character.currentHitPoints}'),
+            _FactRow(label: 'Max HP', value: '${character.maximumHitPoints}'),
+            _FactRow(label: 'Temp HP', value: '${character.temporaryHitPoints}'),
           ],
         ),
       ),

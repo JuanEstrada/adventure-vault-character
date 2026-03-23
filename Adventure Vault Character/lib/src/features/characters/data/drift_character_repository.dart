@@ -1,13 +1,20 @@
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_mapper.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:drift/drift.dart';
 
 class DriftCharacterRepository implements CharacterRepository {
-  DriftCharacterRepository({required AppDatabase database}) : _database = database;
+  DriftCharacterRepository({
+    required AppDatabase database,
+    CharacterSheetMapper characterSheetMapper = const CharacterSheetMapper(),
+  })  : _database = database,
+        _characterSheetMapper = characterSheetMapper;
 
   final AppDatabase _database;
+  final CharacterSheetMapper _characterSheetMapper;
 
   @override
   Future<List<CharacterSummary>> getCharacterSummaries() async {
@@ -93,5 +100,18 @@ class DriftCharacterRepository implements CharacterRepository {
       level: row.level,
       portraitAssetPath: row.portraitAssetPath,
     );
+  }
+
+  @override
+  Future<CharacterSheetViewData?> getCharacterSheetById(String id) async {
+    final row = await (_database.select(
+      _database.characters,
+    )..where((table) => table.id.equals(id))).getSingleOrNull();
+
+    if (row == null) {
+      return null;
+    }
+
+    return _characterSheetMapper.map(row);
   }
 }

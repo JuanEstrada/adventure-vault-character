@@ -1,0 +1,55 @@
+import 'package:flutter/foundation.dart';
+
+@immutable
+class CharacterSheetViewData {
+  const CharacterSheetViewData({
+    required this.id,
+    required this.name,
+    required this.raceName,
+    required this.className,
+    required this.level,
+    required this.experience,
+    required this.proficiencyBonus,
+    required this.levelProgressPercent,
+    required this.currentHitPoints,
+    required this.maximumHitPoints,
+    required this.temporaryHitPoints,
+    required this.backgroundName,
+    required this.backgroundSummary,
+    required this.backgroundBonuses,
+    required this.backgroundSocialPerks,
+    required this.abilityScoreMethodLabel,
+    required this.abilityRows,
+  });
+
+  final String id;
+  final String name;
+  final String raceName;
+  final String className;
+  final int level;
+  final int experience;
+  final int proficiencyBonus;
+  final int levelProgressPercent;
+  final int currentHitPoints;
+  final int maximumHitPoints;
+  final int temporaryHitPoints;
+  final String backgroundName;
+  final String backgroundSummary;
+  final List<String> backgroundBonuses;
+  final List<String> backgroundSocialPerks;
+  final String abilityScoreMethodLabel;
+  final List<AbilityScoreRowViewData> abilityRows;
+}
+
+@immutable
+class AbilityScoreRowViewData {
+  const AbilityScoreRowViewData({
+    required this.label,
+    required this.score,
+    required this.modifier,
+  });
+
+  final String label;
+  final int score;
+  final int modifier;
+}

@@ -1,6 +1,7 @@
 import 'package:adventure_vault_character/src/core/navigation/app_screen.dart';
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_draft_validator.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:flutter/foundation.dart';
@@ -12,7 +13,7 @@ class AppState {
     required this.isInitializing,
     required this.isSavingCharacter,
     required this.characterSummaries,
-    required this.selectedCharacter,
+    required this.selectedCharacterSheet,
     this.errorMessage,
   });
 
@@ -21,14 +22,14 @@ class AppState {
         isInitializing = true,
         isSavingCharacter = false,
         characterSummaries = const <CharacterSummary>[],
-        selectedCharacter = null,
+        selectedCharacterSheet = null,
         errorMessage = null;
 
   final AppScreen screen;
   final bool isInitializing;
   final bool isSavingCharacter;
   final List<CharacterSummary> characterSummaries;
-  final CharacterSummary? selectedCharacter;
+  final CharacterSheetViewData? selectedCharacterSheet;
   final String? errorMessage;
 
   AppState copyWith({
@@ -36,7 +37,7 @@ class AppState {
     bool? isInitializing,
     bool? isSavingCharacter,
     List<CharacterSummary>? characterSummaries,
-    CharacterSummary? selectedCharacter,
+    CharacterSheetViewData? selectedCharacterSheet,
     String? errorMessage,
     bool clearSelectedCharacter = false,
     bool clearError = false,
@@ -46,9 +47,9 @@ class AppState {
       isInitializing: isInitializing ?? this.isInitializing,
       isSavingCharacter: isSavingCharacter ?? this.isSavingCharacter,
       characterSummaries: characterSummaries ?? this.characterSummaries,
-      selectedCharacter: clearSelectedCharacter
+      selectedCharacterSheet: clearSelectedCharacter
           ? null
-          : selectedCharacter ?? this.selectedCharacter,
+          : selectedCharacterSheet ?? this.selectedCharacterSheet,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     );
   }
@@ -130,12 +131,13 @@ class AppController extends ChangeNotifier {
     try {
       final created = await _characterRepository.createCharacter(input);
       final summaries = await _characterRepository.getCharacterSummaries();
+      final sheet = await _characterRepository.getCharacterSheetById(created.id);
 
       _state = _state.copyWith(
         screen: AppScreen.characterSheet,
         isSavingCharacter: false,
         characterSummaries: summaries,
-        selectedCharacter: created,
+        selectedCharacterSheet: sheet,
         clearError: true,
       );
     } catch (_) {
@@ -150,7 +152,7 @@ class AppController extends ChangeNotifier {
 
   Future<void> openCharacter(String characterId) async {
     try {
-      final character = await _characterRepository.getCharacterSummaryById(
+      final character = await _characterRepository.getCharacterSheetById(
         characterId,
       );
 
@@ -161,7 +163,7 @@ class AppController extends ChangeNotifier {
       } else {
         _state = _state.copyWith(
           screen: AppScreen.characterSheet,
-          selectedCharacter: character,
+          selectedCharacterSheet: character,
           clearError: true,
         );
       }

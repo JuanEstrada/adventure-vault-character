@@ -1,4 +1,5 @@
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 
@@ -37,5 +38,43 @@ class InMemoryCharacterRepository implements CharacterRepository {
       }
     }
     return null;
+  }
+
+  @override
+  Future<CharacterSheetViewData?> getCharacterSheetById(String id) async {
+    final summary = await getCharacterSummaryById(id);
+    if (summary == null) {
+      return null;
+    }
+
+    return CharacterSheetViewData(
+      id: summary.id,
+      name: summary.name,
+      raceName: summary.raceName,
+      className: summary.className,
+      level: summary.level,
+      experience: 0,
+      proficiencyBonus: 2,
+      levelProgressPercent: 0,
+      currentHitPoints: 10,
+      maximumHitPoints: 10,
+      temporaryHitPoints: 0,
+      backgroundName: 'Scholar',
+      backgroundSummary: 'Learns and researches.',
+      backgroundBonuses: const <String>['Lore recall', 'Research discipline'],
+      backgroundSocialPerks: const <String>[
+        'Academic contacts',
+        'Library access',
+      ],
+      abilityScoreMethodLabel: 'Generated set assignment',
+      abilityRows: const <AbilityScoreRowViewData>[
+        AbilityScoreRowViewData(label: 'Strength', score: 15, modifier: 2),
+        AbilityScoreRowViewData(label: 'Dexterity', score: 14, modifier: 2),
+        AbilityScoreRowViewData(label: 'Constitution', score: 13, modifier: 1),
+        AbilityScoreRowViewData(label: 'Intelligence', score: 12, modifier: 1),
+        AbilityScoreRowViewData(label: 'Wisdom', score: 10, modifier: 0),
+        AbilityScoreRowViewData(label: 'Charisma', score: 8, modifier: -1),
+      ],
+    );
   }
 }
