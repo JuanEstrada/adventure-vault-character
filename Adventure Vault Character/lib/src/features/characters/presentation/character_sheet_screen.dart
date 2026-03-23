@@ -70,7 +70,19 @@ class CharacterSheetScreen extends StatelessWidget {
                   children: [
                     Expanded(child: _IdentityPanel(character: character)),
                     const SizedBox(width: 16),
-                    Expanded(child: _DetailsPanel(character: character)),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          _CombatPanel(character: character),
+                          const SizedBox(height: 16),
+                          _AbilitiesPanel(character: character),
+                          const SizedBox(height: 16),
+                          _FeaturesNotesPanel(character: character),
+                          const SizedBox(height: 16),
+                          const _EquipmentPanel(),
+                        ],
+                      ),
+                    ),
                   ],
                 );
               }
@@ -79,7 +91,13 @@ class CharacterSheetScreen extends StatelessWidget {
                 children: [
                   _IdentityPanel(character: character),
                   const SizedBox(height: 16),
-                  _DetailsPanel(character: character),
+                  _CombatPanel(character: character),
+                  const SizedBox(height: 16),
+                  _AbilitiesPanel(character: character),
+                  const SizedBox(height: 16),
+                  _FeaturesNotesPanel(character: character),
+                  const SizedBox(height: 16),
+                  const _EquipmentPanel(),
                 ],
               );
             },
@@ -162,8 +180,40 @@ class _FactRow extends StatelessWidget {
   }
 }
 
-class _DetailsPanel extends StatelessWidget {
-  const _DetailsPanel({required this.character});
+class _CombatPanel extends StatelessWidget {
+  const _CombatPanel({required this.character});
+
+  final CharacterSheetViewData character;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Combat',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _FactRow(label: 'Current HP', value: '${character.currentHitPoints}'),
+            _FactRow(label: 'Max HP', value: '${character.maximumHitPoints}'),
+            _FactRow(label: 'Temp HP', value: '${character.temporaryHitPoints}'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AbilitiesPanel extends StatelessWidget {
+  const _AbilitiesPanel({required this.character});
 
   final CharacterSheetViewData character;
 
@@ -184,10 +234,7 @@ class _DetailsPanel extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Text(
-              character.abilityScoreMethodLabel,
-              style: theme.textTheme.bodyLarge,
-            ),
+            Text(character.abilityScoreMethodLabel, style: theme.textTheme.bodyLarge),
             const SizedBox(height: 12),
             ...character.abilityRows.map(
               (row) => Padding(
@@ -206,7 +253,28 @@ class _DetailsPanel extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeaturesNotesPanel extends StatelessWidget {
+  const _FeaturesNotesPanel({required this.character});
+
+  final CharacterSheetViewData character;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Text(
               'Features / Notes',
               style: theme.textTheme.titleLarge?.copyWith(
@@ -230,17 +298,39 @@ class _DetailsPanel extends StatelessWidget {
             Text('Social perks', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             ...character.backgroundSocialPerks.map((item) => Text('• $item')),
-            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EquipmentPanel extends StatelessWidget {
+  const _EquipmentPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Text(
-              'Combat',
+              'Equipment',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 12),
-            _FactRow(label: 'Current HP', value: '${character.currentHitPoints}'),
-            _FactRow(label: 'Max HP', value: '${character.maximumHitPoints}'),
-            _FactRow(label: 'Temp HP', value: '${character.temporaryHitPoints}'),
+            Text(
+              'Este panel sigue en estado MVP-minimo. La seleccion de equipo ya '
+              'tiene entrada en el flujo aprobado, pero su detalle todavia no se '
+              'mapea en esta hoja.',
+              style: theme.textTheme.bodyLarge,
+            ),
           ],
         ),
       ),

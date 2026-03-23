@@ -67,7 +67,9 @@ void main() {
     expect(find.textContaining('Fighter'), findsWidgets);
     expect(find.text('Generated set assignment'), findsOneWidget);
     expect(find.text('Scholar'), findsOneWidget);
+    expect(find.text('Combat'), findsWidgets);
     expect(find.text('Current HP'), findsOneWidget);
+    expect(find.text('Equipment'), findsWidgets);
     expect(find.text('Strength'), findsWidgets);
 
     await tester.tap(find.byIcon(Icons.arrow_back));
