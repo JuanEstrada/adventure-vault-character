@@ -79,7 +79,7 @@ class CharacterSheetScreen extends StatelessWidget {
                           const SizedBox(height: 16),
                           _FeaturesNotesPanel(character: character),
                           const SizedBox(height: 16),
-                          const _EquipmentPanel(),
+                          _EquipmentPanel(character: character),
                         ],
                       ),
                     ),
@@ -97,7 +97,7 @@ class CharacterSheetScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   _FeaturesNotesPanel(character: character),
                   const SizedBox(height: 16),
-                  const _EquipmentPanel(),
+                  _EquipmentPanel(character: character),
                 ],
               );
             },
@@ -306,7 +306,9 @@ class _FeaturesNotesPanel extends StatelessWidget {
 }
 
 class _EquipmentPanel extends StatelessWidget {
-  const _EquipmentPanel();
+  const _EquipmentPanel({required this.character});
+
+  final CharacterSheetViewData character;
 
   @override
   Widget build(BuildContext context) {
@@ -326,11 +328,19 @@ class _EquipmentPanel extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Este panel sigue en estado MVP-minimo. La seleccion de equipo ya '
-              'tiene entrada en el flujo aprobado, pero su detalle todavia no se '
-              'mapea en esta hoja.',
+              character.equipmentSummary.statusLabel,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              character.equipmentSummary.description,
               style: theme.textTheme.bodyLarge,
             ),
+            const SizedBox(height: 12),
+            ...character.equipmentSummary.highlightItems
+                .map((item) => Text('• $item')),
           ],
         ),
       ),

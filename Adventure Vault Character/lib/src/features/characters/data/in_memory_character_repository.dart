@@ -75,6 +75,12 @@ class InMemoryCharacterRepository implements CharacterRepository {
         AbilityScoreRowViewData(label: 'Wisdom', score: 10, modifier: 0),
         AbilityScoreRowViewData(label: 'Charisma', score: 8, modifier: -1),
       ],
+      equipmentSummary: const EquipmentSummaryViewData(
+        statusLabel: 'MVP minimal',
+        description:
+            'Equipment sigue como panel controlado mientras el flujo de seleccion y persistencia se expande.',
+        highlightItems: <String>['Equipment mapping pending'],
+      ),
     );
   }
 }

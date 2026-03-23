@@ -70,6 +70,7 @@ void main() {
     expect(find.text('Combat'), findsWidgets);
     expect(find.text('Current HP'), findsOneWidget);
     expect(find.text('Equipment'), findsWidgets);
+    expect(find.text('MVP minimal'), findsOneWidget);
     expect(find.text('Strength'), findsWidgets);
 
     await tester.tap(find.byIcon(Icons.arrow_back));

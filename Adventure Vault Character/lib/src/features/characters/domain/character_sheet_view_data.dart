@@ -20,6 +20,7 @@ class CharacterSheetViewData {
     required this.backgroundSocialPerks,
     required this.abilityScoreMethodLabel,
     required this.abilityRows,
+    required this.equipmentSummary,
   });
 
   final String id;
@@ -39,6 +40,7 @@ class CharacterSheetViewData {
   final List<String> backgroundSocialPerks;
   final String abilityScoreMethodLabel;
   final List<AbilityScoreRowViewData> abilityRows;
+  final EquipmentSummaryViewData equipmentSummary;
 }
 
 @immutable
@@ -52,4 +54,17 @@ class AbilityScoreRowViewData {
   final String label;
   final int score;
   final int modifier;
+}
+
+@immutable
+class EquipmentSummaryViewData {
+  const EquipmentSummaryViewData({
+    required this.statusLabel,
+    required this.description,
+    required this.highlightItems,
+  });
+
+  final String statusLabel;
+  final String description;
+  final List<String> highlightItems;
 }

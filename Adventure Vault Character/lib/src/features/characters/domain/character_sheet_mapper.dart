@@ -33,6 +33,7 @@ class CharacterSheetMapper {
         _abilityRow('Wisdom', row.wisdom),
         _abilityRow('Charisma', row.charisma),
       ],
+      equipmentSummary: _equipmentSummaryFor(row.className),
     );
   }
 
@@ -111,6 +112,38 @@ class CharacterSheetMapper {
           'Campfire trust',
         ],
       _ => const <String>['Sin perks sociales cargados'],
+    };
+  }
+
+  EquipmentSummaryViewData _equipmentSummaryFor(String className) {
+    return switch (className) {
+      'Fighter' => const EquipmentSummaryViewData(
+          statusLabel: 'MVP minimal',
+          description:
+              'La hoja ya reserva un espacio para el loadout del personaje, con foco futuro en armas, armadura y gear.',
+          highlightItems: <String>[
+            'Weapon loadout pending',
+            'Armor summary pending',
+            'Gear list pending',
+          ],
+        ),
+      'Wizard' => const EquipmentSummaryViewData(
+          statusLabel: 'MVP minimal',
+          description:
+              'El detalle de implementos arcanos y gear inicial sigue pendiente de mapeo completo en la hoja.',
+          highlightItems: <String>[
+            'Arcane focus pending',
+            'Gear list pending',
+          ],
+        ),
+      _ => const EquipmentSummaryViewData(
+          statusLabel: 'MVP minimal',
+          description:
+              'Equipment sigue como panel controlado mientras el flujo de seleccion y persistencia se expande.',
+          highlightItems: <String>[
+            'Equipment mapping pending',
+          ],
+        ),
     };
   }
 }
