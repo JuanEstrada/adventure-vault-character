@@ -53,7 +53,8 @@ implementation slices.
 ## Repository Status
 
 At the time of this update, the repository contains documentation, project
-planning artifacts, and generated Flutter scaffolding for Android, iOS, web,
-desktop, and tests. The codebase still needs its first real implementation
-slice, but the current repository baseline is green for `flutter analyze` and
-`flutter test`.
+planning artifacts, Flutter scaffolding for Android, iOS, web, desktop, and a
+real app shell under `lib/src/`. The current codebase already implements the
+startup path `bootstrap -> access -> main menu`, and the next slice is local
+persistence plus `create -> save -> card -> open sheet`. The repository
+baseline is green for `flutter analyze` and `flutter test`.

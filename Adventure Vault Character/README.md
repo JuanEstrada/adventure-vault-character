@@ -32,7 +32,9 @@ offline operation, synchronization readiness, and modular boundaries.
 
 ## Repository Status
 
-The repository now contains the project documentation baseline plus a generated
-Flutter project with platform scaffolding for Android, iOS, web, desktop, and
-tests. The application code is still at an early bootstrap stage and remains
-well before the first functional MVP slice.
+The repository now contains the project documentation baseline, Flutter
+platform scaffolding for Android, iOS, web, desktop, and the first production
+app shell under `lib/src/`. The current coded flow covers
+`bootstrap -> access -> main menu` with repository boundaries for character
+summaries, while character creation, Drift-backed persistence, and the
+character sheet remain the next implementation slices.

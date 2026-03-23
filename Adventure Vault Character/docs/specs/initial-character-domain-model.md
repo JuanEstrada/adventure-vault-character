@@ -465,9 +465,11 @@ Finishing details are also not required on the first character sheet.
 
 ## Next Step After Approval
 
-1. define initial `lib/` package boundaries
-2. define the first Drift schema from these persistence groups
-3. define draft-to-aggregate mapping and validation use cases
+1. translate this model into the first Drift schema from these persistence
+   groups
+2. define draft-to-aggregate mapping and validation use cases
+3. replace temporary in-memory repository boundaries with Drift-backed
+   implementations
 
 ## Related Documents
 

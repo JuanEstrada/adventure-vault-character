@@ -5,7 +5,7 @@ Last updated: 2026-03-23
 This is the single file to read first when resuming work on Adventure Vault
 Character. It consolidates the current product, architecture, repository
 state, active MVP decisions, and the exact open questions that still block the
-first real implementation slice.
+next major implementation slices.
 
 ## Resume Protocol
 
