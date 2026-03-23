@@ -42,10 +42,9 @@ character-sheet mapping, and a more realistic local compendium seed.
 - The character sheet now renders mapped MVP data for identity, background,
   abilities, progression, hit points, structured equipment data, and
   finishing details.
-- A dedicated `CompendiumRepository` now loads a normalized local catalog
-  asset for races, classes, backgrounds, and equipment summaries.
-- The current local compendium catalog draws from `local-assets` examples
-  instead of only invented placeholder values.
+- A dedicated `CompendiumRepository` now loads a parsed local XML base dataset
+  for races, classes, backgrounds, and starter equipment loadouts, with JSON
+  fallback preserved.
 - Widget coverage exists for the offline continuation path into the main menu.
 
 ## Active Architecture Constraints
@@ -121,9 +120,9 @@ character-sheet mapping, and a more realistic local compendium seed.
 
 ## Next Recommended Steps
 
-1. Replace the curated local compendium catalog with a generated or parsed
-   source from `local-assets`.
-2. Extend the schema toward the remaining required MVP character fields.
+1. Extend the schema toward the remaining required MVP character fields.
+2. Deepen the parsed compendium fidelity beyond the current XML base starter
+   dataset.
 3. Break the approved MVP flow into implementation tasks in `lib/`.
 4. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 

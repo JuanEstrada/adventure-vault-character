@@ -74,15 +74,16 @@ Verified on 2026-03-23:
   sections using builder-facing names before persistence.
 - A dedicated `CompendiumRepository` boundary now sits between the app and
   local catalog data.
-- The current app catalog loads from `assets/compendium/catalog.json`
-  instead of direct widget or mapper constants.
+- The current app catalog now loads from
+  `local-assets/srd_5_2_1_app_base.xml` through an asset parser, with
+  `assets/compendium/catalog.json` kept as fallback.
 - `test/widget_test.dart` covers the offline path into the main menu.
 
 This means the repository has moved beyond the single-screen bootstrap and now
-has real local persistence scaffolding and a minimal end-to-end character
-creation slice. The next major improvement is replacing the curated local
-catalog asset with a generated or parsed source from `local-assets` while the
-guided builder keeps expanding toward MVP completeness.
+has real local persistence scaffolding, a parsed local compendium baseline,
+and a minimal end-to-end character creation slice. The next major improvement
+is deepening the parsed compendium fidelity while the guided builder and
+sheet mapping keep expanding toward MVP completeness.
 
 ## Current Phase
 
