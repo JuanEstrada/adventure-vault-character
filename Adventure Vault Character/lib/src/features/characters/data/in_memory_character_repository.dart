@@ -2,6 +2,7 @@ import 'package:adventure_vault_character/src/features/characters/data/character
 import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
+import 'package:adventure_vault_character/src/features/compendium/data/sample_compendium.dart';
 
 class InMemoryCharacterRepository implements CharacterRepository {
   InMemoryCharacterRepository.empty() : _summaries = <CharacterSummary>[];
@@ -47,6 +48,8 @@ class InMemoryCharacterRepository implements CharacterRepository {
       return null;
     }
 
+    final background = kSampleBackgroundOptions.first;
+
     return CharacterSheetViewData(
       id: summary.id,
       name: summary.name,
@@ -59,13 +62,10 @@ class InMemoryCharacterRepository implements CharacterRepository {
       currentHitPoints: 10,
       maximumHitPoints: 10,
       temporaryHitPoints: 0,
-      backgroundName: 'Scholar',
-      backgroundSummary: 'Learns and researches.',
-      backgroundBonuses: const <String>['Lore recall', 'Research discipline'],
-      backgroundSocialPerks: const <String>[
-        'Academic contacts',
-        'Library access',
-      ],
+      backgroundName: background.name,
+      backgroundSummary: background.summary,
+      backgroundBonuses: background.bonuses,
+      backgroundSocialPerks: background.socialPerks,
       abilityScoreMethodLabel: 'Generated set assignment',
       abilityRows: const <AbilityScoreRowViewData>[
         AbilityScoreRowViewData(label: 'Strength', score: 15, modifier: 2),
@@ -75,12 +75,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
         AbilityScoreRowViewData(label: 'Wisdom', score: 10, modifier: 0),
         AbilityScoreRowViewData(label: 'Charisma', score: 8, modifier: -1),
       ],
-      equipmentSummary: const EquipmentSummaryViewData(
-        statusLabel: 'MVP minimal',
-        description:
-            'Equipment sigue como panel controlado mientras el flujo de seleccion y persistencia se expande.',
-        highlightItems: <String>['Equipment mapping pending'],
-      ),
+      equipmentSummary: equipmentSummaryForClass(summary.className),
     );
   }
 }

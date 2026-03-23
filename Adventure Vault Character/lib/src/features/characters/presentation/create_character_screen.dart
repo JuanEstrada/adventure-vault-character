@@ -1,4 +1,4 @@
-import 'package:adventure_vault_character/src/features/characters/data/sample_character_options.dart';
+import 'package:adventure_vault_character/src/features/compendium/data/sample_compendium.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:flutter/material.dart';
 
