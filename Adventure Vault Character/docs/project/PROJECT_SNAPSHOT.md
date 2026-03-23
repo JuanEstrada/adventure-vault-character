@@ -17,8 +17,8 @@ Implementation shell established
 
 ## Current Focus
 
-Extending the first coded app shell into Drift persistence and the
-create-character flow.
+Extending the first coded app shell into a guided draft flow, richer
+character-sheet mapping, and a more realistic local compendium seed.
 
 ## Repository State
 
@@ -29,8 +29,17 @@ create-character flow.
   state.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- A minimal create-character flow now saves a local record and opens a first
-  character sheet from that persisted data.
+- The Drift schema is now at `v2` with additive fields for background,
+  ability scores, experience, and hit points.
+- The create-character screen now uses a first guided draft covering
+  `Race + name`, `Background`, `Ability scores`, and
+  `Class / level / experience`.
+- Draft validation now runs outside widgets before persistence and reports
+  missing builder sections with user-facing labels.
+- The character sheet now renders mapped MVP data for identity, background,
+  abilities, progression, hit points, and a structured equipment summary.
+- A local sample compendium seed now draws from `local-assets` examples
+  instead of only invented placeholder values.
 - Widget coverage exists for the offline continuation path into the main menu.
 
 ## Active Architecture Constraints
@@ -61,6 +70,11 @@ create-character flow.
 - The first production app shell is implemented in `lib/src/` with package
   boundaries for app, navigation, bootstrap, access, main menu, and character
   summary data.
+- A first non-widget validator now protects draft persistence by section.
+- A first character-sheet view-model mapper now derives MVP sheet content from
+  persisted records.
+- Sample compendium data is now centralized under `lib/src/features/compendium`
+  and seeded from local asset examples for background, race, and class.
 - Session continuity simplified around a single handoff file:
   `docs/project/SESSION_RESUME.md`.
 
@@ -68,16 +82,17 @@ create-character flow.
 
 - Extending the new Drift-backed character-summary persistence into the full
   create-character slice.
-- Translating the documented MVP flow and proposed domain model into write-side
-  schema, services, and mappers.
+- Replacing remaining placeholder sheet and builder data with more faithful
+  compendium-backed structures and richer persistence.
 
 ## Pending Work
 
 - Extend the first Drift schema from the current minimal saved-character shape
   toward the proposed character model.
 - Define application services and mappers for full guided character creation,
-  card
-  summaries, and character-sheet rendering.
+  card summaries, and character-sheet rendering.
+- Decide when the local sample compendium seed becomes a parsed XML-backed
+  source instead of curated in-code data.
 - Map the approved MVP flow into implementation tasks in `lib/`.
 - Add implementation documentation once production code exists.
 
@@ -103,9 +118,11 @@ create-character flow.
 
 1. Expand the current minimal create/save flow toward the approved guided
    builder sections.
-2. Extend the schema toward the required MVP character fields.
-3. Break the approved MVP flow into implementation tasks in `lib/`.
-4. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
+2. Replace sample compendium constants with a parsed or normalized local
+   content source.
+3. Extend the schema toward the remaining required MVP character fields.
+4. Break the approved MVP flow into implementation tasks in `lib/`.
+5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
 ## Next Session Guardrail
 
