@@ -13,6 +13,9 @@ definition into early implementation.
 | [ROADMAP.md](ROADMAP.md) | Phase-based delivery direction. |
 | [FUTURE_SPECS.md](FUTURE_SPECS.md) | Deferred and future-facing feature candidates. |
 | [AI_SESSION_GUIDE.md](AI_SESSION_GUIDE.md) | Operational guidance for future AI-assisted sessions. |
+| [SESSION_START_FILES.md](SESSION_START_FILES.md) | Quick list of files to open when resuming work. |
+| [DOCS_UPDATE_CHECKLIST.md](DOCS_UPDATE_CHECKLIST.md) | Simple checklist for deciding whether docs need updates. |
+| [SESSION_CLOSE_CHECKLIST.md](SESSION_CLOSE_CHECKLIST.md) | Closing checklist for docs, commit, and push before ending a session. |
 
 ## Recommended Reading Order
 
