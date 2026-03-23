@@ -77,6 +77,8 @@ specification, not full character-detail payloads.
   recognition.
 - The create-character entry leads to a builder overview that exposes a
   visible XML load action.
+- The XML load action may exist as a documented entry point before full XML
+  import behavior is implemented.
 - The screen works fully offline.
 
 ## Architectural Notes

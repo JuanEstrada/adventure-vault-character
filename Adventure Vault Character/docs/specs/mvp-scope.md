@@ -47,7 +47,7 @@ Define the first implementation slice of Adventure Vault Character.
 - Final ability scores visible on the character sheet
 - Character sheet as post-create and post-selection destination
 - Local persistence for created characters
-- Character loading from XML through the builder entry point
+- XML load entry point exposed from the builder overview
 
 ## Out of Scope
 
@@ -76,10 +76,12 @@ Define the first implementation slice of Adventure Vault Character.
 8. User chooses `Crear personaje nuevo`.
 9. App shows the builder overview with creation sections and a visible XML
    load action.
-10. User completes the guided race, name, background, ability score,
+10. The XML load action exists as a documented entry point, but full import
+    behavior is not required for MVP completion.
+11. User completes the guided race, name, background, ability score,
     equipment, class, level, experience, and finishing-details flow.
-11. App creates the character locally.
-12. App opens the character sheet, including background information relevant
+12. App creates the character locally.
+13. App opens the character sheet, including background information relevant
     to play and the final ability score block.
 
 ### Returning User Offline Flow
@@ -101,6 +103,7 @@ Define the first implementation slice of Adventure Vault Character.
   `Crear personaje nuevo`.
 - The builder entry exposes a visible XML load action from its overview
   screen.
+- The visible XML load action does not require full MVP XML import support.
 - Existing characters appear as cards in the main menu when present.
 - Character creation uses compendium-backed race data.
 - Character creation uses compendium-backed background data.
