@@ -29,15 +29,19 @@ character-sheet mapping, and a more realistic local compendium seed.
   state.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- The Drift schema is now at `v2` with additive fields for background,
-  ability scores, experience, and hit points.
+- The Drift schema is now at `v3` with additive fields for background,
+  ability scores, experience, starter equipment, finishing details, and hit
+  points.
 - The create-character screen now uses a first guided draft covering
   `Race + name`, `Background`, `Ability scores`, and
   `Class / level / experience`.
+- The guided draft now includes `Equipment` and `Finishing details`, with
+  starter loadout and optional narrative fields persisted locally.
 - Draft validation now runs outside widgets before persistence and reports
   missing builder sections with user-facing labels.
 - The character sheet now renders mapped MVP data for identity, background,
-  abilities, progression, hit points, and a structured equipment summary.
+  abilities, progression, hit points, structured equipment data, and
+  finishing details.
 - A dedicated `CompendiumRepository` now loads a normalized local catalog
   asset for races, classes, backgrounds, and equipment summaries.
 - The current local compendium catalog draws from `local-assets` examples
@@ -83,8 +87,6 @@ character-sheet mapping, and a more realistic local compendium seed.
 
 ## Work In Progress
 
-- Extending the new Drift-backed character-summary persistence into the full
-  create-character slice.
 - Replacing remaining placeholder sheet and builder data with more faithful
   compendium-backed structures and richer persistence.
 
@@ -119,13 +121,11 @@ character-sheet mapping, and a more realistic local compendium seed.
 
 ## Next Recommended Steps
 
-1. Expand the current minimal create/save flow toward the approved guided
-   builder sections.
-2. Replace the curated local compendium catalog with a generated or parsed
+1. Replace the curated local compendium catalog with a generated or parsed
    source from `local-assets`.
-3. Extend the schema toward the remaining required MVP character fields.
-4. Break the approved MVP flow into implementation tasks in `lib/`.
-5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
+2. Extend the schema toward the remaining required MVP character fields.
+3. Break the approved MVP flow into implementation tasks in `lib/`.
+4. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
 ## Next Session Guardrail
 

@@ -9,8 +9,8 @@ class AssetCompendiumRepository implements CompendiumRepository {
   AssetCompendiumRepository({
     AssetBundle? bundle,
     String catalogAssetPath = 'assets/compendium/catalog.json',
-  })  : _bundle = bundle ?? rootBundle,
-        _catalogAssetPath = catalogAssetPath;
+  }) : _bundle = bundle ?? rootBundle,
+       _catalogAssetPath = catalogAssetPath;
 
   final AssetBundle _bundle;
   final String _catalogAssetPath;
@@ -31,38 +31,54 @@ class AssetCompendiumRepository implements CompendiumRepository {
       races: (json['races'] as List<dynamic>).cast<String>(),
       classes: (json['classes'] as List<dynamic>).cast<String>(),
       backgrounds: (json['backgrounds'] as List<dynamic>)
-          .map(
-            (background) {
-              final map = Map<String, dynamic>.from(background as Map);
-              return CompendiumBackground(
-                id: map['id'] as String,
-                name: map['name'] as String,
-                summary: map['summary'] as String,
-                bonuses: (map['bonuses'] as List<dynamic>).cast<String>(),
-                socialPerks:
-                    (map['socialPerks'] as List<dynamic>).cast<String>(),
-              );
-            },
-          )
+          .map((background) {
+            final map = Map<String, dynamic>.from(background as Map);
+            return CompendiumBackground(
+              id: map['id'] as String,
+              name: map['name'] as String,
+              summary: map['summary'] as String,
+              bonuses: (map['bonuses'] as List<dynamic>).cast<String>(),
+              socialPerks: (map['socialPerks'] as List<dynamic>).cast<String>(),
+            );
+          })
           .toList(growable: false),
       generatedAbilityScoreSet:
           (json['generatedAbilityScoreSet'] as List<dynamic>).cast<int>(),
       manualAbilityScoreOptions:
           (json['manualAbilityScoreOptions'] as List<dynamic>).cast<int>(),
       equipmentSummariesByClass:
-          Map<String, dynamic>.from(json['equipmentSummariesByClass'] as Map).map(
-        (key, value) {
-          final map = Map<String, dynamic>.from(value as Map);
-          return MapEntry(
-            key,
-            EquipmentSummaryViewData(
-              statusLabel: map['statusLabel'] as String,
-              description: map['description'] as String,
-              highlightItems: (map['highlightItems'] as List<dynamic>).cast<String>(),
-            ),
-          );
-        },
-      ),
+          Map<String, dynamic>.from(
+            json['equipmentSummariesByClass'] as Map,
+          ).map((key, value) {
+            final map = Map<String, dynamic>.from(value as Map);
+            return MapEntry(
+              key,
+              EquipmentSummaryViewData(
+                statusLabel: map['statusLabel'] as String,
+                description: map['description'] as String,
+                highlightItems: (map['highlightItems'] as List<dynamic>)
+                    .cast<String>(),
+              ),
+            );
+          }),
+      equipmentLoadoutsByClass:
+          Map<String, dynamic>.from(
+            json['equipmentLoadoutsByClass'] as Map,
+          ).map((key, value) {
+            final entries = (value as List<dynamic>)
+                .map((entry) {
+                  final map = Map<String, dynamic>.from(entry as Map);
+                  return CompendiumEquipmentLoadout(
+                    id: map['id'] as String,
+                    label: map['label'] as String,
+                    startingMoneySummary: map['startingMoneySummary'] as String,
+                    selectedItems: (map['selectedItems'] as List<dynamic>)
+                        .cast<String>(),
+                  );
+                })
+                .toList(growable: false);
+            return MapEntry(key, entries);
+          }),
     );
 
     _cachedCatalog = catalog;

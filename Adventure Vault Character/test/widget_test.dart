@@ -13,7 +13,9 @@ void main() {
     await tester.pumpWidget(
       AdventureVaultApp(
         characterRepository: InMemoryCharacterRepository.empty(
-          compendiumRepository: const InMemoryCompendiumRepository(_testCatalog),
+          compendiumRepository: const InMemoryCompendiumRepository(
+            _testCatalog,
+          ),
         ),
         compendiumRepository: const InMemoryCompendiumRepository(_testCatalog),
       ),
@@ -41,7 +43,7 @@ void main() {
     final repository = InMemoryCharacterRepository.empty(
       compendiumRepository: compendiumRepository,
     );
-    await tester.binding.setSurfaceSize(const Size(1200, 1800));
+    await tester.binding.setSurfaceSize(const Size(1200, 2400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
@@ -62,13 +64,11 @@ void main() {
 
     expect(find.text('Background'), findsWidgets);
     expect(find.text('Ability Scores'), findsOneWidget);
+    expect(find.text('Equipment'), findsWidgets);
+    expect(find.text('Finishing details'), findsOneWidget);
 
-    await tester.enterText(
-      find.byType(TextFormField).first,
-      'Aelar',
-    );
-    final saveButton = find.widgetWithText(FilledButton, 'Guardar draft');
-    await tester.tap(saveButton);
+    await tester.enterText(find.byType(TextFormField).first, 'Aelar');
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar draft'));
     await tester.pumpAndSettle();
 
     expect(find.text('Resumen'), findsOneWidget);
@@ -80,7 +80,9 @@ void main() {
     expect(find.text('Combat'), findsWidgets);
     expect(find.text('Current HP'), findsOneWidget);
     expect(find.text('Equipment'), findsWidgets);
-    expect(find.text('MVP minimal'), findsOneWidget);
+    expect(find.text('Chain mail starter kit'), findsOneWidget);
+    expect(find.text('Starting money'), findsOneWidget);
+    expect(find.text('Alignment'), findsOneWidget);
     expect(find.text('Strength'), findsWidgets);
 
     await tester.tap(find.byIcon(Icons.arrow_back));
@@ -92,20 +94,8 @@ void main() {
 }
 
 const _testCatalog = CompendiumCatalog(
-  races: <String>[
-    'Human',
-    'Dragonborn (Black)',
-    'Elf',
-    'Dwarf',
-    'Halfling',
-  ],
-  classes: <String>[
-    'Fighter',
-    'Ranger',
-    'Wizard',
-    'Rogue',
-    'Cleric',
-  ],
+  races: <String>['Human', 'Dragonborn (Black)', 'Elf', 'Dwarf', 'Halfling'],
+  classes: <String>['Fighter', 'Ranger', 'Wizard', 'Rogue', 'Cleric'],
   backgrounds: <CompendiumBackground>[
     CompendiumBackground(
       id: 'acolyte',
@@ -116,10 +106,7 @@ const _testCatalog = CompendiumCatalog(
         'Skills: Insight, Religion',
         'Languages: any two of your choice',
       ],
-      socialPerks: <String>[
-        'Shelter of the Faithful',
-        'Temple support',
-      ],
+      socialPerks: <String>['Shelter of the Faithful', 'Temple support'],
     ),
   ],
   generatedAbilityScoreSet: <int>[15, 14, 13, 12, 10, 8],
@@ -135,5 +122,32 @@ const _testCatalog = CompendiumCatalog(
         'Gear list pending',
       ],
     ),
+  },
+  equipmentLoadoutsByClass: <String, List<CompendiumEquipmentLoadout>>{
+    'Fighter': <CompendiumEquipmentLoadout>[
+      CompendiumEquipmentLoadout(
+        id: 'fighter-chain-mail',
+        label: 'Chain mail starter kit',
+        startingMoneySummary: 'Class kit with default martial gear',
+        selectedItems: <String>[
+          'Chain mail',
+          'Shield',
+          'Longsword',
+          'Explorer pack',
+        ],
+      ),
+    ],
+    'Wizard': <CompendiumEquipmentLoadout>[
+      CompendiumEquipmentLoadout(
+        id: 'wizard-focus',
+        label: 'Arcane focus kit',
+        startingMoneySummary: 'Class kit with prepared arcane tools',
+        selectedItems: <String>[
+          'Quarterstaff',
+          'Component pouch',
+          'Scholar pack',
+        ],
+      ),
+    ],
   },
 );

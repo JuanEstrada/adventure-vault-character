@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
@@ -12,9 +14,9 @@ class DriftCharacterRepository implements CharacterRepository {
     required AppDatabase database,
     required CompendiumRepository compendiumRepository,
     CharacterSheetMapper characterSheetMapper = const CharacterSheetMapper(),
-  })  : _database = database,
-        _compendiumRepository = compendiumRepository,
-        _characterSheetMapper = characterSheetMapper;
+  }) : _database = database,
+       _compendiumRepository = compendiumRepository,
+       _characterSheetMapper = characterSheetMapper;
 
   final AppDatabase _database;
   final CompendiumRepository _compendiumRepository;
@@ -22,12 +24,12 @@ class DriftCharacterRepository implements CharacterRepository {
 
   @override
   Future<List<CharacterSummary>> getCharacterSummaries() async {
-    final rows = await (_database.select(
-      _database.characters,
-    )..orderBy([
-        (table) => OrderingTerm.desc(table.updatedAt),
-        (table) => OrderingTerm.asc(table.name),
-      ])).get();
+    final rows =
+        await (_database.select(_database.characters)..orderBy([
+              (table) => OrderingTerm.desc(table.updatedAt),
+              (table) => OrderingTerm.asc(table.name),
+            ]))
+            .get();
 
     return rows
         .map(
@@ -48,7 +50,9 @@ class DriftCharacterRepository implements CharacterRepository {
     final now = DateTime.now();
     final id = now.microsecondsSinceEpoch.toString();
 
-    await _database.into(_database.characters).insert(
+    await _database
+        .into(_database.characters)
+        .insert(
           CharactersCompanion.insert(
             id: id,
             name: input.name,
@@ -67,10 +71,19 @@ class DriftCharacterRepository implements CharacterRepository {
             className: input.className,
             level: input.level,
             experience: Value(input.experience),
+            equipmentLoadoutId: Value(input.equipmentLoadoutId),
+            equipmentLoadoutLabel: Value(input.equipmentLoadoutLabel),
+            startingMoneySummary: Value(input.startingMoneySummary),
+            selectedEquipmentItems: Value(
+              jsonEncode(input.selectedEquipmentItems),
+            ),
             currentHitPoints: Value(input.currentHitPoints),
             maximumHitPoints: Value(input.maximumHitPoints),
             temporaryHitPoints: Value(input.temporaryHitPoints),
             portraitAssetPath: Value(input.portraitAssetPath),
+            alignment: Value(input.alignment),
+            appearanceDetails: Value(input.appearanceDetails),
+            narrativeDetails: Value(input.narrativeDetails),
             createdAt: now,
             updatedAt: now,
           ),

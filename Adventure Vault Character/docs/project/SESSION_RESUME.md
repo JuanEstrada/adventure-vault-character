@@ -56,17 +56,20 @@ Verified on 2026-03-23:
   SQLite database.
 - The first persisted schema is intentionally minimal and currently stores the
   fields required to render main-menu character cards.
-- The Drift schema is now at `v2` and already includes additive fields for
-  `background`, `ability scores`, `experience`, and `hit points`, ready for
-  the next builder slice.
+- The Drift schema is now at `v3` and includes additive fields for
+  `background`, `ability scores`, `experience`, starter equipment, finishing
+  details, and `hit points`.
 - A first vertical slice now supports `create -> save -> card -> open sheet`
   with a minimal character record: `name`, `race`, `class`, and `level`.
 - The create-character UI now uses a first guided draft with explicit sections
   for `Race + name`, `Background`, `Ability scores`, and
   `Class / level / experience`.
+- The guided draft now also covers `Equipment` and `Finishing details` with
+  starter loadout selection plus optional alignment, appearance, and
+  narrative notes.
 - The repository save path now persists the draft's `background`,
-  `ability scores`, `experience`, and initial `hit points`, even though the
-  richer sheet mapping is still pending.
+  `ability scores`, `experience`, starter equipment details, finishing
+  details, and initial `hit points`.
 - Draft save now runs through a non-widget validator that reports missing
   sections using builder-facing names before persistence.
 - A dedicated `CompendiumRepository` boundary now sits between the app and
@@ -155,6 +158,8 @@ Primary references:
   sheet.
 - Current, maximum, and temporary hit points must be shown on the character
   sheet.
+- Selected starter equipment and finishing details should be shown on the
+  character sheet when present.
 - The first character sheet uses a panel-based layout.
 - `Abilities` and `Features / Notes` carry real MVP content.
 - `Combat` carries real hit-points content in MVP, while deeper combat
@@ -205,14 +210,12 @@ restructuring it again:
 
 1. Replace the curated compendium catalog asset with a generated or parsed
    source derived from `local-assets`.
-2. Expand the current minimal create flow toward the approved guided builder
-   sections.
-3. Add write-side application services and mapping boundaries for character
+2. Add write-side application services and mapping boundaries for character
    creation, character-card summaries, and character-sheet view models.
-4. Extend the first Drift schema toward the approved MVP character model.
-5. Break the approved `create -> save -> card -> open sheet` flow into
+3. Extend the first Drift schema toward the approved MVP character model.
+4. Break the approved `create -> save -> card -> open sheet` flow into
    concrete implementation tasks in `lib/`.
-6. Keep `HP` in scope as real MVP character-sheet data, not as a deferred
+5. Keep `HP` in scope as real MVP character-sheet data, not as a deferred
    combat placeholder.
 
 Next-session starting point:

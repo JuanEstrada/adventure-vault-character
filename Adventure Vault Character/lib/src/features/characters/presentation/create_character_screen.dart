@@ -25,6 +25,8 @@ class CreateCharacterScreen extends StatefulWidget {
 class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _appearanceController = TextEditingController();
+  final _narrativeController = TextEditingController();
   final Map<String, int> _generatedAssignments = <String, int>{
     'Strength': 15,
     'Dexterity': 14,
@@ -47,6 +49,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   String _selectedAbilityMethod = 'generatedSetAssignment';
   late String _selectedClass;
   int _selectedLevel = 1;
+  String _selectedAlignment = 'Neutral';
+  late CompendiumEquipmentLoadout _selectedEquipmentLoadout;
 
   static const List<String> _abilityOrder = <String>[
     'Strength',
@@ -57,9 +61,23 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     'Charisma',
   ];
 
+  static const List<String> _alignments = <String>[
+    'Lawful Good',
+    'Neutral Good',
+    'Chaotic Good',
+    'Lawful Neutral',
+    'Neutral',
+    'Chaotic Neutral',
+    'Lawful Evil',
+    'Neutral Evil',
+    'Chaotic Evil',
+  ];
+
   @override
   void dispose() {
     _nameController.dispose();
+    _appearanceController.dispose();
+    _narrativeController.dispose();
     super.dispose();
   }
 
@@ -69,6 +87,9 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     _selectedRace = widget.catalog.races.first;
     _selectedBackground = widget.catalog.backgrounds.first;
     _selectedClass = widget.catalog.classes.first;
+    _selectedEquipmentLoadout = widget.catalog
+        .equipmentLoadoutsForClass(_selectedClass)
+        .first;
   }
 
   void _submit() {
@@ -98,9 +119,16 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
         className: _selectedClass,
         level: _selectedLevel,
         experience: (_selectedLevel - 1) * 300,
+        equipmentLoadoutId: _selectedEquipmentLoadout.id,
+        equipmentLoadoutLabel: _selectedEquipmentLoadout.label,
+        startingMoneySummary: _selectedEquipmentLoadout.startingMoneySummary,
+        selectedEquipmentItems: _selectedEquipmentLoadout.selectedItems,
         currentHitPoints: 10,
         maximumHitPoints: 10,
         temporaryHitPoints: 0,
+        alignment: _selectedAlignment,
+        appearanceDetails: _appearanceController.text.trim(),
+        narrativeDetails: _narrativeController.text.trim(),
       ),
     );
   }
@@ -115,6 +143,9 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final equipmentOptions = widget.catalog.equipmentLoadoutsForClass(
+      _selectedClass,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -139,7 +170,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
               const SizedBox(height: 8),
               Text(
                 'Este draft ya captura Background y Ability Scores y ahora se '
-                'valida por secciones antes de persistir.',
+                'extiende hasta Equipment y Finishing details antes de persistir.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -209,9 +240,9 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                                 .map(
                                   (background) =>
                                       DropdownMenuItem<CompendiumBackground>(
-                                    value: background,
-                                    child: Text(background.name),
-                                  ),
+                                        value: background,
+                                        child: Text(background.name),
+                                      ),
                                 )
                                 .toList(growable: false),
                             onChanged: widget.isSaving
@@ -267,19 +298,24 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                           const SizedBox(height: 16),
                           _AbilityGrid(
                             abilities: _abilityOrder,
-                            options: _selectedAbilityMethod == 'generatedSetAssignment'
+                            options:
+                                _selectedAbilityMethod ==
+                                    'generatedSetAssignment'
                                 ? widget.catalog.generatedAbilityScoreSet
                                 : widget.catalog.manualAbilityScoreOptions,
-                            values: _selectedAbilityMethod == 'generatedSetAssignment'
+                            values:
+                                _selectedAbilityMethod ==
+                                    'generatedSetAssignment'
                                 ? _generatedAssignments
                                 : _manualAssignments,
                             enabled: !widget.isSaving,
                             onChanged: (ability, score) {
                               setState(() {
                                 final target =
-                                    _selectedAbilityMethod == 'generatedSetAssignment'
-                                        ? _generatedAssignments
-                                        : _manualAssignments;
+                                    _selectedAbilityMethod ==
+                                        'generatedSetAssignment'
+                                    ? _generatedAssignments
+                                    : _manualAssignments;
                                 target[ability] = score;
                               });
                             },
@@ -312,6 +348,9 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                                     if (value == null) return;
                                     setState(() {
                                       _selectedClass = value;
+                                      _selectedEquipmentLoadout = widget.catalog
+                                          .equipmentLoadoutsForClass(value)
+                                          .first;
                                     });
                                   },
                           ),
@@ -345,6 +384,97 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                             child: Text(
                               'Experience inicial: ${(_selectedLevel - 1) * 300}',
                               style: theme.textTheme.bodyLarge,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _SectionCard(
+                      title: 'Equipment',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Selecciona un loadout inicial basado en la clase actual.',
+                            style: theme.textTheme.bodyLarge,
+                          ),
+                          const SizedBox(height: 12),
+                          ...equipmentOptions.map(
+                            (loadout) => RadioListTile<String>(
+                              value: loadout.id,
+                              groupValue: _selectedEquipmentLoadout.id,
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(loadout.label),
+                              subtitle: Text(
+                                '${loadout.startingMoneySummary}\n${loadout.selectedItems.join(', ')}',
+                              ),
+                              onChanged: widget.isSaving
+                                  ? null
+                                  : (value) {
+                                      if (value == null) return;
+                                      setState(() {
+                                        _selectedEquipmentLoadout =
+                                            equipmentOptions.firstWhere(
+                                              (option) => option.id == value,
+                                            );
+                                      });
+                                    },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _SectionCard(
+                      title: 'Finishing details',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DropdownButtonFormField<String>(
+                            initialValue: _selectedAlignment,
+                            decoration: const InputDecoration(
+                              labelText: 'Alignment',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: _alignments
+                                .map(
+                                  (alignment) => DropdownMenuItem<String>(
+                                    value: alignment,
+                                    child: Text(alignment),
+                                  ),
+                                )
+                                .toList(growable: false),
+                            onChanged: widget.isSaving
+                                ? null
+                                : (value) {
+                                    if (value == null) return;
+                                    setState(() {
+                                      _selectedAlignment = value;
+                                    });
+                                  },
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _appearanceController,
+                            enabled: !widget.isSaving,
+                            maxLines: 2,
+                            decoration: const InputDecoration(
+                              labelText: 'Appearance details',
+                              border: OutlineInputBorder(),
+                              hintText: 'Edad, altura, rasgos visibles, etc.',
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _narrativeController,
+                            enabled: !widget.isSaving,
+                            maxLines: 3,
+                            decoration: const InputDecoration(
+                              labelText: 'Narrative details',
+                              border: OutlineInputBorder(),
+                              hintText:
+                                  'Traits, ideals, bonds, flaws o notas breves.',
                             ),
                           ),
                         ],

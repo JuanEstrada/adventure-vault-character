@@ -189,6 +189,50 @@ class $CharactersTable extends Characters
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _equipmentLoadoutIdMeta =
+      const VerificationMeta('equipmentLoadoutId');
+  @override
+  late final GeneratedColumn<String> equipmentLoadoutId =
+      GeneratedColumn<String>(
+        'equipment_loadout_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _equipmentLoadoutLabelMeta =
+      const VerificationMeta('equipmentLoadoutLabel');
+  @override
+  late final GeneratedColumn<String> equipmentLoadoutLabel =
+      GeneratedColumn<String>(
+        'equipment_loadout_label',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _startingMoneySummaryMeta =
+      const VerificationMeta('startingMoneySummary');
+  @override
+  late final GeneratedColumn<String> startingMoneySummary =
+      GeneratedColumn<String>(
+        'starting_money_summary',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _selectedEquipmentItemsMeta =
+      const VerificationMeta('selectedEquipmentItems');
+  @override
+  late final GeneratedColumn<String> selectedEquipmentItems =
+      GeneratedColumn<String>(
+        'selected_equipment_items',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _currentHitPointsMeta = const VerificationMeta(
     'currentHitPoints',
   );
@@ -233,6 +277,40 @@ class $CharactersTable extends Characters
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _alignmentMeta = const VerificationMeta(
+    'alignment',
+  );
+  @override
+  late final GeneratedColumn<String> alignment = GeneratedColumn<String>(
+    'alignment',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _appearanceDetailsMeta = const VerificationMeta(
+    'appearanceDetails',
+  );
+  @override
+  late final GeneratedColumn<String> appearanceDetails =
+      GeneratedColumn<String>(
+        'appearance_details',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _narrativeDetailsMeta = const VerificationMeta(
+    'narrativeDetails',
+  );
+  @override
+  late final GeneratedColumn<String> narrativeDetails = GeneratedColumn<String>(
+    'narrative_details',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -274,10 +352,17 @@ class $CharactersTable extends Characters
     className,
     level,
     experience,
+    equipmentLoadoutId,
+    equipmentLoadoutLabel,
+    startingMoneySummary,
+    selectedEquipmentItems,
     currentHitPoints,
     maximumHitPoints,
     temporaryHitPoints,
     portraitAssetPath,
+    alignment,
+    appearanceDetails,
+    narrativeDetails,
     createdAt,
     updatedAt,
   ];
@@ -423,6 +508,42 @@ class $CharactersTable extends Characters
         experience.isAcceptableOrUnknown(data['experience']!, _experienceMeta),
       );
     }
+    if (data.containsKey('equipment_loadout_id')) {
+      context.handle(
+        _equipmentLoadoutIdMeta,
+        equipmentLoadoutId.isAcceptableOrUnknown(
+          data['equipment_loadout_id']!,
+          _equipmentLoadoutIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('equipment_loadout_label')) {
+      context.handle(
+        _equipmentLoadoutLabelMeta,
+        equipmentLoadoutLabel.isAcceptableOrUnknown(
+          data['equipment_loadout_label']!,
+          _equipmentLoadoutLabelMeta,
+        ),
+      );
+    }
+    if (data.containsKey('starting_money_summary')) {
+      context.handle(
+        _startingMoneySummaryMeta,
+        startingMoneySummary.isAcceptableOrUnknown(
+          data['starting_money_summary']!,
+          _startingMoneySummaryMeta,
+        ),
+      );
+    }
+    if (data.containsKey('selected_equipment_items')) {
+      context.handle(
+        _selectedEquipmentItemsMeta,
+        selectedEquipmentItems.isAcceptableOrUnknown(
+          data['selected_equipment_items']!,
+          _selectedEquipmentItemsMeta,
+        ),
+      );
+    }
     if (data.containsKey('current_hit_points')) {
       context.handle(
         _currentHitPointsMeta,
@@ -456,6 +577,30 @@ class $CharactersTable extends Characters
         portraitAssetPath.isAcceptableOrUnknown(
           data['portrait_asset_path']!,
           _portraitAssetPathMeta,
+        ),
+      );
+    }
+    if (data.containsKey('alignment')) {
+      context.handle(
+        _alignmentMeta,
+        alignment.isAcceptableOrUnknown(data['alignment']!, _alignmentMeta),
+      );
+    }
+    if (data.containsKey('appearance_details')) {
+      context.handle(
+        _appearanceDetailsMeta,
+        appearanceDetails.isAcceptableOrUnknown(
+          data['appearance_details']!,
+          _appearanceDetailsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('narrative_details')) {
+      context.handle(
+        _narrativeDetailsMeta,
+        narrativeDetails.isAcceptableOrUnknown(
+          data['narrative_details']!,
+          _narrativeDetailsMeta,
         ),
       );
     }
@@ -552,6 +697,22 @@ class $CharactersTable extends Characters
         DriftSqlType.int,
         data['${effectivePrefix}experience'],
       ),
+      equipmentLoadoutId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}equipment_loadout_id'],
+      ),
+      equipmentLoadoutLabel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}equipment_loadout_label'],
+      ),
+      startingMoneySummary: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}starting_money_summary'],
+      ),
+      selectedEquipmentItems: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}selected_equipment_items'],
+      ),
       currentHitPoints: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}current_hit_points'],
@@ -567,6 +728,18 @@ class $CharactersTable extends Characters
       portraitAssetPath: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}portrait_asset_path'],
+      ),
+      alignment: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}alignment'],
+      ),
+      appearanceDetails: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}appearance_details'],
+      ),
+      narrativeDetails: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}narrative_details'],
       ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -603,10 +776,17 @@ class Character extends DataClass implements Insertable<Character> {
   final String className;
   final int level;
   final int? experience;
+  final String? equipmentLoadoutId;
+  final String? equipmentLoadoutLabel;
+  final String? startingMoneySummary;
+  final String? selectedEquipmentItems;
   final int? currentHitPoints;
   final int? maximumHitPoints;
   final int? temporaryHitPoints;
   final String? portraitAssetPath;
+  final String? alignment;
+  final String? appearanceDetails;
+  final String? narrativeDetails;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Character({
@@ -627,10 +807,17 @@ class Character extends DataClass implements Insertable<Character> {
     required this.className,
     required this.level,
     this.experience,
+    this.equipmentLoadoutId,
+    this.equipmentLoadoutLabel,
+    this.startingMoneySummary,
+    this.selectedEquipmentItems,
     this.currentHitPoints,
     this.maximumHitPoints,
     this.temporaryHitPoints,
     this.portraitAssetPath,
+    this.alignment,
+    this.appearanceDetails,
+    this.narrativeDetails,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -680,6 +867,20 @@ class Character extends DataClass implements Insertable<Character> {
     if (!nullToAbsent || experience != null) {
       map['experience'] = Variable<int>(experience);
     }
+    if (!nullToAbsent || equipmentLoadoutId != null) {
+      map['equipment_loadout_id'] = Variable<String>(equipmentLoadoutId);
+    }
+    if (!nullToAbsent || equipmentLoadoutLabel != null) {
+      map['equipment_loadout_label'] = Variable<String>(equipmentLoadoutLabel);
+    }
+    if (!nullToAbsent || startingMoneySummary != null) {
+      map['starting_money_summary'] = Variable<String>(startingMoneySummary);
+    }
+    if (!nullToAbsent || selectedEquipmentItems != null) {
+      map['selected_equipment_items'] = Variable<String>(
+        selectedEquipmentItems,
+      );
+    }
     if (!nullToAbsent || currentHitPoints != null) {
       map['current_hit_points'] = Variable<int>(currentHitPoints);
     }
@@ -691,6 +892,15 @@ class Character extends DataClass implements Insertable<Character> {
     }
     if (!nullToAbsent || portraitAssetPath != null) {
       map['portrait_asset_path'] = Variable<String>(portraitAssetPath);
+    }
+    if (!nullToAbsent || alignment != null) {
+      map['alignment'] = Variable<String>(alignment);
+    }
+    if (!nullToAbsent || appearanceDetails != null) {
+      map['appearance_details'] = Variable<String>(appearanceDetails);
+    }
+    if (!nullToAbsent || narrativeDetails != null) {
+      map['narrative_details'] = Variable<String>(narrativeDetails);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -740,6 +950,18 @@ class Character extends DataClass implements Insertable<Character> {
       experience: experience == null && nullToAbsent
           ? const Value.absent()
           : Value(experience),
+      equipmentLoadoutId: equipmentLoadoutId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(equipmentLoadoutId),
+      equipmentLoadoutLabel: equipmentLoadoutLabel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(equipmentLoadoutLabel),
+      startingMoneySummary: startingMoneySummary == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startingMoneySummary),
+      selectedEquipmentItems: selectedEquipmentItems == null && nullToAbsent
+          ? const Value.absent()
+          : Value(selectedEquipmentItems),
       currentHitPoints: currentHitPoints == null && nullToAbsent
           ? const Value.absent()
           : Value(currentHitPoints),
@@ -752,6 +974,15 @@ class Character extends DataClass implements Insertable<Character> {
       portraitAssetPath: portraitAssetPath == null && nullToAbsent
           ? const Value.absent()
           : Value(portraitAssetPath),
+      alignment: alignment == null && nullToAbsent
+          ? const Value.absent()
+          : Value(alignment),
+      appearanceDetails: appearanceDetails == null && nullToAbsent
+          ? const Value.absent()
+          : Value(appearanceDetails),
+      narrativeDetails: narrativeDetails == null && nullToAbsent
+          ? const Value.absent()
+          : Value(narrativeDetails),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -786,12 +1017,29 @@ class Character extends DataClass implements Insertable<Character> {
       className: serializer.fromJson<String>(json['className']),
       level: serializer.fromJson<int>(json['level']),
       experience: serializer.fromJson<int?>(json['experience']),
+      equipmentLoadoutId: serializer.fromJson<String?>(
+        json['equipmentLoadoutId'],
+      ),
+      equipmentLoadoutLabel: serializer.fromJson<String?>(
+        json['equipmentLoadoutLabel'],
+      ),
+      startingMoneySummary: serializer.fromJson<String?>(
+        json['startingMoneySummary'],
+      ),
+      selectedEquipmentItems: serializer.fromJson<String?>(
+        json['selectedEquipmentItems'],
+      ),
       currentHitPoints: serializer.fromJson<int?>(json['currentHitPoints']),
       maximumHitPoints: serializer.fromJson<int?>(json['maximumHitPoints']),
       temporaryHitPoints: serializer.fromJson<int?>(json['temporaryHitPoints']),
       portraitAssetPath: serializer.fromJson<String?>(
         json['portraitAssetPath'],
       ),
+      alignment: serializer.fromJson<String?>(json['alignment']),
+      appearanceDetails: serializer.fromJson<String?>(
+        json['appearanceDetails'],
+      ),
+      narrativeDetails: serializer.fromJson<String?>(json['narrativeDetails']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -819,10 +1067,21 @@ class Character extends DataClass implements Insertable<Character> {
       'className': serializer.toJson<String>(className),
       'level': serializer.toJson<int>(level),
       'experience': serializer.toJson<int?>(experience),
+      'equipmentLoadoutId': serializer.toJson<String?>(equipmentLoadoutId),
+      'equipmentLoadoutLabel': serializer.toJson<String?>(
+        equipmentLoadoutLabel,
+      ),
+      'startingMoneySummary': serializer.toJson<String?>(startingMoneySummary),
+      'selectedEquipmentItems': serializer.toJson<String?>(
+        selectedEquipmentItems,
+      ),
       'currentHitPoints': serializer.toJson<int?>(currentHitPoints),
       'maximumHitPoints': serializer.toJson<int?>(maximumHitPoints),
       'temporaryHitPoints': serializer.toJson<int?>(temporaryHitPoints),
       'portraitAssetPath': serializer.toJson<String?>(portraitAssetPath),
+      'alignment': serializer.toJson<String?>(alignment),
+      'appearanceDetails': serializer.toJson<String?>(appearanceDetails),
+      'narrativeDetails': serializer.toJson<String?>(narrativeDetails),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -846,10 +1105,17 @@ class Character extends DataClass implements Insertable<Character> {
     String? className,
     int? level,
     Value<int?> experience = const Value.absent(),
+    Value<String?> equipmentLoadoutId = const Value.absent(),
+    Value<String?> equipmentLoadoutLabel = const Value.absent(),
+    Value<String?> startingMoneySummary = const Value.absent(),
+    Value<String?> selectedEquipmentItems = const Value.absent(),
     Value<int?> currentHitPoints = const Value.absent(),
     Value<int?> maximumHitPoints = const Value.absent(),
     Value<int?> temporaryHitPoints = const Value.absent(),
     Value<String?> portraitAssetPath = const Value.absent(),
+    Value<String?> alignment = const Value.absent(),
+    Value<String?> appearanceDetails = const Value.absent(),
+    Value<String?> narrativeDetails = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Character(
@@ -878,6 +1144,18 @@ class Character extends DataClass implements Insertable<Character> {
     className: className ?? this.className,
     level: level ?? this.level,
     experience: experience.present ? experience.value : this.experience,
+    equipmentLoadoutId: equipmentLoadoutId.present
+        ? equipmentLoadoutId.value
+        : this.equipmentLoadoutId,
+    equipmentLoadoutLabel: equipmentLoadoutLabel.present
+        ? equipmentLoadoutLabel.value
+        : this.equipmentLoadoutLabel,
+    startingMoneySummary: startingMoneySummary.present
+        ? startingMoneySummary.value
+        : this.startingMoneySummary,
+    selectedEquipmentItems: selectedEquipmentItems.present
+        ? selectedEquipmentItems.value
+        : this.selectedEquipmentItems,
     currentHitPoints: currentHitPoints.present
         ? currentHitPoints.value
         : this.currentHitPoints,
@@ -890,6 +1168,13 @@ class Character extends DataClass implements Insertable<Character> {
     portraitAssetPath: portraitAssetPath.present
         ? portraitAssetPath.value
         : this.portraitAssetPath,
+    alignment: alignment.present ? alignment.value : this.alignment,
+    appearanceDetails: appearanceDetails.present
+        ? appearanceDetails.value
+        : this.appearanceDetails,
+    narrativeDetails: narrativeDetails.present
+        ? narrativeDetails.value
+        : this.narrativeDetails,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -928,6 +1213,18 @@ class Character extends DataClass implements Insertable<Character> {
       experience: data.experience.present
           ? data.experience.value
           : this.experience,
+      equipmentLoadoutId: data.equipmentLoadoutId.present
+          ? data.equipmentLoadoutId.value
+          : this.equipmentLoadoutId,
+      equipmentLoadoutLabel: data.equipmentLoadoutLabel.present
+          ? data.equipmentLoadoutLabel.value
+          : this.equipmentLoadoutLabel,
+      startingMoneySummary: data.startingMoneySummary.present
+          ? data.startingMoneySummary.value
+          : this.startingMoneySummary,
+      selectedEquipmentItems: data.selectedEquipmentItems.present
+          ? data.selectedEquipmentItems.value
+          : this.selectedEquipmentItems,
       currentHitPoints: data.currentHitPoints.present
           ? data.currentHitPoints.value
           : this.currentHitPoints,
@@ -940,6 +1237,13 @@ class Character extends DataClass implements Insertable<Character> {
       portraitAssetPath: data.portraitAssetPath.present
           ? data.portraitAssetPath.value
           : this.portraitAssetPath,
+      alignment: data.alignment.present ? data.alignment.value : this.alignment,
+      appearanceDetails: data.appearanceDetails.present
+          ? data.appearanceDetails.value
+          : this.appearanceDetails,
+      narrativeDetails: data.narrativeDetails.present
+          ? data.narrativeDetails.value
+          : this.narrativeDetails,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -965,10 +1269,17 @@ class Character extends DataClass implements Insertable<Character> {
           ..write('className: $className, ')
           ..write('level: $level, ')
           ..write('experience: $experience, ')
+          ..write('equipmentLoadoutId: $equipmentLoadoutId, ')
+          ..write('equipmentLoadoutLabel: $equipmentLoadoutLabel, ')
+          ..write('startingMoneySummary: $startingMoneySummary, ')
+          ..write('selectedEquipmentItems: $selectedEquipmentItems, ')
           ..write('currentHitPoints: $currentHitPoints, ')
           ..write('maximumHitPoints: $maximumHitPoints, ')
           ..write('temporaryHitPoints: $temporaryHitPoints, ')
           ..write('portraitAssetPath: $portraitAssetPath, ')
+          ..write('alignment: $alignment, ')
+          ..write('appearanceDetails: $appearanceDetails, ')
+          ..write('narrativeDetails: $narrativeDetails, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -994,10 +1305,17 @@ class Character extends DataClass implements Insertable<Character> {
     className,
     level,
     experience,
+    equipmentLoadoutId,
+    equipmentLoadoutLabel,
+    startingMoneySummary,
+    selectedEquipmentItems,
     currentHitPoints,
     maximumHitPoints,
     temporaryHitPoints,
     portraitAssetPath,
+    alignment,
+    appearanceDetails,
+    narrativeDetails,
     createdAt,
     updatedAt,
   ]);
@@ -1022,10 +1340,17 @@ class Character extends DataClass implements Insertable<Character> {
           other.className == this.className &&
           other.level == this.level &&
           other.experience == this.experience &&
+          other.equipmentLoadoutId == this.equipmentLoadoutId &&
+          other.equipmentLoadoutLabel == this.equipmentLoadoutLabel &&
+          other.startingMoneySummary == this.startingMoneySummary &&
+          other.selectedEquipmentItems == this.selectedEquipmentItems &&
           other.currentHitPoints == this.currentHitPoints &&
           other.maximumHitPoints == this.maximumHitPoints &&
           other.temporaryHitPoints == this.temporaryHitPoints &&
           other.portraitAssetPath == this.portraitAssetPath &&
+          other.alignment == this.alignment &&
+          other.appearanceDetails == this.appearanceDetails &&
+          other.narrativeDetails == this.narrativeDetails &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -1048,10 +1373,17 @@ class CharactersCompanion extends UpdateCompanion<Character> {
   final Value<String> className;
   final Value<int> level;
   final Value<int?> experience;
+  final Value<String?> equipmentLoadoutId;
+  final Value<String?> equipmentLoadoutLabel;
+  final Value<String?> startingMoneySummary;
+  final Value<String?> selectedEquipmentItems;
   final Value<int?> currentHitPoints;
   final Value<int?> maximumHitPoints;
   final Value<int?> temporaryHitPoints;
   final Value<String?> portraitAssetPath;
+  final Value<String?> alignment;
+  final Value<String?> appearanceDetails;
+  final Value<String?> narrativeDetails;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -1073,10 +1405,17 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     this.className = const Value.absent(),
     this.level = const Value.absent(),
     this.experience = const Value.absent(),
+    this.equipmentLoadoutId = const Value.absent(),
+    this.equipmentLoadoutLabel = const Value.absent(),
+    this.startingMoneySummary = const Value.absent(),
+    this.selectedEquipmentItems = const Value.absent(),
     this.currentHitPoints = const Value.absent(),
     this.maximumHitPoints = const Value.absent(),
     this.temporaryHitPoints = const Value.absent(),
     this.portraitAssetPath = const Value.absent(),
+    this.alignment = const Value.absent(),
+    this.appearanceDetails = const Value.absent(),
+    this.narrativeDetails = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1099,10 +1438,17 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     required String className,
     required int level,
     this.experience = const Value.absent(),
+    this.equipmentLoadoutId = const Value.absent(),
+    this.equipmentLoadoutLabel = const Value.absent(),
+    this.startingMoneySummary = const Value.absent(),
+    this.selectedEquipmentItems = const Value.absent(),
     this.currentHitPoints = const Value.absent(),
     this.maximumHitPoints = const Value.absent(),
     this.temporaryHitPoints = const Value.absent(),
     this.portraitAssetPath = const Value.absent(),
+    this.alignment = const Value.absent(),
+    this.appearanceDetails = const Value.absent(),
+    this.narrativeDetails = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -1131,10 +1477,17 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     Expression<String>? className,
     Expression<int>? level,
     Expression<int>? experience,
+    Expression<String>? equipmentLoadoutId,
+    Expression<String>? equipmentLoadoutLabel,
+    Expression<String>? startingMoneySummary,
+    Expression<String>? selectedEquipmentItems,
     Expression<int>? currentHitPoints,
     Expression<int>? maximumHitPoints,
     Expression<int>? temporaryHitPoints,
     Expression<String>? portraitAssetPath,
+    Expression<String>? alignment,
+    Expression<String>? appearanceDetails,
+    Expression<String>? narrativeDetails,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -1159,11 +1512,22 @@ class CharactersCompanion extends UpdateCompanion<Character> {
       if (className != null) 'class_name': className,
       if (level != null) 'level': level,
       if (experience != null) 'experience': experience,
+      if (equipmentLoadoutId != null)
+        'equipment_loadout_id': equipmentLoadoutId,
+      if (equipmentLoadoutLabel != null)
+        'equipment_loadout_label': equipmentLoadoutLabel,
+      if (startingMoneySummary != null)
+        'starting_money_summary': startingMoneySummary,
+      if (selectedEquipmentItems != null)
+        'selected_equipment_items': selectedEquipmentItems,
       if (currentHitPoints != null) 'current_hit_points': currentHitPoints,
       if (maximumHitPoints != null) 'maximum_hit_points': maximumHitPoints,
       if (temporaryHitPoints != null)
         'temporary_hit_points': temporaryHitPoints,
       if (portraitAssetPath != null) 'portrait_asset_path': portraitAssetPath,
+      if (alignment != null) 'alignment': alignment,
+      if (appearanceDetails != null) 'appearance_details': appearanceDetails,
+      if (narrativeDetails != null) 'narrative_details': narrativeDetails,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -1188,10 +1552,17 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     Value<String>? className,
     Value<int>? level,
     Value<int?>? experience,
+    Value<String?>? equipmentLoadoutId,
+    Value<String?>? equipmentLoadoutLabel,
+    Value<String?>? startingMoneySummary,
+    Value<String?>? selectedEquipmentItems,
     Value<int?>? currentHitPoints,
     Value<int?>? maximumHitPoints,
     Value<int?>? temporaryHitPoints,
     Value<String?>? portraitAssetPath,
+    Value<String?>? alignment,
+    Value<String?>? appearanceDetails,
+    Value<String?>? narrativeDetails,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -1215,10 +1586,19 @@ class CharactersCompanion extends UpdateCompanion<Character> {
       className: className ?? this.className,
       level: level ?? this.level,
       experience: experience ?? this.experience,
+      equipmentLoadoutId: equipmentLoadoutId ?? this.equipmentLoadoutId,
+      equipmentLoadoutLabel:
+          equipmentLoadoutLabel ?? this.equipmentLoadoutLabel,
+      startingMoneySummary: startingMoneySummary ?? this.startingMoneySummary,
+      selectedEquipmentItems:
+          selectedEquipmentItems ?? this.selectedEquipmentItems,
       currentHitPoints: currentHitPoints ?? this.currentHitPoints,
       maximumHitPoints: maximumHitPoints ?? this.maximumHitPoints,
       temporaryHitPoints: temporaryHitPoints ?? this.temporaryHitPoints,
       portraitAssetPath: portraitAssetPath ?? this.portraitAssetPath,
+      alignment: alignment ?? this.alignment,
+      appearanceDetails: appearanceDetails ?? this.appearanceDetails,
+      narrativeDetails: narrativeDetails ?? this.narrativeDetails,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -1281,6 +1661,24 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     if (experience.present) {
       map['experience'] = Variable<int>(experience.value);
     }
+    if (equipmentLoadoutId.present) {
+      map['equipment_loadout_id'] = Variable<String>(equipmentLoadoutId.value);
+    }
+    if (equipmentLoadoutLabel.present) {
+      map['equipment_loadout_label'] = Variable<String>(
+        equipmentLoadoutLabel.value,
+      );
+    }
+    if (startingMoneySummary.present) {
+      map['starting_money_summary'] = Variable<String>(
+        startingMoneySummary.value,
+      );
+    }
+    if (selectedEquipmentItems.present) {
+      map['selected_equipment_items'] = Variable<String>(
+        selectedEquipmentItems.value,
+      );
+    }
     if (currentHitPoints.present) {
       map['current_hit_points'] = Variable<int>(currentHitPoints.value);
     }
@@ -1292,6 +1690,15 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     }
     if (portraitAssetPath.present) {
       map['portrait_asset_path'] = Variable<String>(portraitAssetPath.value);
+    }
+    if (alignment.present) {
+      map['alignment'] = Variable<String>(alignment.value);
+    }
+    if (appearanceDetails.present) {
+      map['appearance_details'] = Variable<String>(appearanceDetails.value);
+    }
+    if (narrativeDetails.present) {
+      map['narrative_details'] = Variable<String>(narrativeDetails.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -1325,10 +1732,17 @@ class CharactersCompanion extends UpdateCompanion<Character> {
           ..write('className: $className, ')
           ..write('level: $level, ')
           ..write('experience: $experience, ')
+          ..write('equipmentLoadoutId: $equipmentLoadoutId, ')
+          ..write('equipmentLoadoutLabel: $equipmentLoadoutLabel, ')
+          ..write('startingMoneySummary: $startingMoneySummary, ')
+          ..write('selectedEquipmentItems: $selectedEquipmentItems, ')
           ..write('currentHitPoints: $currentHitPoints, ')
           ..write('maximumHitPoints: $maximumHitPoints, ')
           ..write('temporaryHitPoints: $temporaryHitPoints, ')
           ..write('portraitAssetPath: $portraitAssetPath, ')
+          ..write('alignment: $alignment, ')
+          ..write('appearanceDetails: $appearanceDetails, ')
+          ..write('narrativeDetails: $narrativeDetails, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -1367,10 +1781,17 @@ typedef $$CharactersTableCreateCompanionBuilder =
       required String className,
       required int level,
       Value<int?> experience,
+      Value<String?> equipmentLoadoutId,
+      Value<String?> equipmentLoadoutLabel,
+      Value<String?> startingMoneySummary,
+      Value<String?> selectedEquipmentItems,
       Value<int?> currentHitPoints,
       Value<int?> maximumHitPoints,
       Value<int?> temporaryHitPoints,
       Value<String?> portraitAssetPath,
+      Value<String?> alignment,
+      Value<String?> appearanceDetails,
+      Value<String?> narrativeDetails,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -1394,10 +1815,17 @@ typedef $$CharactersTableUpdateCompanionBuilder =
       Value<String> className,
       Value<int> level,
       Value<int?> experience,
+      Value<String?> equipmentLoadoutId,
+      Value<String?> equipmentLoadoutLabel,
+      Value<String?> startingMoneySummary,
+      Value<String?> selectedEquipmentItems,
       Value<int?> currentHitPoints,
       Value<int?> maximumHitPoints,
       Value<int?> temporaryHitPoints,
       Value<String?> portraitAssetPath,
+      Value<String?> alignment,
+      Value<String?> appearanceDetails,
+      Value<String?> narrativeDetails,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -1497,6 +1925,26 @@ class $$CharactersTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get equipmentLoadoutId => $composableBuilder(
+    column: $table.equipmentLoadoutId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get equipmentLoadoutLabel => $composableBuilder(
+    column: $table.equipmentLoadoutLabel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get startingMoneySummary => $composableBuilder(
+    column: $table.startingMoneySummary,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get selectedEquipmentItems => $composableBuilder(
+    column: $table.selectedEquipmentItems,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get currentHitPoints => $composableBuilder(
     column: $table.currentHitPoints,
     builder: (column) => ColumnFilters(column),
@@ -1514,6 +1962,21 @@ class $$CharactersTableFilterComposer
 
   ColumnFilters<String> get portraitAssetPath => $composableBuilder(
     column: $table.portraitAssetPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get alignment => $composableBuilder(
+    column: $table.alignment,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get appearanceDetails => $composableBuilder(
+    column: $table.appearanceDetails,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get narrativeDetails => $composableBuilder(
+    column: $table.narrativeDetails,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1622,6 +2085,26 @@ class $$CharactersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get equipmentLoadoutId => $composableBuilder(
+    column: $table.equipmentLoadoutId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get equipmentLoadoutLabel => $composableBuilder(
+    column: $table.equipmentLoadoutLabel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get startingMoneySummary => $composableBuilder(
+    column: $table.startingMoneySummary,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get selectedEquipmentItems => $composableBuilder(
+    column: $table.selectedEquipmentItems,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get currentHitPoints => $composableBuilder(
     column: $table.currentHitPoints,
     builder: (column) => ColumnOrderings(column),
@@ -1639,6 +2122,21 @@ class $$CharactersTableOrderingComposer
 
   ColumnOrderings<String> get portraitAssetPath => $composableBuilder(
     column: $table.portraitAssetPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get alignment => $composableBuilder(
+    column: $table.alignment,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get appearanceDetails => $composableBuilder(
+    column: $table.appearanceDetails,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get narrativeDetails => $composableBuilder(
+    column: $table.narrativeDetails,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1729,6 +2227,26 @@ class $$CharactersTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get equipmentLoadoutId => $composableBuilder(
+    column: $table.equipmentLoadoutId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get equipmentLoadoutLabel => $composableBuilder(
+    column: $table.equipmentLoadoutLabel,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get startingMoneySummary => $composableBuilder(
+    column: $table.startingMoneySummary,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get selectedEquipmentItems => $composableBuilder(
+    column: $table.selectedEquipmentItems,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get currentHitPoints => $composableBuilder(
     column: $table.currentHitPoints,
     builder: (column) => column,
@@ -1746,6 +2264,19 @@ class $$CharactersTableAnnotationComposer
 
   GeneratedColumn<String> get portraitAssetPath => $composableBuilder(
     column: $table.portraitAssetPath,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get alignment =>
+      $composableBuilder(column: $table.alignment, builder: (column) => column);
+
+  GeneratedColumn<String> get appearanceDetails => $composableBuilder(
+    column: $table.appearanceDetails,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get narrativeDetails => $composableBuilder(
+    column: $table.narrativeDetails,
     builder: (column) => column,
   );
 
@@ -1804,10 +2335,17 @@ class $$CharactersTableTableManager
                 Value<String> className = const Value.absent(),
                 Value<int> level = const Value.absent(),
                 Value<int?> experience = const Value.absent(),
+                Value<String?> equipmentLoadoutId = const Value.absent(),
+                Value<String?> equipmentLoadoutLabel = const Value.absent(),
+                Value<String?> startingMoneySummary = const Value.absent(),
+                Value<String?> selectedEquipmentItems = const Value.absent(),
                 Value<int?> currentHitPoints = const Value.absent(),
                 Value<int?> maximumHitPoints = const Value.absent(),
                 Value<int?> temporaryHitPoints = const Value.absent(),
                 Value<String?> portraitAssetPath = const Value.absent(),
+                Value<String?> alignment = const Value.absent(),
+                Value<String?> appearanceDetails = const Value.absent(),
+                Value<String?> narrativeDetails = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -1829,10 +2367,17 @@ class $$CharactersTableTableManager
                 className: className,
                 level: level,
                 experience: experience,
+                equipmentLoadoutId: equipmentLoadoutId,
+                equipmentLoadoutLabel: equipmentLoadoutLabel,
+                startingMoneySummary: startingMoneySummary,
+                selectedEquipmentItems: selectedEquipmentItems,
                 currentHitPoints: currentHitPoints,
                 maximumHitPoints: maximumHitPoints,
                 temporaryHitPoints: temporaryHitPoints,
                 portraitAssetPath: portraitAssetPath,
+                alignment: alignment,
+                appearanceDetails: appearanceDetails,
+                narrativeDetails: narrativeDetails,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -1856,10 +2401,17 @@ class $$CharactersTableTableManager
                 required String className,
                 required int level,
                 Value<int?> experience = const Value.absent(),
+                Value<String?> equipmentLoadoutId = const Value.absent(),
+                Value<String?> equipmentLoadoutLabel = const Value.absent(),
+                Value<String?> startingMoneySummary = const Value.absent(),
+                Value<String?> selectedEquipmentItems = const Value.absent(),
                 Value<int?> currentHitPoints = const Value.absent(),
                 Value<int?> maximumHitPoints = const Value.absent(),
                 Value<int?> temporaryHitPoints = const Value.absent(),
                 Value<String?> portraitAssetPath = const Value.absent(),
+                Value<String?> alignment = const Value.absent(),
+                Value<String?> appearanceDetails = const Value.absent(),
+                Value<String?> narrativeDetails = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -1881,10 +2433,17 @@ class $$CharactersTableTableManager
                 className: className,
                 level: level,
                 experience: experience,
+                equipmentLoadoutId: equipmentLoadoutId,
+                equipmentLoadoutLabel: equipmentLoadoutLabel,
+                startingMoneySummary: startingMoneySummary,
+                selectedEquipmentItems: selectedEquipmentItems,
                 currentHitPoints: currentHitPoints,
                 maximumHitPoints: maximumHitPoints,
                 temporaryHitPoints: temporaryHitPoints,
                 portraitAssetPath: portraitAssetPath,
+                alignment: alignment,
+                appearanceDetails: appearanceDetails,
+                narrativeDetails: narrativeDetails,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

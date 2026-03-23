@@ -7,15 +7,14 @@ import 'package:adventure_vault_character/src/features/compendium/data/compendiu
 class InMemoryCharacterRepository implements CharacterRepository {
   InMemoryCharacterRepository.empty({
     required CompendiumRepository compendiumRepository,
-  })
-      : _summaries = <CharacterSummary>[],
-        _compendiumRepository = compendiumRepository;
+  }) : _summaries = <CharacterSummary>[],
+       _compendiumRepository = compendiumRepository;
 
   InMemoryCharacterRepository.seeded(
     List<CharacterSummary> summaries, {
     required CompendiumRepository compendiumRepository,
-  })  : _summaries = List<CharacterSummary>.from(summaries),
-        _compendiumRepository = compendiumRepository;
+  }) : _summaries = List<CharacterSummary>.from(summaries),
+       _compendiumRepository = compendiumRepository;
 
   final List<CharacterSummary> _summaries;
   final CompendiumRepository _compendiumRepository;
@@ -58,6 +57,9 @@ class InMemoryCharacterRepository implements CharacterRepository {
 
     final catalog = await _compendiumRepository.loadCatalog();
     final background = catalog.backgrounds.first;
+    final equipmentLoadout = catalog
+        .equipmentLoadoutsForClass(summary.className)
+        .first;
 
     return CharacterSheetViewData(
       id: summary.id,
@@ -85,6 +87,12 @@ class InMemoryCharacterRepository implements CharacterRepository {
         AbilityScoreRowViewData(label: 'Charisma', score: 8, modifier: -1),
       ],
       equipmentSummary: catalog.equipmentSummaryForClass(summary.className),
+      selectedEquipmentLabel: equipmentLoadout.label,
+      startingMoneySummary: equipmentLoadout.startingMoneySummary,
+      selectedEquipmentItems: equipmentLoadout.selectedItems,
+      alignment: 'Neutral',
+      appearanceDetails: '',
+      narrativeDetails: '',
     );
   }
 }

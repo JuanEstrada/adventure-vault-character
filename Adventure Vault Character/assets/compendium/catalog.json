@@ -82,5 +82,57 @@
         "Weapon loadout pending"
       ]
     }
+  },
+  "equipmentLoadoutsByClass": {
+    "Fighter": [
+      {
+        "id": "fighter-chain-mail",
+        "label": "Chain mail starter kit",
+        "startingMoneySummary": "Class kit with default martial gear",
+        "selectedItems": [
+          "Chain mail",
+          "Shield",
+          "Longsword",
+          "Explorer pack"
+        ]
+      },
+      {
+        "id": "fighter-archer",
+        "label": "Archer field kit",
+        "startingMoneySummary": "Class kit with ranged emphasis",
+        "selectedItems": [
+          "Leather armor",
+          "Longbow",
+          "20 arrows",
+          "Dungeoneer pack"
+        ]
+      }
+    ],
+    "Wizard": [
+      {
+        "id": "wizard-focus",
+        "label": "Arcane focus kit",
+        "startingMoneySummary": "Class kit with prepared arcane tools",
+        "selectedItems": [
+          "Quarterstaff",
+          "Arcane focus",
+          "Spellbook",
+          "Scholar pack"
+        ]
+      }
+    ],
+    "Ranger": [
+      {
+        "id": "ranger-trail",
+        "label": "Trail scout kit",
+        "startingMoneySummary": "Class kit for travel and ranged scouting",
+        "selectedItems": [
+          "Scale mail",
+          "Longbow",
+          "20 arrows",
+          "Explorer pack"
+        ]
+      }
+    ]
   }
 }

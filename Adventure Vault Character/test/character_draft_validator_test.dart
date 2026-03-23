@@ -52,9 +52,16 @@ CreateCharacterInput _validInput({
   String className = 'Fighter',
   int level = 1,
   int experience = 0,
+  String equipmentLoadoutId = 'fighter-chain-mail',
+  String equipmentLoadoutLabel = 'Chain mail starter kit',
+  String startingMoneySummary = 'Class kit with default martial gear',
+  List<String> selectedEquipmentItems = const <String>['Chain mail', 'Shield'],
   int currentHitPoints = 10,
   int maximumHitPoints = 10,
   int temporaryHitPoints = 0,
+  String alignment = 'Neutral',
+  String appearanceDetails = '',
+  String narrativeDetails = '',
 }) {
   return CreateCharacterInput(
     name: name,
@@ -73,8 +80,15 @@ CreateCharacterInput _validInput({
     className: className,
     level: level,
     experience: experience,
+    equipmentLoadoutId: equipmentLoadoutId,
+    equipmentLoadoutLabel: equipmentLoadoutLabel,
+    startingMoneySummary: startingMoneySummary,
+    selectedEquipmentItems: selectedEquipmentItems,
     currentHitPoints: currentHitPoints,
     maximumHitPoints: maximumHitPoints,
     temporaryHitPoints: temporaryHitPoints,
+    alignment: alignment,
+    appearanceDetails: appearanceDetails,
+    narrativeDetails: narrativeDetails,
   );
 }

@@ -135,10 +135,7 @@ class _IdentityPanel extends StatelessWidget {
             _FactRow(label: 'Clase', value: character.className),
             _FactRow(label: 'Nivel', value: character.level.toString()),
             _FactRow(label: 'XP', value: character.experience.toString()),
-            _FactRow(
-              label: 'Prof.',
-              value: '+${character.proficiencyBonus}',
-            ),
+            _FactRow(label: 'Prof.', value: '+${character.proficiencyBonus}'),
             _FactRow(
               label: 'Progress',
               value: '${character.levelProgressPercent}%',
@@ -202,9 +199,15 @@ class _CombatPanel extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            _FactRow(label: 'Current HP', value: '${character.currentHitPoints}'),
+            _FactRow(
+              label: 'Current HP',
+              value: '${character.currentHitPoints}',
+            ),
             _FactRow(label: 'Max HP', value: '${character.maximumHitPoints}'),
-            _FactRow(label: 'Temp HP', value: '${character.temporaryHitPoints}'),
+            _FactRow(
+              label: 'Temp HP',
+              value: '${character.temporaryHitPoints}',
+            ),
           ],
         ),
       ),
@@ -234,7 +237,10 @@ class _AbilitiesPanel extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Text(character.abilityScoreMethodLabel, style: theme.textTheme.bodyLarge),
+            Text(
+              character.abilityScoreMethodLabel,
+              style: theme.textTheme.bodyLarge,
+            ),
             const SizedBox(height: 12),
             ...character.abilityRows.map(
               (row) => Padding(
@@ -298,6 +304,12 @@ class _FeaturesNotesPanel extends StatelessWidget {
             Text('Social perks', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             ...character.backgroundSocialPerks.map((item) => Text('• $item')),
+            const SizedBox(height: 12),
+            _FactRow(label: 'Alignment', value: character.alignment),
+            if (character.appearanceDetails.isNotEmpty)
+              _FactRow(label: 'Appearance', value: character.appearanceDetails),
+            if (character.narrativeDetails.isNotEmpty)
+              _FactRow(label: 'Notes', value: character.narrativeDetails),
           ],
         ),
       ),
@@ -328,19 +340,23 @@ class _EquipmentPanel extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              character.equipmentSummary.statusLabel,
+              character.selectedEquipmentLabel,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
+            _FactRow(
+              label: 'Starting money',
+              value: character.startingMoneySummary,
+            ),
+            const SizedBox(height: 4),
             Text(
               character.equipmentSummary.description,
               style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 12),
-            ...character.equipmentSummary.highlightItems
-                .map((item) => Text('• $item')),
+            ...character.selectedEquipmentItems.map((item) => Text('• $item')),
           ],
         ),
       ),

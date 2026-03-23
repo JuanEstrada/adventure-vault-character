@@ -21,6 +21,12 @@ class CharacterSheetViewData {
     required this.abilityScoreMethodLabel,
     required this.abilityRows,
     required this.equipmentSummary,
+    required this.selectedEquipmentLabel,
+    required this.startingMoneySummary,
+    required this.selectedEquipmentItems,
+    required this.alignment,
+    required this.appearanceDetails,
+    required this.narrativeDetails,
   });
 
   final String id;
@@ -41,6 +47,12 @@ class CharacterSheetViewData {
   final String abilityScoreMethodLabel;
   final List<AbilityScoreRowViewData> abilityRows;
   final EquipmentSummaryViewData equipmentSummary;
+  final String selectedEquipmentLabel;
+  final String startingMoneySummary;
+  final List<String> selectedEquipmentItems;
+  final String alignment;
+  final String appearanceDetails;
+  final String narrativeDetails;
 }
 
 @immutable
