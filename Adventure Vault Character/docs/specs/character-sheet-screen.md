@@ -178,6 +178,7 @@ the first character sheet.
 MVP expectation:
 
 - the panel can exist as a structural destination
+- it should use a simple placeholder state in MVP
 - it should not require full combat-system implementation
 
 ### Equipment Panel
@@ -188,6 +189,7 @@ equipment-management behavior.
 MVP expectation:
 
 - the panel can exist as a structural destination
+- it should use a simple placeholder state in MVP
 - detailed equipment interactions remain out of scope for the first sheet
 
 ## UI States
@@ -227,6 +229,8 @@ MVP expectation:
   the character sheet.
 - The six final ability scores and their modifiers are visible on the
   character sheet.
+- `Combat` and `Equipment` may appear as simple placeholders in MVP without
+  blocking approval of the first sheet.
 - The character sheet can be opened from the character card without layout
   mismatch or a separate temporary detail screen.
 - A missing or deleted character record is handled explicitly.
