@@ -2,9 +2,14 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:flutter/material.dart';
 
 class CharacterSummaryCard extends StatelessWidget {
-  const CharacterSummaryCard({required this.summary, super.key});
+  const CharacterSummaryCard({
+    required this.summary,
+    required this.onTap,
+    super.key,
+  });
 
   final CharacterSummary summary;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -13,14 +18,14 @@ class CharacterSummaryCard extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {},
+        onTap: onTap,
         child: SizedBox(
           width: 220,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Container(
-                height: 160,
+                height: 132,
                 color: const Color(0xFFDBC8AC),
                 child: summary.portraitAssetPath == null
                     ? const Icon(Icons.shield_outlined, size: 54)
@@ -34,6 +39,8 @@ class CharacterSummaryCard extends StatelessWidget {
                   children: [
                     Text(
                       summary.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -41,6 +48,8 @@ class CharacterSummaryCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       '${summary.raceName}  •  ${summary.className}  •  Lv ${summary.level}',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodyMedium,
                     ),
                   ],

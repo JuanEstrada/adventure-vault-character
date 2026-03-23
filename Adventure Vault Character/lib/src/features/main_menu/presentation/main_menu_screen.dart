@@ -3,9 +3,16 @@ import 'package:adventure_vault_character/src/features/main_menu/presentation/ch
 import 'package:flutter/material.dart';
 
 class MainMenuScreen extends StatelessWidget {
-  const MainMenuScreen({required this.characterSummaries, super.key});
+  const MainMenuScreen({
+    required this.characterSummaries,
+    required this.onCreateCharacter,
+    required this.onOpenCharacter,
+    super.key,
+  });
 
   final List<CharacterSummary> characterSummaries;
+  final VoidCallback onCreateCharacter;
+  final ValueChanged<String> onOpenCharacter;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +59,7 @@ class MainMenuScreen extends StatelessWidget {
                     runSpacing: 12,
                     children: [
                       FilledButton(
-                        onPressed: () {},
+                        onPressed: onCreateCharacter,
                         child: const Text('Crear personaje nuevo'),
                       ),
                       OutlinedButton(
@@ -83,6 +90,8 @@ class MainMenuScreen extends StatelessWidget {
                       itemBuilder: (context, index) {
                         return CharacterSummaryCard(
                           summary: characterSummaries[index],
+                          onTap: () =>
+                              onOpenCharacter(characterSummaries[index].id),
                         );
                       },
                     ),

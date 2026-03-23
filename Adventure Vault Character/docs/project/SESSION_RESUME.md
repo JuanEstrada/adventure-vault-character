@@ -52,12 +52,18 @@ Verified on 2026-03-23:
   `lib/src/`.
 - The app now implements the startup path `bootstrap -> access -> main menu`
   with controller-driven state and repository boundaries.
-- Character summaries currently come from an in-memory repository stub, not
-  Drift.
+- Character summaries now load through a Drift-backed repository over a local
+  SQLite database.
+- The first persisted schema is intentionally minimal and currently stores the
+  fields required to render main-menu character cards.
+- A first vertical slice now supports `create -> save -> card -> open sheet`
+  with a minimal character record: `name`, `race`, `class`, and `level`.
 - `test/widget_test.dart` covers the offline path into the main menu.
 
-This means the repository has moved beyond the single-screen bootstrap, but
-character creation, persistence, and the character sheet are still pending.
+This means the repository has moved beyond the single-screen bootstrap and now
+has real local persistence scaffolding and a minimal end-to-end character
+creation slice, but the full guided builder and MVP-complete character sheet
+are still pending.
 
 ## Current Phase
 
@@ -65,9 +71,9 @@ Implementation shell established.
 
 The project has moved from documentation-only preparation into a real app
 shell. The startup path, access screen, main menu shell, and character-summary
-repository boundary now exist in code. The next step is to replace the
-in-memory boundary with Drift-backed persistence and then implement the
-create-character slice.
+repository boundary now exist in code. The next step is to build on the new
+Drift boundary by expanding the minimal saved-character slice into the approved
+guided create-character flow and a richer character sheet.
 
 ## MVP Slice In Focus
 
@@ -145,7 +151,8 @@ Primary references:
 
 These are the highest-value unresolved items:
 
-1. Define the first Drift schema from the proposed domain model.
+1. Extend the first Drift schema from summary-only storage toward the proposed
+   character model.
 2. Define application services and task breakdown for `create -> save -> card
    -> open sheet`.
 3. Decide when XML import moves from documented entry point into a real
@@ -179,10 +186,11 @@ Resolved MVP decision:
 The next logical session should build on the current shell instead of
 restructuring it again:
 
-1. Add the first Drift schema from the proposed character model.
-2. Add application services and mapping boundaries for character creation,
-   character-card summaries, and character-sheet view models.
-3. Replace the in-memory character repository with a Drift-backed repository.
+1. Expand the current minimal create flow toward the approved guided builder
+   sections.
+2. Add write-side application services and mapping boundaries for character
+   creation, character-card summaries, and character-sheet view models.
+3. Extend the first Drift schema toward the approved MVP character model.
 4. Break the approved `create -> save -> card -> open sheet` flow into
    concrete implementation tasks in `lib/`.
 5. Keep `HP` in scope as real MVP character-sheet data, not as a deferred
@@ -190,7 +198,8 @@ restructuring it again:
 
 Next-session starting point:
 
-- Start with Drift schema and repository replacement.
+- Start from the existing Drift schema, repository boundary, and minimal
+  create/save/open flow.
 - Use the accepted flow specs and proposed domain-model docs as the source of
   truth unless a new decision replaces them.
 

@@ -1,13 +1,21 @@
+import 'dart:async';
+
 import 'package:adventure_vault_character/src/app/app_controller.dart';
 import 'package:adventure_vault_character/src/core/navigation/app_screen.dart';
 import 'package:adventure_vault_character/src/features/access/presentation/access_screen.dart';
 import 'package:adventure_vault_character/src/features/bootstrap/presentation/bootstrap_screen.dart';
-import 'package:adventure_vault_character/src/features/characters/data/in_memory_character_repository.dart';
+import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
+import 'package:adventure_vault_character/src/features/characters/data/drift_character_repository.dart';
+import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
+import 'package:adventure_vault_character/src/features/characters/presentation/character_sheet_screen.dart';
+import 'package:adventure_vault_character/src/features/characters/presentation/create_character_screen.dart';
 import 'package:adventure_vault_character/src/features/main_menu/presentation/main_menu_screen.dart';
 import 'package:flutter/material.dart';
 
 class AdventureVaultApp extends StatefulWidget {
-  const AdventureVaultApp({super.key});
+  const AdventureVaultApp({super.key, this.characterRepository});
+
+  final CharacterRepository? characterRepository;
 
   @override
   State<AdventureVaultApp> createState() => _AdventureVaultAppState();
@@ -15,18 +23,30 @@ class AdventureVaultApp extends StatefulWidget {
 
 class _AdventureVaultAppState extends State<AdventureVaultApp> {
   late final AppController _controller;
+  AppDatabase? _ownedDatabase;
 
   @override
   void initState() {
     super.initState();
+    final repository = widget.characterRepository ?? _createDefaultRepository();
     _controller = AppController(
-      characterRepository: InMemoryCharacterRepository.empty(),
+      characterRepository: repository,
     );
     _controller.initialize();
   }
 
+  CharacterRepository _createDefaultRepository() {
+    final database = AppDatabase();
+    _ownedDatabase = database;
+    return DriftCharacterRepository(database: database);
+  }
+
   @override
   void dispose() {
+    final database = _ownedDatabase;
+    if (database != null) {
+      unawaited(database.close());
+    }
     _controller.dispose();
     super.dispose();
   }
@@ -59,6 +79,18 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
               ),
             AppScreen.mainMenu => MainMenuScreen(
                 characterSummaries: state.characterSummaries,
+                onCreateCharacter: _controller.openCreateCharacter,
+                onOpenCharacter: _controller.openCharacter,
+              ),
+            AppScreen.createCharacter => CreateCharacterScreen(
+                isSaving: state.isSavingCharacter,
+                errorMessage: state.errorMessage,
+                onCancel: _controller.openMainMenu,
+                onSave: _controller.createCharacter,
+              ),
+            AppScreen.characterSheet => CharacterSheetScreen(
+                character: state.selectedCharacter!,
+                onBack: _controller.openMainMenu,
               ),
           };
         },

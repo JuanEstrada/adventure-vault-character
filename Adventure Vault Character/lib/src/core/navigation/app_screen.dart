@@ -1,1 +1,1 @@
-enum AppScreen { bootstrap, access, mainMenu }
+enum AppScreen { bootstrap, access, mainMenu, createCharacter, characterSheet }

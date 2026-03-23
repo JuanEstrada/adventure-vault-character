@@ -27,8 +27,10 @@ create-character flow.
 - `lib/` now includes the first feature-first app shell under `lib/src/`.
 - The app implements `bootstrap -> access -> main menu` with controller-driven
   state.
-- Character-summary loading is abstracted behind a repository and currently
-  uses an in-memory stub.
+- Character-summary loading is abstracted behind a repository and now reads
+  from a local Drift-backed SQLite database.
+- A minimal create-character flow now saves a local record and opens a first
+  character sheet from that persisted data.
 - Widget coverage exists for the offline continuation path into the main menu.
 
 ## Active Architecture Constraints
@@ -64,17 +66,18 @@ create-character flow.
 
 ## Work In Progress
 
-- Replacing the in-memory character-summary boundary with real local
-  persistence.
-- Translating the documented MVP flow and proposed domain model into Drift
-  schema and application services.
+- Extending the new Drift-backed character-summary persistence into the full
+  create-character slice.
+- Translating the documented MVP flow and proposed domain model into write-side
+  schema, services, and mappers.
 
 ## Pending Work
 
-- Define the first Drift schema from the proposed character model.
-- Define application services and mappers for character creation, card
+- Extend the first Drift schema from the current minimal saved-character shape
+  toward the proposed character model.
+- Define application services and mappers for full guided character creation,
+  card
   summaries, and character-sheet rendering.
-- Add the first production dependencies required by the accepted architecture.
 - Map the approved MVP flow into implementation tasks in `lib/`.
 - Add implementation documentation once production code exists.
 
@@ -98,9 +101,9 @@ create-character flow.
 
 ## Next Recommended Steps
 
-1. Define the first Drift schema from the proposed domain model.
-2. Replace the in-memory character repository with a Drift-backed
-   implementation.
+1. Expand the current minimal create/save flow toward the approved guided
+   builder sections.
+2. Extend the schema toward the required MVP character fields.
 3. Break the approved MVP flow into implementation tasks in `lib/`.
 4. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
