@@ -73,6 +73,22 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     'Chaotic Evil',
   ];
 
+  bool get _hasRequiredCatalogData => _missingCatalogSections.isEmpty;
+
+  List<String> get _missingCatalogSections {
+    final missing = <String>[];
+    if (widget.catalog.races.isEmpty) {
+      missing.add('Race');
+    }
+    if (widget.catalog.backgrounds.isEmpty) {
+      missing.add('Background');
+    }
+    if (widget.catalog.classes.isEmpty) {
+      missing.add('Class');
+    }
+    return missing;
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -84,6 +100,9 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   @override
   void initState() {
     super.initState();
+    if (!_hasRequiredCatalogData) {
+      return;
+    }
     _selectedRace = widget.catalog.races.first;
     _selectedBackground = widget.catalog.backgrounds.first;
     _selectedClass = widget.catalog.classes.first;
@@ -143,6 +162,54 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    if (!_hasRequiredCatalogData) {
+      final missingSections = _missingCatalogSections.join(', ');
+      final blockedMessage =
+          widget.errorMessage ??
+          'No se puede abrir la creacion guiada porque faltan datos del compendio para: '
+              '$missingSections.';
+      return Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: widget.onCancel,
+            icon: const Icon(Icons.arrow_back),
+          ),
+          title: const Text('Crear personaje'),
+        ),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Compendio incompleto',
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(blockedMessage, style: theme.textTheme.bodyLarge),
+                      const SizedBox(height: 20),
+                      OutlinedButton(
+                        onPressed: widget.onCancel,
+                        child: const Text('Volver al menu'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     final equipmentOptions = widget.catalog.equipmentLoadoutsForClass(
       _selectedClass,
     );

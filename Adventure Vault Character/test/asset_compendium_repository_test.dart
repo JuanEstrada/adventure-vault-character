@@ -39,6 +39,26 @@ void main() {
       containsAll(<String>['fighter-a', 'fighter-b']),
     );
   });
+
+  test('prefers gameplay sections over metadata indexes with duplicate tag names', () async {
+    final repository = AssetCompendiumRepository(
+      bundle: _FakeAssetBundle({
+        'local-assets/srd_5_2_1_app_base.xml': _xmlFixtureWithMetadataIndexes,
+        'local-assets/Official Only 2024.xml': _officialFixture,
+        'local-assets/Core Rulebooks.xml': _monsterFixture,
+        'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{}),
+      }),
+    );
+
+    final catalog = await repository.loadCatalog();
+
+    expect(catalog.backgrounds.map((item) => item.name), contains('Acolyte'));
+    expect(catalog.classes, containsAll(<String>['Fighter', 'Wizard', 'Rogue']));
+    expect(
+      catalog.equipmentLoadoutsForClass('Fighter').map((item) => item.id),
+      containsAll(<String>['fighter-a', 'fighter-b']),
+    );
+  });
 }
 
 class _FakeAssetBundle extends CachingAssetBundle {
@@ -160,6 +180,124 @@ const _xmlFixture = '''
     </class>
   </classes>
 </adventure-vault-srd-base>
+''';
+
+const _xmlFixtureWithMetadataIndexes = '''
+<?xml version="1.0" encoding="UTF-8"?>
+<adventure-vault-srd-base>
+  <metadata>
+    <official2024Catalog>
+      <backgrounds>
+        <entry>Acolyte [2024]</entry>
+      </backgrounds>
+      <classes>
+        <entry>Fighter [2024]</entry>
+      </classes>
+    </official2024Catalog>
+  </metadata>
+  $_xmlFixtureBody
+</adventure-vault-srd-base>
+''';
+
+const _xmlFixtureBody = '''
+  <characterCreation>
+    <abilityGeneration>
+      <standardArray>
+        <score>15</score>
+        <score>14</score>
+        <score>13</score>
+        <score>12</score>
+        <score>10</score>
+        <score>8</score>
+      </standardArray>
+      <pointBuy budget="27">
+        <score value="8" cost="0" />
+        <score value="9" cost="1" />
+        <score value="10" cost="2" />
+        <score value="11" cost="3" />
+        <score value="12" cost="4" />
+        <score value="13" cost="5" />
+        <score value="14" cost="7" />
+        <score value="15" cost="9" />
+      </pointBuy>
+      <standardArrayByClass>
+        <classRef id="fighter" strength="15" dexterity="14" constitution="13" intelligence="8" wisdom="10" charisma="12" />
+      </standardArrayByClass>
+    </abilityGeneration>
+    <levelProgression>
+      <level value="1" xp="0" proficiencyBonus="+2" />
+      <level value="2" xp="300" proficiencyBonus="+2" />
+    </levelProgression>
+  </characterCreation>
+  <backgrounds>
+    <background id="acolyte">
+      <name>Acolyte</name>
+      <abilityOptions>
+        <ability>Intelligence</ability>
+        <ability>Wisdom</ability>
+        <ability>Charisma</ability>
+      </abilityOptions>
+      <originFeat>Magic Initiate (Cleric)</originFeat>
+      <skillProficiencies>
+        <skill>Insight</skill>
+        <skill>Religion</skill>
+      </skillProficiencies>
+      <toolProficiency>Calligrapher&apos;s Supplies</toolProficiency>
+      <equipment>
+        <option id="A">Book, Holy Symbol, 8 GP</option>
+        <option id="B">50 GP</option>
+      </equipment>
+      <summary>Temple-shaped background.</summary>
+    </background>
+  </backgrounds>
+  <speciesList>
+    <species id="dragonborn"><name>Dragonborn</name></species>
+    <species id="elf"><name>Elf</name></species>
+    <species id="human"><name>Human</name></species>
+  </speciesList>
+  <classes>
+    <class id="fighter">
+      <name>Fighter</name>
+      <primaryAbility>Strength or Dexterity</primaryAbility>
+      <hitDie>d10</hitDie>
+      <weaponProficiencies>Simple and Martial weapons</weaponProficiencies>
+      <armorTraining>Light armor, Medium armor, Heavy armor, Shields</armorTraining>
+      <startingEquipment>
+        <option id="A">Chain Mail, Greatsword, 4 GP</option>
+        <option id="B">155 GP</option>
+      </startingEquipment>
+      <level1Features>
+        <feature>Fighting Style</feature>
+        <feature>Second Wind</feature>
+      </level1Features>
+    </class>
+    <class id="rogue">
+      <name>Rogue</name>
+      <primaryAbility>Dexterity</primaryAbility>
+      <hitDie>d8</hitDie>
+      <weaponProficiencies>Simple weapons</weaponProficiencies>
+      <armorTraining>Light armor</armorTraining>
+      <startingEquipment>
+        <option id="A">Leather Armor, Dagger, 8 GP</option>
+      </startingEquipment>
+      <level1Features>
+        <feature>Sneak Attack</feature>
+      </level1Features>
+    </class>
+    <class id="wizard">
+      <name>Wizard</name>
+      <primaryAbility>Intelligence</primaryAbility>
+      <hitDie>d6</hitDie>
+      <weaponProficiencies>Simple weapons</weaponProficiencies>
+      <armorTraining>None</armorTraining>
+      <startingEquipment>
+        <option id="A">Spellbook, Robe, 5 GP</option>
+      </startingEquipment>
+      <level1Features>
+        <feature>Spellcasting</feature>
+      </level1Features>
+    </class>
+  </classes>
 ''';
 
 const _officialFixture = '''

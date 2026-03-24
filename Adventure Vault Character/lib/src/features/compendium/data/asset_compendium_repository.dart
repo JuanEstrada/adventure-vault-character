@@ -84,9 +84,17 @@ class AssetCompendiumRepository implements CompendiumRepository {
   }) {
     final abilityGeneration = _extractSection(rawXml, 'abilityGeneration');
     final levelProgressionSection = _extractSection(rawXml, 'levelProgression');
-    final backgroundsSection = _extractSection(rawXml, 'backgrounds');
+    final backgroundsSection = _extractSectionContainingElement(
+      rawXml,
+      sectionTagName: 'backgrounds',
+      childTagName: 'background',
+    );
     final speciesSection = _extractSection(rawXml, 'speciesList');
-    final classesSection = _extractSection(rawXml, 'classes');
+    final classesSection = _extractSectionContainingElement(
+      rawXml,
+      sectionTagName: 'classes',
+      childTagName: 'class',
+    );
 
     final races = _extractElements(speciesSection, 'species')
         .map((species) => _extractSingleTagText(species.innerXml, 'name'))
@@ -486,6 +494,32 @@ class AssetCompendiumRepository implements CompendiumRepository {
       return '';
     }
     return match.group(1) ?? '';
+  }
+
+  String _extractSectionContainingElement(
+    String xml, {
+    required String sectionTagName,
+    required String childTagName,
+    bool required = true,
+  }) {
+    final sectionPattern = RegExp(
+      '<$sectionTagName\\b[^>]*>([\\s\\S]*?)</$sectionTagName>',
+      caseSensitive: false,
+    );
+    final childPattern = RegExp('<$childTagName\\b', caseSensitive: false);
+    for (final match in sectionPattern.allMatches(xml)) {
+      final sectionXml = match.group(1) ?? '';
+      if (childPattern.hasMatch(sectionXml)) {
+        return sectionXml;
+      }
+    }
+
+    if (required) {
+      throw FormatException(
+        'Missing section <$sectionTagName> containing <$childTagName>.',
+      );
+    }
+    return '';
   }
 
   String? _extractSingleTagText(String xml, String tagName) {

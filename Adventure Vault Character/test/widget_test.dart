@@ -91,6 +91,53 @@ void main() {
     expect(find.text('Aelar'), findsOneWidget);
     expect(find.textContaining('Human  •  Fighter  •  Lv 1'), findsOneWidget);
   });
+
+  testWidgets('create screen shows blocked state when compendium is incomplete', (
+    WidgetTester tester,
+  ) async {
+    const incompleteCatalog = CompendiumCatalog(
+      races: <String>[],
+      classes: <String>[],
+      backgrounds: <CompendiumBackground>[],
+      generatedAbilityScoreSet: <int>[15, 14, 13, 12, 10, 8],
+      manualAbilityScoreOptions: <int>[8, 9, 10, 11, 12, 13, 14, 15],
+      characterAdvancement: <CharacterAdvancementEntry>[],
+      standardArrayByClass: <StandardArrayByClassEntry>[],
+      spells: <CompendiumSpell>[],
+      feats: <CompendiumFeat>[],
+      monsters: <CompendiumMonster>[],
+      equipmentSummariesByClass: <String, EquipmentSummaryViewData>{},
+      equipmentLoadoutsByClass: <String, List<CompendiumEquipmentLoadout>>{},
+    );
+    const compendiumRepository = InMemoryCompendiumRepository(incompleteCatalog);
+
+    await tester.pumpWidget(
+      AdventureVaultApp(
+        characterRepository: InMemoryCharacterRepository.empty(
+          compendiumRepository: compendiumRepository,
+        ),
+        compendiumRepository: compendiumRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Continuar offline'));
+    await tester.tap(find.text('Continuar offline'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Crear personaje nuevo'));
+    await tester.tap(find.text('Crear personaje nuevo'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Compendio incompleto'), findsOneWidget);
+    expect(
+      find.textContaining(
+        'faltan datos del compendio para: Race, Background, Class',
+      ),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(OutlinedButton, 'Volver al menu'), findsOneWidget);
+  });
 }
 
 const _testCatalog = CompendiumCatalog(
