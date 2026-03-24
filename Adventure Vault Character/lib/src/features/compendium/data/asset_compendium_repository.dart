@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:flutter/services.dart';

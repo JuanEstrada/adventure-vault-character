@@ -1,6 +1,6 @@
 import 'package:adventure_vault_character/src/app/adventure_vault_app.dart';
 import 'package:adventure_vault_character/src/features/characters/data/in_memory_character_repository.dart';
-import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/in_memory_compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:flutter/material.dart';
@@ -142,13 +142,13 @@ void main() {
     final savedCharacter = character!;
     expect(savedCharacter.identity.className, 'Wizard');
     expect(
-      savedCharacter.abilities.abilityRows
+      savedCharacter.abilities.entries
           .firstWhere((row) => row.label == 'Strength')
           .score,
       8,
     );
     expect(
-      savedCharacter.abilities.abilityRows
+      savedCharacter.abilities.entries
           .firstWhere((row) => row.label == 'Intelligence')
           .score,
       15,

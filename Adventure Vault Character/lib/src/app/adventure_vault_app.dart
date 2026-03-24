@@ -37,7 +37,8 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
     super.initState();
     final compendiumRepository =
         widget.compendiumRepository ?? AssetCompendiumRepository();
-    final repository = widget.characterRepository ??
+    final repository =
+        widget.characterRepository ??
         _createDefaultRepository(compendiumRepository);
     _controller = AppController(
       characterRepository: repository,
@@ -86,29 +87,29 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
           final state = _controller.state;
           return switch (state.screen) {
             AppScreen.bootstrap => BootstrapScreen(
-                isLoading: state.isInitializing,
-                errorMessage: state.errorMessage,
-                onRetry: _controller.initialize,
-              ),
+              isLoading: state.isInitializing,
+              errorMessage: state.errorMessage,
+              onRetry: _controller.initialize,
+            ),
             AppScreen.access => AccessScreen(
-                onContinueOffline: _controller.continueOffline,
-              ),
+              onContinueOffline: _controller.continueOffline,
+            ),
             AppScreen.mainMenu => MainMenuScreen(
-                characterSummaries: state.characterSummaries,
-                onCreateCharacter: _controller.openCreateCharacter,
-                onOpenCharacter: _controller.openCharacter,
-              ),
+              characterSummaries: state.characterSummaries,
+              onCreateCharacter: _controller.openCreateCharacter,
+              onOpenCharacter: _controller.openCharacter,
+            ),
             AppScreen.createCharacter => CreateCharacterScreen(
-                catalog: state.compendiumCatalog!,
-                isSaving: state.isSavingCharacter,
-                errorMessage: state.errorMessage,
-                onCancel: _controller.openMainMenu,
-                onSave: _controller.createCharacter,
-              ),
+              catalog: state.compendiumCatalog!,
+              isSaving: state.isSavingCharacter,
+              errorMessage: state.errorMessage,
+              onCancel: _controller.openMainMenu,
+              onSave: _controller.createCharacter,
+            ),
             AppScreen.characterSheet => CharacterSheetScreen(
-                character: state.selectedCharacterSheet!,
-                onBack: _controller.openMainMenu,
-              ),
+              character: state.selectedCharacterSheet!,
+              onBack: _controller.openMainMenu,
+            ),
           };
         },
       ),

@@ -1,4 +1,4 @@
-import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:flutter/material.dart';
 
 class CharacterSheetScreen extends StatelessWidget {
@@ -8,7 +8,7 @@ class CharacterSheetScreen extends StatelessWidget {
     super.key,
   });
 
-  final CharacterSheetViewData character;
+  final CharacterDomainModel character;
   final VoidCallback onBack;
 
   @override
@@ -43,7 +43,7 @@ class CharacterSheetScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${character.identity.raceName}  •  ${character.identity.className}  •  Nivel ${character.identity.level}  •  XP ${character.identity.experience}',
+                  '${character.identity.raceName}  •  ${character.identity.className}  •  Nivel ${character.identity.progression.level}  •  XP ${character.identity.progression.experience}',
                   style: theme.textTheme.titleMedium,
                 ),
               ],
@@ -111,7 +111,7 @@ class CharacterSheetScreen extends StatelessWidget {
 class _IdentityPanel extends StatelessWidget {
   const _IdentityPanel({required this.character});
 
-  final CharacterSheetViewData character;
+  final CharacterDomainModel character;
 
   @override
   Widget build(BuildContext context) {
@@ -135,19 +135,19 @@ class _IdentityPanel extends StatelessWidget {
             _FactRow(label: 'Clase', value: character.identity.className),
             _FactRow(
               label: 'Nivel',
-              value: character.identity.level.toString(),
+              value: character.identity.progression.level.toString(),
             ),
             _FactRow(
               label: 'XP',
-              value: character.identity.experience.toString(),
+              value: character.identity.progression.experience.toString(),
             ),
             _FactRow(
               label: 'Prof.',
-              value: '+${character.identity.proficiencyBonus}',
+              value: '+${character.identity.progression.proficiencyBonus}',
             ),
             _FactRow(
               label: 'Progress',
-              value: '${character.identity.levelProgressPercent}%',
+              value: '${character.identity.progression.levelProgressPercent}%',
             ),
           ],
         ),
@@ -189,7 +189,7 @@ class _FactRow extends StatelessWidget {
 class _CombatPanel extends StatelessWidget {
   const _CombatPanel({required this.character});
 
-  final CharacterSheetViewData character;
+  final CharacterDomainModel character;
 
   @override
   Widget build(BuildContext context) {
@@ -210,15 +210,15 @@ class _CombatPanel extends StatelessWidget {
             const SizedBox(height: 12),
             _FactRow(
               label: 'Current HP',
-              value: '${character.combat.currentHitPoints}',
+              value: '${character.combat.hitPoints.current}',
             ),
             _FactRow(
               label: 'Max HP',
-              value: '${character.combat.maximumHitPoints}',
+              value: '${character.combat.hitPoints.maximum}',
             ),
             _FactRow(
               label: 'Temp HP',
-              value: '${character.combat.temporaryHitPoints}',
+              value: '${character.combat.hitPoints.temporary}',
             ),
             if (character.combat.savingThrows.isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -230,9 +230,7 @@ class _CombatPanel extends StatelessWidget {
                 children: character.combat.savingThrows
                     .map(
                       (row) => Chip(
-                        label: Text(
-                          '${row.label} ${row.bonus >= 0 ? '+${row.bonus}' : row.bonus}',
-                        ),
+                        label: Text('${row.displayLabel} ${row.displayBonus}'),
                       ),
                     )
                     .toList(growable: false),
@@ -248,7 +246,7 @@ class _CombatPanel extends StatelessWidget {
 class _AbilitiesPanel extends StatelessWidget {
   const _AbilitiesPanel({required this.character});
 
-  final CharacterSheetViewData character;
+  final CharacterDomainModel character;
 
   @override
   Widget build(BuildContext context) {
@@ -268,11 +266,11 @@ class _AbilitiesPanel extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              character.abilities.abilityScoreMethodLabel,
+              character.abilities.methodLabel,
               style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 12),
-            ...character.abilities.abilityRows.map(
+            ...character.abilities.entries.map(
               (row) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
@@ -283,7 +281,7 @@ class _AbilitiesPanel extends StatelessWidget {
                     Text(
                       row.modifier >= 0
                           ? '+${row.modifier}'
-                          : row.modifier.toString(),
+                          : '${row.modifier}',
                     ),
                   ],
                 ),
@@ -299,7 +297,7 @@ class _AbilitiesPanel extends StatelessWidget {
 class _FeaturesNotesPanel extends StatelessWidget {
   const _FeaturesNotesPanel({required this.character});
 
-  final CharacterSheetViewData character;
+  final CharacterDomainModel character;
 
   @override
   Widget build(BuildContext context) {
@@ -319,33 +317,33 @@ class _FeaturesNotesPanel extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              character.featuresNotes.backgroundName,
+              character.featuresNotes.background.name,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              character.featuresNotes.backgroundSummary,
+              character.featuresNotes.background.summary,
               style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 12),
             Text('Bonuses', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
-            ...character.featuresNotes.backgroundBonuses.map(
+            ...character.featuresNotes.background.bonusDescriptions.map(
               (item) => Text('• $item'),
             ),
             const SizedBox(height: 12),
             Text('Social perks', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
-            ...character.featuresNotes.backgroundSocialPerks.map(
+            ...character.featuresNotes.background.socialPerkDescriptions.map(
               (item) => Text('• $item'),
             ),
             if (character.featuresNotes.proficientSkills.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text('Skill proficiencies', style: theme.textTheme.titleMedium),
               const SizedBox(height: 8),
-              ...character.featuresNotes.proficientSkills.map(
+              ...character.featuresNotes.proficientSkillLabels.map(
                 (item) => Text('• $item'),
               ),
             ],
@@ -382,7 +380,7 @@ class _FeaturesNotesPanel extends StatelessWidget {
 class _EquipmentPanel extends StatelessWidget {
   const _EquipmentPanel({required this.character});
 
-  final CharacterSheetViewData character;
+  final CharacterDomainModel character;
 
   @override
   Widget build(BuildContext context) {
@@ -410,7 +408,7 @@ class _EquipmentPanel extends StatelessWidget {
             const SizedBox(height: 8),
             _FactRow(
               label: 'Starting money',
-              value: character.equipment.currencySummary,
+              value: character.equipment.money.currencySummary,
             ),
             const SizedBox(height: 4),
             Text(
@@ -418,9 +416,7 @@ class _EquipmentPanel extends StatelessWidget {
               style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 12),
-            ...character.equipment.selectedEquipmentItems.map(
-              (item) => Text('• $item'),
-            ),
+            ...character.equipment.visibleItems.map((item) => Text('• $item')),
           ],
         ),
       ),

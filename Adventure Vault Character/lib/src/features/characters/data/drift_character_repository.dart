@@ -5,8 +5,7 @@ import 'package:adventure_vault_character/src/features/characters/data/local/app
 import 'package:adventure_vault_character/src/features/characters/data/local/character_read_dao.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_reference_dao.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_write_dao.dart';
-import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_mapper.dart';
-import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary_mapper.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
@@ -16,7 +15,6 @@ class DriftCharacterRepository implements CharacterRepository {
   DriftCharacterRepository({
     required AppDatabase database,
     required CompendiumRepository compendiumRepository,
-    CharacterSheetMapper characterSheetMapper = const CharacterSheetMapper(),
     CharacterSummaryMapper characterSummaryMapper =
         const CharacterSummaryMapper(),
   }) : _readDao = CharacterReadDao(database),
@@ -32,7 +30,6 @@ class DriftCharacterRepository implements CharacterRepository {
          database: database,
          readDao: CharacterReadDao(database),
          compendiumRepository: compendiumRepository,
-         characterSheetMapper: characterSheetMapper,
        );
 
   final CharacterReadDao _readDao;
@@ -72,12 +69,12 @@ class DriftCharacterRepository implements CharacterRepository {
   }
 
   @override
-  Future<CharacterSheetViewData?> getCharacterSheetById(String id) {
+  Future<CharacterDomainModel?> getCharacterSheetById(String id) {
     return _characterSheetService.getCharacterSheetById(id);
   }
 
   @override
-  Stream<CharacterSheetViewData?> watchCharacterSheetById(String id) {
+  Stream<CharacterDomainModel?> watchCharacterSheetById(String id) {
     return _characterSheetService.watchCharacterSheetById(id);
   }
 }

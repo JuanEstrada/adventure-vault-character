@@ -3,9 +3,8 @@ import 'dart:async';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_read_dao.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_mapper.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_record.dart';
-import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_mapper.dart';
-import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:drift/drift.dart';
@@ -16,26 +15,23 @@ class CharacterSheetService {
     required CharacterReadDao readDao,
     required CompendiumRepository compendiumRepository,
     CharacterDomainMapper characterDomainMapper = const CharacterDomainMapper(),
-    CharacterSheetMapper characterSheetMapper = const CharacterSheetMapper(),
   }) : _database = database,
        _readDao = readDao,
        _compendiumRepository = compendiumRepository,
-       _characterDomainMapper = characterDomainMapper,
-       _characterSheetMapper = characterSheetMapper;
+       _characterDomainMapper = characterDomainMapper;
 
   final AppDatabase _database;
   final CharacterReadDao _readDao;
   final CompendiumRepository _compendiumRepository;
   final CharacterDomainMapper _characterDomainMapper;
-  final CharacterSheetMapper _characterSheetMapper;
   Future<CompendiumCatalog>? _catalogFuture;
 
-  Future<CharacterSheetViewData?> getCharacterSheetById(String id) async {
+  Future<CharacterDomainModel?> getCharacterSheetById(String id) async {
     return _loadCharacterSheet(id);
   }
 
-  Stream<CharacterSheetViewData?> watchCharacterSheetById(String id) {
-    return Stream<CharacterSheetViewData?>.multi((controller) {
+  Stream<CharacterDomainModel?> watchCharacterSheetById(String id) {
+    return Stream<CharacterDomainModel?>.multi((controller) {
       Future<void> emitCurrent() async {
         controller.add(await _loadCharacterSheet(id));
       }
@@ -88,7 +84,7 @@ class CharacterSheetService {
     });
   }
 
-  Future<CharacterSheetViewData?> _loadCharacterSheet(String id) async {
+  Future<CharacterDomainModel?> _loadCharacterSheet(String id) async {
     final row = await _readDao.getCharacterRowById(id);
     if (row == null) {
       return null;
@@ -117,7 +113,7 @@ class CharacterSheetService {
     );
     final character = _characterDomainMapper.map(record);
 
-    return _characterSheetMapper.map(character);
+    return character;
   }
 
   Future<CompendiumCatalog> _loadCatalog() {

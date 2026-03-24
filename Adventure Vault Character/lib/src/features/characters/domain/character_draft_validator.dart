@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 @immutable
 class CharacterDraftValidationResult {
   const CharacterDraftValidationResult.valid()
-      : missingSections = const <String>[];
+    : missingSections = const <String>[];
 
   const CharacterDraftValidationResult.invalid(this.missingSections);
 

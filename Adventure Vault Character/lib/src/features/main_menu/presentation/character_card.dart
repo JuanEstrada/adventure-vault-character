@@ -29,8 +29,10 @@ class CharacterSummaryCard extends StatelessWidget {
                 color: const Color(0xFFDBC8AC),
                 child: summary.portraitAssetPath == null
                     ? const Icon(Icons.shield_outlined, size: 54)
-                    : Image.asset(summary.portraitAssetPath!,
-                        fit: BoxFit.cover),
+                    : Image.asset(
+                        summary.portraitAssetPath!,
+                        fit: BoxFit.cover,
+                      ),
               ),
               Padding(
                 padding: const EdgeInsets.all(16),

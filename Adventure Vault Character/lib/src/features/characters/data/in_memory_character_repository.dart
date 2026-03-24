@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
-import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary_mapper.dart';
@@ -63,7 +63,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
   }
 
   @override
-  Future<CharacterSheetViewData?> getCharacterSheetById(String id) async {
+  Future<CharacterDomainModel?> getCharacterSheetById(String id) async {
     final summary = await getCharacterSummaryById(id);
     if (summary == null) {
       return null;
@@ -78,28 +78,28 @@ class InMemoryCharacterRepository implements CharacterRepository {
         .equipmentLoadoutsForClass(summary.className)
         .first;
 
-    return CharacterSheetViewData(
+    return CharacterDomainModel(
       id: summary.id,
-      identity: IdentityPanelViewData(
+      identity: CharacterIdentityDomainModel(
         name: summary.name,
         raceName: summary.raceName,
         className: summary.className,
-        level: summary.level,
-        experience: createdInput?.experience ?? 0,
-        proficiencyBonus: 2,
-        levelProgressPercent: 0,
-      ),
-      combat: CombatPanelViewData(
-        currentHitPoints: createdInput?.currentHitPoints ?? 10,
-        maximumHitPoints: createdInput?.maximumHitPoints ?? 10,
-        temporaryHitPoints: createdInput?.temporaryHitPoints ?? 0,
-        savingThrows: const <SavingThrowRowViewData>[],
-      ),
-      abilities: AbilitiesPanelViewData(
-        abilityScoreMethodLabel: _abilityMethodLabel(
-          createdInput?.abilityScoreMethod,
+        progression: CharacterProgressionDomainModel(
+          level: summary.level,
+          experience: createdInput?.experience ?? 0,
         ),
-        abilityRows: <AbilityScoreRowViewData>[
+      ),
+      combat: CharacterCombatDomainModel(
+        hitPoints: CharacterHitPointsDomainModel(
+          current: createdInput?.currentHitPoints ?? 10,
+          maximum: createdInput?.maximumHitPoints ?? 10,
+          temporary: createdInput?.temporaryHitPoints ?? 0,
+        ),
+        savingThrows: const <CharacterSavingThrowDomainModel>[],
+      ),
+      abilities: CharacterAbilitiesDomainModel(
+        methodKey: createdInput?.abilityScoreMethod,
+        entries: <CharacterAbilityScoreDomainModel>[
           _abilityRow('Strength', createdInput?.strength ?? 15),
           _abilityRow('Dexterity', createdInput?.dexterity ?? 14),
           _abilityRow('Constitution', createdInput?.constitution ?? 13),
@@ -108,54 +108,72 @@ class InMemoryCharacterRepository implements CharacterRepository {
           _abilityRow('Charisma', createdInput?.charisma ?? 8),
         ],
       ),
-      featuresNotes: FeaturesNotesPanelViewData(
-        backgroundName: createdInput?.backgroundName ?? background.name,
-        backgroundSummary:
-            createdInput?.backgroundSummary ?? background.summary,
-        backgroundBonuses: background.bonuses,
-        backgroundSocialPerks: background.socialPerks,
-        proficientSkills: const <String>[],
-        otherProficiencies: const <String>[],
+      featuresNotes: CharacterFeaturesNotesDomainModel(
+        background: CharacterBackgroundDomainModel(
+          name: createdInput?.backgroundName ?? background.name,
+          summary: createdInput?.backgroundSummary ?? background.summary,
+          bonuses: background.bonuses
+              .map(_mapBackgroundEntry)
+              .toList(growable: false),
+          socialPerks: background.socialPerks
+              .map(_mapBackgroundEntry)
+              .toList(growable: false),
+        ),
+        proficientSkills: const <CharacterSkillDomainModel>[],
+        otherProficiencies: const <CharacterProficiencyDomainModel>[],
         alignment: createdInput?.alignment ?? 'Neutral',
         appearanceDetails: createdInput?.appearanceDetails ?? '',
         narrativeDetails: createdInput?.narrativeDetails ?? '',
       ),
-      equipment: EquipmentPanelViewData(
+      equipment: CharacterEquipmentDomainModel(
         equipmentSummary: catalog.equipmentSummaryForClass(summary.className),
         selectedEquipmentLabel:
             createdInput?.equipmentLoadoutLabel ?? equipmentLoadout.label,
-        currencySummary:
-            createdInput?.startingMoneySummary ??
-            equipmentLoadout.startingMoneySummary,
-        startingMoneySummary:
-            createdInput?.startingMoneySummary ??
-            equipmentLoadout.startingMoneySummary,
-        selectedEquipmentItems:
-            createdInput?.selectedEquipmentItems ??
-            equipmentLoadout.selectedItems,
+        money: CharacterMoneySummaryDomainModel(
+          currencySummary:
+              createdInput?.startingMoneySummary ??
+              equipmentLoadout.startingMoneySummary,
+          startingMoneySummary:
+              createdInput?.startingMoneySummary ??
+              equipmentLoadout.startingMoneySummary,
+        ),
+        items:
+            (createdInput?.selectedEquipmentItems ??
+                    equipmentLoadout.selectedItems)
+                .map(
+                  (item) => CharacterEquipmentItemDomainModel(
+                    name: item,
+                    quantity: 1,
+                    isEquipped: false,
+                  ),
+                )
+                .toList(growable: false),
       ),
     );
   }
 
   @override
-  Stream<CharacterSheetViewData?> watchCharacterSheetById(String id) async* {
+  Stream<CharacterDomainModel?> watchCharacterSheetById(String id) async* {
     yield await getCharacterSheetById(id);
     yield* _changes.stream.asyncMap((_) => getCharacterSheetById(id));
   }
 
-  AbilityScoreRowViewData _abilityRow(String label, int score) {
-    return AbilityScoreRowViewData(
-      label: label,
-      score: score,
-      modifier: ((score - 10) / 2).floor(),
-    );
+  CharacterAbilityScoreDomainModel _abilityRow(String label, int score) {
+    return CharacterAbilityScoreDomainModel(label: label, score: score);
   }
 
-  String _abilityMethodLabel(String? method) {
-    return switch (method) {
-      'generatedSetAssignment' => 'Generated set assignment',
-      'manualPointAllocation' => 'Manual point allocation',
-      _ => 'Generated set assignment',
-    };
+  CharacterBackgroundEntryDomainModel _mapBackgroundEntry(String raw) {
+    final separatorIndex = raw.indexOf(':');
+    if (separatorIndex <= 0 || separatorIndex >= raw.length - 1) {
+      return CharacterBackgroundEntryDomainModel(
+        label: raw.trim(),
+        description: '',
+      );
+    }
+
+    return CharacterBackgroundEntryDomainModel(
+      label: raw.substring(0, separatorIndex).trim(),
+      description: raw.substring(separatorIndex + 1).trim(),
+    );
   }
 }

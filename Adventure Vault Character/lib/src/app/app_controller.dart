@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:adventure_vault_character/src/core/navigation/app_screen.dart';
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_draft_validator.dart';
-import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
@@ -36,7 +36,7 @@ class AppState {
   final bool isSavingCharacter;
   final List<CharacterSummary> characterSummaries;
   final CompendiumCatalog? compendiumCatalog;
-  final CharacterSheetViewData? selectedCharacterSheet;
+  final CharacterDomainModel? selectedCharacterSheet;
   final String? errorMessage;
 
   AppState copyWith({
@@ -45,7 +45,7 @@ class AppState {
     bool? isSavingCharacter,
     List<CharacterSummary>? characterSummaries,
     CompendiumCatalog? compendiumCatalog,
-    CharacterSheetViewData? selectedCharacterSheet,
+    CharacterDomainModel? selectedCharacterSheet,
     String? errorMessage,
     bool clearSelectedCharacter = false,
     bool clearError = false,
@@ -78,7 +78,7 @@ class AppController extends ChangeNotifier {
   final CompendiumRepository _compendiumRepository;
   final CharacterDraftValidator _characterDraftValidator;
   StreamSubscription<List<CharacterSummary>>? _characterSummariesSubscription;
-  StreamSubscription<CharacterSheetViewData?>? _selectedCharacterSubscription;
+  StreamSubscription<CharacterDomainModel?>? _selectedCharacterSubscription;
 
   AppState _state = const AppState.initial();
 

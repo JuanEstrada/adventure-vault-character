@@ -1,6 +1,6 @@
 import 'package:adventure_vault_character/src/features/characters/data/drift_character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
-import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/in_memory_compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
@@ -72,19 +72,19 @@ void main() {
       expect(row.selectedEquipmentItems, isNull);
 
       expect(sheet, isNotNull);
-      expect(sheet!.featuresNotes.backgroundName, 'Acolyte');
-      expect(sheet.featuresNotes.backgroundSummary, 'Temple acolyte');
-      expect(sheet.identity.proficiencyBonus, 3);
+      expect(sheet!.featuresNotes.background.name, 'Acolyte');
+      expect(sheet.featuresNotes.background.summary, 'Temple acolyte');
+      expect(sheet.identity.progression.proficiencyBonus, 3);
       expect(
-        sheet.abilities.abilityRows
+        sheet.abilities.entries
             .firstWhere((row) => row.label == 'Intelligence')
             .score,
         15,
       );
       expect(sheet.equipment.selectedEquipmentLabel, 'Arcane focus kit');
-      expect(sheet.equipment.startingMoneySummary, '15 gp, 4 sp');
+      expect(sheet.equipment.money.startingMoneySummary, '15 gp, 4 sp');
       expect(
-        sheet.equipment.selectedEquipmentItems,
+        sheet.equipment.visibleItems,
         containsAll(<String>[
           'Quarterstaff (equipped)',
           'Component pouch',

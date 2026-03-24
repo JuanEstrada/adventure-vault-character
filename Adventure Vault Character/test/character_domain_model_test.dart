@@ -1,6 +1,5 @@
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
-import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_mapper.dart';
-import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -112,9 +111,6 @@ void main() {
         ),
       );
 
-      const mapper = CharacterSheetMapper();
-      final sheet = mapper.map(character);
-
       expect(character.identity.progression.proficiencyBonus, 3);
       expect(character.identity.progression.levelProgressPercent, 20);
       expect(character.combat.savingThrows.first.displayLabel, 'Wisdom');
@@ -133,22 +129,6 @@ void main() {
         'Weapon: Simple Weapons',
       ]);
       expect(character.equipment.visibleItems, <String>[
-        'Quarterstaff (equipped)',
-        'Torch x3',
-      ]);
-      expect(sheet.identity.proficiencyBonus, 3);
-      expect(sheet.abilities.abilityRows[3].modifier, 2);
-      expect(sheet.featuresNotes.backgroundBonuses, <String>[
-        'Skills: Insight, Religion',
-      ]);
-      expect(sheet.featuresNotes.proficientSkills, <String>[
-        'Arcana',
-        'History (expertise)',
-      ]);
-      expect(sheet.featuresNotes.otherProficiencies, <String>[
-        'Weapon: Simple Weapons',
-      ]);
-      expect(sheet.equipment.selectedEquipmentItems, <String>[
         'Quarterstaff (equipped)',
         'Torch x3',
       ]);
