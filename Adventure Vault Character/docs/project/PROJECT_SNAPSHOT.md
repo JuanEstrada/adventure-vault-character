@@ -61,23 +61,23 @@ sheet flow stable.
   `create character` and `character sheet` loading, with shared summary
   mapping extracted from the repository implementation.
 - Character-sheet reads now flow through a dedicated read-side domain layer:
-  `CharacterRecord` gathers the read inputs, `CharacterDomainMapper`
-  translates them into a read model, and `CharacterSheetMapper` now depends
-  on that domain model instead of on Drift rows.
-- The character sheet view data is now split into panel-specific contracts for
-  `identity`, `combat`, `abilities`, `features / notes`, and `equipment`
-  instead of one flat sheet DTO.
+  `CharacterRecord` gathers the read inputs and `CharacterDomainMapper`
+  translates them into `CharacterDomainModel`.
+- The character sheet now renders directly from `CharacterDomainModel`
+  instead of from a separate flat sheet DTO layer.
 - Small sheet-facing derived rules now sit in the read domain rather than the
   view mapper, including ability modifiers, proficiency bonus by level,
   level progress percent, formatted proficiencies, and visible equipment item
   composition.
 - The read-side domain now also uses dedicated value objects for progression,
   hit points, background outputs, and money/equipment summaries, which makes
-  the sheet mapper closer to a pure projection layer.
+  the UI path closer to a direct domain render path.
 - Background entries, proficient skills, and saving throws are now also
   represented explicitly in the read domain instead of being flattened at the
-  first mapping step, which reduces incidental string formatting in the UI
-  mapper.
+  first mapping step, which reduces incidental string formatting in widgets.
+- The previous `CharacterSheetMapper` and `CharacterSheetViewData` layer has
+  been removed, with `EquipmentSummaryViewData` retained separately as a small
+  shared compendium/UI type.
 - Drift persistence responsibilities are now split into focused DAOs for
   `read`, `reference/seed`, and `write` work.
 - The character sheet now renders mapped MVP data for identity, background,
@@ -139,8 +139,8 @@ sheet flow stable.
 
 ## Work In Progress
 
-- Extending the new read-side domain model and keeping it coherent as more
-  sheet logic and future edit flows move away from direct persistence mapping.
+- Extending the new read-side domain model and using it as the basis for
+  future edit flows without reintroducing flat UI mapping layers.
 
 ## Pending Work
 
@@ -150,8 +150,8 @@ sheet flow stable.
 - Define application services and mappers for full guided character creation,
   card summaries, and character-sheet rendering beyond the current first
   service split.
-- Decide how far the new read-side character domain model should expand before
-  edit workflows begin to depend on it.
+- Define how the next editing-oriented character domain should reuse the
+  current read-side value objects and boundaries.
 - Decide when the local normalized compendium catalog becomes a generated or
   parsed XML-backed source instead of curated asset data.
 - Map the approved MVP flow into implementation tasks in `lib/`.
@@ -180,9 +180,8 @@ sheet flow stable.
 
 ## Next Recommended Steps
 
-1. Introduce a read-side character domain model that can feed the new
-   panel-specific sheet contracts without mapping straight from persistence
-   rows.
+1. Build the next editing-oriented character domain on top of the current
+   read-side model instead of introducing another UI-facing mapper layer.
 2. Deepen the parsed compendium fidelity beyond the current XML base starter
    dataset.
 3. Break the approved MVP flow into implementation tasks in `lib/`.
