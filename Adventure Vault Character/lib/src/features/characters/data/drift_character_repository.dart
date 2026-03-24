@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
@@ -196,25 +197,85 @@ class DriftCharacterRepository implements CharacterRepository {
 
   @override
   Future<CharacterSheetViewData?> getCharacterSheetById(String id) async {
+    return _loadCharacterSheet(id);
+  }
+
+  @override
+  Stream<CharacterSheetViewData?> watchCharacterSheetById(String id) {
+    return Stream<CharacterSheetViewData?>.multi((controller) {
+      Future<void> emitCurrent() async {
+        controller.add(await _loadCharacterSheet(id));
+      }
+
+      final subscriptions = <StreamSubscription<Object?>>[
+        _readDao.watchCharacterRowById(id).listen((_) => emitCurrent()),
+        _database
+            .tableUpdates(
+              TableUpdateQuery.onTable(_database.characterAbilityScores),
+            )
+            .listen((_) => emitCurrent()),
+        _database
+            .tableUpdates(TableUpdateQuery.onTable(_database.characterCurrency))
+            .listen((_) => emitCurrent()),
+        _database
+            .tableUpdates(
+              TableUpdateQuery.onTable(_database.characterInventory),
+            )
+            .listen((_) => emitCurrent()),
+        _database
+            .tableUpdates(
+              TableUpdateQuery.onTable(_database.characterSavingThrows),
+            )
+            .listen((_) => emitCurrent()),
+        _database
+            .tableUpdates(TableUpdateQuery.onTable(_database.characterSkills))
+            .listen((_) => emitCurrent()),
+        _database
+            .tableUpdates(
+              TableUpdateQuery.onTable(_database.characterProficiencies),
+            )
+            .listen((_) => emitCurrent()),
+        _database
+            .tableUpdates(TableUpdateQuery.onTable(_database.skillDefinitions))
+            .listen((_) => emitCurrent()),
+      ];
+
+      unawaited(emitCurrent());
+
+      controller.onCancel = () async {
+        for (final subscription in subscriptions) {
+          await subscription.cancel();
+        }
+      };
+    });
+  }
+
+  Future<CharacterSheetViewData?> _loadCharacterSheet(String id) async {
     final row = await _readDao.getCharacterRowById(id);
     if (row == null) {
       return null;
     }
 
     final catalog = await _loadCatalog();
-    return _characterSheetMapper.map(row, catalog);
-  }
+    final abilityScores = await _readDao.getAbilityScoresByCharacterId(id);
+    final currency = await _readDao.getCurrencyByCharacterId(id);
+    final inventory = await _readDao.getInventoryByCharacterId(id);
+    final savingThrows = await _readDao.getSavingThrowsByCharacterId(id);
+    final skills = await _readDao.getSkillsByCharacterId(id);
+    final skillDefinitions = await _readDao.getSkillDefinitions();
+    final proficiencies = await _readDao.getProficienciesByCharacterId(id);
 
-  @override
-  Stream<CharacterSheetViewData?> watchCharacterSheetById(String id) {
-    return _readDao.watchCharacterRowById(id).asyncMap((row) async {
-      if (row == null) {
-        return null;
-      }
-
-      final catalog = await _loadCatalog();
-      return _characterSheetMapper.map(row, catalog);
-    });
+    return _characterSheetMapper.map(
+      row,
+      catalog,
+      abilityScores: abilityScores,
+      currency: currency,
+      inventory: inventory,
+      savingThrows: savingThrows,
+      skills: skills,
+      skillDefinitions: skillDefinitions,
+      proficiencies: proficiencies,
+    );
   }
 
   List<CharacterSummary> _mapCharacterSummaries(List<Character> rows) {

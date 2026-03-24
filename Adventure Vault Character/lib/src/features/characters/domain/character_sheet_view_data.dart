@@ -22,8 +22,12 @@ class CharacterSheetViewData {
     required this.abilityRows,
     required this.equipmentSummary,
     required this.selectedEquipmentLabel,
+    required this.currencySummary,
     required this.startingMoneySummary,
     required this.selectedEquipmentItems,
+    required this.savingThrows,
+    required this.proficientSkills,
+    required this.otherProficiencies,
     required this.alignment,
     required this.appearanceDetails,
     required this.narrativeDetails,
@@ -48,8 +52,12 @@ class CharacterSheetViewData {
   final List<AbilityScoreRowViewData> abilityRows;
   final EquipmentSummaryViewData equipmentSummary;
   final String selectedEquipmentLabel;
+  final String currencySummary;
   final String startingMoneySummary;
   final List<String> selectedEquipmentItems;
+  final List<SavingThrowRowViewData> savingThrows;
+  final List<String> proficientSkills;
+  final List<String> otherProficiencies;
   final String alignment;
   final String appearanceDetails;
   final String narrativeDetails;
@@ -66,6 +74,19 @@ class AbilityScoreRowViewData {
   final String label;
   final int score;
   final int modifier;
+}
+
+@immutable
+class SavingThrowRowViewData {
+  const SavingThrowRowViewData({
+    required this.label,
+    required this.bonus,
+    required this.isProficient,
+  });
+
+  final String label;
+  final int bonus;
+  final bool isProficient;
 }
 
 @immutable

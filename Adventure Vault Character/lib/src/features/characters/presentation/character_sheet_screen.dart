@@ -208,6 +208,24 @@ class _CombatPanel extends StatelessWidget {
               label: 'Temp HP',
               value: '${character.temporaryHitPoints}',
             ),
+            if (character.savingThrows.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text('Saving Throws', style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: character.savingThrows
+                    .map(
+                      (row) => Chip(
+                        label: Text(
+                          '${row.label} ${row.bonus >= 0 ? '+${row.bonus}' : row.bonus}',
+                        ),
+                      ),
+                    )
+                    .toList(growable: false),
+              ),
+            ],
           ],
         ),
       ),
@@ -304,6 +322,18 @@ class _FeaturesNotesPanel extends StatelessWidget {
             Text('Social perks', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             ...character.backgroundSocialPerks.map((item) => Text('• $item')),
+            if (character.proficientSkills.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text('Skill proficiencies', style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              ...character.proficientSkills.map((item) => Text('• $item')),
+            ],
+            if (character.otherProficiencies.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text('Other proficiencies', style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              ...character.otherProficiencies.map((item) => Text('• $item')),
+            ],
             const SizedBox(height: 12),
             _FactRow(label: 'Alignment', value: character.alignment),
             if (character.appearanceDetails.isNotEmpty)
@@ -346,10 +376,7 @@ class _EquipmentPanel extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            _FactRow(
-              label: 'Starting money',
-              value: character.startingMoneySummary,
-            ),
+            _FactRow(label: 'Starting money', value: character.currencySummary),
             const SizedBox(height: 4),
             Text(
               character.equipmentSummary.description,

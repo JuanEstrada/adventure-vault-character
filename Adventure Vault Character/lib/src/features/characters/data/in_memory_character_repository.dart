@@ -109,12 +109,18 @@ class InMemoryCharacterRepository implements CharacterRepository {
       equipmentSummary: catalog.equipmentSummaryForClass(summary.className),
       selectedEquipmentLabel:
           createdInput?.equipmentLoadoutLabel ?? equipmentLoadout.label,
+      currencySummary:
+          createdInput?.startingMoneySummary ??
+          equipmentLoadout.startingMoneySummary,
       startingMoneySummary:
           createdInput?.startingMoneySummary ??
           equipmentLoadout.startingMoneySummary,
       selectedEquipmentItems:
           createdInput?.selectedEquipmentItems ??
           equipmentLoadout.selectedItems,
+      savingThrows: const <SavingThrowRowViewData>[],
+      proficientSkills: const <String>[],
+      otherProficiencies: const <String>[],
       alignment: createdInput?.alignment ?? 'Neutral',
       appearanceDetails: createdInput?.appearanceDetails ?? '',
       narrativeDetails: createdInput?.narrativeDetails ?? '',
