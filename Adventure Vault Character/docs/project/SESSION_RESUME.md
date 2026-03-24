@@ -79,11 +79,30 @@ Verified on 2026-03-24:
   now also pulls from the normalized Drift tables for `ability scores`,
   `currency`, `inventory`, `saving throws`, `skills`, and `proficiencies`
   instead of relying only on snapshot fields in `characters`.
+- New character creation now keeps redundant `characters` snapshots narrower:
+  `background name / summary`, raw `ability score` columns, and equipment /
+  currency snapshot payloads are no longer written for new records when
+  normalized tables already carry the real data.
+- Character-sheet mapping now prefers normalized reads and background
+  definition records over `characters` snapshot columns, leaving those
+  snapshots as compatibility fallback only.
+- `background_definition_ref_id` now stores the raw background id
+  consistently with the migration backfill, while the read path still accepts
+  the previous prefixed legacy form for compatibility.
 - The character sheet now renders normalized `saving throws`,
   `skill proficiencies`, `other proficiencies`, and inventory-derived
   equipment labels.
 - Drift persistence is now split across focused DAOs for `read`,
   `reference/seed`, and `write` responsibilities.
+- The characters feature now also has an explicit application layer:
+  `CreateCharacterService` coordinates draft persistence,
+  `CharacterSheetService` assembles sheet reads, and
+  `CharacterSummaryMapper` defines summary mapping shared across repository
+  implementations.
+- The character sheet view contract is now split into panel-specific view
+  models for `identity`, `combat`, `abilities`, `features / notes`, and
+  `equipment`, so future panel growth no longer requires inflating one flat
+  screen DTO.
 - Drift migration regression coverage now exists for `v1 -> v4` and
   `v3 -> v4`, including verification of backfilled normalized tables.
 - Draft save now runs through a non-widget validator that reports missing
@@ -200,14 +219,12 @@ Primary references:
 
 These are the highest-value unresolved items:
 
-1. Define which `characters` columns remain deliberate snapshots and which
-   should stop being treated as source-of-truth now that normalized tables are
-   active on both write and read paths.
-2. Define application services and task breakdown for `create -> save -> card
-   -> open sheet`.
-3. Decide when XML import moves from documented entry point into a real
+1. Decide whether the next refactor introduces a real read-side character
+   domain model between Drift rows and sheet view models, now that panel-level
+   sheet contracts are separated.
+2. Decide when XML import moves from documented entry point into a real
    implementation slice.
-4. Decide when deeper `Combat` features and the `Equipment` panel move from
+3. Decide when deeper `Combat` features and the `Equipment` panel move from
    MVP-minimal states into populated panels.
 
 Resolved MVP decision:
@@ -240,15 +257,13 @@ Resolved MVP decision:
 The next logical session should build on the current shell instead of
 restructuring it again:
 
-1. Audit and reduce redundant snapshot data in `characters` now that the
-   normalized Drift tables are actively used on the read side.
-2. Add application services and mapping boundaries for character creation,
-   character-card summaries, and character-sheet view models.
-3. Replace the remaining curated or fallback compendium dependency with a more
+1. Introduce a read-side character domain model that can sit between
+   normalized persistence and the new panel-specific sheet view models.
+2. Replace the remaining curated or fallback compendium dependency with a more
    generated or parsed source derived from `local-assets`.
-4. Break the approved `create -> save -> card -> open sheet` flow into
+3. Break the approved `create -> save -> card -> open sheet` flow into
    concrete implementation tasks in `lib/`.
-5. Keep `HP` in scope as real MVP character-sheet data, not as a deferred
+4. Keep `HP` in scope as real MVP character-sheet data, not as a deferred
    combat placeholder.
 
 Next-session starting point:
@@ -264,7 +279,9 @@ Next-session starting point:
   creation data, with `assets/compendium/catalog.json` retained only as
   fallback.
 - Treat the current `characters` table snapshot fields as compatibility support
-  only where the normalized model still lacks a deliberate replacement.
+  only where the normalized model still lacks a deliberate replacement; for
+  new records, avoid writing redundant snapshot values when normalized tables
+  already persist the same data.
 - Use the accepted flow specs and proposed domain-model docs as the source of
   truth unless a new decision replaces them.
 

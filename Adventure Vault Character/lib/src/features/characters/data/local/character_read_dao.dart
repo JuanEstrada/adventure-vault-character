@@ -73,4 +73,10 @@ class CharacterReadDao {
       _database.characterProficiencies,
     )..where((table) => table.characterId.equals(id))).get();
   }
+
+  Future<BackgroundDefinition?> getBackgroundDefinitionById(String id) {
+    return (_database.select(
+      _database.backgroundDefinitions,
+    )..where((table) => table.id.equals(id))).getSingleOrNull();
+  }
 }

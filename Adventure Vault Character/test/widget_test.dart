@@ -140,20 +140,20 @@ void main() {
 
     expect(character, isNotNull);
     final savedCharacter = character!;
-    expect(savedCharacter.className, 'Wizard');
+    expect(savedCharacter.identity.className, 'Wizard');
     expect(
-      savedCharacter.abilityRows
+      savedCharacter.abilities.abilityRows
           .firstWhere((row) => row.label == 'Strength')
           .score,
       8,
     );
     expect(
-      savedCharacter.abilityRows
+      savedCharacter.abilities.abilityRows
           .firstWhere((row) => row.label == 'Intelligence')
           .score,
       15,
     );
-    expect(savedCharacter.selectedEquipmentLabel, 'Arcane focus kit');
+    expect(savedCharacter.equipment.selectedEquipmentLabel, 'Arcane focus kit');
   });
 
   testWidgets(

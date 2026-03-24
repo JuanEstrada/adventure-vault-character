@@ -18,8 +18,9 @@ Implementation shell established
 ## Current Focus
 
 Stabilizing the normalized Drift model now that both write-side persistence
-and character-sheet read-side mapping use the expanded schema, while keeping
-the guided draft and sheet flow stable.
+and character-sheet read-side mapping use the expanded schema, while reducing
+redundant snapshot dependence in `characters` and keeping the guided draft and
+sheet flow stable.
 
 ## Repository State
 
@@ -48,6 +49,20 @@ the guided draft and sheet flow stable.
 - The Drift repository now also reads normalized character-sheet data for
   `ability scores`, `currency`, `inventory`, `saving throws`, `skills`, and
   `proficiencies`.
+- New character writes now avoid storing redundant background, ability-score,
+  and equipment/currency snapshot payloads in `characters` when normalized
+  tables already persist the same data.
+- Character-sheet mapping now prefers normalized tables and background
+  definitions over `characters` snapshots, with legacy snapshot fallbacks kept
+  only for compatibility.
+- `background_definition_ref_id` is now aligned with migration backfill and
+  stores the raw background id for new records.
+- The characters feature now uses explicit application services for
+  `create character` and `character sheet` loading, with shared summary
+  mapping extracted from the repository implementation.
+- The character sheet view data is now split into panel-specific contracts for
+  `identity`, `combat`, `abilities`, `features / notes`, and `equipment`
+  instead of one flat sheet DTO.
 - Drift persistence responsibilities are now split into focused DAOs for
   `read`, `reference/seed`, and `write` work.
 - The character sheet now renders mapped MVP data for identity, background,
@@ -109,15 +124,20 @@ the guided draft and sheet flow stable.
 
 ## Work In Progress
 
-- Auditing which snapshot fields in `characters` are still necessary now that
-  the normalized Drift tables are active on both write and read paths.
+- Defining the remaining application-service and mapper boundaries around
+  creation, summary cards, and sheet rendering now that the first snapshot
+  reduction is in place.
 
 ## Pending Work
 
 - Remove or narrow redundant snapshot state in `characters` where the
-  normalized tables are now the real source of truth.
+  normalized tables are now the real source of truth, including any remaining
+  schema-level cleanup that should only happen with a deliberate migration.
 - Define application services and mappers for full guided character creation,
-  card summaries, and character-sheet rendering.
+  card summaries, and character-sheet rendering beyond the current first
+  service split.
+- Decide when to introduce a real read-side character domain model between
+  normalized persistence and the now-separated panel view models.
 - Decide when the local normalized compendium catalog becomes a generated or
   parsed XML-backed source instead of curated asset data.
 - Map the approved MVP flow into implementation tasks in `lib/`.
@@ -146,7 +166,9 @@ the guided draft and sheet flow stable.
 
 ## Next Recommended Steps
 
-1. Decide and implement the reduced snapshot surface in `characters`.
+1. Introduce a read-side character domain model that can feed the new
+   panel-specific sheet contracts without mapping straight from persistence
+   rows.
 2. Deepen the parsed compendium fidelity beyond the current XML base starter
    dataset.
 3. Break the approved MVP flow into implementation tasks in `lib/`.
@@ -162,8 +184,8 @@ the guided draft and sheet flow stable.
 ## Risks and Unknowns
 
 - The first domain model is not yet finalized.
-- The read-side mapping still depends partly on snapshot fields in
-  `characters`, even though the normalized tables now exist.
+- Schema-level snapshot cleanup is still pending even though new writes and
+  sheet reads now prefer the normalized model.
 - Background bonuses and social perks still need deeper normalized
   representation if the app moves beyond the current MVP-compatible snapshots.
 - Ability score method state and assignment provenance still need a richer

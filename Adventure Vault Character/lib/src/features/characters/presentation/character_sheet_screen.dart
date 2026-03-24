@@ -21,7 +21,7 @@ class CharacterSheetScreen extends StatelessWidget {
           onPressed: onBack,
           icon: const Icon(Icons.arrow_back),
         ),
-        title: Text(character.name),
+        title: Text(character.identity.name),
       ),
       body: ListView(
         padding: const EdgeInsets.all(24),
@@ -36,14 +36,14 @@ class CharacterSheetScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  character.name,
+                  character.identity.name,
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${character.raceName}  •  ${character.className}  •  Nivel ${character.level}  •  XP ${character.experience}',
+                  '${character.identity.raceName}  •  ${character.identity.className}  •  Nivel ${character.identity.level}  •  XP ${character.identity.experience}',
                   style: theme.textTheme.titleMedium,
                 ),
               ],
@@ -130,15 +130,24 @@ class _IdentityPanel extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _FactRow(label: 'Nombre', value: character.name),
-            _FactRow(label: 'Raza', value: character.raceName),
-            _FactRow(label: 'Clase', value: character.className),
-            _FactRow(label: 'Nivel', value: character.level.toString()),
-            _FactRow(label: 'XP', value: character.experience.toString()),
-            _FactRow(label: 'Prof.', value: '+${character.proficiencyBonus}'),
+            _FactRow(label: 'Nombre', value: character.identity.name),
+            _FactRow(label: 'Raza', value: character.identity.raceName),
+            _FactRow(label: 'Clase', value: character.identity.className),
+            _FactRow(
+              label: 'Nivel',
+              value: character.identity.level.toString(),
+            ),
+            _FactRow(
+              label: 'XP',
+              value: character.identity.experience.toString(),
+            ),
+            _FactRow(
+              label: 'Prof.',
+              value: '+${character.identity.proficiencyBonus}',
+            ),
             _FactRow(
               label: 'Progress',
-              value: '${character.levelProgressPercent}%',
+              value: '${character.identity.levelProgressPercent}%',
             ),
           ],
         ),
@@ -201,21 +210,24 @@ class _CombatPanel extends StatelessWidget {
             const SizedBox(height: 12),
             _FactRow(
               label: 'Current HP',
-              value: '${character.currentHitPoints}',
+              value: '${character.combat.currentHitPoints}',
             ),
-            _FactRow(label: 'Max HP', value: '${character.maximumHitPoints}'),
+            _FactRow(
+              label: 'Max HP',
+              value: '${character.combat.maximumHitPoints}',
+            ),
             _FactRow(
               label: 'Temp HP',
-              value: '${character.temporaryHitPoints}',
+              value: '${character.combat.temporaryHitPoints}',
             ),
-            if (character.savingThrows.isNotEmpty) ...[
+            if (character.combat.savingThrows.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text('Saving Throws', style: theme.textTheme.titleMedium),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: character.savingThrows
+                children: character.combat.savingThrows
                     .map(
                       (row) => Chip(
                         label: Text(
@@ -256,11 +268,11 @@ class _AbilitiesPanel extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              character.abilityScoreMethodLabel,
+              character.abilities.abilityScoreMethodLabel,
               style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 12),
-            ...character.abilityRows.map(
+            ...character.abilities.abilityRows.map(
               (row) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
@@ -307,39 +319,59 @@ class _FeaturesNotesPanel extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              character.backgroundName,
+              character.featuresNotes.backgroundName,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
-            Text(character.backgroundSummary, style: theme.textTheme.bodyLarge),
+            Text(
+              character.featuresNotes.backgroundSummary,
+              style: theme.textTheme.bodyLarge,
+            ),
             const SizedBox(height: 12),
             Text('Bonuses', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
-            ...character.backgroundBonuses.map((item) => Text('• $item')),
+            ...character.featuresNotes.backgroundBonuses.map(
+              (item) => Text('• $item'),
+            ),
             const SizedBox(height: 12),
             Text('Social perks', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
-            ...character.backgroundSocialPerks.map((item) => Text('• $item')),
-            if (character.proficientSkills.isNotEmpty) ...[
+            ...character.featuresNotes.backgroundSocialPerks.map(
+              (item) => Text('• $item'),
+            ),
+            if (character.featuresNotes.proficientSkills.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text('Skill proficiencies', style: theme.textTheme.titleMedium),
               const SizedBox(height: 8),
-              ...character.proficientSkills.map((item) => Text('• $item')),
+              ...character.featuresNotes.proficientSkills.map(
+                (item) => Text('• $item'),
+              ),
             ],
-            if (character.otherProficiencies.isNotEmpty) ...[
+            if (character.featuresNotes.otherProficiencies.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text('Other proficiencies', style: theme.textTheme.titleMedium),
               const SizedBox(height: 8),
-              ...character.otherProficiencies.map((item) => Text('• $item')),
+              ...character.featuresNotes.otherProficiencies.map(
+                (item) => Text('• $item'),
+              ),
             ],
             const SizedBox(height: 12),
-            _FactRow(label: 'Alignment', value: character.alignment),
-            if (character.appearanceDetails.isNotEmpty)
-              _FactRow(label: 'Appearance', value: character.appearanceDetails),
-            if (character.narrativeDetails.isNotEmpty)
-              _FactRow(label: 'Notes', value: character.narrativeDetails),
+            _FactRow(
+              label: 'Alignment',
+              value: character.featuresNotes.alignment,
+            ),
+            if (character.featuresNotes.appearanceDetails.isNotEmpty)
+              _FactRow(
+                label: 'Appearance',
+                value: character.featuresNotes.appearanceDetails,
+              ),
+            if (character.featuresNotes.narrativeDetails.isNotEmpty)
+              _FactRow(
+                label: 'Notes',
+                value: character.featuresNotes.narrativeDetails,
+              ),
           ],
         ),
       ),
@@ -370,20 +402,25 @@ class _EquipmentPanel extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              character.selectedEquipmentLabel,
+              character.equipment.selectedEquipmentLabel,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
-            _FactRow(label: 'Starting money', value: character.currencySummary),
+            _FactRow(
+              label: 'Starting money',
+              value: character.equipment.currencySummary,
+            ),
             const SizedBox(height: 4),
             Text(
-              character.equipmentSummary.description,
+              character.equipment.equipmentSummary.description,
               style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 12),
-            ...character.selectedEquipmentItems.map((item) => Text('• $item')),
+            ...character.equipment.selectedEquipmentItems.map(
+              (item) => Text('• $item'),
+            ),
           ],
         ),
       ),

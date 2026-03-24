@@ -4,6 +4,7 @@ import 'package:adventure_vault_character/src/features/characters/data/character
 import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_summary_mapper.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 
 class InMemoryCharacterRepository implements CharacterRepository {
@@ -23,6 +24,8 @@ class InMemoryCharacterRepository implements CharacterRepository {
   final List<CharacterSummary> _summaries;
   final Map<String, CreateCharacterInput> _createdInputsById;
   final CompendiumRepository _compendiumRepository;
+  final CharacterSummaryMapper _characterSummaryMapper =
+      const CharacterSummaryMapper();
   final StreamController<void> _changes = StreamController<void>.broadcast();
 
   @override
@@ -39,13 +42,9 @@ class InMemoryCharacterRepository implements CharacterRepository {
   @override
   Future<CharacterSummary> createCharacter(CreateCharacterInput input) async {
     final id = DateTime.now().microsecondsSinceEpoch.toString();
-    final summary = CharacterSummary(
+    final summary = _characterSummaryMapper.fromCreateInput(
       id: id,
-      name: input.name,
-      raceName: input.raceName,
-      className: input.className,
-      level: input.level,
-      portraitAssetPath: input.portraitAssetPath,
+      input: input,
     );
     _summaries.insert(0, summary);
     _createdInputsById[id] = input;
@@ -81,49 +80,60 @@ class InMemoryCharacterRepository implements CharacterRepository {
 
     return CharacterSheetViewData(
       id: summary.id,
-      name: summary.name,
-      raceName: summary.raceName,
-      className: summary.className,
-      level: summary.level,
-      experience: createdInput?.experience ?? 0,
-      proficiencyBonus: 2,
-      levelProgressPercent: 0,
-      currentHitPoints: createdInput?.currentHitPoints ?? 10,
-      maximumHitPoints: createdInput?.maximumHitPoints ?? 10,
-      temporaryHitPoints: createdInput?.temporaryHitPoints ?? 0,
-      backgroundName: createdInput?.backgroundName ?? background.name,
-      backgroundSummary: createdInput?.backgroundSummary ?? background.summary,
-      backgroundBonuses: background.bonuses,
-      backgroundSocialPerks: background.socialPerks,
-      abilityScoreMethodLabel: _abilityMethodLabel(
-        createdInput?.abilityScoreMethod,
+      identity: IdentityPanelViewData(
+        name: summary.name,
+        raceName: summary.raceName,
+        className: summary.className,
+        level: summary.level,
+        experience: createdInput?.experience ?? 0,
+        proficiencyBonus: 2,
+        levelProgressPercent: 0,
       ),
-      abilityRows: <AbilityScoreRowViewData>[
-        _abilityRow('Strength', createdInput?.strength ?? 15),
-        _abilityRow('Dexterity', createdInput?.dexterity ?? 14),
-        _abilityRow('Constitution', createdInput?.constitution ?? 13),
-        _abilityRow('Intelligence', createdInput?.intelligence ?? 12),
-        _abilityRow('Wisdom', createdInput?.wisdom ?? 10),
-        _abilityRow('Charisma', createdInput?.charisma ?? 8),
-      ],
-      equipmentSummary: catalog.equipmentSummaryForClass(summary.className),
-      selectedEquipmentLabel:
-          createdInput?.equipmentLoadoutLabel ?? equipmentLoadout.label,
-      currencySummary:
-          createdInput?.startingMoneySummary ??
-          equipmentLoadout.startingMoneySummary,
-      startingMoneySummary:
-          createdInput?.startingMoneySummary ??
-          equipmentLoadout.startingMoneySummary,
-      selectedEquipmentItems:
-          createdInput?.selectedEquipmentItems ??
-          equipmentLoadout.selectedItems,
-      savingThrows: const <SavingThrowRowViewData>[],
-      proficientSkills: const <String>[],
-      otherProficiencies: const <String>[],
-      alignment: createdInput?.alignment ?? 'Neutral',
-      appearanceDetails: createdInput?.appearanceDetails ?? '',
-      narrativeDetails: createdInput?.narrativeDetails ?? '',
+      combat: CombatPanelViewData(
+        currentHitPoints: createdInput?.currentHitPoints ?? 10,
+        maximumHitPoints: createdInput?.maximumHitPoints ?? 10,
+        temporaryHitPoints: createdInput?.temporaryHitPoints ?? 0,
+        savingThrows: const <SavingThrowRowViewData>[],
+      ),
+      abilities: AbilitiesPanelViewData(
+        abilityScoreMethodLabel: _abilityMethodLabel(
+          createdInput?.abilityScoreMethod,
+        ),
+        abilityRows: <AbilityScoreRowViewData>[
+          _abilityRow('Strength', createdInput?.strength ?? 15),
+          _abilityRow('Dexterity', createdInput?.dexterity ?? 14),
+          _abilityRow('Constitution', createdInput?.constitution ?? 13),
+          _abilityRow('Intelligence', createdInput?.intelligence ?? 12),
+          _abilityRow('Wisdom', createdInput?.wisdom ?? 10),
+          _abilityRow('Charisma', createdInput?.charisma ?? 8),
+        ],
+      ),
+      featuresNotes: FeaturesNotesPanelViewData(
+        backgroundName: createdInput?.backgroundName ?? background.name,
+        backgroundSummary:
+            createdInput?.backgroundSummary ?? background.summary,
+        backgroundBonuses: background.bonuses,
+        backgroundSocialPerks: background.socialPerks,
+        proficientSkills: const <String>[],
+        otherProficiencies: const <String>[],
+        alignment: createdInput?.alignment ?? 'Neutral',
+        appearanceDetails: createdInput?.appearanceDetails ?? '',
+        narrativeDetails: createdInput?.narrativeDetails ?? '',
+      ),
+      equipment: EquipmentPanelViewData(
+        equipmentSummary: catalog.equipmentSummaryForClass(summary.className),
+        selectedEquipmentLabel:
+            createdInput?.equipmentLoadoutLabel ?? equipmentLoadout.label,
+        currencySummary:
+            createdInput?.startingMoneySummary ??
+            equipmentLoadout.startingMoneySummary,
+        startingMoneySummary:
+            createdInput?.startingMoneySummary ??
+            equipmentLoadout.startingMoneySummary,
+        selectedEquipmentItems:
+            createdInput?.selectedEquipmentItems ??
+            equipmentLoadout.selectedItems,
+      ),
     );
   }
 
