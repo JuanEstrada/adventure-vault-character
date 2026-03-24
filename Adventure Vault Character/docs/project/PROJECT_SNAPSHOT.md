@@ -1,7 +1,7 @@
 # Adventure Vault Character - Project Snapshot
 
 ## Last Update
-2026-03-23
+2026-03-24
 
 ## Role of This Document
 
@@ -17,9 +17,9 @@ Implementation shell established
 
 ## Current Focus
 
-Extending the first coded app shell into a guided draft flow, richer
-character-sheet mapping, and a more realistic local compendium seed sourced
-from `local-assets`.
+Completing the shift from the first single-table character persistence model
+into a normalized Drift character/compendium schema, while keeping the current
+guided draft and sheet flow stable.
 
 ## Repository State
 
@@ -30,9 +30,11 @@ from `local-assets`.
   state.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- The Drift schema is now at `v3` with additive fields for background,
-  ability scores, experience, starter equipment, finishing details, and hit
-  points.
+- The Drift schema is now at `v4` and includes normalized character-side
+  tables for `ability scores`, `skills`, `saving throws`, `inventory`,
+  `proficiencies`, and `currency`.
+- The local database now also includes compendium definition tables for
+  `skills`, `equipment`, `classes`, `backgrounds`, `spells`, and `trinkets`.
 - The create-character screen now uses a first guided draft covering
   `Race + name`, `Background`, `Class / level / experience`, and
   `Ability scores`.
@@ -40,6 +42,9 @@ from `local-assets`.
   starter loadout and optional narrative fields persisted locally.
 - Draft validation now runs outside widgets before persistence and reports
   missing builder sections with user-facing labels.
+- The Drift repository now writes normalized character records and seeds core
+  SRD-aligned skill/class/background/equipment definition data needed by the
+  current save path.
 - The character sheet now renders mapped MVP data for identity, background,
   abilities, progression, hit points, structured equipment data, and
   finishing details.
@@ -55,6 +60,7 @@ from `local-assets`.
 - The generated ability-score method now tracks the selected class and applies
   the class-specific standard array recommendation whenever the class changes.
 - Widget coverage exists for the offline continuation path into the main menu.
+- `flutter test` passed after the schema normalization changes.
 
 ## Active Architecture Constraints
 
@@ -87,6 +93,8 @@ from `local-assets`.
 - A first non-widget validator now protects draft persistence by section.
 - A first character-sheet view-model mapper now derives MVP sheet content from
   persisted records.
+- The local persistence model now writes both a legacy-compatible snapshot row
+  and the new normalized tables introduced in Drift `v4`.
 - Local catalog data is now centralized under `lib/src/features/compendium`
   behind a repository boundary and seeded from local asset examples for
   background, race, and class.
@@ -95,13 +103,13 @@ from `local-assets`.
 
 ## Work In Progress
 
-- Replacing remaining placeholder sheet and builder data with more faithful
-  compendium-backed structures and richer persistence.
+- Migrating read-side character-sheet assembly away from snapshot fields in
+  `characters` and onto the normalized Drift tables introduced in `v4`.
 
 ## Pending Work
 
-- Extend the first Drift schema from the current minimal saved-character shape
-  toward the proposed character model.
+- Finish moving read-side character-sheet mapping to the normalized Drift
+  tables instead of the compatibility snapshot fields.
 - Define application services and mappers for full guided character creation,
   card summaries, and character-sheet rendering.
 - Decide when the local normalized compendium catalog becomes a generated or
@@ -132,7 +140,7 @@ from `local-assets`.
 
 ## Next Recommended Steps
 
-1. Extend the schema toward the remaining required MVP character fields.
+1. Finish the read-side aggregate from the new normalized character tables.
 2. Deepen the parsed compendium fidelity beyond the current XML base starter
    dataset.
 3. Break the approved MVP flow into implementation tasks in `lib/`.
@@ -148,12 +156,12 @@ from `local-assets`.
 ## Risks and Unknowns
 
 - The first domain model is not yet finalized.
-- The compendium-backed creation flow depends on structured local content
-  modeling that does not yet exist.
-- Background bonuses and social perks still need a normalized representation
-  that preserves fidelity without pushing rules logic into widgets.
-- Ability score method state and assignment provenance still need a normalized
-  representation that supports validation and later editing.
+- The read-side mapping still depends partly on snapshot fields in
+  `characters`, even though the normalized tables now exist.
+- Background bonuses and social perks still need deeper normalized
+  representation if the app moves beyond the current MVP-compatible snapshots.
+- Ability score method state and assignment provenance still need a richer
+  normalized representation that supports later editing.
 - Future sync and network features remain out of implementation scope.
 - Legal and content-boundary constraints for D&D-related material may still
   need refinement later.

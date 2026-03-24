@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-03-23
+Last updated: 2026-03-24
 
 This is the single file to read first when resuming work on Adventure Vault
 Character. It consolidates the current product, architecture, repository
@@ -44,7 +44,7 @@ Primary references:
 
 ## Repository Reality
 
-Verified on 2026-03-23:
+Verified on 2026-03-24:
 
 - Flutter project scaffolding exists for Android, iOS, web, Windows, Linux,
   and macOS.
@@ -54,11 +54,12 @@ Verified on 2026-03-23:
   with controller-driven state and repository boundaries.
 - Character summaries now load through a Drift-backed repository over a local
   SQLite database.
-- The first persisted schema is intentionally minimal and currently stores the
-  fields required to render main-menu character cards.
-- The Drift schema is now at `v3` and includes additive fields for
-  `background`, `ability scores`, `experience`, starter equipment, finishing
-  details, and `hit points`.
+- The previous single-table character persistence has now been extended into a
+  normalized Drift schema.
+- The Drift schema is now at `v4` and includes dedicated character-side tables
+  for `ability scores`, `skills`, `saving throws`, `inventory`,
+  `proficiencies`, and `currency`, plus compendium-side definition tables for
+  `skills`, `equipment`, `classes`, `backgrounds`, `spells`, and `trinkets`.
 - A first vertical slice now supports `create -> save -> card -> open sheet`
   with a minimal character record: `name`, `race`, `class`, and `level`.
 - The create-character UI now uses a first guided draft with explicit sections
@@ -70,6 +71,10 @@ Verified on 2026-03-23:
 - The repository save path now persists the draft's `background`,
   `ability scores`, `experience`, starter equipment details, finishing
   details, and initial `hit points`.
+- The Drift-backed repository now seeds and persists normalized character data
+  for ability scores, class/background references, basic saving throws,
+  inventory rows, proficiencies, and currency snapshot data while keeping the
+  current UI-compatible snapshot fields in `characters`.
 - Draft save now runs through a non-widget validator that reports missing
   sections using builder-facing names before persistence.
 - A dedicated `CompendiumRepository` boundary now sits between the app and
@@ -89,6 +94,7 @@ Verified on 2026-03-23:
   `Standard Array by Class` recommendation on initial load and every time the
   selected class changes.
 - `test/widget_test.dart` covers the offline path into the main menu.
+- `flutter test` passed after the schema and repository changes.
 
 This means the repository has moved beyond the single-screen bootstrap and now
 has real local persistence scaffolding, a parsed local compendium baseline,
@@ -185,8 +191,8 @@ Primary references:
 
 These are the highest-value unresolved items:
 
-1. Extend the first Drift schema from summary-only storage toward the proposed
-   character model.
+1. Finish moving read-side mapping from the legacy snapshot fields in
+   `characters` to the normalized Drift tables.
 2. Define application services and task breakdown for `create -> save -> card
    -> open sheet`.
 3. Decide when XML import moves from documented entry point into a real
@@ -224,11 +230,12 @@ Resolved MVP decision:
 The next logical session should build on the current shell instead of
 restructuring it again:
 
-1. Replace the curated compendium catalog asset with a generated or parsed
-   source derived from `local-assets`.
-2. Add write-side application services and mapping boundaries for character
-   creation, character-card summaries, and character-sheet view models.
-3. Extend the first Drift schema toward the approved MVP character model.
+1. Finish the read-side aggregate for `getCharacterSheetById` from the new
+   normalized Drift tables instead of relying on snapshot fields.
+2. Add application services and mapping boundaries for character creation,
+   character-card summaries, and character-sheet view models.
+3. Replace the remaining curated or fallback compendium dependency with a more
+   generated or parsed source derived from `local-assets`.
 4. Break the approved `create -> save -> card -> open sheet` flow into
    concrete implementation tasks in `lib/`.
 5. Keep `HP` in scope as real MVP character-sheet data, not as a deferred
@@ -236,12 +243,15 @@ restructuring it again:
 
 Next-session starting point:
 
-- Start from the existing Drift schema, repository boundary, and minimal
-  create/save/open flow.
+- Start from the normalized Drift schema in
+  `lib/src/features/characters/data/local/app_database.dart` and the updated
+  repository in `lib/src/features/characters/data/drift_character_repository.dart`.
 - Use the parsed `local-assets/srd_5_2_1_app_base.xml` dataset through the
   `CompendiumRepository` boundary as the active source of truth for local
   creation data, with `assets/compendium/catalog.json` retained only as
   fallback.
+- Treat the current `characters` table snapshot fields as compatibility support
+  for the existing UI until the read-side aggregate is fully migrated.
 - Use the accepted flow specs and proposed domain-model docs as the source of
   truth unless a new decision replaces them.
 
