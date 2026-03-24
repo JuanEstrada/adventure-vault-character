@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:adventure_vault_character/src/core/navigation/app_screen.dart';
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_draft_validator.dart';
@@ -21,13 +23,13 @@ class AppState {
   });
 
   const AppState.initial()
-      : screen = AppScreen.bootstrap,
-        isInitializing = true,
-        isSavingCharacter = false,
-        characterSummaries = const <CharacterSummary>[],
-        compendiumCatalog = null,
-        selectedCharacterSheet = null,
-        errorMessage = null;
+    : screen = AppScreen.bootstrap,
+      isInitializing = true,
+      isSavingCharacter = false,
+      characterSummaries = const <CharacterSummary>[],
+      compendiumCatalog = null,
+      selectedCharacterSheet = null,
+      errorMessage = null;
 
   final AppScreen screen;
   final bool isInitializing;
@@ -68,13 +70,15 @@ class AppController extends ChangeNotifier {
     required CompendiumRepository compendiumRepository,
     CharacterDraftValidator characterDraftValidator =
         const CharacterDraftValidator(),
-  })  : _characterRepository = characterRepository,
-        _compendiumRepository = compendiumRepository,
-        _characterDraftValidator = characterDraftValidator;
+  }) : _characterRepository = characterRepository,
+       _compendiumRepository = compendiumRepository,
+       _characterDraftValidator = characterDraftValidator;
 
   final CharacterRepository _characterRepository;
   final CompendiumRepository _compendiumRepository;
   final CharacterDraftValidator _characterDraftValidator;
+  StreamSubscription<List<CharacterSummary>>? _characterSummariesSubscription;
+  StreamSubscription<CharacterSheetViewData?>? _selectedCharacterSubscription;
 
   AppState _state = const AppState.initial();
 
@@ -86,7 +90,10 @@ class AppController extends ChangeNotifier {
 
     try {
       final compendiumCatalog = await _compendiumRepository.loadCatalog();
-      final summaries = await _characterRepository.getCharacterSummaries();
+      final summaries = await _characterRepository
+          .watchCharacterSummaries()
+          .first;
+      _subscribeToCharacterSummaries();
       _state = _state.copyWith(
         screen: AppScreen.access,
         isInitializing: false,
@@ -130,9 +137,7 @@ class AppController extends ChangeNotifier {
   Future<void> createCharacter(CreateCharacterInput input) async {
     final validation = _characterDraftValidator.validate(input);
     if (!validation.isValid) {
-      _state = _state.copyWith(
-        errorMessage: validation.toUserMessage(),
-      );
+      _state = _state.copyWith(errorMessage: validation.toUserMessage());
       notifyListeners();
       return;
     }
@@ -142,13 +147,16 @@ class AppController extends ChangeNotifier {
 
     try {
       final created = await _characterRepository.createCharacter(input);
-      final summaries = await _characterRepository.getCharacterSummaries();
-      final sheet = await _characterRepository.getCharacterSheetById(created.id);
+      await _selectedCharacterSubscription?.cancel();
+      _selectedCharacterSubscription = null;
+      final sheet = await _characterRepository
+          .watchCharacterSheetById(created.id)
+          .first;
+      _subscribeToSelectedCharacter(created.id);
 
       _state = _state.copyWith(
         screen: AppScreen.characterSheet,
         isSavingCharacter: false,
-        characterSummaries: summaries,
         selectedCharacterSheet: sheet,
         clearError: true,
       );
@@ -164,15 +172,16 @@ class AppController extends ChangeNotifier {
 
   Future<void> openCharacter(String characterId) async {
     try {
-      final character = await _characterRepository.getCharacterSheetById(
-        characterId,
-      );
+      final character = await _characterRepository
+          .watchCharacterSheetById(characterId)
+          .first;
 
       if (character == null) {
         _state = _state.copyWith(
           errorMessage: 'El personaje seleccionado ya no existe.',
         );
       } else {
+        _subscribeToSelectedCharacter(characterId);
         _state = _state.copyWith(
           screen: AppScreen.characterSheet,
           selectedCharacterSheet: character,
@@ -186,5 +195,36 @@ class AppController extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    unawaited(_characterSummariesSubscription?.cancel());
+    unawaited(_selectedCharacterSubscription?.cancel());
+    super.dispose();
+  }
+
+  void _subscribeToCharacterSummaries() {
+    unawaited(_characterSummariesSubscription?.cancel());
+    _characterSummariesSubscription = _characterRepository
+        .watchCharacterSummaries()
+        .listen((summaries) {
+          _state = _state.copyWith(characterSummaries: summaries);
+          notifyListeners();
+        });
+  }
+
+  void _subscribeToSelectedCharacter(String characterId) {
+    unawaited(_selectedCharacterSubscription?.cancel());
+    _selectedCharacterSubscription = _characterRepository
+        .watchCharacterSheetById(characterId)
+        .listen((character) {
+          if (character == null) {
+            return;
+          }
+
+          _state = _state.copyWith(selectedCharacterSheet: character);
+          notifyListeners();
+        });
   }
 }

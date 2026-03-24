@@ -5,9 +5,13 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 abstract interface class CharacterRepository {
   Future<List<CharacterSummary>> getCharacterSummaries();
 
+  Stream<List<CharacterSummary>> watchCharacterSummaries();
+
   Future<CharacterSummary> createCharacter(CreateCharacterInput input);
 
   Future<CharacterSummary?> getCharacterSummaryById(String id);
 
   Future<CharacterSheetViewData?> getCharacterSheetById(String id);
+
+  Stream<CharacterSheetViewData?> watchCharacterSheetById(String id);
 }

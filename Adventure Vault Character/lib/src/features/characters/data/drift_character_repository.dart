@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
+import 'package:adventure_vault_character/src/features/characters/data/local/character_read_dao.dart';
+import 'package:adventure_vault_character/src/features/characters/data/local/character_reference_dao.dart';
+import 'package:adventure_vault_character/src/features/characters/data/local/character_write_dao.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_mapper.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
@@ -17,43 +20,43 @@ class DriftCharacterRepository implements CharacterRepository {
     CharacterSheetMapper characterSheetMapper = const CharacterSheetMapper(),
   }) : _database = database,
        _compendiumRepository = compendiumRepository,
-       _characterSheetMapper = characterSheetMapper;
+       _characterSheetMapper = characterSheetMapper,
+       _readDao = CharacterReadDao(database),
+       _referenceDao = CharacterReferenceDao(database),
+       _writeDao = CharacterWriteDao(database);
 
   final AppDatabase _database;
   final CompendiumRepository _compendiumRepository;
   final CharacterSheetMapper _characterSheetMapper;
+  final CharacterReadDao _readDao;
+  final CharacterReferenceDao _referenceDao;
+  final CharacterWriteDao _writeDao;
+  Future<CompendiumCatalog>? _catalogFuture;
+
+  Future<CompendiumCatalog> _loadCatalog() {
+    return _catalogFuture ??= _compendiumRepository.loadCatalog();
+  }
 
   @override
   Future<List<CharacterSummary>> getCharacterSummaries() async {
-    final rows =
-        await (_database.select(_database.characters)..orderBy([
-              (table) => OrderingTerm.desc(table.updatedAt),
-              (table) => OrderingTerm.asc(table.name),
-            ]))
-            .get();
+    return _mapCharacterSummaries(await _readDao.getCharacterRows());
+  }
 
-    return rows
-        .map(
-          (row) => CharacterSummary(
-            id: row.id,
-            name: row.name,
-            raceName: row.raceName,
-            className: row.className,
-            level: row.level,
-            portraitAssetPath: row.portraitAssetPath,
-          ),
-        )
-        .toList(growable: false);
+  @override
+  Stream<List<CharacterSummary>> watchCharacterSummaries() {
+    return _readDao.watchCharacterRows().map(_mapCharacterSummaries);
   }
 
   @override
   Future<CharacterSummary> createCharacter(CreateCharacterInput input) async {
     final now = DateTime.now();
     final id = now.microsecondsSinceEpoch.toString();
-    final catalog = await _compendiumRepository.loadCatalog();
+    final catalog = await _loadCatalog();
+    final background = catalog.backgroundById(input.backgroundId);
     final classSeed = _classSeedFor(input.className);
     final classDefinitionId = classSeed.id;
     final backgroundDefinitionId = _backgroundDefinitionId(input.backgroundId);
+    final proficiencyBonus = _calculateProficiencyBonus(input.level);
     final currency = _parseCurrencySummary(input.startingMoneySummary);
 
     await _database.transaction(() async {
@@ -62,108 +65,105 @@ class DriftCharacterRepository implements CharacterRepository {
       await _ensureBackgroundDefinition(catalog, input, backgroundDefinitionId);
       await _ensureEquipmentDefinitions(input.selectedEquipmentItems);
 
-      await _database
-          .into(_database.characters)
-          .insert(
-            CharactersCompanion.insert(
-              id: id,
-              name: input.name,
-              raceName: input.raceName,
-              classDefinitionId: Value(classDefinitionId),
-              backgroundDefinitionRefId: Value(backgroundDefinitionId),
-              backgroundId: Value(input.backgroundId),
-              backgroundName: Value(input.backgroundName),
-              backgroundSummary: Value(input.backgroundSummary),
-              abilityScoreMethod: Value(input.abilityScoreMethod),
-              abilityScoreProvenance: Value(input.abilityScoreProvenance),
-              strength: Value(input.strength),
-              dexterity: Value(input.dexterity),
-              constitution: Value(input.constitution),
-              intelligence: Value(input.intelligence),
-              wisdom: Value(input.wisdom),
-              charisma: Value(input.charisma),
-              className: input.className,
-              level: input.level,
-              experience: Value(input.experience),
-              proficiencyBonus: Value(_calculateProficiencyBonus(input.level)),
-              equipmentLoadoutId: Value(input.equipmentLoadoutId),
-              equipmentLoadoutLabel: Value(input.equipmentLoadoutLabel),
-              startingMoneySummary: Value(input.startingMoneySummary),
-              selectedEquipmentItems: Value(
-                jsonEncode(input.selectedEquipmentItems),
-              ),
-              currentHitPoints: Value(input.currentHitPoints),
-              maximumHitPoints: Value(input.maximumHitPoints),
-              temporaryHitPoints: Value(input.temporaryHitPoints),
-              portraitAssetPath: Value(input.portraitAssetPath),
-              alignment: Value(input.alignment),
-              appearanceDetails: Value(input.appearanceDetails),
-              narrativeDetails: Value(input.narrativeDetails),
-              createdAt: now,
-              updatedAt: now,
-            ),
-          );
-
-      await _database
-          .into(_database.characterAbilityScores)
-          .insert(
-            CharacterAbilityScoresCompanion.insert(
-              characterId: id,
-              strengthScore: input.strength,
-              dexterityScore: input.dexterity,
-              constitutionScore: input.constitution,
-              intelligenceScore: input.intelligence,
-              wisdomScore: input.wisdom,
-              charismaScore: input.charisma,
-              strengthModifier: Value(_abilityModifier(input.strength)),
-              dexterityModifier: Value(_abilityModifier(input.dexterity)),
-              constitutionModifier: Value(_abilityModifier(input.constitution)),
-              intelligenceModifier: Value(_abilityModifier(input.intelligence)),
-              wisdomModifier: Value(_abilityModifier(input.wisdom)),
-              charismaModifier: Value(_abilityModifier(input.charisma)),
-            ),
-          );
-
-      await _seedCharacterSkills(
-        characterId: id,
-        background: catalog.backgroundById(input.backgroundId),
-      );
-      await _seedCharacterSavingThrows(
-        characterId: id,
-        savingThrowKeys: classSeed.savingThrowAbilities,
-        abilityScores: _AbilityScores(
-          strength: input.strength,
-          dexterity: input.dexterity,
-          constitution: input.constitution,
-          intelligence: input.intelligence,
-          wisdom: input.wisdom,
-          charisma: input.charisma,
+      await _writeDao.insertCharacter(
+        CharactersCompanion.insert(
+          id: id,
+          name: input.name,
+          raceName: input.raceName,
+          classDefinitionId: Value(classDefinitionId),
+          backgroundDefinitionRefId: Value(backgroundDefinitionId),
+          backgroundId: Value(input.backgroundId),
+          backgroundName: Value(input.backgroundName),
+          backgroundSummary: Value(input.backgroundSummary),
+          abilityScoreMethod: Value(input.abilityScoreMethod),
+          abilityScoreProvenance: Value(input.abilityScoreProvenance),
+          strength: Value(input.strength),
+          dexterity: Value(input.dexterity),
+          constitution: Value(input.constitution),
+          intelligence: Value(input.intelligence),
+          wisdom: Value(input.wisdom),
+          charisma: Value(input.charisma),
+          className: input.className,
+          level: input.level,
+          experience: Value(input.experience),
+          proficiencyBonus: Value(proficiencyBonus),
+          equipmentLoadoutId: Value(input.equipmentLoadoutId),
+          equipmentLoadoutLabel: Value(input.equipmentLoadoutLabel),
+          startingMoneySummary: Value(input.startingMoneySummary),
+          selectedEquipmentItems: Value(
+            jsonEncode(input.selectedEquipmentItems),
+          ),
+          currentHitPoints: Value(input.currentHitPoints),
+          maximumHitPoints: Value(input.maximumHitPoints),
+          temporaryHitPoints: Value(input.temporaryHitPoints),
+          portraitAssetPath: Value(input.portraitAssetPath),
+          alignment: Value(input.alignment),
+          appearanceDetails: Value(input.appearanceDetails),
+          narrativeDetails: Value(input.narrativeDetails),
+          createdAt: now,
+          updatedAt: now,
         ),
-        proficiencyBonus: _calculateProficiencyBonus(input.level),
-      );
-      await _seedCharacterProficiencies(
-        characterId: id,
-        classSeed: classSeed,
-        background: catalog.backgroundById(input.backgroundId),
       );
 
-      await _database
-          .into(_database.characterCurrency)
-          .insert(
-            CharacterCurrencyCompanion.insert(
-              characterId: id,
-              copper: Value(currency.copper),
-              silver: Value(currency.silver),
-              electrum: Value(currency.electrum),
-              gold: Value(currency.gold),
-              platinum: Value(currency.platinum),
-              summarySnapshot: Value(input.startingMoneySummary),
-            ),
-          );
+      await _writeDao.insertAbilityScores(
+        CharacterAbilityScoresCompanion.insert(
+          characterId: id,
+          strengthScore: input.strength,
+          dexterityScore: input.dexterity,
+          constitutionScore: input.constitution,
+          intelligenceScore: input.intelligence,
+          wisdomScore: input.wisdom,
+          charismaScore: input.charisma,
+          strengthModifier: Value(_abilityModifier(input.strength)),
+          dexterityModifier: Value(_abilityModifier(input.dexterity)),
+          constitutionModifier: Value(_abilityModifier(input.constitution)),
+          intelligenceModifier: Value(_abilityModifier(input.intelligence)),
+          wisdomModifier: Value(_abilityModifier(input.wisdom)),
+          charismaModifier: Value(_abilityModifier(input.charisma)),
+        ),
+      );
 
-      await _insertInventoryRows(
-        characterId: id,
-        items: input.selectedEquipmentItems,
+      await _writeDao.insertSkills(
+        _buildCharacterSkillRows(characterId: id, background: background),
+      );
+      await _writeDao.insertSavingThrows(
+        _buildCharacterSavingThrowRows(
+          characterId: id,
+          savingThrowKeys: classSeed.savingThrowAbilities,
+          abilityScores: _AbilityScores(
+            strength: input.strength,
+            dexterity: input.dexterity,
+            constitution: input.constitution,
+            intelligence: input.intelligence,
+            wisdom: input.wisdom,
+            charisma: input.charisma,
+          ),
+          proficiencyBonus: proficiencyBonus,
+        ),
+      );
+      await _writeDao.insertProficiencies(
+        _buildCharacterProficiencyRows(
+          characterId: id,
+          classSeed: classSeed,
+          background: background,
+        ),
+      );
+      await _writeDao.insertCurrency(
+        CharacterCurrencyCompanion.insert(
+          characterId: id,
+          copper: Value(currency.copper),
+          silver: Value(currency.silver),
+          electrum: Value(currency.electrum),
+          gold: Value(currency.gold),
+          platinum: Value(currency.platinum),
+          summarySnapshot: Value(input.startingMoneySummary),
+        ),
+      );
+      await _writeDao.insertInventory(
+        _buildInventoryRows(
+          characterId: id,
+          items: input.selectedEquipmentItems,
+        ),
       );
     });
 
@@ -179,10 +179,7 @@ class DriftCharacterRepository implements CharacterRepository {
 
   @override
   Future<CharacterSummary?> getCharacterSummaryById(String id) async {
-    final row = await (_database.select(
-      _database.characters,
-    )..where((table) => table.id.equals(id))).getSingleOrNull();
-
+    final row = await _readDao.getCharacterRowById(id);
     if (row == null) {
       return null;
     }
@@ -199,48 +196,70 @@ class DriftCharacterRepository implements CharacterRepository {
 
   @override
   Future<CharacterSheetViewData?> getCharacterSheetById(String id) async {
-    final row = await (_database.select(
-      _database.characters,
-    )..where((table) => table.id.equals(id))).getSingleOrNull();
-
+    final row = await _readDao.getCharacterRowById(id);
     if (row == null) {
       return null;
     }
 
-    final catalog = await _compendiumRepository.loadCatalog();
+    final catalog = await _loadCatalog();
     return _characterSheetMapper.map(row, catalog);
   }
 
+  @override
+  Stream<CharacterSheetViewData?> watchCharacterSheetById(String id) {
+    return _readDao.watchCharacterRowById(id).asyncMap((row) async {
+      if (row == null) {
+        return null;
+      }
+
+      final catalog = await _loadCatalog();
+      return _characterSheetMapper.map(row, catalog);
+    });
+  }
+
+  List<CharacterSummary> _mapCharacterSummaries(List<Character> rows) {
+    return rows
+        .map(
+          (row) => CharacterSummary(
+            id: row.id,
+            name: row.name,
+            raceName: row.raceName,
+            className: row.className,
+            level: row.level,
+            portraitAssetPath: row.portraitAssetPath,
+          ),
+        )
+        .toList(growable: false);
+  }
+
   Future<void> _ensureCoreSkillDefinitions() async {
-    for (final definition in _skillDefinitions) {
-      await _database
-          .into(_database.skillDefinitions)
-          .insertOnConflictUpdate(
-            SkillDefinitionsCompanion.insert(
+    await _referenceDao.upsertSkillDefinitions(
+      _skillDefinitions
+          .map(
+            (definition) => SkillDefinitionsCompanion.insert(
               id: definition.id,
               key: definition.key,
               name: definition.name,
               governingAbility: definition.governingAbility,
               description: const Value(null),
             ),
-          );
-    }
+          )
+          .toList(growable: false),
+    );
   }
 
   Future<void> _ensureClassDefinition(_ClassSeed classSeed) async {
-    await _database
-        .into(_database.classDefinitions)
-        .insertOnConflictUpdate(
-          ClassDefinitionsCompanion.insert(
-            id: classSeed.id,
-            key: classSeed.key,
-            name: classSeed.name,
-            hitDie: Value(classSeed.hitDie),
-            isSpellcaster: Value(classSeed.isSpellcaster),
-            spellcastingAbility: Value(classSeed.spellcastingAbility),
-            description: const Value(null),
-          ),
-        );
+    await _referenceDao.upsertClassDefinition(
+      ClassDefinitionsCompanion.insert(
+        id: classSeed.id,
+        key: classSeed.key,
+        name: classSeed.name,
+        hitDie: Value(classSeed.hitDie),
+        isSpellcaster: Value(classSeed.isSpellcaster),
+        spellcastingAbility: Value(classSeed.spellcastingAbility),
+        description: const Value(null),
+      ),
+    );
   }
 
   Future<void> _ensureBackgroundDefinition(
@@ -249,44 +268,38 @@ class DriftCharacterRepository implements CharacterRepository {
     String backgroundDefinitionId,
   ) async {
     final background = catalog.backgroundById(input.backgroundId);
-    await _database
-        .into(_database.backgroundDefinitions)
-        .insertOnConflictUpdate(
-          BackgroundDefinitionsCompanion.insert(
-            id: backgroundDefinitionId,
-            key: _slugify(input.backgroundId),
-            name: input.backgroundName,
+    await _referenceDao.upsertBackgroundDefinition(
+      BackgroundDefinitionsCompanion.insert(
+        id: backgroundDefinitionId,
+        key: _slugify(input.backgroundId),
+        name: input.backgroundName,
         summary: Value(input.backgroundSummary),
         featureName: Value(background?.socialPerks.firstOrNull),
-        featureDescription: Value(
-          background?.socialPerks.join('\n'),
+        featureDescription: Value(background?.socialPerks.join('\n')),
+        grantedSkillKeysJson: Value(
+          background == null
+              ? null
+              : jsonEncode(_extractBackgroundSkillKeys(background)),
         ),
-            grantedSkillKeysJson: Value(
-              background == null
-                  ? null
-                  : jsonEncode(_extractBackgroundSkillKeys(background)),
-            ),
-            grantedToolKeysJson: const Value(null),
-            grantedLanguageKeysJson: Value(
-              background == null
-                  ? null
-                  : jsonEncode(_extractBackgroundLanguageKeys(background)),
-            ),
-            startingEquipmentJson: Value(
-              background == null ? null : jsonEncode(background.socialPerks),
-            ),
-          ),
-        );
+        grantedToolKeysJson: const Value(null),
+        grantedLanguageKeysJson: Value(
+          background == null
+              ? null
+              : jsonEncode(_extractBackgroundLanguageKeys(background)),
+        ),
+        startingEquipmentJson: Value(
+          background == null ? null : jsonEncode(background.socialPerks),
+        ),
+      ),
+    );
   }
 
   Future<void> _ensureEquipmentDefinitions(List<String> items) async {
-    for (final item in items) {
-      final definitionId = _equipmentDefinitionId(item);
-      await _database
-          .into(_database.equipmentDefinitions)
-          .insertOnConflictUpdate(
-            EquipmentDefinitionsCompanion.insert(
-              id: definitionId,
+    await _referenceDao.upsertEquipmentDefinitions(
+      items
+          .map(
+            (item) => EquipmentDefinitionsCompanion.insert(
+              id: _equipmentDefinitionId(item),
               key: _slugify(item),
               name: item,
               category: _inferEquipmentCategory(item),
@@ -300,16 +313,17 @@ class DriftCharacterRepository implements CharacterRepository {
               weaponPropertiesJson: const Value(null),
               armorPropertiesJson: const Value(null),
             ),
-          );
-    }
+          )
+          .toList(growable: false),
+    );
   }
 
-  Future<void> _seedCharacterSkills({
+  List<CharacterSkillsCompanion> _buildCharacterSkillRows({
     required String characterId,
     required CompendiumBackground? background,
-  }) async {
+  }) {
     final proficientSkillKeys = _extractBackgroundSkillKeys(background);
-    final companions = _skillDefinitions
+    return _skillDefinitions
         .map(
           (definition) => CharacterSkillsCompanion.insert(
             characterId: characterId,
@@ -321,23 +335,15 @@ class DriftCharacterRepository implements CharacterRepository {
           ),
         )
         .toList(growable: false);
-
-    await _database.batch((Batch batch) {
-      batch.insertAll(
-        _database.characterSkills,
-        companions,
-        mode: InsertMode.insertOrIgnore,
-      );
-    });
   }
 
-  Future<void> _seedCharacterSavingThrows({
+  List<CharacterSavingThrowsCompanion> _buildCharacterSavingThrowRows({
     required String characterId,
     required List<String> savingThrowKeys,
     required _AbilityScores abilityScores,
     required int proficiencyBonus,
-  }) async {
-    final companions = _abilityKeys
+  }) {
+    return _abilityKeys
         .map(
           (abilityKey) => CharacterSavingThrowsCompanion.insert(
             characterId: characterId,
@@ -351,22 +357,14 @@ class DriftCharacterRepository implements CharacterRepository {
           ),
         )
         .toList(growable: false);
-
-    await _database.batch((Batch batch) {
-      batch.insertAll(
-        _database.characterSavingThrows,
-        companions,
-        mode: InsertMode.insertOrIgnore,
-      );
-    });
   }
 
-  Future<void> _seedCharacterProficiencies({
+  List<CharacterProficienciesCompanion> _buildCharacterProficiencyRows({
     required String characterId,
     required _ClassSeed classSeed,
     required CompendiumBackground? background,
-  }) async {
-    final rows = <CharacterProficienciesCompanion>[
+  }) {
+    return <CharacterProficienciesCompanion>[
       ...classSeed.armorProficiencies.map(
         (item) => _buildProficiencyRow(
           characterId: characterId,
@@ -413,14 +411,6 @@ class DriftCharacterRepository implements CharacterRepository {
         ),
       ),
     ];
-
-    await _database.batch((Batch batch) {
-      batch.insertAll(
-        _database.characterProficiencies,
-        rows,
-        mode: InsertMode.insertOrIgnore,
-      );
-    });
   }
 
   CharacterProficienciesCompanion _buildProficiencyRow({
@@ -443,11 +433,11 @@ class DriftCharacterRepository implements CharacterRepository {
     );
   }
 
-  Future<void> _insertInventoryRows({
+  List<CharacterInventoryCompanion> _buildInventoryRows({
     required String characterId,
     required List<String> items,
-  }) async {
-    final companions = items
+  }) {
+    return items
         .asMap()
         .entries
         .map(
@@ -468,10 +458,6 @@ class DriftCharacterRepository implements CharacterRepository {
           ),
         )
         .toList(growable: false);
-
-    await _database.batch((Batch batch) {
-      batch.insertAll(_database.characterInventory, companions);
-    });
   }
 
   int _abilityModifier(int score) => ((score - 10) / 2).floor();

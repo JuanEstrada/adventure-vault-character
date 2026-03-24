@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:adventure_vault_character/src/features/compendium/data/asset_compendium_repository.dart';
 import 'package:flutter/services.dart';
@@ -40,25 +39,31 @@ void main() {
     );
   });
 
-  test('prefers gameplay sections over metadata indexes with duplicate tag names', () async {
-    final repository = AssetCompendiumRepository(
-      bundle: _FakeAssetBundle({
-        'local-assets/srd_5_2_1_app_base.xml': _xmlFixtureWithMetadataIndexes,
-        'local-assets/Official Only 2024.xml': _officialFixture,
-        'local-assets/Core Rulebooks.xml': _monsterFixture,
-        'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{}),
-      }),
-    );
+  test(
+    'prefers gameplay sections over metadata indexes with duplicate tag names',
+    () async {
+      final repository = AssetCompendiumRepository(
+        bundle: _FakeAssetBundle({
+          'local-assets/srd_5_2_1_app_base.xml': _xmlFixtureWithMetadataIndexes,
+          'local-assets/Official Only 2024.xml': _officialFixture,
+          'local-assets/Core Rulebooks.xml': _monsterFixture,
+          'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{}),
+        }),
+      );
 
-    final catalog = await repository.loadCatalog();
+      final catalog = await repository.loadCatalog();
 
-    expect(catalog.backgrounds.map((item) => item.name), contains('Acolyte'));
-    expect(catalog.classes, containsAll(<String>['Fighter', 'Wizard', 'Rogue']));
-    expect(
-      catalog.equipmentLoadoutsForClass('Fighter').map((item) => item.id),
-      containsAll(<String>['fighter-a', 'fighter-b']),
-    );
-  });
+      expect(catalog.backgrounds.map((item) => item.name), contains('Acolyte'));
+      expect(
+        catalog.classes,
+        containsAll(<String>['Fighter', 'Wizard', 'Rogue']),
+      );
+      expect(
+        catalog.equipmentLoadoutsForClass('Fighter').map((item) => item.id),
+        containsAll(<String>['fighter-a', 'fighter-b']),
+      );
+    },
+  );
 }
 
 class _FakeAssetBundle extends CachingAssetBundle {
@@ -182,7 +187,8 @@ const _xmlFixture = '''
 </adventure-vault-srd-base>
 ''';
 
-const _xmlFixtureWithMetadataIndexes = '''
+const _xmlFixtureWithMetadataIndexes =
+    '''
 <?xml version="1.0" encoding="UTF-8"?>
 <adventure-vault-srd-base>
   <metadata>

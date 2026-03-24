@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
@@ -21,10 +23,17 @@ class InMemoryCharacterRepository implements CharacterRepository {
   final List<CharacterSummary> _summaries;
   final Map<String, CreateCharacterInput> _createdInputsById;
   final CompendiumRepository _compendiumRepository;
+  final StreamController<void> _changes = StreamController<void>.broadcast();
 
   @override
   Future<List<CharacterSummary>> getCharacterSummaries() async {
     return List<CharacterSummary>.unmodifiable(_summaries);
+  }
+
+  @override
+  Stream<List<CharacterSummary>> watchCharacterSummaries() async* {
+    yield await getCharacterSummaries();
+    yield* _changes.stream.asyncMap((_) => getCharacterSummaries());
   }
 
   @override
@@ -40,6 +49,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
     );
     _summaries.insert(0, summary);
     _createdInputsById[id] = input;
+    _changes.add(null);
     return summary;
   }
 
@@ -103,11 +113,18 @@ class InMemoryCharacterRepository implements CharacterRepository {
           createdInput?.startingMoneySummary ??
           equipmentLoadout.startingMoneySummary,
       selectedEquipmentItems:
-          createdInput?.selectedEquipmentItems ?? equipmentLoadout.selectedItems,
+          createdInput?.selectedEquipmentItems ??
+          equipmentLoadout.selectedItems,
       alignment: createdInput?.alignment ?? 'Neutral',
       appearanceDetails: createdInput?.appearanceDetails ?? '',
       narrativeDetails: createdInput?.narrativeDetails ?? '',
     );
+  }
+
+  @override
+  Stream<CharacterSheetViewData?> watchCharacterSheetById(String id) async* {
+    yield await getCharacterSheetById(id);
+    yield* _changes.stream.asyncMap((_) => getCharacterSheetById(id));
   }
 
   AbilityScoreRowViewData _abilityRow(String label, int score) {

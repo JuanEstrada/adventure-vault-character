@@ -454,6 +454,7 @@ class AppDatabase extends _$AppDatabase {
     : super(
         driftDatabase(
           name: 'adventure_vault_character',
+          native: const DriftNativeOptions(shareAcrossIsolates: true),
           web: DriftWebOptions(
             sqlite3Wasm: Uri.parse('sqlite3.wasm'),
             driftWorker: Uri.parse('drift_worker.js'),
@@ -466,8 +467,13 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    beforeOpen: (OpeningDetails details) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+      await customStatement('PRAGMA journal_mode = WAL');
+    },
     onCreate: (Migrator migrator) async {
       await migrator.createAll();
+      await _createIndexes();
     },
     onUpgrade: (Migrator migrator, int from, int to) async {
       if (from < 2) {
@@ -566,8 +572,37 @@ class AppDatabase extends _$AppDatabase {
 
         await _backfillNormalizedCharacterData();
       }
+
+      await _createIndexes();
     },
   );
+
+  Future<void> _createIndexes() async {
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_characters_updated_at_name '
+      'ON characters (updated_at DESC, name ASC)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_character_skills_character '
+      'ON character_skills (character_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_character_saving_throws_character '
+      'ON character_saving_throws (character_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_character_inventory_character '
+      'ON character_inventory (character_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_character_inventory_container '
+      'ON character_inventory (container_inventory_item_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_character_proficiencies_character '
+      'ON character_proficiencies (character_id)',
+    );
+  }
 
   Future<void> _backfillNormalizedCharacterData() async {
     await customStatement('''

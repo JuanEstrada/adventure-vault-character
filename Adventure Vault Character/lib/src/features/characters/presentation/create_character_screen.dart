@@ -490,26 +490,35 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                             style: theme.textTheme.bodyLarge,
                           ),
                           const SizedBox(height: 12),
-                          ...equipmentOptions.map(
-                            (loadout) => RadioListTile<String>(
-                              value: loadout.id,
+                          IgnorePointer(
+                            ignoring: widget.isSaving,
+                            child: RadioGroup<String>(
                               groupValue: _selectedEquipmentLoadout.id,
-                              contentPadding: EdgeInsets.zero,
-                              title: Text(loadout.label),
-                              subtitle: Text(
-                                '${loadout.startingMoneySummary}\n${loadout.selectedItems.join(', ')}',
+                              onChanged: (value) {
+                                if (value == null) {
+                                  return;
+                                }
+                                setState(() {
+                                  _selectedEquipmentLoadout = equipmentOptions
+                                      .firstWhere(
+                                        (option) => option.id == value,
+                                      );
+                                });
+                              },
+                              child: Column(
+                                children: equipmentOptions
+                                    .map(
+                                      (loadout) => RadioListTile<String>(
+                                        value: loadout.id,
+                                        contentPadding: EdgeInsets.zero,
+                                        title: Text(loadout.label),
+                                        subtitle: Text(
+                                          '${loadout.startingMoneySummary}\n${loadout.selectedItems.join(', ')}',
+                                        ),
+                                      ),
+                                    )
+                                    .toList(growable: false),
                               ),
-                              onChanged: widget.isSaving
-                                  ? null
-                                  : (value) {
-                                      if (value == null) return;
-                                      setState(() {
-                                        _selectedEquipmentLoadout =
-                                            equipmentOptions.firstWhere(
-                                              (option) => option.id == value,
-                                            );
-                                      });
-                                    },
                             ),
                           ),
                         ],
