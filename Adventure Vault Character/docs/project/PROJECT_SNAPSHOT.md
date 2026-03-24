@@ -18,7 +18,8 @@ Implementation shell established
 ## Current Focus
 
 Extending the first coded app shell into a guided draft flow, richer
-character-sheet mapping, and a more realistic local compendium seed.
+character-sheet mapping, and a more realistic local compendium seed sourced
+from `local-assets`.
 
 ## Repository State
 
@@ -33,8 +34,8 @@ character-sheet mapping, and a more realistic local compendium seed.
   ability scores, experience, starter equipment, finishing details, and hit
   points.
 - The create-character screen now uses a first guided draft covering
-  `Race + name`, `Background`, `Ability scores`, and
-  `Class / level / experience`.
+  `Race + name`, `Background`, `Class / level / experience`, and
+  `Ability scores`.
 - The guided draft now includes `Equipment` and `Finishing details`, with
   starter loadout and optional narrative fields persisted locally.
 - Draft validation now runs outside widgets before persistence and reports
@@ -45,9 +46,14 @@ character-sheet mapping, and a more realistic local compendium seed.
 - A dedicated `CompendiumRepository` now loads a parsed local XML base dataset
   for races, classes, backgrounds, and starter equipment loadouts, with JSON
   fallback preserved.
+- The XML parser now skips duplicate metadata indexes and reads the real
+  gameplay `backgrounds` and `classes` sections from
+  `local-assets/srd_5_2_1_app_base.xml`.
 - The compendium seed now also exposes `Character Advancement`,
   `Standard Array by Class`, a compact spell sample across levels `0-9`,
   three feats, and three monsters from local XML assets.
+- The generated ability-score method now tracks the selected class and applies
+  the class-specific standard array recommendation whenever the class changes.
 - Widget coverage exists for the offline continuation path into the main menu.
 
 ## Active Architecture Constraints
@@ -73,7 +79,7 @@ character-sheet mapping, and a more realistic local compendium seed.
 - The first character sheet contents are defined in proposal form.
 - The first character-domain model is defined in proposal form.
 - The builder flow now covers overview, XML-load entry point visibility,
-  ability scores, class/level/experience, equipment, finishing details, and
+  class/level/experience, ability scores, equipment, finishing details, and
   finalize validation.
 - The first production app shell is implemented in `lib/src/` with package
   boundaries for app, navigation, bootstrap, access, main menu, and character
@@ -112,7 +118,10 @@ character-sheet mapping, and a more realistic local compendium seed.
 - Guided character creation includes a mandatory ability score step.
 - The MVP ability score step supports generated set assignment and manual
   point allocation with visible remaining budget.
-- Guided creation places class/level/experience before equipment.
+- Guided creation places class/level/experience before ability scores and
+  before equipment.
+- Generated set assignment should follow the compendium's
+  `Standard Array by Class` recommendation for the active class.
 - Guided creation includes equipment and finishing-details before save.
 - Finalization validates required creation sections before persistence.
 - The builder overview exposes `LOAD` for XML as a documented entry point, not

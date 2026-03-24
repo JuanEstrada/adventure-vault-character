@@ -29,8 +29,8 @@ or advancing into the guided creation path.
 - Character builder overview screen
 - Guided race and name step
 - Guided background step
-- Guided ability score step
 - Guided class, level, and experience step
+- Guided ability score step
 - Guided equipment step
 - Guided finishing-details step
 - Compendium-backed race list
@@ -135,49 +135,52 @@ or advancing into the guided creation path.
 8. The user chooses a background from compendium-backed options.
 9. App shows the background summary, including bonuses and social perks that
    must remain visible later in the character sheet.
-10. App continues to ability score determination.
-11. The user chooses an available ability score method.
-12. The ability score screen shows all six abilities at once.
-13. If the user selects generated set assignment, the app presents a visible
-    score set and lets the user assign each value across the six abilities.
-14. If the user selects manual point allocation, the app shows the remaining
-    budget and lets the user adjust each ability within the allowed range.
-15. The user accepts the final ability scores.
-16. App continues to class and progression selection.
-17. The user chooses a class and level.
-18. The screen shows the class progression table and class features for the
+10. App continues to class and progression selection.
+11. The user chooses a class and level.
+12. The screen shows the class progression table and class features for the
    current level.
-19. The user enters experience, or changes level directly.
-20. If experience changes, level recalculates from the progression thresholds.
-21. If level changes, experience is reset to the minimum required for that
+13. The user enters experience, or changes level directly.
+14. If experience changes, level recalculates from the progression thresholds.
+15. If level changes, experience is reset to the minimum required for that
    level.
-22. The screen shows the percentage of progress toward the next level.
-23. App continues to equipment selection.
-24. The equipment screen shows a summary of available starting money and the
+16. The screen shows the percentage of progress toward the next level.
+17. App continues to ability score determination.
+18. The user chooses an available ability score method.
+19. The ability score screen shows all six abilities at once.
+20. If the user selects generated set assignment, the app presents a visible
+    score set and initializes it from the compendium's
+    `Standard Array by Class` recommendation for the currently selected class.
+21. If the selected class changes while generated set assignment is active,
+    the visible recommended array updates to match the new class.
+22. If the user selects manual point allocation, the app shows the remaining
+    budget and lets the user adjust each ability within the allowed range.
+23. The user accepts the final ability scores.
+24. App continues to equipment selection.
+25. The equipment screen shows a summary of available starting money and the
     current choice for major categories such as armor, weapons, gear, and
     equipment packs.
-25. The user opens a category and sees a selectable item list.
-26. The user can review item summaries such as type, rule-relevant value, and
+26. The user opens a category and sees a selectable item list.
+27. The user can review item summaries such as type, rule-relevant value, and
     cost before selecting.
-27. If the user selects a purchasable item, the app allows quantity
+28. If the user selects a purchasable item, the app allows quantity
     adjustment and shows total cost against available money before confirm.
-28. App updates the chosen equipment summary after confirmation.
-29. App continues to finishing details.
-30. The finishing details screen allows optional portrait, appearance, and
+29. App updates the chosen equipment summary after confirmation.
+30. App continues to finishing details.
+31. The finishing details screen allows optional portrait, appearance, and
     narrative-character fields before save.
-31. The user can add or skip fields such as age, height, weight, eyes, skin,
+32. The user can add or skip fields such as age, height, weight, eyes, skin,
     hair, alignment, faction, personality traits, ideals, bonds, and flaws.
-32. The finishing-details screen exposes a visible finalize action based on
+33. The finishing-details screen exposes a visible finalize action based on
     the builder reference.
-33. When the user taps finalize, the app validates these required builder
+34. When the user taps finalize, the app validates these required builder
     sections: `Race + name`, `Background`, `Ability scores`, and
     `Class / level / experience`.
-34. If any required section is incomplete, the app blocks finalization and
+35. If any required section is incomplete, the app blocks finalization and
     shows a message explaining exactly which sections are still missing.
-35. Only when the required points pass validation does the app persist the
+36. Only when the required points pass validation does the app persist the
     character locally.
-36. The saved character appears in the main-menu character cards.
-37. App navigates to the created character sheet.
+37. The saved character appears in the main-menu character cards.
+38. App navigates to the created character sheet.
 
 ### Cancel Flow
 
@@ -196,15 +199,16 @@ or advancing into the guided creation path.
 - The user must complete all six ability scores before save is enabled.
 - The MVP supports at least two ability score methods: generated set
   assignment and manual point allocation with visible remaining points.
+- Generated set assignment is driven by the selected class and uses the
+  compendium `Standard Array by Class` recommendation for that class.
+- Changing class updates the generated recommended array before save.
 - The selected ability score method and final assigned values are persisted.
 - Method-specific provenance for the chosen ability score mode is preserved.
 - The builder overview screen exposes a visible XML load action.
 - The XML load action is treated as a documented builder entry point, not as
   a fully implemented MVP import requirement.
-- After ability scores are accepted, the flow continues to class and
-  progression before equipment selection.
-- Class, level, and experience are established before finishing details and
-  before final save.
+- Class, level, and experience are established before ability scores,
+  before equipment selection, and before final save.
 - The equipment step shows available money and current selections by category.
 - Equipment choices are made from compendium-backed item data.
 - Item purchase confirmation shows quantity, total cost, and remaining or
@@ -242,6 +246,9 @@ or advancing into the guided creation path.
   section names or equivalent clear missing-item messages, not raw internal
   errors only.
 - Persistence must align with the local Drift-backed model from `ADR-007`.
+- Compendium parsing for creation must read the gameplay data sections from
+  `local-assets/srd_5_2_1_app_base.xml`, not metadata summary indexes that may
+  reuse similar tag names.
 - The visual interaction for the ability score step should use
   `local-ui-assets/character-builder/10_builder_ability_scores.jpg` as a
   flow reference, especially the always-visible six-ability layout and the

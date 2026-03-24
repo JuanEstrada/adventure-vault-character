@@ -62,8 +62,8 @@ Verified on 2026-03-23:
 - A first vertical slice now supports `create -> save -> card -> open sheet`
   with a minimal character record: `name`, `race`, `class`, and `level`.
 - The create-character UI now uses a first guided draft with explicit sections
-  for `Race + name`, `Background`, `Ability scores`, and
-  `Class / level / experience`.
+  for `Race + name`, `Background`, `Class / level / experience`, and
+  `Ability scores`.
 - The guided draft now also covers `Equipment` and `Finishing details` with
   starter loadout selection plus optional alignment, appearance, and
   narrative notes.
@@ -77,10 +77,17 @@ Verified on 2026-03-23:
 - The current app catalog now loads from
   `local-assets/srd_5_2_1_app_base.xml` through an asset parser, with
   `assets/compendium/catalog.json` kept as fallback.
+- The XML parser now explicitly selects gameplay `backgrounds` and `classes`
+  sections instead of similarly named metadata indexes in the same asset, so
+  character creation loads real local compendium data instead of falling into
+  empty state.
 - The parsed compendium seed now also includes the full
   `Character Advancement` table, the `Standard Array by Class` table, a small
   spell seed spanning levels `0-9`, three feats, and three monsters from
   local XML assets.
+- The generated ability-score path now applies the
+  `Standard Array by Class` recommendation on initial load and every time the
+  selected class changes.
 - `test/widget_test.dart` covers the offline path into the main menu.
 
 This means the repository has moved beyond the single-screen bootstrap and now
@@ -118,8 +125,8 @@ Canonical MVP flow:
 9. Optional visible `LOAD` entry point for XML
 10. Guided creation: `Race + name`
 11. Guided creation: `Background`
-12. Guided creation: `Ability scores`
-13. Guided creation: `Class / level / experience`
+12. Guided creation: `Class / level / experience`
+13. Guided creation: `Ability scores`
 14. Guided creation: `Equipment`
 15. Guided creation: `Finishing details`
 16. Finalize validation
@@ -198,7 +205,11 @@ Resolved MVP decision:
 - The MVP ability score step is based on the builder reference UI and supports
   generated set assignment and manual point allocation with visible remaining
   budget.
-- Guided creation places class, level, and experience before equipment.
+- Guided creation places class, level, and experience before ability scores
+  and before equipment.
+- The generated-set variant should default to the compendium's
+  `Standard Array by Class` recommendation for the currently selected class
+  and update when the class changes.
 - Guided creation includes an equipment step before final save.
 - Guided creation includes a finishing-details step before final save.
 - `Alignment` is captured inside finishing details for MVP.
@@ -227,9 +238,10 @@ Next-session starting point:
 
 - Start from the existing Drift schema, repository boundary, and minimal
   create/save/open flow.
-- Use `assets/compendium/catalog.json` plus the `CompendiumRepository`
-  boundary as the active source of truth for local catalog data until a
-  generator or parser replaces that asset.
+- Use the parsed `local-assets/srd_5_2_1_app_base.xml` dataset through the
+  `CompendiumRepository` boundary as the active source of truth for local
+  creation data, with `assets/compendium/catalog.json` retained only as
+  fallback.
 - Use the accepted flow specs and proposed domain-model docs as the source of
   truth unless a new decision replaces them.
 
