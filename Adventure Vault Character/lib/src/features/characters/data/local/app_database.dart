@@ -451,7 +451,7 @@ class TrinketDefinitions extends Table {
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase()
-    : super(
+    : this.executor(
         driftDatabase(
           name: 'adventure_vault_character',
           native: const DriftNativeOptions(shareAcrossIsolates: true),
@@ -461,6 +461,8 @@ class AppDatabase extends _$AppDatabase {
           ),
         ),
       );
+
+  AppDatabase.executor(super.executor);
 
   @override
   int get schemaVersion => 4;
