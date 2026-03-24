@@ -99,10 +99,27 @@ Verified on 2026-03-24:
   `CharacterSheetService` assembles sheet reads, and
   `CharacterSummaryMapper` defines summary mapping shared across repository
   implementations.
+- Character-sheet loading now also passes through a read-only character domain
+  layer: `CharacterRecord` aggregates the read-side inputs,
+  `CharacterDomainMapper` builds a read model, and `CharacterSheetMapper`
+  now projects from domain to panel view data instead of mapping directly
+  from Drift rows.
 - The character sheet view contract is now split into panel-specific view
   models for `identity`, `combat`, `abilities`, `features / notes`, and
   `equipment`, so future panel growth no longer requires inflating one flat
   screen DTO.
+- Small derived rules used by the character sheet now live in the read domain
+  instead of the sheet view mapper, including `ability score modifiers`,
+  `proficiency bonus by level`, `level progress percent`,
+  `other proficiency formatting`, and visible equipment item composition.
+- The read-side domain is now also structured around dedicated value objects
+  for `progression`, `hit points`, `background`, and `money/equipment`
+  summaries, so future sheet growth can stay inside the domain layer before
+  reaching UI mappers.
+- The read-side domain now also models `background output entries`,
+  `proficient skills`, and `saving throws` explicitly instead of flattening
+  them immediately into display strings; the UI mapper now consumes domain
+  display getters for these values.
 - Drift migration regression coverage now exists for `v1 -> v4` and
   `v3 -> v4`, including verification of backfilled normalized tables.
 - Draft save now runs through a non-widget validator that reports missing
@@ -257,8 +274,8 @@ Resolved MVP decision:
 The next logical session should build on the current shell instead of
 restructuring it again:
 
-1. Introduce a read-side character domain model that can sit between
-   normalized persistence and the new panel-specific sheet view models.
+1. Keep expanding the new read-side character domain model deliberately before
+   using it for editing workflows or additional panels.
 2. Replace the remaining curated or fallback compendium dependency with a more
    generated or parsed source derived from `local-assets`.
 3. Break the approved `create -> save -> card -> open sheet` flow into

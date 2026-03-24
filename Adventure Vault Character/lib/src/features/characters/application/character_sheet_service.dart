@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_read_dao.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_domain_mapper.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_record.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_mapper.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_sheet_view_data.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
@@ -13,15 +15,18 @@ class CharacterSheetService {
     required AppDatabase database,
     required CharacterReadDao readDao,
     required CompendiumRepository compendiumRepository,
+    CharacterDomainMapper characterDomainMapper = const CharacterDomainMapper(),
     CharacterSheetMapper characterSheetMapper = const CharacterSheetMapper(),
   }) : _database = database,
        _readDao = readDao,
        _compendiumRepository = compendiumRepository,
+       _characterDomainMapper = characterDomainMapper,
        _characterSheetMapper = characterSheetMapper;
 
   final AppDatabase _database;
   final CharacterReadDao _readDao;
   final CompendiumRepository _compendiumRepository;
+  final CharacterDomainMapper _characterDomainMapper;
   final CharacterSheetMapper _characterSheetMapper;
   Future<CompendiumCatalog>? _catalogFuture;
 
@@ -98,10 +103,9 @@ class CharacterSheetService {
     final skills = await _readDao.getSkillsByCharacterId(id);
     final skillDefinitions = await _readDao.getSkillDefinitions();
     final proficiencies = await _readDao.getProficienciesByCharacterId(id);
-
-    return _characterSheetMapper.map(
-      row,
-      catalog,
+    final record = CharacterRecord(
+      row: row,
+      catalog: catalog,
       backgroundDefinition: backgroundDefinition,
       abilityScores: abilityScores,
       currency: currency,
@@ -111,6 +115,9 @@ class CharacterSheetService {
       skillDefinitions: skillDefinitions,
       proficiencies: proficiencies,
     );
+    final character = _characterDomainMapper.map(record);
+
+    return _characterSheetMapper.map(character);
   }
 
   Future<CompendiumCatalog> _loadCatalog() {

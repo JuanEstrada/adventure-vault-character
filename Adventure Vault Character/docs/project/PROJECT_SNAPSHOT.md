@@ -60,9 +60,24 @@ sheet flow stable.
 - The characters feature now uses explicit application services for
   `create character` and `character sheet` loading, with shared summary
   mapping extracted from the repository implementation.
+- Character-sheet reads now flow through a dedicated read-side domain layer:
+  `CharacterRecord` gathers the read inputs, `CharacterDomainMapper`
+  translates them into a read model, and `CharacterSheetMapper` now depends
+  on that domain model instead of on Drift rows.
 - The character sheet view data is now split into panel-specific contracts for
   `identity`, `combat`, `abilities`, `features / notes`, and `equipment`
   instead of one flat sheet DTO.
+- Small sheet-facing derived rules now sit in the read domain rather than the
+  view mapper, including ability modifiers, proficiency bonus by level,
+  level progress percent, formatted proficiencies, and visible equipment item
+  composition.
+- The read-side domain now also uses dedicated value objects for progression,
+  hit points, background outputs, and money/equipment summaries, which makes
+  the sheet mapper closer to a pure projection layer.
+- Background entries, proficient skills, and saving throws are now also
+  represented explicitly in the read domain instead of being flattened at the
+  first mapping step, which reduces incidental string formatting in the UI
+  mapper.
 - Drift persistence responsibilities are now split into focused DAOs for
   `read`, `reference/seed`, and `write` work.
 - The character sheet now renders mapped MVP data for identity, background,
@@ -124,9 +139,8 @@ sheet flow stable.
 
 ## Work In Progress
 
-- Defining the remaining application-service and mapper boundaries around
-  creation, summary cards, and sheet rendering now that the first snapshot
-  reduction is in place.
+- Extending the new read-side domain model and keeping it coherent as more
+  sheet logic and future edit flows move away from direct persistence mapping.
 
 ## Pending Work
 
@@ -136,8 +150,8 @@ sheet flow stable.
 - Define application services and mappers for full guided character creation,
   card summaries, and character-sheet rendering beyond the current first
   service split.
-- Decide when to introduce a real read-side character domain model between
-  normalized persistence and the now-separated panel view models.
+- Decide how far the new read-side character domain model should expand before
+  edit workflows begin to depend on it.
 - Decide when the local normalized compendium catalog becomes a generated or
   parsed XML-backed source instead of curated asset data.
 - Map the approved MVP flow into implementation tasks in `lib/`.
