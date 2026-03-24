@@ -75,6 +75,17 @@ Verified on 2026-03-24:
   for ability scores, class/background references, basic saving throws,
   inventory rows, proficiencies, and currency snapshot data while keeping the
   current UI-compatible snapshot fields in `characters`.
+- The read side for `getCharacterSheetById` and `watchCharacterSheetById`
+  now also pulls from the normalized Drift tables for `ability scores`,
+  `currency`, `inventory`, `saving throws`, `skills`, and `proficiencies`
+  instead of relying only on snapshot fields in `characters`.
+- The character sheet now renders normalized `saving throws`,
+  `skill proficiencies`, `other proficiencies`, and inventory-derived
+  equipment labels.
+- Drift persistence is now split across focused DAOs for `read`,
+  `reference/seed`, and `write` responsibilities.
+- Drift migration regression coverage now exists for `v1 -> v4` and
+  `v3 -> v4`, including verification of backfilled normalized tables.
 - Draft save now runs through a non-widget validator that reports missing
   sections using builder-facing names before persistence.
 - A dedicated `CompendiumRepository` boundary now sits between the app and
@@ -98,9 +109,9 @@ Verified on 2026-03-24:
 
 This means the repository has moved beyond the single-screen bootstrap and now
 has real local persistence scaffolding, a parsed local compendium baseline,
-and a minimal end-to-end character creation slice. The next major improvement
-is wiring more of the richer compendium seed into player-facing flows without
-letting the seed grow too large for MVP iteration speed.
+reactive character flows, normalized read/write paths, and migration coverage.
+The next major improvement is reducing duplicated snapshot state and tightening
+the normalized model before expanding more player-facing features.
 
 ## Current Phase
 
@@ -128,7 +139,7 @@ Canonical MVP flow:
 6. Character cards visible when saved characters exist
 7. `Crear personaje nuevo`
 8. Builder overview
-9. Optional visible `LOAD` entry point for XML
+9. Optional visible `LOAD XML` entry point from main menu
 10. Guided creation: `Race + name`
 11. Guided creation: `Background`
 12. Guided creation: `Class / level / experience`
@@ -151,16 +162,14 @@ Primary references:
 ## What Is Already Decided
 
 - Startup always begins in bootstrap.
-- Startup loads local config, saved character summaries, and the XML content
-  index.
+- Startup loads the local compendium catalog and saved character summaries.
 - The access screen keeps a dummy online login but must expose
   `Continuar offline`.
 - The main menu must expose `Compendio`, `Reglas`, `Settings`, and
   `Crear personaje nuevo`.
 - The main menu uses character cards as the saved-character entry point.
 - Character creation is guided, not a free-form advanced builder.
-- The builder begins from an overview screen and exposes a visible `LOAD`
-  entry for future XML import work.
+- The main menu exposes a visible `LOAD XML` entry for future XML import work.
 - Full XML import behavior is not required for MVP completion.
 - Creation currently includes race, name, background, ability scores,
   class, level, experience, equipment, and finishing details.
@@ -191,8 +200,9 @@ Primary references:
 
 These are the highest-value unresolved items:
 
-1. Finish moving read-side mapping from the legacy snapshot fields in
-   `characters` to the normalized Drift tables.
+1. Define which `characters` columns remain deliberate snapshots and which
+   should stop being treated as source-of-truth now that normalized tables are
+   active on both write and read paths.
 2. Define application services and task breakdown for `create -> save -> card
    -> open sheet`.
 3. Decide when XML import moves from documented entry point into a real
@@ -209,8 +219,8 @@ Resolved MVP decision:
   review later on the character sheet.
 - Guided creation also requires a mandatory ability score step before save.
 - The MVP ability score step is based on the builder reference UI and supports
-  generated set assignment and manual point allocation with visible remaining
-  budget.
+  generated set assignment plus a manual assignment mode with per-ability
+  selection.
 - Guided creation places class, level, and experience before ability scores
   and before equipment.
 - The generated-set variant should default to the compendium's
@@ -219,7 +229,7 @@ Resolved MVP decision:
 - Guided creation includes an equipment step before final save.
 - Guided creation includes a finishing-details step before final save.
 - `Alignment` is captured inside finishing details for MVP.
-- The `LOAD` XML action remains visible in the builder overview, but full XML
+- The `LOAD XML` action remains visible from the main menu, but full XML
   import behavior is deferred.
 - The first character sheet contents and the first domain-model proposal are
   documented in `docs/specs/first-character-sheet-contents.md` and
@@ -230,8 +240,8 @@ Resolved MVP decision:
 The next logical session should build on the current shell instead of
 restructuring it again:
 
-1. Finish the read-side aggregate for `getCharacterSheetById` from the new
-   normalized Drift tables instead of relying on snapshot fields.
+1. Audit and reduce redundant snapshot data in `characters` now that the
+   normalized Drift tables are actively used on the read side.
 2. Add application services and mapping boundaries for character creation,
    character-card summaries, and character-sheet view models.
 3. Replace the remaining curated or fallback compendium dependency with a more
@@ -246,12 +256,15 @@ Next-session starting point:
 - Start from the normalized Drift schema in
   `lib/src/features/characters/data/local/app_database.dart` and the updated
   repository in `lib/src/features/characters/data/drift_character_repository.dart`.
+- Use the new migration regression tests in
+  `test/app_database_migration_test.dart` as the safety net before changing the
+  schema again.
 - Use the parsed `local-assets/srd_5_2_1_app_base.xml` dataset through the
   `CompendiumRepository` boundary as the active source of truth for local
   creation data, with `assets/compendium/catalog.json` retained only as
   fallback.
 - Treat the current `characters` table snapshot fields as compatibility support
-  for the existing UI until the read-side aggregate is fully migrated.
+  only where the normalized model still lacks a deliberate replacement.
 - Use the accepted flow specs and proposed domain-model docs as the source of
   truth unless a new decision replaces them.
 

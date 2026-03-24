@@ -17,9 +17,9 @@ Implementation shell established
 
 ## Current Focus
 
-Completing the shift from the first single-table character persistence model
-into a normalized Drift character/compendium schema, while keeping the current
-guided draft and sheet flow stable.
+Stabilizing the normalized Drift model now that both write-side persistence
+and character-sheet read-side mapping use the expanded schema, while keeping
+the guided draft and sheet flow stable.
 
 ## Repository State
 
@@ -45,9 +45,15 @@ guided draft and sheet flow stable.
 - The Drift repository now writes normalized character records and seeds core
   SRD-aligned skill/class/background/equipment definition data needed by the
   current save path.
+- The Drift repository now also reads normalized character-sheet data for
+  `ability scores`, `currency`, `inventory`, `saving throws`, `skills`, and
+  `proficiencies`.
+- Drift persistence responsibilities are now split into focused DAOs for
+  `read`, `reference/seed`, and `write` work.
 - The character sheet now renders mapped MVP data for identity, background,
-  abilities, progression, hit points, structured equipment data, and
-  finishing details.
+  abilities, progression, hit points, structured equipment data, normalized
+  saving throws, proficiencies, and finishing details.
+- Regression tests now cover Drift migrations from legacy schemas into `v4`.
 - A dedicated `CompendiumRepository` now loads a parsed local XML base dataset
   for races, classes, backgrounds, and starter equipment loadouts, with JSON
   fallback preserved.
@@ -103,13 +109,13 @@ guided draft and sheet flow stable.
 
 ## Work In Progress
 
-- Migrating read-side character-sheet assembly away from snapshot fields in
-  `characters` and onto the normalized Drift tables introduced in `v4`.
+- Auditing which snapshot fields in `characters` are still necessary now that
+  the normalized Drift tables are active on both write and read paths.
 
 ## Pending Work
 
-- Finish moving read-side character-sheet mapping to the normalized Drift
-  tables instead of the compatibility snapshot fields.
+- Remove or narrow redundant snapshot state in `characters` where the
+  normalized tables are now the real source of truth.
 - Define application services and mappers for full guided character creation,
   card summaries, and character-sheet rendering.
 - Decide when the local normalized compendium catalog becomes a generated or
@@ -140,7 +146,7 @@ guided draft and sheet flow stable.
 
 ## Next Recommended Steps
 
-1. Finish the read-side aggregate from the new normalized character tables.
+1. Decide and implement the reduced snapshot surface in `characters`.
 2. Deepen the parsed compendium fidelity beyond the current XML base starter
    dataset.
 3. Break the approved MVP flow into implementation tasks in `lib/`.
