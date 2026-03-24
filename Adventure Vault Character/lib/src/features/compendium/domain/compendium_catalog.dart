@@ -9,6 +9,11 @@ class CompendiumCatalog {
     required this.backgrounds,
     required this.generatedAbilityScoreSet,
     required this.manualAbilityScoreOptions,
+    required this.characterAdvancement,
+    required this.standardArrayByClass,
+    required this.spells,
+    required this.feats,
+    required this.monsters,
     required this.equipmentSummariesByClass,
     required this.equipmentLoadoutsByClass,
   });
@@ -18,6 +23,11 @@ class CompendiumCatalog {
   final List<CompendiumBackground> backgrounds;
   final List<int> generatedAbilityScoreSet;
   final List<int> manualAbilityScoreOptions;
+  final List<CharacterAdvancementEntry> characterAdvancement;
+  final List<StandardArrayByClassEntry> standardArrayByClass;
+  final List<CompendiumSpell> spells;
+  final List<CompendiumFeat> feats;
+  final List<CompendiumMonster> monsters;
   final Map<String, EquipmentSummaryViewData> equipmentSummariesByClass;
   final Map<String, List<CompendiumEquipmentLoadout>> equipmentLoadoutsByClass;
 
@@ -59,6 +69,42 @@ class CompendiumCatalog {
 }
 
 @immutable
+class CharacterAdvancementEntry {
+  const CharacterAdvancementEntry({
+    required this.level,
+    required this.experience,
+    required this.proficiencyBonus,
+  });
+
+  final int level;
+  final int experience;
+  final String proficiencyBonus;
+}
+
+@immutable
+class StandardArrayByClassEntry {
+  const StandardArrayByClassEntry({
+    required this.classId,
+    required this.className,
+    required this.strength,
+    required this.dexterity,
+    required this.constitution,
+    required this.intelligence,
+    required this.wisdom,
+    required this.charisma,
+  });
+
+  final String classId;
+  final String className;
+  final int strength;
+  final int dexterity;
+  final int constitution;
+  final int intelligence;
+  final int wisdom;
+  final int charisma;
+}
+
+@immutable
 class CompendiumBackground {
   const CompendiumBackground({
     required this.id,
@@ -88,4 +134,81 @@ class CompendiumEquipmentLoadout {
   final String label;
   final String startingMoneySummary;
   final List<String> selectedItems;
+}
+
+@immutable
+class CompendiumSpell {
+  const CompendiumSpell({
+    required this.name,
+    required this.level,
+    required this.school,
+    required this.castingTime,
+    required this.range,
+    required this.components,
+    required this.duration,
+    required this.classes,
+    required this.description,
+    required this.source,
+  });
+
+  final String name;
+  final int level;
+  final String school;
+  final String castingTime;
+  final String range;
+  final String components;
+  final String duration;
+  final List<String> classes;
+  final List<String> description;
+  final String source;
+}
+
+@immutable
+class CompendiumFeat {
+  const CompendiumFeat({
+    required this.name,
+    required this.prerequisite,
+    required this.description,
+    required this.modifiers,
+    required this.source,
+  });
+
+  final String name;
+  final String prerequisite;
+  final List<String> description;
+  final List<String> modifiers;
+  final String source;
+}
+
+@immutable
+class CompendiumMonster {
+  const CompendiumMonster({
+    required this.name,
+    required this.size,
+    required this.type,
+    required this.alignment,
+    required this.armorClass,
+    required this.hitPoints,
+    required this.speed,
+    required this.challengeRating,
+    required this.senses,
+    required this.languages,
+    required this.traits,
+    required this.actions,
+    required this.source,
+  });
+
+  final String name;
+  final String size;
+  final String type;
+  final String alignment;
+  final String armorClass;
+  final String hitPoints;
+  final String speed;
+  final String challengeRating;
+  final String senses;
+  final String languages;
+  final List<String> traits;
+  final List<String> actions;
+  final String source;
 }

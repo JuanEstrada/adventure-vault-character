@@ -24,3 +24,5 @@ flutter:
   assets:
     - assets/compendium/catalog.json
     - local-assets/srd_5_2_1_app_base.xml
+    - local-assets/Official Only 2024.xml
+    - local-assets/Core Rulebooks.xml

@@ -77,13 +77,17 @@ Verified on 2026-03-23:
 - The current app catalog now loads from
   `local-assets/srd_5_2_1_app_base.xml` through an asset parser, with
   `assets/compendium/catalog.json` kept as fallback.
+- The parsed compendium seed now also includes the full
+  `Character Advancement` table, the `Standard Array by Class` table, a small
+  spell seed spanning levels `0-9`, three feats, and three monsters from
+  local XML assets.
 - `test/widget_test.dart` covers the offline path into the main menu.
 
 This means the repository has moved beyond the single-screen bootstrap and now
 has real local persistence scaffolding, a parsed local compendium baseline,
 and a minimal end-to-end character creation slice. The next major improvement
-is deepening the parsed compendium fidelity while the guided builder and
-sheet mapping keep expanding toward MVP completeness.
+is wiring more of the richer compendium seed into player-facing flows without
+letting the seed grow too large for MVP iteration speed.
 
 ## Current Phase
 

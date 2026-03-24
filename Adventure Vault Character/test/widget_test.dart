@@ -111,6 +111,24 @@ const _testCatalog = CompendiumCatalog(
   ],
   generatedAbilityScoreSet: <int>[15, 14, 13, 12, 10, 8],
   manualAbilityScoreOptions: <int>[8, 9, 10, 11, 12, 13, 14, 15],
+  characterAdvancement: <CharacterAdvancementEntry>[
+    CharacterAdvancementEntry(level: 1, experience: 0, proficiencyBonus: '+2'),
+  ],
+  standardArrayByClass: <StandardArrayByClassEntry>[
+    StandardArrayByClassEntry(
+      classId: 'fighter',
+      className: 'Fighter',
+      strength: 15,
+      dexterity: 14,
+      constitution: 13,
+      intelligence: 8,
+      wisdom: 10,
+      charisma: 12,
+    ),
+  ],
+  spells: <CompendiumSpell>[],
+  feats: <CompendiumFeat>[],
+  monsters: <CompendiumMonster>[],
   equipmentSummariesByClass: <String, EquipmentSummaryViewData>{
     'Fighter': EquipmentSummaryViewData(
       statusLabel: 'MVP minimal',

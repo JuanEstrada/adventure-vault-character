@@ -45,6 +45,9 @@ character-sheet mapping, and a more realistic local compendium seed.
 - A dedicated `CompendiumRepository` now loads a parsed local XML base dataset
   for races, classes, backgrounds, and starter equipment loadouts, with JSON
   fallback preserved.
+- The compendium seed now also exposes `Character Advancement`,
+  `Standard Array by Class`, a compact spell sample across levels `0-9`,
+  three feats, and three monsters from local XML assets.
 - Widget coverage exists for the offline continuation path into the main menu.
 
 ## Active Architecture Constraints
