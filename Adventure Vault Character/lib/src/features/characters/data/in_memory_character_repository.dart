@@ -8,15 +8,18 @@ class InMemoryCharacterRepository implements CharacterRepository {
   InMemoryCharacterRepository.empty({
     required CompendiumRepository compendiumRepository,
   }) : _summaries = <CharacterSummary>[],
+       _createdInputsById = <String, CreateCharacterInput>{},
        _compendiumRepository = compendiumRepository;
 
   InMemoryCharacterRepository.seeded(
     List<CharacterSummary> summaries, {
     required CompendiumRepository compendiumRepository,
   }) : _summaries = List<CharacterSummary>.from(summaries),
+       _createdInputsById = <String, CreateCharacterInput>{},
        _compendiumRepository = compendiumRepository;
 
   final List<CharacterSummary> _summaries;
+  final Map<String, CreateCharacterInput> _createdInputsById;
   final CompendiumRepository _compendiumRepository;
 
   @override
@@ -26,8 +29,9 @@ class InMemoryCharacterRepository implements CharacterRepository {
 
   @override
   Future<CharacterSummary> createCharacter(CreateCharacterInput input) async {
+    final id = DateTime.now().microsecondsSinceEpoch.toString();
     final summary = CharacterSummary(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: id,
       name: input.name,
       raceName: input.raceName,
       className: input.className,
@@ -35,6 +39,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
       portraitAssetPath: input.portraitAssetPath,
     );
     _summaries.insert(0, summary);
+    _createdInputsById[id] = input;
     return summary;
   }
 
@@ -54,9 +59,12 @@ class InMemoryCharacterRepository implements CharacterRepository {
     if (summary == null) {
       return null;
     }
+    final createdInput = _createdInputsById[id];
 
     final catalog = await _compendiumRepository.loadCatalog();
-    final background = catalog.backgrounds.first;
+    final background =
+        catalog.backgroundById(createdInput?.backgroundId) ??
+        catalog.backgrounds.first;
     final equipmentLoadout = catalog
         .equipmentLoadoutsForClass(summary.className)
         .first;
@@ -67,32 +75,54 @@ class InMemoryCharacterRepository implements CharacterRepository {
       raceName: summary.raceName,
       className: summary.className,
       level: summary.level,
-      experience: 0,
+      experience: createdInput?.experience ?? 0,
       proficiencyBonus: 2,
       levelProgressPercent: 0,
-      currentHitPoints: 10,
-      maximumHitPoints: 10,
-      temporaryHitPoints: 0,
-      backgroundName: background.name,
-      backgroundSummary: background.summary,
+      currentHitPoints: createdInput?.currentHitPoints ?? 10,
+      maximumHitPoints: createdInput?.maximumHitPoints ?? 10,
+      temporaryHitPoints: createdInput?.temporaryHitPoints ?? 0,
+      backgroundName: createdInput?.backgroundName ?? background.name,
+      backgroundSummary: createdInput?.backgroundSummary ?? background.summary,
       backgroundBonuses: background.bonuses,
       backgroundSocialPerks: background.socialPerks,
-      abilityScoreMethodLabel: 'Generated set assignment',
-      abilityRows: const <AbilityScoreRowViewData>[
-        AbilityScoreRowViewData(label: 'Strength', score: 15, modifier: 2),
-        AbilityScoreRowViewData(label: 'Dexterity', score: 14, modifier: 2),
-        AbilityScoreRowViewData(label: 'Constitution', score: 13, modifier: 1),
-        AbilityScoreRowViewData(label: 'Intelligence', score: 12, modifier: 1),
-        AbilityScoreRowViewData(label: 'Wisdom', score: 10, modifier: 0),
-        AbilityScoreRowViewData(label: 'Charisma', score: 8, modifier: -1),
+      abilityScoreMethodLabel: _abilityMethodLabel(
+        createdInput?.abilityScoreMethod,
+      ),
+      abilityRows: <AbilityScoreRowViewData>[
+        _abilityRow('Strength', createdInput?.strength ?? 15),
+        _abilityRow('Dexterity', createdInput?.dexterity ?? 14),
+        _abilityRow('Constitution', createdInput?.constitution ?? 13),
+        _abilityRow('Intelligence', createdInput?.intelligence ?? 12),
+        _abilityRow('Wisdom', createdInput?.wisdom ?? 10),
+        _abilityRow('Charisma', createdInput?.charisma ?? 8),
       ],
       equipmentSummary: catalog.equipmentSummaryForClass(summary.className),
-      selectedEquipmentLabel: equipmentLoadout.label,
-      startingMoneySummary: equipmentLoadout.startingMoneySummary,
-      selectedEquipmentItems: equipmentLoadout.selectedItems,
-      alignment: 'Neutral',
-      appearanceDetails: '',
-      narrativeDetails: '',
+      selectedEquipmentLabel:
+          createdInput?.equipmentLoadoutLabel ?? equipmentLoadout.label,
+      startingMoneySummary:
+          createdInput?.startingMoneySummary ??
+          equipmentLoadout.startingMoneySummary,
+      selectedEquipmentItems:
+          createdInput?.selectedEquipmentItems ?? equipmentLoadout.selectedItems,
+      alignment: createdInput?.alignment ?? 'Neutral',
+      appearanceDetails: createdInput?.appearanceDetails ?? '',
+      narrativeDetails: createdInput?.narrativeDetails ?? '',
     );
+  }
+
+  AbilityScoreRowViewData _abilityRow(String label, int score) {
+    return AbilityScoreRowViewData(
+      label: label,
+      score: score,
+      modifier: ((score - 10) / 2).floor(),
+    );
+  }
+
+  String _abilityMethodLabel(String? method) {
+    return switch (method) {
+      'generatedSetAssignment' => 'Generated set assignment',
+      'manualPointAllocation' => 'Manual point allocation',
+      _ => 'Generated set assignment',
+    };
   }
 }

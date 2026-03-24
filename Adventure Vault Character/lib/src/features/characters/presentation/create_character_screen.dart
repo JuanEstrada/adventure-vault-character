@@ -106,9 +106,31 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     _selectedRace = widget.catalog.races.first;
     _selectedBackground = widget.catalog.backgrounds.first;
     _selectedClass = widget.catalog.classes.first;
+    _applyGeneratedAssignmentsForClass(_selectedClass);
     _selectedEquipmentLoadout = widget.catalog
         .equipmentLoadoutsForClass(_selectedClass)
         .first;
+  }
+
+  void _applyGeneratedAssignmentsForClass(String className) {
+    StandardArrayByClassEntry? classArray;
+    for (final entry in widget.catalog.standardArrayByClass) {
+      if (entry.className == className) {
+        classArray = entry;
+        break;
+      }
+    }
+    if (classArray == null) {
+      return;
+    }
+
+    _generatedAssignments
+      ..['Strength'] = classArray.strength
+      ..['Dexterity'] = classArray.dexterity
+      ..['Constitution'] = classArray.constitution
+      ..['Intelligence'] = classArray.intelligence
+      ..['Wisdom'] = classArray.wisdom
+      ..['Charisma'] = classArray.charisma;
   }
 
   void _submit() {
@@ -331,6 +353,73 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                     ),
                     const SizedBox(height: 16),
                     _SectionCard(
+                      title: 'Class / Level / Experience',
+                      child: Column(
+                        children: [
+                          DropdownButtonFormField<String>(
+                            initialValue: _selectedClass,
+                            decoration: const InputDecoration(
+                              labelText: 'Clase',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: widget.catalog.classes
+                                .map(
+                                  (characterClass) => DropdownMenuItem<String>(
+                                    value: characterClass,
+                                    child: Text(characterClass),
+                                  ),
+                                )
+                                .toList(growable: false),
+                            onChanged: widget.isSaving
+                                ? null
+                                : (value) {
+                                    if (value == null) return;
+                                    setState(() {
+                                      _selectedClass = value;
+                                      _applyGeneratedAssignmentsForClass(value);
+                                      _selectedEquipmentLoadout = widget.catalog
+                                          .equipmentLoadoutsForClass(value)
+                                          .first;
+                                    });
+                                  },
+                          ),
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<int>(
+                            initialValue: _selectedLevel,
+                            decoration: const InputDecoration(
+                              labelText: 'Nivel',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: List<int>.generate(5, (index) => index + 1)
+                                .map(
+                                  (level) => DropdownMenuItem<int>(
+                                    value: level,
+                                    child: Text('Nivel $level'),
+                                  ),
+                                )
+                                .toList(growable: false),
+                            onChanged: widget.isSaving
+                                ? null
+                                : (value) {
+                                    if (value == null) return;
+                                    setState(() {
+                                      _selectedLevel = value;
+                                    });
+                                  },
+                          ),
+                          const SizedBox(height: 16),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Experience inicial: ${(_selectedLevel - 1) * 300}',
+                              style: theme.textTheme.bodyLarge,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _SectionCard(
                       title: 'Ability Scores',
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -386,72 +475,6 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                                 target[ability] = score;
                               });
                             },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _SectionCard(
-                      title: 'Class / Level / Experience',
-                      child: Column(
-                        children: [
-                          DropdownButtonFormField<String>(
-                            initialValue: _selectedClass,
-                            decoration: const InputDecoration(
-                              labelText: 'Clase',
-                              border: OutlineInputBorder(),
-                            ),
-                            items: widget.catalog.classes
-                                .map(
-                                  (characterClass) => DropdownMenuItem<String>(
-                                    value: characterClass,
-                                    child: Text(characterClass),
-                                  ),
-                                )
-                                .toList(growable: false),
-                            onChanged: widget.isSaving
-                                ? null
-                                : (value) {
-                                    if (value == null) return;
-                                    setState(() {
-                                      _selectedClass = value;
-                                      _selectedEquipmentLoadout = widget.catalog
-                                          .equipmentLoadoutsForClass(value)
-                                          .first;
-                                    });
-                                  },
-                          ),
-                          const SizedBox(height: 16),
-                          DropdownButtonFormField<int>(
-                            initialValue: _selectedLevel,
-                            decoration: const InputDecoration(
-                              labelText: 'Nivel',
-                              border: OutlineInputBorder(),
-                            ),
-                            items: List<int>.generate(5, (index) => index + 1)
-                                .map(
-                                  (level) => DropdownMenuItem<int>(
-                                    value: level,
-                                    child: Text('Nivel $level'),
-                                  ),
-                                )
-                                .toList(growable: false),
-                            onChanged: widget.isSaving
-                                ? null
-                                : (value) {
-                                    if (value == null) return;
-                                    setState(() {
-                                      _selectedLevel = value;
-                                    });
-                                  },
-                          ),
-                          const SizedBox(height: 16),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Experience inicial: ${(_selectedLevel - 1) * 300}',
-                              style: theme.textTheme.bodyLarge,
-                            ),
                           ),
                         ],
                       ),

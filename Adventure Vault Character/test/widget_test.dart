@@ -92,6 +92,60 @@ void main() {
     expect(find.textContaining('Human  •  Fighter  •  Lv 1'), findsOneWidget);
   });
 
+  testWidgets('generated ability set updates when class changes', (
+    WidgetTester tester,
+  ) async {
+    const compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
+    final repository = InMemoryCharacterRepository.empty(
+      compendiumRepository: compendiumRepository,
+    );
+    await tester.binding.setSurfaceSize(const Size(1200, 2400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      AdventureVaultApp(
+        characterRepository: repository,
+        compendiumRepository: compendiumRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Continuar offline'));
+    await tester.tap(find.text('Continuar offline'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Crear personaje nuevo'));
+    await tester.tap(find.text('Crear personaje nuevo'));
+    await tester.pumpAndSettle();
+
+    final classField = find.byWidgetPredicate(
+      (widget) =>
+          widget is DropdownButtonFormField<String> &&
+          widget.decoration?.labelText == 'Clase',
+    );
+
+    await tester.enterText(find.byType(TextFormField).first, 'Meris');
+    await tester.tap(classField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Wizard').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar draft'));
+    await tester.pumpAndSettle();
+
+    final summaries = await repository.getCharacterSummaries();
+    final character = await repository.getCharacterSheetById(summaries.single.id);
+
+    expect(character, isNotNull);
+    expect(character!.className, 'Wizard');
+    expect(character.abilityRows.firstWhere((row) => row.label == 'Strength').score, 8);
+    expect(
+      character.abilityRows.firstWhere((row) => row.label == 'Intelligence').score,
+      15,
+    );
+    expect(character.selectedEquipmentLabel, 'Arcane focus kit');
+  });
+
   testWidgets('create screen shows blocked state when compendium is incomplete', (
     WidgetTester tester,
   ) async {
@@ -171,6 +225,16 @@ const _testCatalog = CompendiumCatalog(
       intelligence: 8,
       wisdom: 10,
       charisma: 12,
+    ),
+    StandardArrayByClassEntry(
+      classId: 'wizard',
+      className: 'Wizard',
+      strength: 8,
+      dexterity: 12,
+      constitution: 13,
+      intelligence: 15,
+      wisdom: 14,
+      charisma: 10,
     ),
   ],
   spells: <CompendiumSpell>[],
