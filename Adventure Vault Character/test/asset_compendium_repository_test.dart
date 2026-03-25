@@ -5,12 +5,21 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('loads catalog from XML base dataset when available', () async {
+  test('loads catalog from FightClub SRD 5.5e assets', () async {
     final repository = AssetCompendiumRepository(
       bundle: _FakeAssetBundle({
-        'local-assets/srd_5_2_1_app_base.xml': _xmlFixture,
-        'local-assets/Official Only 2024.xml': _officialFixture,
-        'local-assets/Core Rulebooks.xml': _monsterFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_backgrounds_5.5e.xml':
+            _backgroundsFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_races_5.5e.xml':
+            _racesFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_classes_5.5e.xml':
+            _classesFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_spells_5.5e.xml':
+            _spellsFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_feats_5.5e.xml':
+            _featsFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_bestiary_5.5e.xml':
+            _monstersFixture,
         'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{}),
       }),
     );
@@ -26,44 +35,21 @@ void main() {
     expect(catalog.generatedAbilityScoreSet, <int>[15, 14, 13, 12, 10, 8]);
     expect(catalog.manualAbilityScoreOptions, containsAll(<int>[8, 15]));
     expect(catalog.characterAdvancement.first.level, 1);
-    expect(catalog.standardArrayByClass.first.classId, 'fighter');
+    expect(catalog.standardArrayByClass.first.classId, 'barbarian');
     expect(catalog.spells.map((item) => item.level), containsAll(<int>[0, 1]));
-    expect(catalog.feats.map((item) => item.name), contains('Actor [2024]'));
+    expect(
+      catalog.feats.map((item) => item.name),
+      containsAll(<String>['Ability Score Improvement', 'Origin: Alert']),
+    );
     expect(
       catalog.monsters.map((item) => item.name),
-      containsAll(<String>['Goblin', 'Owlbear']),
+      containsAll(<String>['Giant Fly', 'Owlbear']),
     );
     expect(
       catalog.equipmentLoadoutsForClass('Fighter').map((item) => item.id),
       containsAll(<String>['fighter-a', 'fighter-b']),
     );
   });
-
-  test(
-    'prefers gameplay sections over metadata indexes with duplicate tag names',
-    () async {
-      final repository = AssetCompendiumRepository(
-        bundle: _FakeAssetBundle({
-          'local-assets/srd_5_2_1_app_base.xml': _xmlFixtureWithMetadataIndexes,
-          'local-assets/Official Only 2024.xml': _officialFixture,
-          'local-assets/Core Rulebooks.xml': _monsterFixture,
-          'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{}),
-        }),
-      );
-
-      final catalog = await repository.loadCatalog();
-
-      expect(catalog.backgrounds.map((item) => item.name), contains('Acolyte'));
-      expect(
-        catalog.classes,
-        containsAll(<String>['Fighter', 'Wizard', 'Rogue']),
-      );
-      expect(
-        catalog.equipmentLoadoutsForClass('Fighter').map((item) => item.id),
-        containsAll(<String>['fighter-a', 'fighter-b']),
-      );
-    },
-  );
 }
 
 class _FakeAssetBundle extends CachingAssetBundle {
@@ -83,327 +69,213 @@ class _FakeAssetBundle extends CachingAssetBundle {
   }
 }
 
-const _xmlFixture = '''
-<?xml version="1.0" encoding="UTF-8"?>
-<adventure-vault-srd-base>
-  <characterCreation>
-    <abilityGeneration>
-      <standardArray>
-        <score>15</score>
-        <score>14</score>
-        <score>13</score>
-        <score>12</score>
-        <score>10</score>
-        <score>8</score>
-      </standardArray>
-      <pointBuy budget="27">
-        <score value="8" cost="0" />
-        <score value="9" cost="1" />
-        <score value="10" cost="2" />
-        <score value="11" cost="3" />
-        <score value="12" cost="4" />
-        <score value="13" cost="5" />
-        <score value="14" cost="7" />
-        <score value="15" cost="9" />
-      </pointBuy>
-      <standardArrayByClass>
-        <classRef id="fighter" strength="15" dexterity="14" constitution="13" intelligence="8" wisdom="10" charisma="12" />
-      </standardArrayByClass>
-    </abilityGeneration>
-    <levelProgression>
-      <level value="1" xp="0" proficiencyBonus="+2" />
-      <level value="2" xp="300" proficiencyBonus="+2" />
-    </levelProgression>
-  </characterCreation>
-  <backgrounds>
-    <background id="acolyte">
-      <name>Acolyte</name>
-      <abilityOptions>
-        <ability>Intelligence</ability>
-        <ability>Wisdom</ability>
-        <ability>Charisma</ability>
-      </abilityOptions>
-      <originFeat>Magic Initiate (Cleric)</originFeat>
-      <skillProficiencies>
-        <skill>Insight</skill>
-        <skill>Religion</skill>
-      </skillProficiencies>
-      <toolProficiency>Calligrapher&apos;s Supplies</toolProficiency>
-      <equipment>
-        <option id="A">Book, Holy Symbol, 8 GP</option>
-        <option id="B">50 GP</option>
-      </equipment>
-      <summary>Temple-shaped background.</summary>
-    </background>
-  </backgrounds>
-  <speciesList>
-    <species id="dragonborn"><name>Dragonborn</name></species>
-    <species id="elf"><name>Elf</name></species>
-    <species id="human"><name>Human</name></species>
-  </speciesList>
-  <classes>
-    <class id="fighter">
-      <name>Fighter</name>
-      <primaryAbility>Strength or Dexterity</primaryAbility>
-      <hitDie>d10</hitDie>
-      <weaponProficiencies>Simple and Martial weapons</weaponProficiencies>
-      <armorTraining>Light armor, Medium armor, Heavy armor, Shields</armorTraining>
-      <startingEquipment>
-        <option id="A">Chain Mail, Greatsword, 4 GP</option>
-        <option id="B">155 GP</option>
-      </startingEquipment>
-      <level1Features>
-        <feature>Fighting Style</feature>
-        <feature>Second Wind</feature>
-      </level1Features>
-    </class>
-    <class id="rogue">
-      <name>Rogue</name>
-      <primaryAbility>Dexterity</primaryAbility>
-      <hitDie>d8</hitDie>
-      <weaponProficiencies>Simple weapons</weaponProficiencies>
-      <armorTraining>Light armor</armorTraining>
-      <startingEquipment>
-        <option id="A">Leather Armor, Dagger, 8 GP</option>
-      </startingEquipment>
-      <level1Features>
-        <feature>Sneak Attack</feature>
-      </level1Features>
-    </class>
-    <class id="wizard">
-      <name>Wizard</name>
-      <primaryAbility>Intelligence</primaryAbility>
-      <hitDie>d6</hitDie>
-      <weaponProficiencies>Simple weapons</weaponProficiencies>
-      <armorTraining>None</armorTraining>
-      <startingEquipment>
-        <option id="A">Spellbook, Robe, 5 GP</option>
-      </startingEquipment>
-      <level1Features>
-        <feature>Spellcasting</feature>
-      </level1Features>
-    </class>
-  </classes>
-</adventure-vault-srd-base>
-''';
-
-const _xmlFixtureWithMetadataIndexes =
-    '''
-<?xml version="1.0" encoding="UTF-8"?>
-<adventure-vault-srd-base>
-  <metadata>
-    <official2024Catalog>
-      <backgrounds>
-        <entry>Acolyte [2024]</entry>
-      </backgrounds>
-      <classes>
-        <entry>Fighter [2024]</entry>
-      </classes>
-    </official2024Catalog>
-  </metadata>
-  $_xmlFixtureBody
-</adventure-vault-srd-base>
-''';
-
-const _xmlFixtureBody = '''
-  <characterCreation>
-    <abilityGeneration>
-      <standardArray>
-        <score>15</score>
-        <score>14</score>
-        <score>13</score>
-        <score>12</score>
-        <score>10</score>
-        <score>8</score>
-      </standardArray>
-      <pointBuy budget="27">
-        <score value="8" cost="0" />
-        <score value="9" cost="1" />
-        <score value="10" cost="2" />
-        <score value="11" cost="3" />
-        <score value="12" cost="4" />
-        <score value="13" cost="5" />
-        <score value="14" cost="7" />
-        <score value="15" cost="9" />
-      </pointBuy>
-      <standardArrayByClass>
-        <classRef id="fighter" strength="15" dexterity="14" constitution="13" intelligence="8" wisdom="10" charisma="12" />
-      </standardArrayByClass>
-    </abilityGeneration>
-    <levelProgression>
-      <level value="1" xp="0" proficiencyBonus="+2" />
-      <level value="2" xp="300" proficiencyBonus="+2" />
-    </levelProgression>
-  </characterCreation>
-  <backgrounds>
-    <background id="acolyte">
-      <name>Acolyte</name>
-      <abilityOptions>
-        <ability>Intelligence</ability>
-        <ability>Wisdom</ability>
-        <ability>Charisma</ability>
-      </abilityOptions>
-      <originFeat>Magic Initiate (Cleric)</originFeat>
-      <skillProficiencies>
-        <skill>Insight</skill>
-        <skill>Religion</skill>
-      </skillProficiencies>
-      <toolProficiency>Calligrapher&apos;s Supplies</toolProficiency>
-      <equipment>
-        <option id="A">Book, Holy Symbol, 8 GP</option>
-        <option id="B">50 GP</option>
-      </equipment>
-      <summary>Temple-shaped background.</summary>
-    </background>
-  </backgrounds>
-  <speciesList>
-    <species id="dragonborn"><name>Dragonborn</name></species>
-    <species id="elf"><name>Elf</name></species>
-    <species id="human"><name>Human</name></species>
-  </speciesList>
-  <classes>
-    <class id="fighter">
-      <name>Fighter</name>
-      <primaryAbility>Strength or Dexterity</primaryAbility>
-      <hitDie>d10</hitDie>
-      <weaponProficiencies>Simple and Martial weapons</weaponProficiencies>
-      <armorTraining>Light armor, Medium armor, Heavy armor, Shields</armorTraining>
-      <startingEquipment>
-        <option id="A">Chain Mail, Greatsword, 4 GP</option>
-        <option id="B">155 GP</option>
-      </startingEquipment>
-      <level1Features>
-        <feature>Fighting Style</feature>
-        <feature>Second Wind</feature>
-      </level1Features>
-    </class>
-    <class id="rogue">
-      <name>Rogue</name>
-      <primaryAbility>Dexterity</primaryAbility>
-      <hitDie>d8</hitDie>
-      <weaponProficiencies>Simple weapons</weaponProficiencies>
-      <armorTraining>Light armor</armorTraining>
-      <startingEquipment>
-        <option id="A">Leather Armor, Dagger, 8 GP</option>
-      </startingEquipment>
-      <level1Features>
-        <feature>Sneak Attack</feature>
-      </level1Features>
-    </class>
-    <class id="wizard">
-      <name>Wizard</name>
-      <primaryAbility>Intelligence</primaryAbility>
-      <hitDie>d6</hitDie>
-      <weaponProficiencies>Simple weapons</weaponProficiencies>
-      <armorTraining>None</armorTraining>
-      <startingEquipment>
-        <option id="A">Spellbook, Robe, 5 GP</option>
-      </startingEquipment>
-      <level1Features>
-        <feature>Spellcasting</feature>
-      </level1Features>
-    </class>
-  </classes>
-''';
-
-const _officialFixture = '''
+const _backgroundsFixture = '''
 <compendium version="5">
-  <feat>
-    <name>Actor [2024]</name>
-    <prerequisite>Level 4+, Cha 13+</prerequisite>
-    <text>You gain the following benefits.</text>
-    <text>Ability Score Increase. Increase your Charisma score by 1.</text>
-    <text>Source: Player's Handbook 2024 p. 202</text>
-    <modifier category="ability score">Charisma +1</modifier>
-  </feat>
-  <feat>
-    <name>Alert [2024]</name>
-    <prerequisite>Level 4+</prerequisite>
-    <text>You gain a bonus to Initiative rolls.</text>
-    <text>Source: Player's Handbook 2024 p. 202</text>
-  </feat>
-  <feat>
-    <name>Shield Master [2024]</name>
-    <prerequisite>Level 4+, Shield Training</prerequisite>
-    <text>You gain shield-focused combat benefits.</text>
-    <text>Source: Player's Handbook 2024 p. 207</text>
-    <modifier category="ability score">Strength +1</modifier>
-  </feat>
+  <background>
+    <name>Acolyte [5.5e]</name>
+    <proficiency>Insight, Religion</proficiency>
+    <trait>
+      <name>Description</name>
+      <text>Temple-shaped background. Source: System Reference Document v5.2.1</text>
+    </trait>
+    <trait>
+      <name>Ability Scores: Intelligence, Wisdom, Charisma</name>
+      <text>Increase one by 2 and another by 1.</text>
+    </trait>
+    <trait>
+      <name>Feat: Magic Initiate (Cleric)</name>
+      <text>Gain spell access.</text>
+    </trait>
+    <trait>
+      <name>Tool Proficiency: Calligrapher's Supplies</name>
+      <text>Tool training.</text>
+    </trait>
+    <trait>
+      <name>Starting Equipment</name>
+      <text>Choose A or B: (A) Book, Holy Symbol, 8 GP; or (B) 50 GP</text>
+    </trait>
+  </background>
+</compendium>
+''';
+
+const _racesFixture = '''
+<compendium version="5">
+  <race><name>Dragonborn [5.5e]</name></race>
+  <race><name>Elf [5.5e]</name></race>
+  <race><name>Human [5.5e]</name></race>
+</compendium>
+''';
+
+const _classesFixture = '''
+<compendium version="5">
+  <class>
+    <name>Fighter [5.5e]</name>
+    <hd>10</hd>
+    <proficiency>Strength, Constitution, Acrobatics, Athletics, Insight</proficiency>
+    <armor>Light Armor, Medium Armor, Heavy Armor, Shields</armor>
+    <weapons>Simple Weapons, Martial Weapons</weapons>
+    <autolevel level="1">
+      <feature optional="YES">
+        <name>Becoming A Fighter As A Level 1 Character</name>
+        <text>Primary Ability: Strength or Dexterity. Starting Equipment: Choose A or B: (A) Chain Mail, Greatsword, 4 GP; or (B) 155 GP Source: System Reference Document v5.2.1</text>
+      </feature>
+      <feature>
+        <name>Level 1: Fighting Style</name>
+        <text>Choose a style.</text>
+      </feature>
+      <feature>
+        <name>Level 1: Second Wind</name>
+        <text>Recover hit points.</text>
+      </feature>
+    </autolevel>
+  </class>
+  <class>
+    <name>Rogue [5.5e]</name>
+    <hd>8</hd>
+    <proficiency>Dexterity, Intelligence, Acrobatics, Stealth, Perception</proficiency>
+    <armor>Light Armor</armor>
+    <weapons>Simple Weapons</weapons>
+    <autolevel level="1">
+      <feature optional="YES">
+        <name>Becoming A Rogue As A Level 1 Character</name>
+        <text>Primary Ability: Dexterity. Starting Equipment: Choose A or B: (A) Leather Armor, Dagger, 8 GP; or (B) 100 GP Source: System Reference Document v5.2.1</text>
+      </feature>
+      <feature>
+        <name>Level 1: Sneak Attack</name>
+        <text>Extra damage.</text>
+      </feature>
+    </autolevel>
+  </class>
+  <class>
+    <name>Wizard [5.5e]</name>
+    <hd>6</hd>
+    <proficiency>Intelligence, Wisdom, Arcana, History, Investigation</proficiency>
+    <armor>None</armor>
+    <weapons>Simple Weapons</weapons>
+    <autolevel level="1">
+      <feature optional="YES">
+        <name>Becoming A Wizard As A Level 1 Character</name>
+        <text>Primary Ability: Intelligence. Starting Equipment: Choose A or B: (A) Spellbook, Robe, 5 GP; or (B) 55 GP Source: System Reference Document v5.2.1</text>
+      </feature>
+      <feature>
+        <name>Level 1: Spellcasting</name>
+        <text>Cast spells.</text>
+      </feature>
+    </autolevel>
+  </class>
+</compendium>
+''';
+
+const _spellsFixture = '''
+<compendium version="5">
   <spell>
-    <name>Light [2024]</name>
+    <name>Light [5.5e]</name>
     <level>0</level>
-    <school>E</school>
+    <school>EV</school>
     <time>Action</time>
     <range>Touch</range>
     <components>V, M</components>
     <duration>1 hour</duration>
-    <classes>Bard [2024], Cleric [2024], Wizard [2024]</classes>
-    <text>You touch one object that is no larger than 10 feet in any dimension.</text>
-    <text>Source: Player's Handbook 2024 p. 290</text>
+    <classes>Bard [5.5e], Wizard [5.5e]</classes>
+    <text>Light source. Source: System Reference Document v5.2.1</text>
   </spell>
   <spell>
-    <name>Magic Missile [2024]</name>
+    <name>Magic Missile [5.5e]</name>
     <level>1</level>
     <school>EV</school>
     <time>Action</time>
     <range>120 feet</range>
     <components>V, S</components>
     <duration>Instantaneous</duration>
-    <classes>Sorcerer [2024], Wizard [2024]</classes>
-    <text>You create three glowing darts of magical force.</text>
-    <text>Source: Player's Handbook 2024 p. 295</text>
+    <classes>Sorcerer [5.5e], Wizard [5.5e]</classes>
+    <text>Magical darts. Source: System Reference Document v5.2.1</text>
   </spell>
 </compendium>
 ''';
 
-const _monsterFixture = '''
+const _featsFixture = '''
+<compendium version="5">
+  <feat>
+    <name>Ability Score Improvement [5.5e]</name>
+    <prerequisite>Level 4+</prerequisite>
+    <text>Increase abilities. Source: System Reference Document v5.2.1</text>
+  </feat>
+  <feat>
+    <name>Grappler (Strength) [5.5e]</name>
+    <prerequisite>Level 4+</prerequisite>
+    <text>Wrestling benefits. Source: System Reference Document v5.2.1</text>
+    <modifier category="ability score">strength +1</modifier>
+  </feat>
+  <feat>
+    <name>Origin: Alert [5.5e]</name>
+    <text>Initiative benefits. Source: System Reference Document v5.2.1</text>
+  </feat>
+</compendium>
+''';
+
+const _monstersFixture = '''
 <compendium version="5">
   <monster>
-    <name>Goblin</name>
-    <size>S</size>
-    <type>humanoid (goblinoid)</type>
-    <alignment>neutral evil</alignment>
-    <ac>15 (leather armor, shield)</ac>
-    <hp>7 (2d6)</hp>
-    <speed>30 ft.</speed>
+    <name>Giant Fly [5.5e]</name>
+    <size>L</size>
+    <type>beast</type>
+    <alignment>unaligned</alignment>
+    <ac>11</ac>
+    <hp>19 (3d10+3)</hp>
+    <speed>30 ft., Fly 60 ft.</speed>
     <senses>darkvision 60 ft.</senses>
-    <languages>Common, Goblin</languages>
-    <cr>1/4</cr>
+    <languages/>
+    <cr>0</cr>
+    <description>Source: System Reference Document v5.2.1</description>
     <trait>
-      <name>Source</name>
-      <text>Monster Manual p. 166</text>
-    </trait>
-    <trait>
-      <name>Nimble Escape</name>
-      <text>The goblin can take the Disengage or Hide action as a bonus action.</text>
+      <name>Flyby</name>
+      <text>No opportunity attacks.</text>
     </trait>
     <action>
-      <name>Scimitar</name>
-      <text>Melee Weapon Attack.</text>
+      <name>Bite</name>
+      <text>Melee attack.</text>
     </action>
   </monster>
   <monster>
-    <name>Owlbear</name>
+    <name>Owlbear [5.5e]</name>
     <size>L</size>
     <type>monstrosity</type>
     <alignment>unaligned</alignment>
-    <ac>13 (natural armor)</ac>
+    <ac>13</ac>
     <hp>59 (7d10+21)</hp>
     <speed>40 ft.</speed>
     <senses>darkvision 60 ft.</senses>
     <languages/>
     <cr>3</cr>
-    <trait>
-      <name>Source</name>
-      <text>Monster Manual p. 249</text>
-    </trait>
+    <description>Source: System Reference Document v5.2.1</description>
     <trait>
       <name>Keen Sight and Smell</name>
-      <text>The owlbear has advantage on Wisdom (Perception) checks.</text>
+      <text>Advantage on Perception checks.</text>
     </trait>
     <action>
       <name>Beak</name>
-      <text>Melee Weapon Attack.</text>
+      <text>Melee attack.</text>
+    </action>
+  </monster>
+  <monster>
+    <name>Adult Red Dragon [5.5e]</name>
+    <size>H</size>
+    <type>dragon</type>
+    <alignment>chaotic evil</alignment>
+    <ac>19</ac>
+    <hp>256 (19d12+133)</hp>
+    <speed>40 ft., fly 80 ft.</speed>
+    <senses>blindsight 60 ft.</senses>
+    <languages>Common, Draconic</languages>
+    <cr>17</cr>
+    <description>Source: System Reference Document v5.2.1</description>
+    <trait>
+      <name>Legendary Resistance</name>
+      <text>Can choose to succeed.</text>
+    </trait>
+    <action>
+      <name>Fire Breath</name>
+      <text>Area damage.</text>
     </action>
   </monster>
 </compendium>

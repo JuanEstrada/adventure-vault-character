@@ -246,9 +246,10 @@ or advancing into the guided creation path.
   section names or equivalent clear missing-item messages, not raw internal
   errors only.
 - Persistence must align with the local Drift-backed model from `ADR-007`.
-- Compendium parsing for creation must read the gameplay data sections from
-  `local-assets/srd_5_2_1_app_base.xml`, not metadata summary indexes that may
-  reuse similar tag names.
+- Compendium parsing for creation must read the active FightClub SRD 5.5e XML
+  files under
+  `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`
+  and normalize them into creation-friendly domain outputs.
 - The visual interaction for the ability score step should use
   `local-ui-assets/character-builder/10_builder_ability_scores.jpg` as a
   flow reference, especially the always-visible six-ability layout and the

@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-03-24
+Last updated: 2026-03-25
 
 This is the single file to read first when resuming work on Adventure Vault
 Character. It consolidates the current product, architecture, repository
@@ -44,7 +44,7 @@ Primary references:
 
 ## Repository Reality
 
-Verified on 2026-03-24:
+Verified on 2026-03-25:
 
 - Flutter project scaffolding exists for Android, iOS, web, Windows, Linux,
   and macOS.
@@ -125,17 +125,23 @@ Verified on 2026-03-24:
   sections using builder-facing names before persistence.
 - A dedicated `CompendiumRepository` boundary now sits between the app and
   local catalog data.
-- The current app catalog now loads from
-  `local-assets/srd_5_2_1_app_base.xml` through an asset parser, with
-  `assets/compendium/catalog.json` kept as fallback.
-- The XML parser now explicitly selects gameplay `backgrounds` and `classes`
-  sections instead of similarly named metadata indexes in the same asset, so
-  character creation loads real local compendium data instead of falling into
-  empty state.
+- The current app catalog now loads directly from the FightClub SRD 5.5e XML
+  source files under
+  `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`,
+  with `assets/compendium/catalog.json` kept as fallback.
+- The XML parser now reads FightClub `background`, `race`, `class`, `spell`,
+  `feat`, and `monster` entries directly instead of depending on the previous
+  curated runtime compendium XML set.
 - The parsed compendium seed now also includes the full
   `Character Advancement` table, the `Standard Array by Class` table, a small
-  spell seed spanning levels `0-9`, three feats, and three monsters from
-  local XML assets.
+  spell seed spanning levels `0-9`, three feats, and three monsters, with the
+  progression defaults kept as static SRD-aligned rules.
+- `local-assets/runtime/compendium/` has been removed; active app XML now
+  lives under `FightClub5eXML-master/`, and deleted asset paths are tracked in
+  `local-assets/reference/removed_assets/`.
+- The repository root now includes a project `LICENSE` plus
+  `THIRD_PARTY_LICENSES.md` so the bundled FightClub5eXML MIT notice ships
+  with the project.
 - The generated ability-score path now applies the
   `Standard Array by Class` recommendation on initial load and every time the
   selected class changes.
@@ -275,8 +281,8 @@ restructuring it again:
 
 1. Start defining an editing-oriented character domain on top of the new
    read-side value objects instead of reintroducing flat UI view models.
-2. Replace the remaining curated or fallback compendium dependency with a more
-   generated or parsed source derived from `local-assets`.
+2. Reduce the remaining static SRD defaults in the compendium repository by
+   deriving more gameplay data directly from the FightClub source set.
 3. Break the approved `create -> save -> card -> open sheet` flow into
    concrete implementation tasks in `lib/`.
 4. Keep `HP` in scope as real MVP character-sheet data, not as a deferred
@@ -292,10 +298,11 @@ Next-session starting point:
 - Use the new migration regression tests in
   `test/app_database_migration_test.dart` as the safety net before changing the
   schema again.
-- Use the parsed `local-assets/srd_5_2_1_app_base.xml` dataset through the
-  `CompendiumRepository` boundary as the active source of truth for local
-  creation data, with `assets/compendium/catalog.json` retained only as
-  fallback.
+- Use the FightClub SRD 5.5e XML source files under
+  `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`
+  through the `CompendiumRepository` boundary as the active source of truth
+  for local creation data, with `assets/compendium/catalog.json` retained only
+  as fallback.
 - Treat the current `characters` table snapshot fields as compatibility support
   only where the normalized model still lacks a deliberate replacement; for
   new records, avoid writing redundant snapshot values when normalized tables

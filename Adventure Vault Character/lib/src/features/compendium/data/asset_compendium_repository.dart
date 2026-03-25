@@ -8,19 +8,34 @@ import 'package:flutter/services.dart';
 class AssetCompendiumRepository implements CompendiumRepository {
   AssetCompendiumRepository({
     AssetBundle? bundle,
-    String xmlCatalogAssetPath = 'local-assets/srd_5_2_1_app_base.xml',
-    String spellsAndFeatsAssetPath = 'local-assets/Official Only 2024.xml',
-    String monstersAssetPath = 'local-assets/Core Rulebooks.xml',
+    String backgroundsAssetPath =
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_backgrounds_5.5e.xml',
+    String racesAssetPath =
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_races_5.5e.xml',
+    String classesAssetPath =
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_classes_5.5e.xml',
+    String spellsAssetPath =
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_spells_5.5e.xml',
+    String featsAssetPath =
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_feats_5.5e.xml',
+    String monstersAssetPath =
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_bestiary_5.5e.xml',
     String fallbackCatalogAssetPath = 'assets/compendium/catalog.json',
   }) : _bundle = bundle ?? rootBundle,
-       _xmlCatalogAssetPath = xmlCatalogAssetPath,
-       _spellsAndFeatsAssetPath = spellsAndFeatsAssetPath,
+       _backgroundsAssetPath = backgroundsAssetPath,
+       _racesAssetPath = racesAssetPath,
+       _classesAssetPath = classesAssetPath,
+       _spellsAssetPath = spellsAssetPath,
+       _featsAssetPath = featsAssetPath,
        _monstersAssetPath = monstersAssetPath,
        _fallbackCatalogAssetPath = fallbackCatalogAssetPath;
 
   final AssetBundle _bundle;
-  final String _xmlCatalogAssetPath;
-  final String _spellsAndFeatsAssetPath;
+  final String _backgroundsAssetPath;
+  final String _racesAssetPath;
+  final String _classesAssetPath;
+  final String _spellsAssetPath;
+  final String _featsAssetPath;
   final String _monstersAssetPath;
   final String _fallbackCatalogAssetPath;
 
@@ -35,13 +50,19 @@ class AssetCompendiumRepository implements CompendiumRepository {
 
     CompendiumCatalog? catalog;
     try {
-      final rawXml = await _bundle.loadString(_xmlCatalogAssetPath);
-      final spellsAndFeatsXml = await _tryLoadString(_spellsAndFeatsAssetPath);
+      final backgroundsXml = await _bundle.loadString(_backgroundsAssetPath);
+      final racesXml = await _bundle.loadString(_racesAssetPath);
+      final classesXml = await _bundle.loadString(_classesAssetPath);
+      final spellsXml = await _tryLoadString(_spellsAssetPath);
+      final featsXml = await _tryLoadString(_featsAssetPath);
       final monstersXml = await _tryLoadString(_monstersAssetPath);
-      catalog = _parseXmlCatalog(
-        rawXml,
-        spellsAndFeatsXml: spellsAndFeatsXml,
-        monstersXml: monstersXml,
+      catalog = _parseFightClubCatalog(
+        backgroundsXml: backgroundsXml,
+        racesXml: racesXml,
+        classesXml: classesXml,
+        spellsXml: spellsXml ?? '',
+        featsXml: featsXml ?? '',
+        monstersXml: monstersXml ?? '',
       );
     } catch (_) {
       final rawJson = await _bundle.loadString(_fallbackCatalogAssetPath);
@@ -53,61 +74,300 @@ class AssetCompendiumRepository implements CompendiumRepository {
   }
 
   static const Map<int, List<String>> _spellSeedsByLevel = <int, List<String>>{
-    0: <String>['Light [2024]'],
-    1: <String>['Magic Missile [2024]'],
-    2: <String>['Misty Step [2024]'],
-    3: <String>['Fireball [2024]'],
-    4: <String>['Dimension Door [2024]'],
-    5: <String>['Cone of Cold [2024]'],
-    6: <String>['Chain Lightning [2024]'],
-    7: <String>['Teleport [2024]'],
-    8: <String>['Dominate Monster [2024]'],
-    9: <String>['Wish [2024]'],
+    0: <String>['Light [5.5e]'],
+    1: <String>['Magic Missile [5.5e]'],
+    2: <String>['Misty Step [5.5e]'],
+    3: <String>['Fireball [5.5e]'],
+    4: <String>['Dimension Door [5.5e]'],
+    5: <String>['Cone of Cold [5.5e]'],
+    6: <String>['Chain Lightning [5.5e]'],
+    7: <String>['Teleport [5.5e]'],
+    8: <String>['Dominate Monster [5.5e]'],
+    9: <String>['Wish [5.5e]'],
   };
 
   static const List<String> _featSeeds = <String>[
-    'Actor [2024]',
-    'Alert [2024]',
-    'Shield Master [2024]',
+    'Ability Score Improvement [5.5e]',
+    'Grappler (Strength) [5.5e]',
+    'Origin: Alert [5.5e]',
   ];
 
   static const List<String> _monsterSeeds = <String>[
-    'Goblin',
-    'Owlbear',
-    'Adult Red Dragon',
+    'Giant Fly [5.5e]',
+    'Owlbear [5.5e]',
+    'Adult Red Dragon [5.5e]',
   ];
 
-  CompendiumCatalog _parseXmlCatalog(
-    String rawXml, {
-    String? spellsAndFeatsXml,
-    String? monstersXml,
+  static const List<int> _generatedAbilityScoreSet = <int>[
+    15,
+    14,
+    13,
+    12,
+    10,
+    8,
+  ];
+  static const List<int> _manualAbilityScoreOptions = <int>[
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+  ];
+  static const List<CharacterAdvancementEntry> _characterAdvancement =
+      <CharacterAdvancementEntry>[
+        CharacterAdvancementEntry(
+          level: 1,
+          experience: 0,
+          proficiencyBonus: '+2',
+        ),
+        CharacterAdvancementEntry(
+          level: 2,
+          experience: 300,
+          proficiencyBonus: '+2',
+        ),
+        CharacterAdvancementEntry(
+          level: 3,
+          experience: 900,
+          proficiencyBonus: '+2',
+        ),
+        CharacterAdvancementEntry(
+          level: 4,
+          experience: 2700,
+          proficiencyBonus: '+2',
+        ),
+        CharacterAdvancementEntry(
+          level: 5,
+          experience: 6500,
+          proficiencyBonus: '+3',
+        ),
+        CharacterAdvancementEntry(
+          level: 6,
+          experience: 14000,
+          proficiencyBonus: '+3',
+        ),
+        CharacterAdvancementEntry(
+          level: 7,
+          experience: 23000,
+          proficiencyBonus: '+3',
+        ),
+        CharacterAdvancementEntry(
+          level: 8,
+          experience: 34000,
+          proficiencyBonus: '+3',
+        ),
+        CharacterAdvancementEntry(
+          level: 9,
+          experience: 48000,
+          proficiencyBonus: '+4',
+        ),
+        CharacterAdvancementEntry(
+          level: 10,
+          experience: 64000,
+          proficiencyBonus: '+4',
+        ),
+        CharacterAdvancementEntry(
+          level: 11,
+          experience: 85000,
+          proficiencyBonus: '+4',
+        ),
+        CharacterAdvancementEntry(
+          level: 12,
+          experience: 100000,
+          proficiencyBonus: '+4',
+        ),
+        CharacterAdvancementEntry(
+          level: 13,
+          experience: 120000,
+          proficiencyBonus: '+5',
+        ),
+        CharacterAdvancementEntry(
+          level: 14,
+          experience: 140000,
+          proficiencyBonus: '+5',
+        ),
+        CharacterAdvancementEntry(
+          level: 15,
+          experience: 165000,
+          proficiencyBonus: '+5',
+        ),
+        CharacterAdvancementEntry(
+          level: 16,
+          experience: 195000,
+          proficiencyBonus: '+5',
+        ),
+        CharacterAdvancementEntry(
+          level: 17,
+          experience: 225000,
+          proficiencyBonus: '+6',
+        ),
+        CharacterAdvancementEntry(
+          level: 18,
+          experience: 265000,
+          proficiencyBonus: '+6',
+        ),
+        CharacterAdvancementEntry(
+          level: 19,
+          experience: 305000,
+          proficiencyBonus: '+6',
+        ),
+        CharacterAdvancementEntry(
+          level: 20,
+          experience: 355000,
+          proficiencyBonus: '+6',
+        ),
+      ];
+  static const List<StandardArrayByClassEntry> _standardArrayByClass =
+      <StandardArrayByClassEntry>[
+        StandardArrayByClassEntry(
+          classId: 'barbarian',
+          className: 'Barbarian',
+          strength: 15,
+          dexterity: 13,
+          constitution: 14,
+          intelligence: 10,
+          wisdom: 12,
+          charisma: 8,
+        ),
+        StandardArrayByClassEntry(
+          classId: 'bard',
+          className: 'Bard',
+          strength: 8,
+          dexterity: 14,
+          constitution: 12,
+          intelligence: 13,
+          wisdom: 10,
+          charisma: 15,
+        ),
+        StandardArrayByClassEntry(
+          classId: 'cleric',
+          className: 'Cleric',
+          strength: 14,
+          dexterity: 8,
+          constitution: 13,
+          intelligence: 10,
+          wisdom: 15,
+          charisma: 12,
+        ),
+        StandardArrayByClassEntry(
+          classId: 'druid',
+          className: 'Druid',
+          strength: 8,
+          dexterity: 12,
+          constitution: 14,
+          intelligence: 13,
+          wisdom: 15,
+          charisma: 10,
+        ),
+        StandardArrayByClassEntry(
+          classId: 'fighter',
+          className: 'Fighter',
+          strength: 15,
+          dexterity: 14,
+          constitution: 13,
+          intelligence: 8,
+          wisdom: 10,
+          charisma: 12,
+        ),
+        StandardArrayByClassEntry(
+          classId: 'monk',
+          className: 'Monk',
+          strength: 12,
+          dexterity: 15,
+          constitution: 13,
+          intelligence: 10,
+          wisdom: 14,
+          charisma: 8,
+        ),
+        StandardArrayByClassEntry(
+          classId: 'paladin',
+          className: 'Paladin',
+          strength: 15,
+          dexterity: 10,
+          constitution: 13,
+          intelligence: 8,
+          wisdom: 12,
+          charisma: 14,
+        ),
+        StandardArrayByClassEntry(
+          classId: 'ranger',
+          className: 'Ranger',
+          strength: 12,
+          dexterity: 15,
+          constitution: 13,
+          intelligence: 8,
+          wisdom: 14,
+          charisma: 10,
+        ),
+        StandardArrayByClassEntry(
+          classId: 'rogue',
+          className: 'Rogue',
+          strength: 12,
+          dexterity: 15,
+          constitution: 13,
+          intelligence: 14,
+          wisdom: 10,
+          charisma: 8,
+        ),
+        StandardArrayByClassEntry(
+          classId: 'sorcerer',
+          className: 'Sorcerer',
+          strength: 10,
+          dexterity: 13,
+          constitution: 14,
+          intelligence: 8,
+          wisdom: 12,
+          charisma: 15,
+        ),
+        StandardArrayByClassEntry(
+          classId: 'warlock',
+          className: 'Warlock',
+          strength: 8,
+          dexterity: 14,
+          constitution: 13,
+          intelligence: 12,
+          wisdom: 10,
+          charisma: 15,
+        ),
+        StandardArrayByClassEntry(
+          classId: 'wizard',
+          className: 'Wizard',
+          strength: 8,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 15,
+          wisdom: 14,
+          charisma: 10,
+        ),
+      ];
+
+  CompendiumCatalog _parseFightClubCatalog({
+    required String backgroundsXml,
+    required String racesXml,
+    required String classesXml,
+    required String spellsXml,
+    required String featsXml,
+    required String monstersXml,
   }) {
-    final abilityGeneration = _extractSection(rawXml, 'abilityGeneration');
-    final levelProgressionSection = _extractSection(rawXml, 'levelProgression');
-    final backgroundsSection = _extractSectionContainingElement(
-      rawXml,
-      sectionTagName: 'backgrounds',
-      childTagName: 'background',
-    );
-    final speciesSection = _extractSection(rawXml, 'speciesList');
-    final classesSection = _extractSectionContainingElement(
-      rawXml,
-      sectionTagName: 'classes',
-      childTagName: 'class',
-    );
-
-    final races = _extractElements(speciesSection, 'species')
-        .map((species) => _extractSingleTagText(species.innerXml, 'name'))
-        .whereType<String>()
+    final races = _extractElements(racesXml, 'race')
+        .map(
+          (race) => _normalizeCatalogName(
+            _extractSingleTagText(race.innerXml, 'name') ?? '',
+          ),
+        )
+        .where((name) => name.isNotEmpty)
         .toList(growable: false);
-
     final classes = <String>[];
     final equipmentSummariesByClass = <String, EquipmentSummaryViewData>{};
     final equipmentLoadoutsByClass =
         <String, List<CompendiumEquipmentLoadout>>{};
-    for (final classElement in _extractElements(classesSection, 'class')) {
-      final className = _extractSingleTagText(classElement.innerXml, 'name');
-      if (className == null || className.isEmpty) {
+    for (final classElement in _extractElements(classesXml, 'class')) {
+      final className = _normalizeCatalogName(
+        _extractSingleTagText(classElement.innerXml, 'name') ?? '',
+      );
+      if (className.isEmpty) {
         continue;
       }
 
@@ -117,69 +377,27 @@ class AssetCompendiumRepository implements CompendiumRepository {
       );
       equipmentLoadoutsByClass[className] = _buildEquipmentLoadouts(
         className: className,
-        classId: classElement.attributes['id'] ?? className.toLowerCase(),
+        classId: _slugifyName(className),
         classXml: classElement.innerXml,
       );
     }
 
     final backgrounds = _extractElements(
-      backgroundsSection,
+      backgroundsXml,
       'background',
-    ).map(_parseBackground).toList(growable: false);
-    final characterAdvancement =
-        _extractSelfClosingElements(levelProgressionSection, 'level')
-            .map((level) {
-              return CharacterAdvancementEntry(
-                level: int.parse(level.attributes['value']!),
-                experience: int.parse(level.attributes['xp']!),
-                proficiencyBonus: level.attributes['proficiencyBonus'] ?? '',
-              );
-            })
-            .toList(growable: false);
-    final standardArrayByClass =
-        _extractSelfClosingElements(
-              _extractSection(abilityGeneration, 'standardArrayByClass'),
-              'classRef',
-            )
-            .map((entry) {
-              final classId = entry.attributes['id'] ?? '';
-              final className = classes.firstWhere(
-                (item) => item.toLowerCase() == classId,
-                orElse: () => classId,
-              );
-              return StandardArrayByClassEntry(
-                classId: classId,
-                className: className,
-                strength: int.parse(entry.attributes['strength']!),
-                dexterity: int.parse(entry.attributes['dexterity']!),
-                constitution: int.parse(entry.attributes['constitution']!),
-                intelligence: int.parse(entry.attributes['intelligence']!),
-                wisdom: int.parse(entry.attributes['wisdom']!),
-                charisma: int.parse(entry.attributes['charisma']!),
-              );
-            })
-            .toList(growable: false);
+    ).map(_parseFightClubBackground).toList(growable: false);
 
     return CompendiumCatalog(
       races: races,
       classes: classes,
       backgrounds: backgrounds,
-      generatedAbilityScoreSet: _extractAllTagTexts(
-        _extractSection(abilityGeneration, 'standardArray'),
-        'score',
-      ).map(int.parse).toList(growable: false),
-      manualAbilityScoreOptions:
-          _extractSelfClosingElements(
-                _extractSection(abilityGeneration, 'pointBuy'),
-                'score',
-              )
-              .map((score) => int.parse(score.attributes['value']!))
-              .toList(growable: false),
-      characterAdvancement: characterAdvancement,
-      standardArrayByClass: standardArrayByClass,
-      spells: _parseSeededSpells(spellsAndFeatsXml ?? ''),
-      feats: _parseSeededFeats(spellsAndFeatsXml ?? ''),
-      monsters: _parseSeededMonsters(monstersXml ?? ''),
+      generatedAbilityScoreSet: _generatedAbilityScoreSet,
+      manualAbilityScoreOptions: _manualAbilityScoreOptions,
+      characterAdvancement: _characterAdvancement,
+      standardArrayByClass: _standardArrayByClass,
+      spells: _parseSeededSpells(spellsXml),
+      feats: _parseSeededFeats(featsXml),
+      monsters: _parseSeededMonsters(monstersXml),
       equipmentSummariesByClass: equipmentSummariesByClass,
       equipmentLoadoutsByClass: equipmentLoadoutsByClass,
     );
@@ -248,40 +466,43 @@ class AssetCompendiumRepository implements CompendiumRepository {
     );
   }
 
-  CompendiumBackground _parseBackground(_XmlElement backgroundElement) {
+  CompendiumBackground _parseFightClubBackground(
+    _XmlElement backgroundElement,
+  ) {
     final xml = backgroundElement.innerXml;
-    final abilityOptions = _extractAllTagTexts(
-      _extractSection(xml, 'abilityOptions', required: false),
-      'ability',
+    final name = _normalizeCatalogName(
+      _extractSingleTagText(xml, 'name') ?? '',
     );
-    final skills = _extractAllTagTexts(
-      _extractSection(xml, 'skillProficiencies', required: false),
-      'skill',
+    final proficiency = _splitCsv(
+      _extractSingleTagText(xml, 'proficiency') ?? '',
     );
-    final tool = _extractSingleTagText(xml, 'toolProficiency');
-    final feat = _extractSingleTagText(xml, 'originFeat');
-    final equipmentOptions = _extractAllTagTexts(
-      _extractSection(xml, 'equipment', required: false),
-      'option',
+    final traits = _extractElements(xml, 'trait');
+    final description = _findTraitText(traits, 'Description');
+    final abilityScores = _parseAbilityScoresFromTraitNames(traits);
+    final feat = _extractValueFromTraitName(traits, prefix: 'Feat:');
+    final tool = _extractValueFromTraitName(
+      traits,
+      prefix: 'Tool Proficiency:',
     );
+    final equipment = _findTraitText(traits, 'Starting Equipment');
 
     final bonuses = <String>[
-      if (abilityOptions.isNotEmpty)
-        'Ability options: ${abilityOptions.join(', ')}',
-      if (skills.isNotEmpty) 'Skills: ${skills.join(', ')}',
+      if (abilityScores.isNotEmpty)
+        'Ability options: ${abilityScores.join(', ')}',
+      if (proficiency.isNotEmpty) 'Skills: ${proficiency.join(', ')}',
       if (tool != null && tool.isNotEmpty) 'Tool: $tool',
     ];
     final socialPerks = <String>[
       if (feat != null && feat.isNotEmpty) 'Origin feat: $feat',
-      ...equipmentOptions.map((option) => 'Starting equipment: $option'),
+      if (equipment.isNotEmpty) 'Starting equipment: $equipment',
     ];
 
     return CompendiumBackground(
-      id: backgroundElement.attributes['id'] ?? '',
-      name: _extractSingleTagText(xml, 'name') ?? 'Unknown background',
-      summary:
-          _extractSingleTagText(xml, 'summary') ??
-          'Background summary unavailable.',
+      id: _slugifyName(name),
+      name: name.isEmpty ? 'Unknown background' : name,
+      summary: description.isEmpty
+          ? 'Background summary unavailable.'
+          : description,
       bonuses: bonuses.isEmpty ? const <String>['No bonuses parsed'] : bonuses,
       socialPerks: socialPerks.isEmpty
           ? const <String>['No starter perks parsed']
@@ -305,7 +526,9 @@ class AssetCompendiumRepository implements CompendiumRepository {
         final spellXml = element.innerXml;
         spells.add(
           CompendiumSpell(
-            name: _extractSingleTagText(spellXml, 'name') ?? name,
+            name: _normalizeCatalogName(
+              _extractSingleTagText(spellXml, 'name') ?? name,
+            ),
             level: int.parse(_extractSingleTagText(spellXml, 'level') ?? '0'),
             school: _extractSingleTagText(spellXml, 'school') ?? '',
             castingTime: _extractSingleTagText(spellXml, 'time') ?? '',
@@ -314,7 +537,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
             duration: _extractSingleTagText(spellXml, 'duration') ?? '',
             classes: _splitCsv(
               _extractSingleTagText(spellXml, 'classes') ?? '',
-            ),
+            ).map(_normalizeCatalogName).toList(growable: false),
             description: _extractTextParagraphs(spellXml),
             source: _extractSource(spellXml),
           ),
@@ -339,7 +562,9 @@ class AssetCompendiumRepository implements CompendiumRepository {
 
           final featXml = element.innerXml;
           return CompendiumFeat(
-            name: _extractSingleTagText(featXml, 'name') ?? name,
+            name: _normalizeCatalogName(
+              _extractSingleTagText(featXml, 'name') ?? name,
+            ),
             prerequisite: _extractSingleTagText(featXml, 'prerequisite') ?? '',
             description: _extractTextParagraphs(featXml),
             modifiers: _extractModifierTexts(featXml),
@@ -364,7 +589,9 @@ class AssetCompendiumRepository implements CompendiumRepository {
 
           final monsterXml = element.innerXml;
           return CompendiumMonster(
-            name: _extractSingleTagText(monsterXml, 'name') ?? name,
+            name: _normalizeCatalogName(
+              _extractSingleTagText(monsterXml, 'name') ?? name,
+            ),
             size: _extractSingleTagText(monsterXml, 'size') ?? '',
             type: _extractSingleTagText(monsterXml, 'type') ?? '',
             alignment: _extractSingleTagText(monsterXml, 'alignment') ?? '',
@@ -384,22 +611,44 @@ class AssetCompendiumRepository implements CompendiumRepository {
   }
 
   EquipmentSummaryViewData _buildEquipmentSummary(String classXml) {
-    final primaryAbility = _extractSingleTagText(classXml, 'primaryAbility');
-    final hitDie = _extractSingleTagText(classXml, 'hitDie');
-    final armorTraining = _extractSingleTagText(classXml, 'armorTraining');
-    final weapons = _extractSingleTagText(classXml, 'weaponProficiencies');
-    final features = _extractAllTagTexts(
-      _extractSection(classXml, 'level1Features', required: false),
-      'feature',
+    final hitDie = _extractSingleTagText(classXml, 'hd');
+    final proficiency = _splitCsv(
+      _extractSingleTagText(classXml, 'proficiency') ?? '',
     );
+    final armorTraining = _extractSingleTagText(classXml, 'armor');
+    final weapons = _extractSingleTagText(classXml, 'weapons');
+    final firstLevelFeatures = _extractElements(classXml, 'autolevel')
+        .firstWhere(
+          (element) => element.attributes['level'] == '1',
+          orElse: () =>
+              const _XmlElement(attributes: <String, String>{}, innerXml: ''),
+        );
+    final features = _extractElements(firstLevelFeatures.innerXml, 'feature')
+        .map((feature) => _extractSingleTagText(feature.innerXml, 'name') ?? '')
+        .where(
+          (name) =>
+              name.isNotEmpty &&
+              !name.startsWith('Becoming A ') &&
+              !name.contains('Multiclass'),
+        )
+        .map(_normalizeFeatureName)
+        .toList(growable: false);
+    final primaryAbility = _extractPrimaryAbilityFromClassFeature(
+      firstLevelFeatures.innerXml,
+    );
+    final skillChoices = proficiency.length >= 2
+        ? proficiency.sublist(2)
+        : const <String>[];
 
     return EquipmentSummaryViewData(
-      statusLabel: 'SRD base',
+      statusLabel: 'SRD 5.5e',
       description:
           'Primary ability: ${primaryAbility ?? 'Unknown'}. Hit Die: ${hitDie ?? 'Unknown'}. '
           'Armor: ${armorTraining ?? 'Unknown'}. Weapons: ${weapons ?? 'Unknown'}.',
       highlightItems: features.isEmpty
-          ? const <String>['Level 1 feature data unavailable']
+          ? (skillChoices.isEmpty
+                ? const <String>['Level 1 feature data unavailable']
+                : skillChoices)
           : features,
     );
   }
@@ -409,19 +658,18 @@ class AssetCompendiumRepository implements CompendiumRepository {
     required String classId,
     required String classXml,
   }) {
-    final startingEquipment = _extractSection(
-      classXml,
-      'startingEquipment',
-      required: false,
-    );
-    final options = _extractElements(startingEquipment, 'option');
+    final startingEquipmentText = _extractStartingEquipmentText(classXml);
+    if (startingEquipmentText.isEmpty) {
+      return const <CompendiumEquipmentLoadout>[];
+    }
+    final options = _parseStartingEquipmentOptions(startingEquipmentText);
     if (options.isEmpty) {
       return const <CompendiumEquipmentLoadout>[];
     }
 
     return options
         .map((option) {
-          final rawText = _normalizeText(option.innerXml);
+          final rawText = option;
           final moneyMatch = RegExp(r'(\d+\s*GP)\s*$').firstMatch(rawText);
           final moneySummary = moneyMatch?.group(1) ?? 'No listed GP';
           final itemsText = moneyMatch == null
@@ -437,7 +685,9 @@ class AssetCompendiumRepository implements CompendiumRepository {
                     .map(_normalizeText)
                     .where((item) => item.isNotEmpty)
                     .toList(growable: false);
-          final optionId = option.attributes['id'] ?? 'option';
+          final optionId = String.fromCharCode(
+            'A'.codeUnitAt(0) + options.indexOf(option),
+          );
 
           return CompendiumEquipmentLoadout(
             id: '$classId-${optionId.toLowerCase()}',
@@ -476,50 +726,6 @@ class AssetCompendiumRepository implements CompendiumRepository {
     } catch (_) {
       return null;
     }
-  }
-
-  String _extractSection(String xml, String tagName, {bool required = true}) {
-    if (xml.isEmpty) {
-      return '';
-    }
-
-    final match = RegExp(
-      '<$tagName\\b[^>]*>([\\s\\S]*?)</$tagName>',
-      caseSensitive: false,
-    ).firstMatch(xml);
-    if (match == null) {
-      if (required) {
-        throw FormatException('Missing section <$tagName>.');
-      }
-      return '';
-    }
-    return match.group(1) ?? '';
-  }
-
-  String _extractSectionContainingElement(
-    String xml, {
-    required String sectionTagName,
-    required String childTagName,
-    bool required = true,
-  }) {
-    final sectionPattern = RegExp(
-      '<$sectionTagName\\b[^>]*>([\\s\\S]*?)</$sectionTagName>',
-      caseSensitive: false,
-    );
-    final childPattern = RegExp('<$childTagName\\b', caseSensitive: false);
-    for (final match in sectionPattern.allMatches(xml)) {
-      final sectionXml = match.group(1) ?? '';
-      if (childPattern.hasMatch(sectionXml)) {
-        return sectionXml;
-      }
-    }
-
-    if (required) {
-      throw FormatException(
-        'Missing section <$sectionTagName> containing <$childTagName>.',
-      );
-    }
-    return '';
   }
 
   String? _extractSingleTagText(String xml, String tagName) {
@@ -580,29 +786,6 @@ class AssetCompendiumRepository implements CompendiumRepository {
         .toList(growable: false);
   }
 
-  List<_XmlElement> _extractSelfClosingElements(String xml, String tagName) {
-    if (xml.isEmpty) {
-      return const <_XmlElement>[];
-    }
-
-    return RegExp('<$tagName\\b([^>]*)/>', caseSensitive: false)
-        .allMatches(xml)
-        .map((match) {
-          final attributes = <String, String>{};
-          final rawAttributes = match.group(1) ?? '';
-          for (final attributeMatch in RegExp(
-            r'(\w+)="([^"]*)"',
-          ).allMatches(rawAttributes)) {
-            attributes[attributeMatch.group(1)!] = _normalizeText(
-              attributeMatch.group(2) ?? '',
-            );
-          }
-
-          return _XmlElement(attributes: attributes, innerXml: '');
-        })
-        .toList(growable: false);
-  }
-
   _XmlElement? _findElementByExactName(
     String xml,
     String tagName,
@@ -610,7 +793,8 @@ class AssetCompendiumRepository implements CompendiumRepository {
   ) {
     for (final element in _extractElements(xml, tagName)) {
       final name = _extractSingleTagText(element.innerXml, 'name');
-      if (name == expectedName) {
+      if (_normalizeCatalogName(name ?? '') ==
+          _normalizeCatalogName(expectedName)) {
         return element;
       }
     }
@@ -664,6 +848,10 @@ class AssetCompendiumRepository implements CompendiumRepository {
   }
 
   String _extractMonsterSource(String xml) {
+    final description = _extractSingleTagText(xml, 'description');
+    if (description != null && description.startsWith('Source:')) {
+      return description;
+    }
     for (final trait in _extractElements(xml, 'trait')) {
       final name = _extractSingleTagText(trait.innerXml, 'name');
       if (name == 'Source') {
@@ -694,6 +882,120 @@ class AssetCompendiumRepository implements CompendiumRepository {
         .replaceAll('&gt;', '>')
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
+  }
+
+  String _normalizeCatalogName(String text) {
+    return _normalizeText(
+      text.replaceAll(
+        RegExp(r'\s*\[(?:2024|5\.5e)\]\s*$', caseSensitive: false),
+        '',
+      ),
+    );
+  }
+
+  String _slugifyName(String text) {
+    return _normalizeCatalogName(text)
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+        .replaceAll(RegExp(r'^_+|_+$'), '');
+  }
+
+  String _findTraitText(List<_XmlElement> traits, String expectedName) {
+    for (final trait in traits) {
+      final name = _extractSingleTagText(trait.innerXml, 'name');
+      if (_normalizeText(name ?? '') == expectedName) {
+        return _extractTextParagraphs(trait.innerXml).join(' ');
+      }
+    }
+    return '';
+  }
+
+  String? _extractValueFromTraitName(
+    List<_XmlElement> traits, {
+    required String prefix,
+  }) {
+    for (final trait in traits) {
+      final name = _extractSingleTagText(trait.innerXml, 'name');
+      if (name != null && name.startsWith(prefix)) {
+        return _normalizeText(name.substring(prefix.length));
+      }
+    }
+    return null;
+  }
+
+  List<String> _parseAbilityScoresFromTraitNames(List<_XmlElement> traits) {
+    for (final trait in traits) {
+      final name = _extractSingleTagText(trait.innerXml, 'name');
+      if (name != null && name.startsWith('Ability Scores:')) {
+        return _splitCsv(name.substring('Ability Scores:'.length));
+      }
+    }
+    return const <String>[];
+  }
+
+  String? _extractPrimaryAbilityFromClassFeature(String firstLevelXml) {
+    final feature = _extractElements(firstLevelXml, 'feature').firstWhere(
+      (element) {
+        final name = _extractSingleTagText(element.innerXml, 'name') ?? '';
+        return name.contains('Level 1 Character');
+      },
+      orElse: () =>
+          const _XmlElement(attributes: <String, String>{}, innerXml: ''),
+    );
+    final text = _extractTextParagraphs(feature.innerXml).join(' ');
+    final match = RegExp(
+      r'Primary Ability:\s*([^\.]+)',
+      caseSensitive: false,
+    ).firstMatch(text);
+    return match == null ? null : _normalizeText(match.group(1) ?? '');
+  }
+
+  String _extractStartingEquipmentText(String classXml) {
+    for (final autolevel in _extractElements(classXml, 'autolevel')) {
+      if (autolevel.attributes['level'] != '1') {
+        continue;
+      }
+      for (final feature in _extractElements(autolevel.innerXml, 'feature')) {
+        final name = _extractSingleTagText(feature.innerXml, 'name') ?? '';
+        if (!name.contains('Level 1 Character')) {
+          continue;
+        }
+        final text = _extractTextParagraphs(feature.innerXml).join(' ');
+        final match = RegExp(
+          r'Starting Equipment:\s*(.+?)\s*Source:',
+          caseSensitive: false,
+        ).firstMatch(text);
+        if (match != null) {
+          return _normalizeText(match.group(1) ?? '');
+        }
+      }
+    }
+    return '';
+  }
+
+  List<String> _parseStartingEquipmentOptions(String text) {
+    final normalized = text.replaceFirst(
+      RegExp(r'^Choose\s+[A-Z]\s+or\s+[A-Z]:\s*', caseSensitive: false),
+      '',
+    );
+    final matches = RegExp(
+      r'\(([A-Z])\)\s*(.+?)(?=\s*;\s*or\s*\([A-Z]\)|$)',
+      caseSensitive: false,
+    ).allMatches(normalized);
+    if (matches.isEmpty) {
+      return <String>[normalized];
+    }
+
+    return matches
+        .map((match) => _normalizeText(match.group(2) ?? ''))
+        .where((entry) => entry.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  String _normalizeFeatureName(String text) {
+    return _normalizeText(
+      text.replaceFirst(RegExp(r'^Level\s+\d+:\s*', caseSensitive: false), ''),
+    );
   }
 }
 

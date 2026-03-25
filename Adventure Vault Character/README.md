@@ -23,6 +23,11 @@ fully usable offline.
 - C4 textual diagrams: [docs/diagrams/context.md](docs/diagrams/context.md)
 - Current project state: [docs/project/PROJECT_SNAPSHOT.md](docs/project/PROJECT_SNAPSHOT.md)
 
+## Licensing
+
+- Project license: [LICENSE](LICENSE)
+- Third-party notices: [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)
+
 ## Scope Status
 
 The current architecture documentation covers Adventure Vault Character in

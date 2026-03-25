@@ -1,7 +1,7 @@
 # Adventure Vault Character - Project Snapshot
 
 ## Last Update
-2026-03-24
+2026-03-25
 
 ## Role of This Document
 
@@ -84,15 +84,22 @@ sheet flow stable.
   abilities, progression, hit points, structured equipment data, normalized
   saving throws, proficiencies, and finishing details.
 - Regression tests now cover Drift migrations from legacy schemas into `v4`.
-- A dedicated `CompendiumRepository` now loads a parsed local XML base dataset
-  for races, classes, backgrounds, and starter equipment loadouts, with JSON
-  fallback preserved.
-- The XML parser now skips duplicate metadata indexes and reads the real
-  gameplay `backgrounds` and `classes` sections from
-  `local-assets/srd_5_2_1_app_base.xml`.
+- A dedicated `CompendiumRepository` now loads active XML assets directly from
+  `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`,
+  with JSON fallback preserved.
+- The compendium parser now reads FightClub SRD 5.5e `background`,
+  `race`, `class`, `spell`, `feat`, and `monster` entries directly rather than
+  depending on the previous curated runtime compendium XML set.
 - The compendium seed now also exposes `Character Advancement`,
   `Standard Array by Class`, a compact spell sample across levels `0-9`,
-  three feats, and three monsters from local XML assets.
+  three feats, and three monsters sourced from the FightClub SRD files plus
+  static SRD progression defaults.
+- `local-assets/runtime/compendium/` has been removed to avoid duplicated
+  sources of truth; active XML now lives under `FightClub5eXML-master/`, while
+  removals are tracked under `local-assets/reference/removed_assets/`.
+- The repository root now includes `LICENSE` and
+  `THIRD_PARTY_LICENSES.md` so the project license and the bundled
+  FightClub5eXML MIT notice are kept with the source tree.
 - The generated ability-score method now tracks the selected class and applies
   the class-specific standard array recommendation whenever the class changes.
 - Widget coverage exists for the offline continuation path into the main menu.
@@ -182,8 +189,8 @@ sheet flow stable.
 
 1. Build the next editing-oriented character domain on top of the current
    read-side model instead of introducing another UI-facing mapper layer.
-2. Deepen the parsed compendium fidelity beyond the current XML base starter
-   dataset.
+2. Deepen the parsed compendium fidelity beyond the current seeded FightClub
+   SRD subset and static progression defaults.
 3. Break the approved MVP flow into implementation tasks in `lib/`.
 4. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 

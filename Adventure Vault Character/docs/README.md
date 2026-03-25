@@ -63,9 +63,13 @@ baseline is green for `flutter analyze` and `flutter test`.
 
 - `local-ui-assets/` contains visual reference images used by multiple specs
   as UI direction examples.
-- `local-assets/` contains source reference material such as XML samples and
-  imported rule-content documents.
+- `local-assets/FightClub5eXML-master/` contains the active local XML source
+  tree currently consumed by the app runtime for SRD 5.5e compendium data.
+- `local-assets/reference/` contains project reference material such as XML
+  samples, imported rule-content documents, and larger raw source files.
+- `local-assets/templates/` contains reusable authoring templates for future
+  compendium work.
 - Specs may reference `local-ui-assets/` directly when describing layouts or
   interaction flows.
-- `local-assets/` is project reference material and should not be assumed to
-  be part of the app runtime asset bundle.
+- Only the XML files explicitly declared in `pubspec.yaml` should be assumed
+  to be part of the app runtime asset bundle.
