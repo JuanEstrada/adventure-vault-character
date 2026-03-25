@@ -56,10 +56,11 @@ Verified on 2026-03-25:
   SQLite database.
 - The previous single-table character persistence has now been extended into a
   normalized Drift schema.
-- The Drift schema is now at `v5` and includes dedicated character-side tables
-  for `ability scores`, `skills`, `saving throws`, `inventory`,
-  `proficiencies`, and `currency`, plus compendium-side definition tables for
-  `skills`, `equipment`, `classes`, `backgrounds`, `spells`, and `trinkets`.
+- The Drift schema is now at `v6` and includes dedicated character-side tables
+  for `ability scores`, `ability score provenance`, `skills`,
+  `saving throws`, `inventory`, `proficiencies`, and `currency`, plus
+  compendium-side definition tables for `skills`, `equipment`, `classes`,
+  `backgrounds`, `spells`, and `trinkets`.
 - A first vertical slice now supports `create -> save -> card -> open sheet`
   with a minimal character record: `name`, `race`, `class`, and `level`.
 - The create-character UI now uses a first guided draft with explicit sections
@@ -93,6 +94,11 @@ Verified on 2026-03-25:
   `proficiency bonus`, and equipment/currency snapshot columns from
   `characters`, preserving old data through migration and treating the
   normalized tables as the only source of truth for those areas.
+- Drift `v6` now also removes `ability_score_method` and
+  `ability_score_provenance` from `characters`, backfills the previous
+  semicolon provenance string into a dedicated normalized provenance table,
+  and uses that normalized record as the source of truth for edit/reopen
+  ability method state.
 - The character sheet now renders normalized `saving throws`,
   `skill proficiencies`, `other proficiencies`, and inventory-derived
   equipment labels.
@@ -140,8 +146,9 @@ Verified on 2026-03-25:
 - `CharacterSheetMapper` and the old `CharacterSheetViewData` hierarchy have
   now been removed from the active code path, with the remaining
   `EquipmentSummaryViewData` extracted into its own small shared type.
-- Drift migration regression coverage now exists for `v1 -> v4` and
-  `v3 -> v4`, including verification of backfilled normalized tables.
+- Drift migration regression coverage now exists for legacy schemas through
+  `v6`, including verification of backfilled normalized tables and migrated
+  ability-score provenance.
 - Draft save now runs through a non-widget validator that reports missing
   sections using builder-facing names before persistence.
 - A dedicated `CompendiumRepository` boundary now sits between the app and
@@ -179,7 +186,8 @@ This means the repository now has an end-to-end offline character edit flow on
 top of the normalized read/write model, with shared rules and regression
 coverage protecting both create and update paths. The next major improvement
 is extending the edit flow beyond the current guided MVP fields and continuing
-to normalize the remaining editing metadata that still lives in `characters`.
+to normalize the remaining editing metadata that still lives in `characters`,
+now that ability-score provenance has moved out of the identity row.
 
 ## Current Phase
 
@@ -336,9 +344,9 @@ Completed since the previous handoff:
 - The edit flow reuses the guided builder sections instead of introducing a
   second form surface.
 - Repository and widget regression coverage now includes the edit/update path.
-- Drift schema cleanup is now implemented in `v5`, and redundant snapshot
-  columns have been removed from `characters` with migration coverage for the
-  preserved normalized data path.
+- Drift schema cleanup is now implemented through `v6`, and redundant snapshot
+  plus ability-provenance columns have been removed from `characters` with
+  migration coverage for the preserved normalized data path.
 
 Next-session starting point:
 

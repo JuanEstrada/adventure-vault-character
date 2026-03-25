@@ -16,12 +16,6 @@ class Characters extends Table {
   TextColumn get backgroundDefinitionRefId =>
       text().named('background_definition_ref_id').nullable()();
 
-  TextColumn get abilityScoreMethod =>
-      text().named('ability_score_method').nullable()();
-
-  TextColumn get abilityScoreProvenance =>
-      text().named('ability_score_provenance').nullable()();
-
   TextColumn get className => text().named('class_name')();
 
   IntColumn get level => integer()();
@@ -94,6 +88,33 @@ class CharacterAbilityScores extends Table {
 
   IntColumn get charismaModifier =>
       integer().named('charisma_modifier').nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {characterId};
+}
+
+class CharacterAbilityScoreProvenances extends Table {
+  TextColumn get characterId => text().references(Characters, #id)();
+
+  TextColumn get methodKey => text().named('method_key').nullable()();
+
+  IntColumn get strengthAssignedScore =>
+      integer().named('strength_assigned_score').nullable()();
+
+  IntColumn get dexterityAssignedScore =>
+      integer().named('dexterity_assigned_score').nullable()();
+
+  IntColumn get constitutionAssignedScore =>
+      integer().named('constitution_assigned_score').nullable()();
+
+  IntColumn get intelligenceAssignedScore =>
+      integer().named('intelligence_assigned_score').nullable()();
+
+  IntColumn get wisdomAssignedScore =>
+      integer().named('wisdom_assigned_score').nullable()();
+
+  IntColumn get charismaAssignedScore =>
+      integer().named('charisma_assigned_score').nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {characterId};
@@ -408,6 +429,7 @@ class TrinketDefinitions extends Table {
   tables: <Type>[
     Characters,
     CharacterAbilityScores,
+    CharacterAbilityScoreProvenances,
     SkillDefinitions,
     CharacterSkills,
     CharacterSavingThrows,
@@ -437,7 +459,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.executor(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -549,6 +571,11 @@ class AppDatabase extends _$AppDatabase {
       if (from < 5) {
         await _migrateCharactersToV5();
       }
+      if (from < 6) {
+        await migrator.createTable(characterAbilityScoreProvenances);
+        await _backfillAbilityScoreProvenanceData();
+        await _migrateCharactersToV6();
+      }
 
       await _createIndexes();
     },
@@ -558,6 +585,10 @@ class AppDatabase extends _$AppDatabase {
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_characters_updated_at_name '
       'ON characters (updated_at DESC, name ASC)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_character_ability_score_provenances_character '
+      'ON character_ability_score_provenances (character_id)',
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_character_skills_character '
@@ -745,5 +776,147 @@ class AppDatabase extends _$AppDatabase {
     await customStatement('DROP TABLE characters');
     await customStatement('ALTER TABLE characters_v5 RENAME TO characters');
     await customStatement('PRAGMA foreign_keys = ON');
+  }
+
+  Future<void> _backfillAbilityScoreProvenanceData() async {
+    final legacyRows = await customSelect('''
+      SELECT
+        id,
+        ability_score_method,
+        ability_score_provenance
+      FROM characters
+    ''').get();
+
+    for (final row in legacyRows) {
+      final characterId = row.read<String>('id');
+      final fallbackMethodKey = row.read<String?>('ability_score_method');
+      final rawValue = row.read<String?>('ability_score_provenance');
+      final parsed = _parseAbilityScoreProvenance(
+        characterId: characterId,
+        rawValue: rawValue,
+        fallbackMethodKey: fallbackMethodKey,
+      );
+      await into(
+        characterAbilityScoreProvenances,
+      ).insertOnConflictUpdate(parsed);
+    }
+  }
+
+  Future<void> _migrateCharactersToV6() async {
+    await customStatement('PRAGMA foreign_keys = OFF');
+
+    await customStatement('''
+      CREATE TABLE characters_v6 (
+        id TEXT NOT NULL PRIMARY KEY,
+        name TEXT NOT NULL,
+        race_name TEXT NOT NULL,
+        class_definition_id TEXT NULL,
+        background_definition_ref_id TEXT NULL,
+        class_name TEXT NOT NULL,
+        level INTEGER NOT NULL,
+        experience INTEGER NULL,
+        equipment_loadout_id TEXT NULL,
+        equipment_loadout_label TEXT NULL,
+        current_hit_points INTEGER NULL,
+        maximum_hit_points INTEGER NULL,
+        temporary_hit_points INTEGER NULL,
+        portrait_asset_path TEXT NULL,
+        alignment TEXT NULL,
+        appearance_details TEXT NULL,
+        narrative_details TEXT NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    ''');
+
+    await customStatement('''
+      INSERT INTO characters_v6 (
+        id,
+        name,
+        race_name,
+        class_definition_id,
+        background_definition_ref_id,
+        class_name,
+        level,
+        experience,
+        equipment_loadout_id,
+        equipment_loadout_label,
+        current_hit_points,
+        maximum_hit_points,
+        temporary_hit_points,
+        portrait_asset_path,
+        alignment,
+        appearance_details,
+        narrative_details,
+        created_at,
+        updated_at
+      )
+      SELECT
+        id,
+        name,
+        race_name,
+        class_definition_id,
+        background_definition_ref_id,
+        class_name,
+        level,
+        experience,
+        equipment_loadout_id,
+        equipment_loadout_label,
+        current_hit_points,
+        maximum_hit_points,
+        temporary_hit_points,
+        portrait_asset_path,
+        alignment,
+        appearance_details,
+        narrative_details,
+        created_at,
+        updated_at
+      FROM characters
+    ''');
+
+    await customStatement('DROP TABLE characters');
+    await customStatement('ALTER TABLE characters_v6 RENAME TO characters');
+    await customStatement('PRAGMA foreign_keys = ON');
+  }
+
+  CharacterAbilityScoreProvenancesCompanion _parseAbilityScoreProvenance({
+    required String characterId,
+    required String? rawValue,
+    required String? fallbackMethodKey,
+  }) {
+    String? methodKey = fallbackMethodKey;
+    final assignedScoresByAbility = <String, int>{};
+
+    if (rawValue != null && rawValue.isNotEmpty) {
+      for (final token in rawValue.split(';')) {
+        final separatorIndex = token.indexOf('=');
+        if (separatorIndex <= 0 || separatorIndex >= token.length - 1) {
+          continue;
+        }
+
+        final key = token.substring(0, separatorIndex).trim();
+        final value = token.substring(separatorIndex + 1).trim();
+        if (key == 'method') {
+          methodKey = value;
+          continue;
+        }
+
+        final parsedScore = int.tryParse(value);
+        if (parsedScore != null) {
+          assignedScoresByAbility[key] = parsedScore;
+        }
+      }
+    }
+
+    return CharacterAbilityScoreProvenancesCompanion.insert(
+      characterId: characterId,
+      methodKey: Value(methodKey),
+      strengthAssignedScore: Value(assignedScoresByAbility['Strength']),
+      dexterityAssignedScore: Value(assignedScoresByAbility['Dexterity']),
+      constitutionAssignedScore: Value(assignedScoresByAbility['Constitution']),
+      intelligenceAssignedScore: Value(assignedScoresByAbility['Intelligence']),
+      wisdomAssignedScore: Value(assignedScoresByAbility['Wisdom']),
+      charismaAssignedScore: Value(assignedScoresByAbility['Charisma']),
+    );
   }
 }

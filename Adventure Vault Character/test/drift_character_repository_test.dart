@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(
-    'createCharacter persists v5 character rows and reads normalized data for sheet',
+    'createCharacter persists v6 character rows and reads normalized data for sheet',
     () async {
       final database = AppDatabase.executor(NativeDatabase.memory());
       addTearDown(database.close);
@@ -66,13 +66,19 @@ void main() {
                   )
                   .getSingle())
               .data;
+      final provenance = await (database.select(
+        database.characterAbilityScoreProvenances,
+      )..where((table) => table.characterId.equals(summary.id))).getSingle();
       final sheet = await repository.getCharacterSheetById(summary.id);
 
       expect(row.backgroundDefinitionRefId, 'acolyte');
       expect(rawCharacterRow.containsKey('background_name'), isFalse);
+      expect(rawCharacterRow.containsKey('ability_score_method'), isFalse);
+      expect(rawCharacterRow.containsKey('ability_score_provenance'), isFalse);
       expect(rawCharacterRow.containsKey('strength'), isFalse);
       expect(rawCharacterRow.containsKey('starting_money_summary'), isFalse);
       expect(rawCharacterRow.containsKey('selected_equipment_items'), isFalse);
+      expect(provenance.methodKey, 'generatedSetAssignment');
 
       expect(sheet, isNotNull);
       expect(sheet!.featuresNotes.background.name, 'Acolyte');
@@ -98,7 +104,7 @@ void main() {
   );
 
   test(
-    'updateCharacter rewrites normalized rows against the v5 character schema',
+    'updateCharacter rewrites normalized rows against the v6 character schema',
     () async {
       final database = AppDatabase.executor(NativeDatabase.memory());
       addTearDown(database.close);
@@ -191,6 +197,9 @@ void main() {
       final abilityScores = await (database.select(
         database.characterAbilityScores,
       )..where((table) => table.characterId.equals(created.id))).getSingle();
+      final provenance = await (database.select(
+        database.characterAbilityScoreProvenances,
+      )..where((table) => table.characterId.equals(created.id))).getSingle();
       final inventory = await (database.select(
         database.characterInventory,
       )..where((table) => table.characterId.equals(created.id))).get();
@@ -198,6 +207,8 @@ void main() {
 
       expect(row.name, 'Aelar');
       expect(rawCharacterRow.containsKey('background_name'), isFalse);
+      expect(rawCharacterRow.containsKey('ability_score_method'), isFalse);
+      expect(rawCharacterRow.containsKey('ability_score_provenance'), isFalse);
       expect(rawCharacterRow.containsKey('strength'), isFalse);
       expect(rawCharacterRow.containsKey('selected_equipment_items'), isFalse);
       expect(rawCharacterRow.containsKey('starting_money_summary'), isFalse);
@@ -206,6 +217,8 @@ void main() {
 
       expect(abilityScores.strengthScore, 15);
       expect(abilityScores.intelligenceScore, 12);
+      expect(provenance.methodKey, 'manualPointAllocation');
+      expect(provenance.strengthAssignedScore, 15);
       expect(inventory.map((item) => item.displayNameSnapshot), <String>[
         'Quarterstaff',
         'Torch',

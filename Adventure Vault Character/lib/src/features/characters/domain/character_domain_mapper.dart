@@ -66,7 +66,7 @@ class CharacterDomainMapper {
             .toList(growable: false),
       ),
       abilities: CharacterAbilitiesDomainModel(
-        methodKey: row.abilityScoreMethod,
+        methodKey: record.abilityScoreProvenance?.methodKey,
         entries: <CharacterAbilityScoreDomainModel>[
           CharacterAbilityScoreDomainModel(
             label: 'Strength',

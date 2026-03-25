@@ -61,28 +61,6 @@ class $CharactersTable extends Characters
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
-  static const VerificationMeta _abilityScoreMethodMeta =
-      const VerificationMeta('abilityScoreMethod');
-  @override
-  late final GeneratedColumn<String> abilityScoreMethod =
-      GeneratedColumn<String>(
-        'ability_score_method',
-        aliasedName,
-        true,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-      );
-  static const VerificationMeta _abilityScoreProvenanceMeta =
-      const VerificationMeta('abilityScoreProvenance');
-  @override
-  late final GeneratedColumn<String> abilityScoreProvenance =
-      GeneratedColumn<String>(
-        'ability_score_provenance',
-        aliasedName,
-        true,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-      );
   static const VerificationMeta _classNameMeta = const VerificationMeta(
     'className',
   );
@@ -243,8 +221,6 @@ class $CharactersTable extends Characters
     raceName,
     classDefinitionId,
     backgroundDefinitionRefId,
-    abilityScoreMethod,
-    abilityScoreProvenance,
     className,
     level,
     experience,
@@ -308,24 +284,6 @@ class $CharactersTable extends Characters
         backgroundDefinitionRefId.isAcceptableOrUnknown(
           data['background_definition_ref_id']!,
           _backgroundDefinitionRefIdMeta,
-        ),
-      );
-    }
-    if (data.containsKey('ability_score_method')) {
-      context.handle(
-        _abilityScoreMethodMeta,
-        abilityScoreMethod.isAcceptableOrUnknown(
-          data['ability_score_method']!,
-          _abilityScoreMethodMeta,
-        ),
-      );
-    }
-    if (data.containsKey('ability_score_provenance')) {
-      context.handle(
-        _abilityScoreProvenanceMeta,
-        abilityScoreProvenance.isAcceptableOrUnknown(
-          data['ability_score_provenance']!,
-          _abilityScoreProvenanceMeta,
         ),
       );
     }
@@ -474,14 +432,6 @@ class $CharactersTable extends Characters
         DriftSqlType.string,
         data['${effectivePrefix}background_definition_ref_id'],
       ),
-      abilityScoreMethod: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}ability_score_method'],
-      ),
-      abilityScoreProvenance: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}ability_score_provenance'],
-      ),
       className: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}class_name'],
@@ -553,8 +503,6 @@ class Character extends DataClass implements Insertable<Character> {
   final String raceName;
   final String? classDefinitionId;
   final String? backgroundDefinitionRefId;
-  final String? abilityScoreMethod;
-  final String? abilityScoreProvenance;
   final String className;
   final int level;
   final int? experience;
@@ -575,8 +523,6 @@ class Character extends DataClass implements Insertable<Character> {
     required this.raceName,
     this.classDefinitionId,
     this.backgroundDefinitionRefId,
-    this.abilityScoreMethod,
-    this.abilityScoreProvenance,
     required this.className,
     required this.level,
     this.experience,
@@ -604,14 +550,6 @@ class Character extends DataClass implements Insertable<Character> {
     if (!nullToAbsent || backgroundDefinitionRefId != null) {
       map['background_definition_ref_id'] = Variable<String>(
         backgroundDefinitionRefId,
-      );
-    }
-    if (!nullToAbsent || abilityScoreMethod != null) {
-      map['ability_score_method'] = Variable<String>(abilityScoreMethod);
-    }
-    if (!nullToAbsent || abilityScoreProvenance != null) {
-      map['ability_score_provenance'] = Variable<String>(
-        abilityScoreProvenance,
       );
     }
     map['class_name'] = Variable<String>(className);
@@ -663,12 +601,6 @@ class Character extends DataClass implements Insertable<Character> {
           backgroundDefinitionRefId == null && nullToAbsent
           ? const Value.absent()
           : Value(backgroundDefinitionRefId),
-      abilityScoreMethod: abilityScoreMethod == null && nullToAbsent
-          ? const Value.absent()
-          : Value(abilityScoreMethod),
-      abilityScoreProvenance: abilityScoreProvenance == null && nullToAbsent
-          ? const Value.absent()
-          : Value(abilityScoreProvenance),
       className: Value(className),
       level: Value(level),
       experience: experience == null && nullToAbsent
@@ -721,12 +653,6 @@ class Character extends DataClass implements Insertable<Character> {
       backgroundDefinitionRefId: serializer.fromJson<String?>(
         json['backgroundDefinitionRefId'],
       ),
-      abilityScoreMethod: serializer.fromJson<String?>(
-        json['abilityScoreMethod'],
-      ),
-      abilityScoreProvenance: serializer.fromJson<String?>(
-        json['abilityScoreProvenance'],
-      ),
       className: serializer.fromJson<String>(json['className']),
       level: serializer.fromJson<int>(json['level']),
       experience: serializer.fromJson<int?>(json['experience']),
@@ -762,10 +688,6 @@ class Character extends DataClass implements Insertable<Character> {
       'backgroundDefinitionRefId': serializer.toJson<String?>(
         backgroundDefinitionRefId,
       ),
-      'abilityScoreMethod': serializer.toJson<String?>(abilityScoreMethod),
-      'abilityScoreProvenance': serializer.toJson<String?>(
-        abilityScoreProvenance,
-      ),
       'className': serializer.toJson<String>(className),
       'level': serializer.toJson<int>(level),
       'experience': serializer.toJson<int?>(experience),
@@ -791,8 +713,6 @@ class Character extends DataClass implements Insertable<Character> {
     String? raceName,
     Value<String?> classDefinitionId = const Value.absent(),
     Value<String?> backgroundDefinitionRefId = const Value.absent(),
-    Value<String?> abilityScoreMethod = const Value.absent(),
-    Value<String?> abilityScoreProvenance = const Value.absent(),
     String? className,
     int? level,
     Value<int?> experience = const Value.absent(),
@@ -817,12 +737,6 @@ class Character extends DataClass implements Insertable<Character> {
     backgroundDefinitionRefId: backgroundDefinitionRefId.present
         ? backgroundDefinitionRefId.value
         : this.backgroundDefinitionRefId,
-    abilityScoreMethod: abilityScoreMethod.present
-        ? abilityScoreMethod.value
-        : this.abilityScoreMethod,
-    abilityScoreProvenance: abilityScoreProvenance.present
-        ? abilityScoreProvenance.value
-        : this.abilityScoreProvenance,
     className: className ?? this.className,
     level: level ?? this.level,
     experience: experience.present ? experience.value : this.experience,
@@ -865,12 +779,6 @@ class Character extends DataClass implements Insertable<Character> {
       backgroundDefinitionRefId: data.backgroundDefinitionRefId.present
           ? data.backgroundDefinitionRefId.value
           : this.backgroundDefinitionRefId,
-      abilityScoreMethod: data.abilityScoreMethod.present
-          ? data.abilityScoreMethod.value
-          : this.abilityScoreMethod,
-      abilityScoreProvenance: data.abilityScoreProvenance.present
-          ? data.abilityScoreProvenance.value
-          : this.abilityScoreProvenance,
       className: data.className.present ? data.className.value : this.className,
       level: data.level.present ? data.level.value : this.level,
       experience: data.experience.present
@@ -914,8 +822,6 @@ class Character extends DataClass implements Insertable<Character> {
           ..write('raceName: $raceName, ')
           ..write('classDefinitionId: $classDefinitionId, ')
           ..write('backgroundDefinitionRefId: $backgroundDefinitionRefId, ')
-          ..write('abilityScoreMethod: $abilityScoreMethod, ')
-          ..write('abilityScoreProvenance: $abilityScoreProvenance, ')
           ..write('className: $className, ')
           ..write('level: $level, ')
           ..write('experience: $experience, ')
@@ -935,14 +841,12 @@ class Character extends DataClass implements Insertable<Character> {
   }
 
   @override
-  int get hashCode => Object.hashAll([
+  int get hashCode => Object.hash(
     id,
     name,
     raceName,
     classDefinitionId,
     backgroundDefinitionRefId,
-    abilityScoreMethod,
-    abilityScoreProvenance,
     className,
     level,
     experience,
@@ -957,7 +861,7 @@ class Character extends DataClass implements Insertable<Character> {
     narrativeDetails,
     createdAt,
     updatedAt,
-  ]);
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -967,8 +871,6 @@ class Character extends DataClass implements Insertable<Character> {
           other.raceName == this.raceName &&
           other.classDefinitionId == this.classDefinitionId &&
           other.backgroundDefinitionRefId == this.backgroundDefinitionRefId &&
-          other.abilityScoreMethod == this.abilityScoreMethod &&
-          other.abilityScoreProvenance == this.abilityScoreProvenance &&
           other.className == this.className &&
           other.level == this.level &&
           other.experience == this.experience &&
@@ -991,8 +893,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
   final Value<String> raceName;
   final Value<String?> classDefinitionId;
   final Value<String?> backgroundDefinitionRefId;
-  final Value<String?> abilityScoreMethod;
-  final Value<String?> abilityScoreProvenance;
   final Value<String> className;
   final Value<int> level;
   final Value<int?> experience;
@@ -1014,8 +914,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     this.raceName = const Value.absent(),
     this.classDefinitionId = const Value.absent(),
     this.backgroundDefinitionRefId = const Value.absent(),
-    this.abilityScoreMethod = const Value.absent(),
-    this.abilityScoreProvenance = const Value.absent(),
     this.className = const Value.absent(),
     this.level = const Value.absent(),
     this.experience = const Value.absent(),
@@ -1038,8 +936,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     required String raceName,
     this.classDefinitionId = const Value.absent(),
     this.backgroundDefinitionRefId = const Value.absent(),
-    this.abilityScoreMethod = const Value.absent(),
-    this.abilityScoreProvenance = const Value.absent(),
     required String className,
     required int level,
     this.experience = const Value.absent(),
@@ -1068,8 +964,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     Expression<String>? raceName,
     Expression<String>? classDefinitionId,
     Expression<String>? backgroundDefinitionRefId,
-    Expression<String>? abilityScoreMethod,
-    Expression<String>? abilityScoreProvenance,
     Expression<String>? className,
     Expression<int>? level,
     Expression<int>? experience,
@@ -1093,10 +987,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
       if (classDefinitionId != null) 'class_definition_id': classDefinitionId,
       if (backgroundDefinitionRefId != null)
         'background_definition_ref_id': backgroundDefinitionRefId,
-      if (abilityScoreMethod != null)
-        'ability_score_method': abilityScoreMethod,
-      if (abilityScoreProvenance != null)
-        'ability_score_provenance': abilityScoreProvenance,
       if (className != null) 'class_name': className,
       if (level != null) 'level': level,
       if (experience != null) 'experience': experience,
@@ -1124,8 +1014,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     Value<String>? raceName,
     Value<String?>? classDefinitionId,
     Value<String?>? backgroundDefinitionRefId,
-    Value<String?>? abilityScoreMethod,
-    Value<String?>? abilityScoreProvenance,
     Value<String>? className,
     Value<int>? level,
     Value<int?>? experience,
@@ -1149,9 +1037,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
       classDefinitionId: classDefinitionId ?? this.classDefinitionId,
       backgroundDefinitionRefId:
           backgroundDefinitionRefId ?? this.backgroundDefinitionRefId,
-      abilityScoreMethod: abilityScoreMethod ?? this.abilityScoreMethod,
-      abilityScoreProvenance:
-          abilityScoreProvenance ?? this.abilityScoreProvenance,
       className: className ?? this.className,
       level: level ?? this.level,
       experience: experience ?? this.experience,
@@ -1189,14 +1074,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     if (backgroundDefinitionRefId.present) {
       map['background_definition_ref_id'] = Variable<String>(
         backgroundDefinitionRefId.value,
-      );
-    }
-    if (abilityScoreMethod.present) {
-      map['ability_score_method'] = Variable<String>(abilityScoreMethod.value);
-    }
-    if (abilityScoreProvenance.present) {
-      map['ability_score_provenance'] = Variable<String>(
-        abilityScoreProvenance.value,
       );
     }
     if (className.present) {
@@ -1257,8 +1134,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
           ..write('raceName: $raceName, ')
           ..write('classDefinitionId: $classDefinitionId, ')
           ..write('backgroundDefinitionRefId: $backgroundDefinitionRefId, ')
-          ..write('abilityScoreMethod: $abilityScoreMethod, ')
-          ..write('abilityScoreProvenance: $abilityScoreProvenance, ')
           ..write('className: $className, ')
           ..write('level: $level, ')
           ..write('experience: $experience, ')
@@ -2124,6 +1999,631 @@ class CharacterAbilityScoresCompanion
           ..write('intelligenceModifier: $intelligenceModifier, ')
           ..write('wisdomModifier: $wisdomModifier, ')
           ..write('charismaModifier: $charismaModifier, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CharacterAbilityScoreProvenancesTable
+    extends CharacterAbilityScoreProvenances
+    with
+        TableInfo<
+          $CharacterAbilityScoreProvenancesTable,
+          CharacterAbilityScoreProvenance
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CharacterAbilityScoreProvenancesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _characterIdMeta = const VerificationMeta(
+    'characterId',
+  );
+  @override
+  late final GeneratedColumn<String> characterId = GeneratedColumn<String>(
+    'character_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES characters (id)',
+    ),
+  );
+  static const VerificationMeta _methodKeyMeta = const VerificationMeta(
+    'methodKey',
+  );
+  @override
+  late final GeneratedColumn<String> methodKey = GeneratedColumn<String>(
+    'method_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _strengthAssignedScoreMeta =
+      const VerificationMeta('strengthAssignedScore');
+  @override
+  late final GeneratedColumn<int> strengthAssignedScore = GeneratedColumn<int>(
+    'strength_assigned_score',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _dexterityAssignedScoreMeta =
+      const VerificationMeta('dexterityAssignedScore');
+  @override
+  late final GeneratedColumn<int> dexterityAssignedScore = GeneratedColumn<int>(
+    'dexterity_assigned_score',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _constitutionAssignedScoreMeta =
+      const VerificationMeta('constitutionAssignedScore');
+  @override
+  late final GeneratedColumn<int> constitutionAssignedScore =
+      GeneratedColumn<int>(
+        'constitution_assigned_score',
+        aliasedName,
+        true,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _intelligenceAssignedScoreMeta =
+      const VerificationMeta('intelligenceAssignedScore');
+  @override
+  late final GeneratedColumn<int> intelligenceAssignedScore =
+      GeneratedColumn<int>(
+        'intelligence_assigned_score',
+        aliasedName,
+        true,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _wisdomAssignedScoreMeta =
+      const VerificationMeta('wisdomAssignedScore');
+  @override
+  late final GeneratedColumn<int> wisdomAssignedScore = GeneratedColumn<int>(
+    'wisdom_assigned_score',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _charismaAssignedScoreMeta =
+      const VerificationMeta('charismaAssignedScore');
+  @override
+  late final GeneratedColumn<int> charismaAssignedScore = GeneratedColumn<int>(
+    'charisma_assigned_score',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    characterId,
+    methodKey,
+    strengthAssignedScore,
+    dexterityAssignedScore,
+    constitutionAssignedScore,
+    intelligenceAssignedScore,
+    wisdomAssignedScore,
+    charismaAssignedScore,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'character_ability_score_provenances';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CharacterAbilityScoreProvenance> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('character_id')) {
+      context.handle(
+        _characterIdMeta,
+        characterId.isAcceptableOrUnknown(
+          data['character_id']!,
+          _characterIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_characterIdMeta);
+    }
+    if (data.containsKey('method_key')) {
+      context.handle(
+        _methodKeyMeta,
+        methodKey.isAcceptableOrUnknown(data['method_key']!, _methodKeyMeta),
+      );
+    }
+    if (data.containsKey('strength_assigned_score')) {
+      context.handle(
+        _strengthAssignedScoreMeta,
+        strengthAssignedScore.isAcceptableOrUnknown(
+          data['strength_assigned_score']!,
+          _strengthAssignedScoreMeta,
+        ),
+      );
+    }
+    if (data.containsKey('dexterity_assigned_score')) {
+      context.handle(
+        _dexterityAssignedScoreMeta,
+        dexterityAssignedScore.isAcceptableOrUnknown(
+          data['dexterity_assigned_score']!,
+          _dexterityAssignedScoreMeta,
+        ),
+      );
+    }
+    if (data.containsKey('constitution_assigned_score')) {
+      context.handle(
+        _constitutionAssignedScoreMeta,
+        constitutionAssignedScore.isAcceptableOrUnknown(
+          data['constitution_assigned_score']!,
+          _constitutionAssignedScoreMeta,
+        ),
+      );
+    }
+    if (data.containsKey('intelligence_assigned_score')) {
+      context.handle(
+        _intelligenceAssignedScoreMeta,
+        intelligenceAssignedScore.isAcceptableOrUnknown(
+          data['intelligence_assigned_score']!,
+          _intelligenceAssignedScoreMeta,
+        ),
+      );
+    }
+    if (data.containsKey('wisdom_assigned_score')) {
+      context.handle(
+        _wisdomAssignedScoreMeta,
+        wisdomAssignedScore.isAcceptableOrUnknown(
+          data['wisdom_assigned_score']!,
+          _wisdomAssignedScoreMeta,
+        ),
+      );
+    }
+    if (data.containsKey('charisma_assigned_score')) {
+      context.handle(
+        _charismaAssignedScoreMeta,
+        charismaAssignedScore.isAcceptableOrUnknown(
+          data['charisma_assigned_score']!,
+          _charismaAssignedScoreMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {characterId};
+  @override
+  CharacterAbilityScoreProvenance map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CharacterAbilityScoreProvenance(
+      characterId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}character_id'],
+      )!,
+      methodKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}method_key'],
+      ),
+      strengthAssignedScore: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}strength_assigned_score'],
+      ),
+      dexterityAssignedScore: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dexterity_assigned_score'],
+      ),
+      constitutionAssignedScore: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}constitution_assigned_score'],
+      ),
+      intelligenceAssignedScore: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}intelligence_assigned_score'],
+      ),
+      wisdomAssignedScore: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}wisdom_assigned_score'],
+      ),
+      charismaAssignedScore: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}charisma_assigned_score'],
+      ),
+    );
+  }
+
+  @override
+  $CharacterAbilityScoreProvenancesTable createAlias(String alias) {
+    return $CharacterAbilityScoreProvenancesTable(attachedDatabase, alias);
+  }
+}
+
+class CharacterAbilityScoreProvenance extends DataClass
+    implements Insertable<CharacterAbilityScoreProvenance> {
+  final String characterId;
+  final String? methodKey;
+  final int? strengthAssignedScore;
+  final int? dexterityAssignedScore;
+  final int? constitutionAssignedScore;
+  final int? intelligenceAssignedScore;
+  final int? wisdomAssignedScore;
+  final int? charismaAssignedScore;
+  const CharacterAbilityScoreProvenance({
+    required this.characterId,
+    this.methodKey,
+    this.strengthAssignedScore,
+    this.dexterityAssignedScore,
+    this.constitutionAssignedScore,
+    this.intelligenceAssignedScore,
+    this.wisdomAssignedScore,
+    this.charismaAssignedScore,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['character_id'] = Variable<String>(characterId);
+    if (!nullToAbsent || methodKey != null) {
+      map['method_key'] = Variable<String>(methodKey);
+    }
+    if (!nullToAbsent || strengthAssignedScore != null) {
+      map['strength_assigned_score'] = Variable<int>(strengthAssignedScore);
+    }
+    if (!nullToAbsent || dexterityAssignedScore != null) {
+      map['dexterity_assigned_score'] = Variable<int>(dexterityAssignedScore);
+    }
+    if (!nullToAbsent || constitutionAssignedScore != null) {
+      map['constitution_assigned_score'] = Variable<int>(
+        constitutionAssignedScore,
+      );
+    }
+    if (!nullToAbsent || intelligenceAssignedScore != null) {
+      map['intelligence_assigned_score'] = Variable<int>(
+        intelligenceAssignedScore,
+      );
+    }
+    if (!nullToAbsent || wisdomAssignedScore != null) {
+      map['wisdom_assigned_score'] = Variable<int>(wisdomAssignedScore);
+    }
+    if (!nullToAbsent || charismaAssignedScore != null) {
+      map['charisma_assigned_score'] = Variable<int>(charismaAssignedScore);
+    }
+    return map;
+  }
+
+  CharacterAbilityScoreProvenancesCompanion toCompanion(bool nullToAbsent) {
+    return CharacterAbilityScoreProvenancesCompanion(
+      characterId: Value(characterId),
+      methodKey: methodKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(methodKey),
+      strengthAssignedScore: strengthAssignedScore == null && nullToAbsent
+          ? const Value.absent()
+          : Value(strengthAssignedScore),
+      dexterityAssignedScore: dexterityAssignedScore == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dexterityAssignedScore),
+      constitutionAssignedScore:
+          constitutionAssignedScore == null && nullToAbsent
+          ? const Value.absent()
+          : Value(constitutionAssignedScore),
+      intelligenceAssignedScore:
+          intelligenceAssignedScore == null && nullToAbsent
+          ? const Value.absent()
+          : Value(intelligenceAssignedScore),
+      wisdomAssignedScore: wisdomAssignedScore == null && nullToAbsent
+          ? const Value.absent()
+          : Value(wisdomAssignedScore),
+      charismaAssignedScore: charismaAssignedScore == null && nullToAbsent
+          ? const Value.absent()
+          : Value(charismaAssignedScore),
+    );
+  }
+
+  factory CharacterAbilityScoreProvenance.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CharacterAbilityScoreProvenance(
+      characterId: serializer.fromJson<String>(json['characterId']),
+      methodKey: serializer.fromJson<String?>(json['methodKey']),
+      strengthAssignedScore: serializer.fromJson<int?>(
+        json['strengthAssignedScore'],
+      ),
+      dexterityAssignedScore: serializer.fromJson<int?>(
+        json['dexterityAssignedScore'],
+      ),
+      constitutionAssignedScore: serializer.fromJson<int?>(
+        json['constitutionAssignedScore'],
+      ),
+      intelligenceAssignedScore: serializer.fromJson<int?>(
+        json['intelligenceAssignedScore'],
+      ),
+      wisdomAssignedScore: serializer.fromJson<int?>(
+        json['wisdomAssignedScore'],
+      ),
+      charismaAssignedScore: serializer.fromJson<int?>(
+        json['charismaAssignedScore'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'characterId': serializer.toJson<String>(characterId),
+      'methodKey': serializer.toJson<String?>(methodKey),
+      'strengthAssignedScore': serializer.toJson<int?>(strengthAssignedScore),
+      'dexterityAssignedScore': serializer.toJson<int?>(dexterityAssignedScore),
+      'constitutionAssignedScore': serializer.toJson<int?>(
+        constitutionAssignedScore,
+      ),
+      'intelligenceAssignedScore': serializer.toJson<int?>(
+        intelligenceAssignedScore,
+      ),
+      'wisdomAssignedScore': serializer.toJson<int?>(wisdomAssignedScore),
+      'charismaAssignedScore': serializer.toJson<int?>(charismaAssignedScore),
+    };
+  }
+
+  CharacterAbilityScoreProvenance copyWith({
+    String? characterId,
+    Value<String?> methodKey = const Value.absent(),
+    Value<int?> strengthAssignedScore = const Value.absent(),
+    Value<int?> dexterityAssignedScore = const Value.absent(),
+    Value<int?> constitutionAssignedScore = const Value.absent(),
+    Value<int?> intelligenceAssignedScore = const Value.absent(),
+    Value<int?> wisdomAssignedScore = const Value.absent(),
+    Value<int?> charismaAssignedScore = const Value.absent(),
+  }) => CharacterAbilityScoreProvenance(
+    characterId: characterId ?? this.characterId,
+    methodKey: methodKey.present ? methodKey.value : this.methodKey,
+    strengthAssignedScore: strengthAssignedScore.present
+        ? strengthAssignedScore.value
+        : this.strengthAssignedScore,
+    dexterityAssignedScore: dexterityAssignedScore.present
+        ? dexterityAssignedScore.value
+        : this.dexterityAssignedScore,
+    constitutionAssignedScore: constitutionAssignedScore.present
+        ? constitutionAssignedScore.value
+        : this.constitutionAssignedScore,
+    intelligenceAssignedScore: intelligenceAssignedScore.present
+        ? intelligenceAssignedScore.value
+        : this.intelligenceAssignedScore,
+    wisdomAssignedScore: wisdomAssignedScore.present
+        ? wisdomAssignedScore.value
+        : this.wisdomAssignedScore,
+    charismaAssignedScore: charismaAssignedScore.present
+        ? charismaAssignedScore.value
+        : this.charismaAssignedScore,
+  );
+  CharacterAbilityScoreProvenance copyWithCompanion(
+    CharacterAbilityScoreProvenancesCompanion data,
+  ) {
+    return CharacterAbilityScoreProvenance(
+      characterId: data.characterId.present
+          ? data.characterId.value
+          : this.characterId,
+      methodKey: data.methodKey.present ? data.methodKey.value : this.methodKey,
+      strengthAssignedScore: data.strengthAssignedScore.present
+          ? data.strengthAssignedScore.value
+          : this.strengthAssignedScore,
+      dexterityAssignedScore: data.dexterityAssignedScore.present
+          ? data.dexterityAssignedScore.value
+          : this.dexterityAssignedScore,
+      constitutionAssignedScore: data.constitutionAssignedScore.present
+          ? data.constitutionAssignedScore.value
+          : this.constitutionAssignedScore,
+      intelligenceAssignedScore: data.intelligenceAssignedScore.present
+          ? data.intelligenceAssignedScore.value
+          : this.intelligenceAssignedScore,
+      wisdomAssignedScore: data.wisdomAssignedScore.present
+          ? data.wisdomAssignedScore.value
+          : this.wisdomAssignedScore,
+      charismaAssignedScore: data.charismaAssignedScore.present
+          ? data.charismaAssignedScore.value
+          : this.charismaAssignedScore,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterAbilityScoreProvenance(')
+          ..write('characterId: $characterId, ')
+          ..write('methodKey: $methodKey, ')
+          ..write('strengthAssignedScore: $strengthAssignedScore, ')
+          ..write('dexterityAssignedScore: $dexterityAssignedScore, ')
+          ..write('constitutionAssignedScore: $constitutionAssignedScore, ')
+          ..write('intelligenceAssignedScore: $intelligenceAssignedScore, ')
+          ..write('wisdomAssignedScore: $wisdomAssignedScore, ')
+          ..write('charismaAssignedScore: $charismaAssignedScore')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    characterId,
+    methodKey,
+    strengthAssignedScore,
+    dexterityAssignedScore,
+    constitutionAssignedScore,
+    intelligenceAssignedScore,
+    wisdomAssignedScore,
+    charismaAssignedScore,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CharacterAbilityScoreProvenance &&
+          other.characterId == this.characterId &&
+          other.methodKey == this.methodKey &&
+          other.strengthAssignedScore == this.strengthAssignedScore &&
+          other.dexterityAssignedScore == this.dexterityAssignedScore &&
+          other.constitutionAssignedScore == this.constitutionAssignedScore &&
+          other.intelligenceAssignedScore == this.intelligenceAssignedScore &&
+          other.wisdomAssignedScore == this.wisdomAssignedScore &&
+          other.charismaAssignedScore == this.charismaAssignedScore);
+}
+
+class CharacterAbilityScoreProvenancesCompanion
+    extends UpdateCompanion<CharacterAbilityScoreProvenance> {
+  final Value<String> characterId;
+  final Value<String?> methodKey;
+  final Value<int?> strengthAssignedScore;
+  final Value<int?> dexterityAssignedScore;
+  final Value<int?> constitutionAssignedScore;
+  final Value<int?> intelligenceAssignedScore;
+  final Value<int?> wisdomAssignedScore;
+  final Value<int?> charismaAssignedScore;
+  final Value<int> rowid;
+  const CharacterAbilityScoreProvenancesCompanion({
+    this.characterId = const Value.absent(),
+    this.methodKey = const Value.absent(),
+    this.strengthAssignedScore = const Value.absent(),
+    this.dexterityAssignedScore = const Value.absent(),
+    this.constitutionAssignedScore = const Value.absent(),
+    this.intelligenceAssignedScore = const Value.absent(),
+    this.wisdomAssignedScore = const Value.absent(),
+    this.charismaAssignedScore = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CharacterAbilityScoreProvenancesCompanion.insert({
+    required String characterId,
+    this.methodKey = const Value.absent(),
+    this.strengthAssignedScore = const Value.absent(),
+    this.dexterityAssignedScore = const Value.absent(),
+    this.constitutionAssignedScore = const Value.absent(),
+    this.intelligenceAssignedScore = const Value.absent(),
+    this.wisdomAssignedScore = const Value.absent(),
+    this.charismaAssignedScore = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : characterId = Value(characterId);
+  static Insertable<CharacterAbilityScoreProvenance> custom({
+    Expression<String>? characterId,
+    Expression<String>? methodKey,
+    Expression<int>? strengthAssignedScore,
+    Expression<int>? dexterityAssignedScore,
+    Expression<int>? constitutionAssignedScore,
+    Expression<int>? intelligenceAssignedScore,
+    Expression<int>? wisdomAssignedScore,
+    Expression<int>? charismaAssignedScore,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (characterId != null) 'character_id': characterId,
+      if (methodKey != null) 'method_key': methodKey,
+      if (strengthAssignedScore != null)
+        'strength_assigned_score': strengthAssignedScore,
+      if (dexterityAssignedScore != null)
+        'dexterity_assigned_score': dexterityAssignedScore,
+      if (constitutionAssignedScore != null)
+        'constitution_assigned_score': constitutionAssignedScore,
+      if (intelligenceAssignedScore != null)
+        'intelligence_assigned_score': intelligenceAssignedScore,
+      if (wisdomAssignedScore != null)
+        'wisdom_assigned_score': wisdomAssignedScore,
+      if (charismaAssignedScore != null)
+        'charisma_assigned_score': charismaAssignedScore,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CharacterAbilityScoreProvenancesCompanion copyWith({
+    Value<String>? characterId,
+    Value<String?>? methodKey,
+    Value<int?>? strengthAssignedScore,
+    Value<int?>? dexterityAssignedScore,
+    Value<int?>? constitutionAssignedScore,
+    Value<int?>? intelligenceAssignedScore,
+    Value<int?>? wisdomAssignedScore,
+    Value<int?>? charismaAssignedScore,
+    Value<int>? rowid,
+  }) {
+    return CharacterAbilityScoreProvenancesCompanion(
+      characterId: characterId ?? this.characterId,
+      methodKey: methodKey ?? this.methodKey,
+      strengthAssignedScore:
+          strengthAssignedScore ?? this.strengthAssignedScore,
+      dexterityAssignedScore:
+          dexterityAssignedScore ?? this.dexterityAssignedScore,
+      constitutionAssignedScore:
+          constitutionAssignedScore ?? this.constitutionAssignedScore,
+      intelligenceAssignedScore:
+          intelligenceAssignedScore ?? this.intelligenceAssignedScore,
+      wisdomAssignedScore: wisdomAssignedScore ?? this.wisdomAssignedScore,
+      charismaAssignedScore:
+          charismaAssignedScore ?? this.charismaAssignedScore,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (characterId.present) {
+      map['character_id'] = Variable<String>(characterId.value);
+    }
+    if (methodKey.present) {
+      map['method_key'] = Variable<String>(methodKey.value);
+    }
+    if (strengthAssignedScore.present) {
+      map['strength_assigned_score'] = Variable<int>(
+        strengthAssignedScore.value,
+      );
+    }
+    if (dexterityAssignedScore.present) {
+      map['dexterity_assigned_score'] = Variable<int>(
+        dexterityAssignedScore.value,
+      );
+    }
+    if (constitutionAssignedScore.present) {
+      map['constitution_assigned_score'] = Variable<int>(
+        constitutionAssignedScore.value,
+      );
+    }
+    if (intelligenceAssignedScore.present) {
+      map['intelligence_assigned_score'] = Variable<int>(
+        intelligenceAssignedScore.value,
+      );
+    }
+    if (wisdomAssignedScore.present) {
+      map['wisdom_assigned_score'] = Variable<int>(wisdomAssignedScore.value);
+    }
+    if (charismaAssignedScore.present) {
+      map['charisma_assigned_score'] = Variable<int>(
+        charismaAssignedScore.value,
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterAbilityScoreProvenancesCompanion(')
+          ..write('characterId: $characterId, ')
+          ..write('methodKey: $methodKey, ')
+          ..write('strengthAssignedScore: $strengthAssignedScore, ')
+          ..write('dexterityAssignedScore: $dexterityAssignedScore, ')
+          ..write('constitutionAssignedScore: $constitutionAssignedScore, ')
+          ..write('intelligenceAssignedScore: $intelligenceAssignedScore, ')
+          ..write('wisdomAssignedScore: $wisdomAssignedScore, ')
+          ..write('charismaAssignedScore: $charismaAssignedScore, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -8260,6 +8760,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $CharactersTable characters = $CharactersTable(this);
   late final $CharacterAbilityScoresTable characterAbilityScores =
       $CharacterAbilityScoresTable(this);
+  late final $CharacterAbilityScoreProvenancesTable
+  characterAbilityScoreProvenances = $CharacterAbilityScoreProvenancesTable(
+    this,
+  );
   late final $SkillDefinitionsTable skillDefinitions = $SkillDefinitionsTable(
     this,
   );
@@ -8293,6 +8797,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     characters,
     characterAbilityScores,
+    characterAbilityScoreProvenances,
     skillDefinitions,
     characterSkills,
     characterSavingThrows,
@@ -8314,8 +8819,6 @@ typedef $$CharactersTableCreateCompanionBuilder =
       required String raceName,
       Value<String?> classDefinitionId,
       Value<String?> backgroundDefinitionRefId,
-      Value<String?> abilityScoreMethod,
-      Value<String?> abilityScoreProvenance,
       required String className,
       required int level,
       Value<int?> experience,
@@ -8339,8 +8842,6 @@ typedef $$CharactersTableUpdateCompanionBuilder =
       Value<String> raceName,
       Value<String?> classDefinitionId,
       Value<String?> backgroundDefinitionRefId,
-      Value<String?> abilityScoreMethod,
-      Value<String?> abilityScoreProvenance,
       Value<String> className,
       Value<int> level,
       Value<int?> experience,
@@ -8384,6 +8885,34 @@ final class $$CharactersTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _characterAbilityScoresRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $CharacterAbilityScoreProvenancesTable,
+    List<CharacterAbilityScoreProvenance>
+  >
+  _characterAbilityScoreProvenancesRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.characterAbilityScoreProvenances,
+        aliasName: $_aliasNameGenerator(
+          db.characters.id,
+          db.characterAbilityScoreProvenances.characterId,
+        ),
+      );
+
+  $$CharacterAbilityScoreProvenancesTableProcessedTableManager
+  get characterAbilityScoreProvenancesRefs {
+    final manager = $$CharacterAbilityScoreProvenancesTableTableManager(
+      $_db,
+      $_db.characterAbilityScoreProvenances,
+    ).filter((f) => f.characterId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _characterAbilityScoreProvenancesRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -8558,16 +9087,6 @@ class $$CharactersTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get abilityScoreMethod => $composableBuilder(
-    column: $table.abilityScoreMethod,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get abilityScoreProvenance => $composableBuilder(
-    column: $table.abilityScoreProvenance,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<String> get className => $composableBuilder(
     column: $table.className,
     builder: (column) => ColumnFilters(column),
@@ -8655,6 +9174,35 @@ class $$CharactersTableFilterComposer
               }) => $$CharacterAbilityScoresTableFilterComposer(
                 $db: $db,
                 $table: $db.characterAbilityScores,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> characterAbilityScoreProvenancesRefs(
+    Expression<bool> Function(
+      $$CharacterAbilityScoreProvenancesTableFilterComposer f,
+    )
+    f,
+  ) {
+    final $$CharacterAbilityScoreProvenancesTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.characterAbilityScoreProvenances,
+          getReferencedColumn: (t) => t.characterId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$CharacterAbilityScoreProvenancesTableFilterComposer(
+                $db: $db,
+                $table: $db.characterAbilityScoreProvenances,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -8826,16 +9374,6 @@ class $$CharactersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get abilityScoreMethod => $composableBuilder(
-    column: $table.abilityScoreMethod,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get abilityScoreProvenance => $composableBuilder(
-    column: $table.abilityScoreProvenance,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get className => $composableBuilder(
     column: $table.className,
     builder: (column) => ColumnOrderings(column),
@@ -8935,16 +9473,6 @@ class $$CharactersTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<String> get abilityScoreMethod => $composableBuilder(
-    column: $table.abilityScoreMethod,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get abilityScoreProvenance => $composableBuilder(
-    column: $table.abilityScoreProvenance,
-    builder: (column) => column,
-  );
-
   GeneratedColumn<String> get className =>
       $composableBuilder(column: $table.className, builder: (column) => column);
 
@@ -9022,6 +9550,35 @@ class $$CharactersTableAnnotationComposer
               }) => $$CharacterAbilityScoresTableAnnotationComposer(
                 $db: $db,
                 $table: $db.characterAbilityScores,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> characterAbilityScoreProvenancesRefs<T extends Object>(
+    Expression<T> Function(
+      $$CharacterAbilityScoreProvenancesTableAnnotationComposer a,
+    )
+    f,
+  ) {
+    final $$CharacterAbilityScoreProvenancesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.characterAbilityScoreProvenances,
+          getReferencedColumn: (t) => t.characterId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$CharacterAbilityScoreProvenancesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.characterAbilityScoreProvenances,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -9176,6 +9733,7 @@ class $$CharactersTableTableManager
           Character,
           PrefetchHooks Function({
             bool characterAbilityScoresRefs,
+            bool characterAbilityScoreProvenancesRefs,
             bool characterSkillsRefs,
             bool characterSavingThrowsRefs,
             bool characterInventoryRefs,
@@ -9201,8 +9759,6 @@ class $$CharactersTableTableManager
                 Value<String> raceName = const Value.absent(),
                 Value<String?> classDefinitionId = const Value.absent(),
                 Value<String?> backgroundDefinitionRefId = const Value.absent(),
-                Value<String?> abilityScoreMethod = const Value.absent(),
-                Value<String?> abilityScoreProvenance = const Value.absent(),
                 Value<String> className = const Value.absent(),
                 Value<int> level = const Value.absent(),
                 Value<int?> experience = const Value.absent(),
@@ -9224,8 +9780,6 @@ class $$CharactersTableTableManager
                 raceName: raceName,
                 classDefinitionId: classDefinitionId,
                 backgroundDefinitionRefId: backgroundDefinitionRefId,
-                abilityScoreMethod: abilityScoreMethod,
-                abilityScoreProvenance: abilityScoreProvenance,
                 className: className,
                 level: level,
                 experience: experience,
@@ -9249,8 +9803,6 @@ class $$CharactersTableTableManager
                 required String raceName,
                 Value<String?> classDefinitionId = const Value.absent(),
                 Value<String?> backgroundDefinitionRefId = const Value.absent(),
-                Value<String?> abilityScoreMethod = const Value.absent(),
-                Value<String?> abilityScoreProvenance = const Value.absent(),
                 required String className,
                 required int level,
                 Value<int?> experience = const Value.absent(),
@@ -9272,8 +9824,6 @@ class $$CharactersTableTableManager
                 raceName: raceName,
                 classDefinitionId: classDefinitionId,
                 backgroundDefinitionRefId: backgroundDefinitionRefId,
-                abilityScoreMethod: abilityScoreMethod,
-                abilityScoreProvenance: abilityScoreProvenance,
                 className: className,
                 level: level,
                 experience: experience,
@@ -9301,6 +9851,7 @@ class $$CharactersTableTableManager
           prefetchHooksCallback:
               ({
                 characterAbilityScoresRefs = false,
+                characterAbilityScoreProvenancesRefs = false,
                 characterSkillsRefs = false,
                 characterSavingThrowsRefs = false,
                 characterInventoryRefs = false,
@@ -9311,6 +9862,8 @@ class $$CharactersTableTableManager
                   db: db,
                   explicitlyWatchedTables: [
                     if (characterAbilityScoresRefs) db.characterAbilityScores,
+                    if (characterAbilityScoreProvenancesRefs)
+                      db.characterAbilityScoreProvenances,
                     if (characterSkillsRefs) db.characterSkills,
                     if (characterSavingThrowsRefs) db.characterSavingThrows,
                     if (characterInventoryRefs) db.characterInventory,
@@ -9335,6 +9888,27 @@ class $$CharactersTableTableManager
                                 table,
                                 p0,
                               ).characterAbilityScoresRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.characterId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (characterAbilityScoreProvenancesRefs)
+                        await $_getPrefetchedData<
+                          Character,
+                          $CharactersTable,
+                          CharacterAbilityScoreProvenance
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CharactersTableReferences
+                              ._characterAbilityScoreProvenancesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CharactersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).characterAbilityScoreProvenancesRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.characterId == item.id,
@@ -9468,6 +10042,7 @@ typedef $$CharactersTableProcessedTableManager =
       Character,
       PrefetchHooks Function({
         bool characterAbilityScoresRefs,
+        bool characterAbilityScoreProvenancesRefs,
         bool characterSkillsRefs,
         bool characterSavingThrowsRefs,
         bool characterInventoryRefs,
@@ -9993,6 +10568,429 @@ typedef $$CharacterAbilityScoresTableProcessedTableManager =
       $$CharacterAbilityScoresTableUpdateCompanionBuilder,
       (CharacterAbilityScore, $$CharacterAbilityScoresTableReferences),
       CharacterAbilityScore,
+      PrefetchHooks Function({bool characterId})
+    >;
+typedef $$CharacterAbilityScoreProvenancesTableCreateCompanionBuilder =
+    CharacterAbilityScoreProvenancesCompanion Function({
+      required String characterId,
+      Value<String?> methodKey,
+      Value<int?> strengthAssignedScore,
+      Value<int?> dexterityAssignedScore,
+      Value<int?> constitutionAssignedScore,
+      Value<int?> intelligenceAssignedScore,
+      Value<int?> wisdomAssignedScore,
+      Value<int?> charismaAssignedScore,
+      Value<int> rowid,
+    });
+typedef $$CharacterAbilityScoreProvenancesTableUpdateCompanionBuilder =
+    CharacterAbilityScoreProvenancesCompanion Function({
+      Value<String> characterId,
+      Value<String?> methodKey,
+      Value<int?> strengthAssignedScore,
+      Value<int?> dexterityAssignedScore,
+      Value<int?> constitutionAssignedScore,
+      Value<int?> intelligenceAssignedScore,
+      Value<int?> wisdomAssignedScore,
+      Value<int?> charismaAssignedScore,
+      Value<int> rowid,
+    });
+
+final class $$CharacterAbilityScoreProvenancesTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $CharacterAbilityScoreProvenancesTable,
+          CharacterAbilityScoreProvenance
+        > {
+  $$CharacterAbilityScoreProvenancesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CharactersTable _characterIdTable(_$AppDatabase db) =>
+      db.characters.createAlias(
+        $_aliasNameGenerator(
+          db.characterAbilityScoreProvenances.characterId,
+          db.characters.id,
+        ),
+      );
+
+  $$CharactersTableProcessedTableManager get characterId {
+    final $_column = $_itemColumn<String>('character_id')!;
+
+    final manager = $$CharactersTableTableManager(
+      $_db,
+      $_db.characters,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_characterIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CharacterAbilityScoreProvenancesTableFilterComposer
+    extends Composer<_$AppDatabase, $CharacterAbilityScoreProvenancesTable> {
+  $$CharacterAbilityScoreProvenancesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get methodKey => $composableBuilder(
+    column: $table.methodKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get strengthAssignedScore => $composableBuilder(
+    column: $table.strengthAssignedScore,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dexterityAssignedScore => $composableBuilder(
+    column: $table.dexterityAssignedScore,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get constitutionAssignedScore => $composableBuilder(
+    column: $table.constitutionAssignedScore,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get intelligenceAssignedScore => $composableBuilder(
+    column: $table.intelligenceAssignedScore,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get wisdomAssignedScore => $composableBuilder(
+    column: $table.wisdomAssignedScore,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get charismaAssignedScore => $composableBuilder(
+    column: $table.charismaAssignedScore,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CharactersTableFilterComposer get characterId {
+    final $$CharactersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableFilterComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterAbilityScoreProvenancesTableOrderingComposer
+    extends Composer<_$AppDatabase, $CharacterAbilityScoreProvenancesTable> {
+  $$CharacterAbilityScoreProvenancesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get methodKey => $composableBuilder(
+    column: $table.methodKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get strengthAssignedScore => $composableBuilder(
+    column: $table.strengthAssignedScore,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dexterityAssignedScore => $composableBuilder(
+    column: $table.dexterityAssignedScore,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get constitutionAssignedScore => $composableBuilder(
+    column: $table.constitutionAssignedScore,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get intelligenceAssignedScore => $composableBuilder(
+    column: $table.intelligenceAssignedScore,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get wisdomAssignedScore => $composableBuilder(
+    column: $table.wisdomAssignedScore,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get charismaAssignedScore => $composableBuilder(
+    column: $table.charismaAssignedScore,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CharactersTableOrderingComposer get characterId {
+    final $$CharactersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableOrderingComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterAbilityScoreProvenancesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CharacterAbilityScoreProvenancesTable> {
+  $$CharacterAbilityScoreProvenancesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get methodKey =>
+      $composableBuilder(column: $table.methodKey, builder: (column) => column);
+
+  GeneratedColumn<int> get strengthAssignedScore => $composableBuilder(
+    column: $table.strengthAssignedScore,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get dexterityAssignedScore => $composableBuilder(
+    column: $table.dexterityAssignedScore,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get constitutionAssignedScore => $composableBuilder(
+    column: $table.constitutionAssignedScore,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get intelligenceAssignedScore => $composableBuilder(
+    column: $table.intelligenceAssignedScore,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get wisdomAssignedScore => $composableBuilder(
+    column: $table.wisdomAssignedScore,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get charismaAssignedScore => $composableBuilder(
+    column: $table.charismaAssignedScore,
+    builder: (column) => column,
+  );
+
+  $$CharactersTableAnnotationComposer get characterId {
+    final $$CharactersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterAbilityScoreProvenancesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CharacterAbilityScoreProvenancesTable,
+          CharacterAbilityScoreProvenance,
+          $$CharacterAbilityScoreProvenancesTableFilterComposer,
+          $$CharacterAbilityScoreProvenancesTableOrderingComposer,
+          $$CharacterAbilityScoreProvenancesTableAnnotationComposer,
+          $$CharacterAbilityScoreProvenancesTableCreateCompanionBuilder,
+          $$CharacterAbilityScoreProvenancesTableUpdateCompanionBuilder,
+          (
+            CharacterAbilityScoreProvenance,
+            $$CharacterAbilityScoreProvenancesTableReferences,
+          ),
+          CharacterAbilityScoreProvenance,
+          PrefetchHooks Function({bool characterId})
+        > {
+  $$CharacterAbilityScoreProvenancesTableTableManager(
+    _$AppDatabase db,
+    $CharacterAbilityScoreProvenancesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CharacterAbilityScoreProvenancesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$CharacterAbilityScoreProvenancesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$CharacterAbilityScoreProvenancesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> characterId = const Value.absent(),
+                Value<String?> methodKey = const Value.absent(),
+                Value<int?> strengthAssignedScore = const Value.absent(),
+                Value<int?> dexterityAssignedScore = const Value.absent(),
+                Value<int?> constitutionAssignedScore = const Value.absent(),
+                Value<int?> intelligenceAssignedScore = const Value.absent(),
+                Value<int?> wisdomAssignedScore = const Value.absent(),
+                Value<int?> charismaAssignedScore = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterAbilityScoreProvenancesCompanion(
+                characterId: characterId,
+                methodKey: methodKey,
+                strengthAssignedScore: strengthAssignedScore,
+                dexterityAssignedScore: dexterityAssignedScore,
+                constitutionAssignedScore: constitutionAssignedScore,
+                intelligenceAssignedScore: intelligenceAssignedScore,
+                wisdomAssignedScore: wisdomAssignedScore,
+                charismaAssignedScore: charismaAssignedScore,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String characterId,
+                Value<String?> methodKey = const Value.absent(),
+                Value<int?> strengthAssignedScore = const Value.absent(),
+                Value<int?> dexterityAssignedScore = const Value.absent(),
+                Value<int?> constitutionAssignedScore = const Value.absent(),
+                Value<int?> intelligenceAssignedScore = const Value.absent(),
+                Value<int?> wisdomAssignedScore = const Value.absent(),
+                Value<int?> charismaAssignedScore = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterAbilityScoreProvenancesCompanion.insert(
+                characterId: characterId,
+                methodKey: methodKey,
+                strengthAssignedScore: strengthAssignedScore,
+                dexterityAssignedScore: dexterityAssignedScore,
+                constitutionAssignedScore: constitutionAssignedScore,
+                intelligenceAssignedScore: intelligenceAssignedScore,
+                wisdomAssignedScore: wisdomAssignedScore,
+                charismaAssignedScore: charismaAssignedScore,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CharacterAbilityScoreProvenancesTableReferences(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({characterId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (characterId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.characterId,
+                                referencedTable:
+                                    $$CharacterAbilityScoreProvenancesTableReferences
+                                        ._characterIdTable(db),
+                                referencedColumn:
+                                    $$CharacterAbilityScoreProvenancesTableReferences
+                                        ._characterIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CharacterAbilityScoreProvenancesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CharacterAbilityScoreProvenancesTable,
+      CharacterAbilityScoreProvenance,
+      $$CharacterAbilityScoreProvenancesTableFilterComposer,
+      $$CharacterAbilityScoreProvenancesTableOrderingComposer,
+      $$CharacterAbilityScoreProvenancesTableAnnotationComposer,
+      $$CharacterAbilityScoreProvenancesTableCreateCompanionBuilder,
+      $$CharacterAbilityScoreProvenancesTableUpdateCompanionBuilder,
+      (
+        CharacterAbilityScoreProvenance,
+        $$CharacterAbilityScoreProvenancesTableReferences,
+      ),
+      CharacterAbilityScoreProvenance,
       PrefetchHooks Function({bool characterId})
     >;
 typedef $$SkillDefinitionsTableCreateCompanionBuilder =
@@ -14360,6 +15358,12 @@ class $AppDatabaseManager {
       $$CharacterAbilityScoresTableTableManager(
         _db,
         _db.characterAbilityScores,
+      );
+  $$CharacterAbilityScoreProvenancesTableTableManager
+  get characterAbilityScoreProvenances =>
+      $$CharacterAbilityScoreProvenancesTableTableManager(
+        _db,
+        _db.characterAbilityScoreProvenances,
       );
   $$SkillDefinitionsTableTableManager get skillDefinitions =>
       $$SkillDefinitionsTableTableManager(_db, _db.skillDefinitions);

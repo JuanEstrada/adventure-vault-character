@@ -18,8 +18,8 @@ Implementation shell established
 ## Current Focus
 
 Stabilizing the normalized Drift model now that the `characters` row has been
-trimmed back in Drift `v5`, while keeping the guided draft, sheet flow, and
-edit/reopen path stable on top of normalized reads.
+trimmed back further in Drift `v6`, while keeping the guided draft, sheet
+flow, and edit/reopen path stable on top of normalized reads.
 
 ## Repository State
 
@@ -30,9 +30,9 @@ edit/reopen path stable on top of normalized reads.
   state.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- The Drift schema is now at `v5` and includes normalized character-side
-  tables for `ability scores`, `skills`, `saving throws`, `inventory`,
-  `proficiencies`, and `currency`.
+- The Drift schema is now at `v6` and includes normalized character-side
+  tables for `ability scores`, `ability score provenance`, `skills`,
+  `saving throws`, `inventory`, `proficiencies`, and `currency`.
 - The local database now also includes compendium definition tables for
   `skills`, `equipment`, `classes`, `backgrounds`, `spells`, and `trinkets`.
 - The create-character screen now uses a first guided draft covering
@@ -60,6 +60,10 @@ edit/reopen path stable on top of normalized reads.
   `proficiency bonus`, and equipment/currency snapshot columns from
   `characters`, with migration coverage preserving the normalized data path
   for existing characters.
+- Drift `v6` now also removes `ability_score_method` and
+  `ability_score_provenance` from `characters`, migrates the previous
+  semicolon provenance string into a dedicated normalized provenance table,
+  and uses that normalized record for sheet/edit ability method reads.
 - The characters feature now uses explicit application services for
   `create character` and `character sheet` loading, with shared summary
   mapping extracted from the repository implementation.
@@ -170,8 +174,8 @@ edit/reopen path stable on top of normalized reads.
 ## Work In Progress
 
 - Deciding which remaining edit-oriented metadata in `characters` should be
-  normalized next, starting with ability-score provenance if the current
-  string contract becomes limiting.
+  normalized next, now that ability-score provenance has been moved out of
+  the row.
 
 ## Pending Work
 
@@ -244,9 +248,9 @@ edit/reopen path stable on top of normalized reads.
 
 - Background bonuses and social perks still need deeper normalized
   representation if the app moves beyond the current MVP-compatible snapshots.
-- Ability score method state and assignment provenance still depend on the
-  current persisted string contract and still need a richer normalized shape
-  for longer-term editing safety.
+- Ability score provenance is now normalized, but the UI/application contract
+  still reconstructs the legacy string shape for compatibility and will need a
+  future typed contract when edit behavior expands.
 - Future sync and network features remain out of implementation scope.
 - Legal and content-boundary constraints for D&D-related material may still
   need refinement later.

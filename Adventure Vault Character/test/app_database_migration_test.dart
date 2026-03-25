@@ -7,7 +7,7 @@ import 'package:sqlite3/sqlite3.dart' as sqlite;
 
 void main() {
   group('AppDatabase migrations', () {
-    test('upgrades a v1 database to v5 and preserves character data', () async {
+    test('upgrades a v1 database to v6 and preserves character data', () async {
       final file = await _createTempDatabaseFile();
       addTearDown(() async {
         if (await file.exists()) {
@@ -48,6 +48,9 @@ void main() {
       final abilityScores = await (database.select(
         database.characterAbilityScores,
       )..where((table) => table.characterId.equals('char-1'))).getSingle();
+      final provenance = await (database.select(
+        database.characterAbilityScoreProvenances,
+      )..where((table) => table.characterId.equals('char-1'))).getSingle();
       final currency = await (database.select(
         database.characterCurrency,
       )..where((table) => table.characterId.equals('char-1'))).getSingle();
@@ -58,6 +61,7 @@ void main() {
       expect(character.equipmentLoadoutId, isNull);
       expect(abilityScores.strengthScore, 0);
       expect(abilityScores.charismaModifier, -5);
+      expect(provenance.methodKey, isNull);
       expect(currency.summarySnapshot, isNull);
       expect(savingThrows, hasLength(6));
       expect(
@@ -67,7 +71,7 @@ void main() {
     });
 
     test(
-      'upgrades a v4 database to v5, preserves normalized data, and drops redundant snapshot columns',
+      'upgrades a v4 database to v6, preserves normalized data, migrates provenance, and drops redundant snapshot columns',
       () async {
         final file = await _createTempDatabaseFile();
         addTearDown(() async {
@@ -225,7 +229,8 @@ void main() {
         ) VALUES (
           'char-2', 'Meris', 'Elf', 'class-wizard', NULL,
           'acolyte', 'Acolyte', 'Temple acolyte',
-          'generatedSetAssignment', 'method=generatedSetAssignment', 8, 12,
+          'generatedSetAssignment',
+          'method=generatedSetAssignment;Strength=8;Dexterity=12;Constitution=13;Intelligence=15;Wisdom=14;Charisma=10', 8, 12,
           13, 15, 14, 10, 'Wizard', 5, 6500,
           3, 'wizard-focus', 'Arcane focus kit', '15 gp, 4 sp',
           '["Quarterstaff","Component pouch","Scholar pack"]', 28, 28, 0,
@@ -283,6 +288,9 @@ void main() {
         final abilityScores = await (database.select(
           database.characterAbilityScores,
         )..where((table) => table.characterId.equals('char-2'))).getSingle();
+        final provenance = await (database.select(
+          database.characterAbilityScoreProvenances,
+        )..where((table) => table.characterId.equals('char-2'))).getSingle();
         final currency = await (database.select(
           database.characterCurrency,
         )..where((table) => table.characterId.equals('char-2'))).getSingle();
@@ -300,6 +308,8 @@ void main() {
         expect(character.backgroundDefinitionRefId, 'acolyte');
         expect(abilityScores.intelligenceScore, 15);
         expect(abilityScores.intelligenceModifier, 2);
+        expect(provenance.methodKey, 'generatedSetAssignment');
+        expect(provenance.intelligenceAssignedScore, 15);
         expect(currency.summarySnapshot, '15 gp, 4 sp');
         expect(inventory.single.displayNameSnapshot, 'Quarterstaff');
         expect(columnNames, isNot(contains('background_id')));
@@ -307,6 +317,8 @@ void main() {
         expect(columnNames, isNot(contains('background_summary')));
         expect(columnNames, isNot(contains('strength')));
         expect(columnNames, isNot(contains('proficiency_bonus')));
+        expect(columnNames, isNot(contains('ability_score_method')));
+        expect(columnNames, isNot(contains('ability_score_provenance')));
         expect(columnNames, isNot(contains('starting_money_summary')));
         expect(columnNames, isNot(contains('selected_equipment_items')));
       },

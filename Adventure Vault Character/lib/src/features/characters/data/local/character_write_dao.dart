@@ -28,6 +28,22 @@ class CharacterWriteDao {
         .insertOnConflictUpdate(companion);
   }
 
+  Future<void> insertAbilityScoreProvenance(
+    CharacterAbilityScoreProvenancesCompanion companion,
+  ) {
+    return _database
+        .into(_database.characterAbilityScoreProvenances)
+        .insert(companion);
+  }
+
+  Future<void> replaceAbilityScoreProvenance(
+    CharacterAbilityScoreProvenancesCompanion companion,
+  ) async {
+    await _database
+        .into(_database.characterAbilityScoreProvenances)
+        .insertOnConflictUpdate(companion);
+  }
+
   Future<void> insertSkills(List<CharacterSkillsCompanion> companions) async {
     if (companions.isEmpty) {
       return;

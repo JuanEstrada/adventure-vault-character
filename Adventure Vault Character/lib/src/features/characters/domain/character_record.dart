@@ -9,6 +9,7 @@ class CharacterRecord {
     required this.catalog,
     required this.backgroundDefinition,
     required this.abilityScores,
+    required this.abilityScoreProvenance,
     required this.currency,
     required this.inventory,
     required this.savingThrows,
@@ -21,6 +22,7 @@ class CharacterRecord {
   final CompendiumCatalog catalog;
   final BackgroundDefinition? backgroundDefinition;
   final CharacterAbilityScore? abilityScores;
+  final CharacterAbilityScoreProvenance? abilityScoreProvenance;
   final CharacterCurrencyData? currency;
   final List<CharacterInventoryData> inventory;
   final List<CharacterSavingThrow> savingThrows;

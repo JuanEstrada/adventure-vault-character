@@ -40,6 +40,13 @@ class CharacterReadDao {
     )..where((table) => table.characterId.equals(id))).getSingleOrNull();
   }
 
+  Future<CharacterAbilityScoreProvenance?>
+  getAbilityScoreProvenanceByCharacterId(String id) {
+    return (_database.select(
+      _database.characterAbilityScoreProvenances,
+    )..where((table) => table.characterId.equals(id))).getSingleOrNull();
+  }
+
   Future<CharacterCurrencyData?> getCurrencyByCharacterId(String id) {
     return (_database.select(
       _database.characterCurrency,

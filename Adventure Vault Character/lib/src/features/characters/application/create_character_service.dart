@@ -108,8 +108,6 @@ class CreateCharacterService {
         raceName: Value(input.raceName),
         classDefinitionId: Value(classSeed.id),
         backgroundDefinitionRefId: Value(input.backgroundId),
-        abilityScoreMethod: Value(input.abilityScoreMethod),
-        abilityScoreProvenance: Value(input.abilityScoreProvenance),
         className: Value(input.className),
         level: Value(input.level),
         experience: Value(input.experience),
@@ -133,6 +131,11 @@ class CreateCharacterService {
       }
 
       await _writeAbilityScores(
+        id,
+        input,
+        replaceExisting: existingRow != null,
+      );
+      await _writeAbilityScoreProvenance(
         id,
         input,
         replaceExisting: existingRow != null,
@@ -257,6 +260,43 @@ class CreateCharacterService {
         charismaModifier: Value(CharacterRules.abilityModifier(input.charisma)),
       ),
     );
+  }
+
+  Future<void> _writeAbilityScoreProvenance(
+    String id,
+    CreateCharacterInput input, {
+    required bool replaceExisting,
+  }) async {
+    final provenance = _parseAbilityScoreProvenance(
+      input.abilityScoreProvenance,
+      fallbackMethodKey: input.abilityScoreMethod,
+    );
+    final companion = CharacterAbilityScoreProvenancesCompanion(
+      characterId: Value(id),
+      methodKey: Value(provenance.methodKey),
+      strengthAssignedScore: Value(
+        provenance.assignedScoresByAbility['Strength'],
+      ),
+      dexterityAssignedScore: Value(
+        provenance.assignedScoresByAbility['Dexterity'],
+      ),
+      constitutionAssignedScore: Value(
+        provenance.assignedScoresByAbility['Constitution'],
+      ),
+      intelligenceAssignedScore: Value(
+        provenance.assignedScoresByAbility['Intelligence'],
+      ),
+      wisdomAssignedScore: Value(provenance.assignedScoresByAbility['Wisdom']),
+      charismaAssignedScore: Value(
+        provenance.assignedScoresByAbility['Charisma'],
+      ),
+    );
+    if (replaceExisting) {
+      await _writeDao.replaceAbilityScoreProvenance(companion);
+      return;
+    }
+
+    await _writeDao.insertAbilityScoreProvenance(companion);
   }
 
   Future<CompendiumCatalog> _loadCatalog() {
@@ -691,6 +731,38 @@ class CreateCharacterService {
           toolProficiencies: const <String>[],
         );
   }
+
+  _ParsedAbilityScoreProvenance _parseAbilityScoreProvenance(
+    String rawValue, {
+    required String fallbackMethodKey,
+  }) {
+    var methodKey = fallbackMethodKey.trim().isEmpty ? null : fallbackMethodKey;
+    final assignedScoresByAbility = <String, int>{};
+
+    for (final token in rawValue.split(';')) {
+      final separatorIndex = token.indexOf('=');
+      if (separatorIndex <= 0 || separatorIndex >= token.length - 1) {
+        continue;
+      }
+
+      final key = token.substring(0, separatorIndex).trim();
+      final value = token.substring(separatorIndex + 1).trim();
+      if (key == 'method') {
+        methodKey = value;
+        continue;
+      }
+
+      final parsedScore = int.tryParse(value);
+      if (parsedScore != null) {
+        assignedScoresByAbility[key] = parsedScore;
+      }
+    }
+
+    return _ParsedAbilityScoreProvenance(
+      methodKey: methodKey,
+      assignedScoresByAbility: assignedScoresByAbility,
+    );
+  }
 }
 
 class _AbilityScores {
@@ -756,6 +828,16 @@ class _InventoryItemSpec {
 
   final String name;
   final int quantity;
+}
+
+class _ParsedAbilityScoreProvenance {
+  const _ParsedAbilityScoreProvenance({
+    required this.methodKey,
+    required this.assignedScoresByAbility,
+  });
+
+  final String? methodKey;
+  final Map<String, int> assignedScoresByAbility;
 }
 
 class _SkillDefinitionSeed {

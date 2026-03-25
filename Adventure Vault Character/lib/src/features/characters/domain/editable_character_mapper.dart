@@ -13,7 +13,7 @@ class EditableCharacterMapper {
   EditableCharacter map(CharacterRecord record) {
     final character = _characterDomainMapper.map(record);
     final row = record.row;
-    final provenance = _parseAbilityScoreProvenance(row.abilityScoreProvenance);
+    final provenance = _mapAbilityScoreProvenance(record);
 
     return EditableCharacter(
       id: row.id,
@@ -106,10 +106,11 @@ class EditableCharacterMapper {
     );
   }
 
-  EditableAbilityScoreProvenance _parseAbilityScoreProvenance(
-    String? rawValue,
+  EditableAbilityScoreProvenance _mapAbilityScoreProvenance(
+    CharacterRecord record,
   ) {
-    if (rawValue == null || rawValue.isEmpty) {
+    final persisted = record.abilityScoreProvenance;
+    if (persisted == null) {
       return const EditableAbilityScoreProvenance(
         rawValue: null,
         methodKey: null,
@@ -117,30 +118,27 @@ class EditableCharacterMapper {
       );
     }
 
-    String? methodKey;
-    final assignedScoresByAbility = <String, int>{};
-    for (final token in rawValue.split(';')) {
-      final separatorIndex = token.indexOf('=');
-      if (separatorIndex <= 0 || separatorIndex >= token.length - 1) {
-        continue;
-      }
+    final assignedScoresByAbility = <String, int>{
+      if (persisted.strengthAssignedScore case final value?) 'Strength': value,
+      if (persisted.dexterityAssignedScore case final value?)
+        'Dexterity': value,
+      if (persisted.constitutionAssignedScore case final value?)
+        'Constitution': value,
+      if (persisted.intelligenceAssignedScore case final value?)
+        'Intelligence': value,
+      if (persisted.wisdomAssignedScore case final value?) 'Wisdom': value,
+      if (persisted.charismaAssignedScore case final value?) 'Charisma': value,
+    };
 
-      final key = token.substring(0, separatorIndex).trim();
-      final value = token.substring(separatorIndex + 1).trim();
-      if (key == 'method') {
-        methodKey = value;
-        continue;
-      }
-
-      final parsedScore = int.tryParse(value);
-      if (parsedScore != null) {
-        assignedScoresByAbility[key] = parsedScore;
-      }
-    }
+    final rawParts = <String>[
+      if (persisted.methodKey case final method?) 'method=$method',
+      for (final entry in assignedScoresByAbility.entries)
+        '${entry.key}=${entry.value}',
+    ];
 
     return EditableAbilityScoreProvenance(
-      rawValue: rawValue,
-      methodKey: methodKey,
+      rawValue: rawParts.isEmpty ? null : rawParts.join(';'),
+      methodKey: persisted.methodKey,
       assignedScoresByAbility: assignedScoresByAbility,
     );
   }
