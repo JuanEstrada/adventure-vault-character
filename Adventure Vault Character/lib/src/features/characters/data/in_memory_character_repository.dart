@@ -6,6 +6,7 @@ import 'package:adventure_vault_character/src/features/characters/domain/create_
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary_mapper.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
+import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 
 class InMemoryCharacterRepository implements CharacterRepository {
   InMemoryCharacterRepository.empty({
@@ -41,6 +42,11 @@ class InMemoryCharacterRepository implements CharacterRepository {
 
   @override
   Future<CharacterSummary> createCharacter(CreateCharacterInput input) async {
+    if (input.equipmentLoadoutId == 'fallback-loadout' ||
+        input.selectedEquipmentItems.any(_isPlaceholderEquipmentItem)) {
+      throw StateError('Unsupported equipment loadout selected.');
+    }
+
     final id = DateTime.now().microsecondsSinceEpoch.toString();
     final summary = _characterSummaryMapper.fromCreateInput(
       id: id,
@@ -74,9 +80,22 @@ class InMemoryCharacterRepository implements CharacterRepository {
     final background =
         catalog.backgroundById(createdInput?.backgroundId) ??
         catalog.backgrounds.first;
+    final className = createdInput?.className ?? summary.className;
     final equipmentLoadout = catalog
-        .equipmentLoadoutsForClass(summary.className)
+        .equipmentLoadoutsForClass(className)
         .first;
+    final constitutionScore = createdInput?.constitution ?? 13;
+    final level = createdInput?.level ?? summary.level;
+    final hitPoints = _startingHitPointsFor(
+      className: className,
+      constitutionScore: constitutionScore,
+      level: level,
+    );
+    final selectedItems =
+        createdInput?.selectedEquipmentItems ?? equipmentLoadout.selectedItems;
+    final inventoryItems = selectedItems
+        .map(_parseInventoryItemSpec)
+        .toList(growable: false);
 
     return CharacterDomainModel(
       id: summary.id,
@@ -91,9 +110,9 @@ class InMemoryCharacterRepository implements CharacterRepository {
       ),
       combat: CharacterCombatDomainModel(
         hitPoints: CharacterHitPointsDomainModel(
-          current: createdInput?.currentHitPoints ?? 10,
-          maximum: createdInput?.maximumHitPoints ?? 10,
-          temporary: createdInput?.temporaryHitPoints ?? 0,
+          current: hitPoints,
+          maximum: hitPoints,
+          temporary: 0,
         ),
         savingThrows: const <CharacterSavingThrowDomainModel>[],
       ),
@@ -119,14 +138,35 @@ class InMemoryCharacterRepository implements CharacterRepository {
               .map(_mapBackgroundEntry)
               .toList(growable: false),
         ),
-        proficientSkills: const <CharacterSkillDomainModel>[],
-        otherProficiencies: const <CharacterProficiencyDomainModel>[],
+        proficientSkills: _extractBackgroundSkillLabels(background)
+            .map(
+              (item) => CharacterSkillDomainModel(
+                name: item,
+                isProficient: true,
+                hasExpertise: false,
+              ),
+            )
+            .toList(growable: false),
+        otherProficiencies: <CharacterProficiencyDomainModel>[
+          ..._extractBackgroundLanguageKeys(background).map(
+            (item) => CharacterProficiencyDomainModel(
+              proficiencyType: 'language',
+              referenceKey: item,
+            ),
+          ),
+          ..._extractBackgroundNarrativeBonuses(background).map(
+            (item) => CharacterProficiencyDomainModel(
+              proficiencyType: 'background',
+              referenceKey: item,
+            ),
+          ),
+        ],
         alignment: createdInput?.alignment ?? 'Neutral',
         appearanceDetails: createdInput?.appearanceDetails ?? '',
         narrativeDetails: createdInput?.narrativeDetails ?? '',
       ),
       equipment: CharacterEquipmentDomainModel(
-        equipmentSummary: catalog.equipmentSummaryForClass(summary.className),
+        equipmentSummary: catalog.equipmentSummaryForClass(className),
         selectedEquipmentLabel:
             createdInput?.equipmentLoadoutLabel ?? equipmentLoadout.label,
         money: CharacterMoneySummaryDomainModel(
@@ -137,17 +177,15 @@ class InMemoryCharacterRepository implements CharacterRepository {
               createdInput?.startingMoneySummary ??
               equipmentLoadout.startingMoneySummary,
         ),
-        items:
-            (createdInput?.selectedEquipmentItems ??
-                    equipmentLoadout.selectedItems)
-                .map(
-                  (item) => CharacterEquipmentItemDomainModel(
-                    name: item,
-                    quantity: 1,
-                    isEquipped: false,
-                  ),
-                )
-                .toList(growable: false),
+        items: inventoryItems
+            .map(
+              (item) => CharacterEquipmentItemDomainModel(
+                name: item.name,
+                quantity: item.quantity,
+                isEquipped: _looksEquipped(item.name),
+              ),
+            )
+            .toList(growable: false),
       ),
     );
   }
@@ -176,4 +214,128 @@ class InMemoryCharacterRepository implements CharacterRepository {
       description: raw.substring(separatorIndex + 1).trim(),
     );
   }
+
+  int _startingHitPointsFor({
+    required String className,
+    required int constitutionScore,
+    required int level,
+  }) {
+    const hitDieByClass = <String, int>{
+      'barbarian': 12,
+      'bard': 8,
+      'cleric': 8,
+      'druid': 8,
+      'fighter': 10,
+      'monk': 8,
+      'paladin': 10,
+      'ranger': 10,
+      'rogue': 8,
+      'sorcerer': 6,
+      'warlock': 8,
+      'wizard': 6,
+    };
+    final key = _slugify(className);
+    final hitDie = hitDieByClass[key] ?? 10;
+    final constitutionModifier = _abilityModifier(constitutionScore);
+    final firstLevelHitPoints = hitDie + constitutionModifier;
+    if (level <= 1) {
+      return firstLevelHitPoints.clamp(1, 999);
+    }
+
+    final averagePerLevel = ((hitDie / 2).floor() + 1) + constitutionModifier;
+    return (firstLevelHitPoints +
+            ((level - 1) * averagePerLevel.clamp(1, 999)))
+        .clamp(1, 999);
+  }
+
+  int _abilityModifier(int score) => ((score - 10) / 2).floor();
+
+  _InventoryItemSpec _parseInventoryItemSpec(String raw) {
+    final trimmed = raw.trim();
+    final match = RegExp(r'^(\d+)\s+(.+)$').firstMatch(trimmed);
+    if (match == null) {
+      return _InventoryItemSpec(name: trimmed, quantity: 1);
+    }
+
+    final quantity = int.tryParse(match.group(1) ?? '') ?? 1;
+    final name = (match.group(2) ?? trimmed).trim();
+    return _InventoryItemSpec(name: name, quantity: quantity);
+  }
+
+  bool _looksEquipped(String itemName) {
+    final lower = itemName.toLowerCase();
+    return lower.contains('mail') ||
+        lower.contains('armor') ||
+        lower.contains('shield') ||
+        lower.contains('sword') ||
+        lower.contains('dagger') ||
+        lower.contains('staff') ||
+        lower.contains('bow');
+  }
+
+  bool _isPlaceholderEquipmentItem(String itemName) {
+    return itemName.trim().toLowerCase().contains('pending');
+  }
+
+  List<String> _extractBackgroundSkillLabels(CompendiumBackground background) {
+    final skillBonus = background.bonuses.firstWhere(
+      (bonus) => bonus.toLowerCase().startsWith('skills:'),
+      orElse: () => '',
+    );
+    if (skillBonus.isEmpty) {
+      return const <String>[];
+    }
+
+    return skillBonus
+        .replaceFirst(RegExp(r'^skills:\s*', caseSensitive: false), '')
+        .split(',')
+        .map((item) => item.trim())
+        .where((item) => item.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  List<String> _extractBackgroundLanguageKeys(CompendiumBackground background) {
+    final languageBonus = background.bonuses.firstWhere(
+      (bonus) => bonus.toLowerCase().startsWith('languages:'),
+      orElse: () => '',
+    );
+    if (languageBonus.isEmpty) {
+      return const <String>[];
+    }
+
+    return languageBonus
+        .replaceFirst(RegExp(r'^languages:\s*', caseSensitive: false), '')
+        .split(',')
+        .map((item) => _slugify(item))
+        .where((item) => item.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  List<String> _extractBackgroundNarrativeBonuses(
+    CompendiumBackground background,
+  ) {
+    return background.bonuses.where((bonus) {
+      final normalized = bonus.toLowerCase();
+      return !normalized.startsWith('skills:') &&
+          !normalized.startsWith('languages:') &&
+          bonus.trim().isNotEmpty;
+    }).toList(growable: false);
+  }
+
+  String _slugify(String raw) {
+    return raw
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+        .replaceAll(RegExp(r'^-|-$'), '');
+  }
+}
+
+class _InventoryItemSpec {
+  const _InventoryItemSpec({
+    required this.name,
+    required this.quantity,
+  });
+
+  final String name;
+  final int quantity;
 }

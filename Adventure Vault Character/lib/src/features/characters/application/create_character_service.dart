@@ -39,12 +39,25 @@ class CreateCharacterService {
     final classSeed = _classSeedFor(input.className);
     final proficiencyBonus = _calculateProficiencyBonus(input.level);
     final currency = _parseCurrencySummary(input.startingMoneySummary);
+    final hitPoints = _startingHitPointsFor(
+      classSeed: classSeed,
+      constitutionScore: input.constitution,
+      level: input.level,
+    );
+    final inventoryItems = input.selectedEquipmentItems
+        .map(_parseInventoryItemSpec)
+        .toList(growable: false);
+
+    if (input.equipmentLoadoutId == 'fallback-loadout' ||
+        inventoryItems.any((item) => _isPlaceholderEquipmentItem(item.name))) {
+      throw StateError('Unsupported equipment loadout selected.');
+    }
 
     await _database.transaction(() async {
       await _ensureCoreSkillDefinitions();
       await _ensureClassDefinition(classSeed);
       await _ensureBackgroundDefinition(catalog, input, input.backgroundId);
-      await _ensureEquipmentDefinitions(input.selectedEquipmentItems);
+      await _ensureEquipmentDefinitions(inventoryItems);
 
       await _writeDao.insertCharacter(
         CharactersCompanion.insert(
@@ -62,9 +75,9 @@ class CreateCharacterService {
           proficiencyBonus: Value(proficiencyBonus),
           equipmentLoadoutId: Value(input.equipmentLoadoutId),
           equipmentLoadoutLabel: Value(input.equipmentLoadoutLabel),
-          currentHitPoints: Value(input.currentHitPoints),
-          maximumHitPoints: Value(input.maximumHitPoints),
-          temporaryHitPoints: Value(input.temporaryHitPoints),
+          currentHitPoints: Value(hitPoints),
+          maximumHitPoints: Value(hitPoints),
+          temporaryHitPoints: const Value(0),
           portraitAssetPath: Value(input.portraitAssetPath),
           alignment: Value(input.alignment),
           appearanceDetails: Value(input.appearanceDetails),
@@ -114,7 +127,7 @@ class CreateCharacterService {
       await _writeDao.insertInventory(
         _buildInventoryRows(
           characterId: id,
-          items: input.selectedEquipmentItems,
+          items: inventoryItems,
         ),
       );
     });
@@ -211,20 +224,20 @@ class CreateCharacterService {
     );
   }
 
-  Future<void> _ensureEquipmentDefinitions(List<String> items) async {
+  Future<void> _ensureEquipmentDefinitions(List<_InventoryItemSpec> items) async {
     await _referenceDao.upsertEquipmentDefinitions(
       items
           .map(
             (item) => EquipmentDefinitionsCompanion.insert(
-              id: _equipmentDefinitionId(item),
-              key: _slugify(item),
-              name: item,
-              category: _inferEquipmentCategory(item),
+              id: _equipmentDefinitionId(item.name),
+              key: _slugify(item.name),
+              name: item.name,
+              category: _inferEquipmentCategory(item.name),
               subcategory: const Value(null),
               weight: const Value(null),
               costValue: const Value(null),
               costUnit: const Value(null),
-              isContainer: Value(_looksLikeContainer(item)),
+              isContainer: Value(_looksLikeContainer(item.name)),
               isStackable: const Value(true),
               description: const Value(null),
               weaponPropertiesJson: const Value(null),
@@ -327,6 +340,15 @@ class CreateCharacterService {
           sourceId: background?.id,
         ),
       ),
+      ..._extractBackgroundNarrativeBonuses(background).map(
+        (item) => _buildProficiencyRow(
+          characterId: characterId,
+          proficiencyType: 'background',
+          referenceKey: item,
+          sourceType: 'background',
+          sourceId: background?.id,
+        ),
+      ),
     ];
   }
 
@@ -352,7 +374,7 @@ class CreateCharacterService {
 
   List<CharacterInventoryCompanion> _buildInventoryRows({
     required String characterId,
-    required List<String> items,
+    required List<_InventoryItemSpec> items,
   }) {
     return items
         .asMap()
@@ -361,11 +383,13 @@ class CreateCharacterService {
           (entry) => CharacterInventoryCompanion.insert(
             id: '$characterId-inventory-${entry.key + 1}',
             characterId: characterId,
-            equipmentDefinitionId: Value(_equipmentDefinitionId(entry.value)),
+            equipmentDefinitionId: Value(
+              _equipmentDefinitionId(entry.value.name),
+            ),
             trinketDefinitionId: const Value(null),
-            displayNameSnapshot: Value(entry.value),
-            quantity: const Value(1),
-            isEquipped: Value(_looksEquipped(entry.value)),
+            displayNameSnapshot: Value(entry.value.name),
+            quantity: Value(entry.value.quantity),
+            isEquipped: Value(_looksEquipped(entry.value.name)),
             isCarried: const Value(true),
             isFavorite: const Value(false),
             chargesCurrent: const Value(null),
@@ -380,6 +404,24 @@ class CreateCharacterService {
   int _abilityModifier(int score) => ((score - 10) / 2).floor();
 
   int _calculateProficiencyBonus(int level) => 2 + ((level - 1) ~/ 4);
+
+  int _startingHitPointsFor({
+    required _ClassSeed classSeed,
+    required int constitutionScore,
+    required int level,
+  }) {
+    final hitDie = classSeed.hitDie ?? 10;
+    final constitutionModifier = _abilityModifier(constitutionScore);
+    final firstLevelHitPoints = hitDie + constitutionModifier;
+    if (level <= 1) {
+      return firstLevelHitPoints.clamp(1, 999);
+    }
+
+    final averagePerLevel = ((hitDie / 2).floor() + 1) + constitutionModifier;
+    final total =
+        firstLevelHitPoints + ((level - 1) * averagePerLevel.clamp(1, 999));
+    return total.clamp(1, 999);
+  }
 
   String _equipmentDefinitionId(String name) => 'equipment-${_slugify(name)}';
 
@@ -430,6 +472,22 @@ class CreateCharacterService {
         lower.contains('bow');
   }
 
+  _InventoryItemSpec _parseInventoryItemSpec(String raw) {
+    final trimmed = raw.trim();
+    final match = RegExp(r'^(\d+)\s+(.+)$').firstMatch(trimmed);
+    if (match == null) {
+      return _InventoryItemSpec(name: trimmed, quantity: 1);
+    }
+
+    final quantity = int.tryParse(match.group(1) ?? '') ?? 1;
+    final name = (match.group(2) ?? trimmed).trim();
+    return _InventoryItemSpec(name: name, quantity: quantity);
+  }
+
+  bool _isPlaceholderEquipmentItem(String itemName) {
+    return itemName.trim().toLowerCase().contains('pending');
+  }
+
   List<String> _extractBackgroundSkillKeys(CompendiumBackground? background) {
     if (background == null) {
       return const <String>[];
@@ -472,6 +530,21 @@ class CreateCharacterService {
         .map((item) => _slugify(item))
         .where((item) => item.isNotEmpty)
         .toList(growable: false);
+  }
+
+  List<String> _extractBackgroundNarrativeBonuses(
+    CompendiumBackground? background,
+  ) {
+    if (background == null) {
+      return const <String>[];
+    }
+
+    return background.bonuses.where((bonus) {
+      final normalized = bonus.toLowerCase();
+      return !normalized.startsWith('skills:') &&
+          !normalized.startsWith('languages:') &&
+          bonus.trim().isNotEmpty;
+    }).toList(growable: false);
   }
 
   _CurrencyBreakdown _parseCurrencySummary(String raw) {
@@ -553,6 +626,16 @@ class _CurrencyBreakdown {
   final int electrum;
   final int gold;
   final int platinum;
+}
+
+class _InventoryItemSpec {
+  const _InventoryItemSpec({
+    required this.name,
+    required this.quantity,
+  });
+
+  final String name;
+  final int quantity;
 }
 
 class _SkillDefinitionSeed {

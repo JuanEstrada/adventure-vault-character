@@ -46,6 +46,10 @@ class CharacterDraftValidator {
       missingSections.add('Class / level / experience');
     }
 
+    if (!_isEquipmentSectionValid(input)) {
+      missingSections.add('Equipment');
+    }
+
     return missingSections.isEmpty
         ? const CharacterDraftValidationResult.valid()
         : CharacterDraftValidationResult.invalid(
@@ -96,5 +100,22 @@ class CharacterDraftValidator {
     }
 
     return true;
+  }
+
+  bool _isEquipmentSectionValid(CreateCharacterInput input) {
+    if (input.equipmentLoadoutId.trim().isEmpty ||
+        input.equipmentLoadoutLabel.trim().isEmpty ||
+        input.selectedEquipmentItems.isEmpty) {
+      return false;
+    }
+
+    if (input.equipmentLoadoutId == 'fallback-loadout') {
+      return false;
+    }
+
+    return input.selectedEquipmentItems.every((item) {
+      final normalized = item.trim().toLowerCase();
+      return normalized.isNotEmpty && !normalized.contains('pending');
+    });
   }
 }

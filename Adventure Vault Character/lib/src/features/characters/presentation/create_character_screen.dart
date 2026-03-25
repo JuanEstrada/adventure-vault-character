@@ -75,6 +75,12 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
 
   bool get _hasRequiredCatalogData => _missingCatalogSections.isEmpty;
 
+  bool get _hasSupportedEquipmentSelection =>
+      _selectedEquipmentLoadout.id != 'fallback-loadout' &&
+      _selectedEquipmentLoadout.selectedItems.every(
+        (item) => !_isPlaceholderEquipmentItem(item),
+      );
+
   List<String> get _missingCatalogSections {
     final missing = <String>[];
     if (widget.catalog.races.isEmpty) {
@@ -521,6 +527,16 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                               ),
                             ),
                           ),
+                          if (!_hasSupportedEquipmentSelection) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              'Esta clase todavia no tiene un loadout de equipo persistible. Selecciona una clase con equipo real.',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.error,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -595,7 +611,10 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                       runSpacing: 12,
                       children: [
                         FilledButton(
-                          onPressed: widget.isSaving ? null : _submit,
+                          onPressed:
+                              widget.isSaving || !_hasSupportedEquipmentSelection
+                              ? null
+                              : _submit,
                           child: Text(
                             widget.isSaving ? 'Guardando...' : 'Guardar draft',
                           ),
@@ -673,6 +692,9 @@ class _AbilityGrid extends StatelessWidget {
             (ability) => SizedBox(
               width: 190,
               child: DropdownButtonFormField<int>(
+                key: ValueKey<String>(
+                  '$ability-${values[ability]}-${options.join(",")}',
+                ),
                 initialValue: values[ability],
                 decoration: InputDecoration(
                   labelText: ability,
@@ -698,4 +720,9 @@ class _AbilityGrid extends StatelessWidget {
           .toList(growable: false),
     );
   }
+}
+
+bool _isPlaceholderEquipmentItem(String item) {
+  final normalized = item.trim().toLowerCase();
+  return normalized.contains('pending');
 }

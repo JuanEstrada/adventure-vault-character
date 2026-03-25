@@ -351,7 +351,7 @@ class _FeaturesNotesPanel extends StatelessWidget {
               const SizedBox(height: 12),
               Text('Other proficiencies', style: theme.textTheme.titleMedium),
               const SizedBox(height: 8),
-              ...character.featuresNotes.otherProficiencies.map(
+              ...character.featuresNotes.otherProficiencyLabels.map(
                 (item) => Text('• $item'),
               ),
             ],
