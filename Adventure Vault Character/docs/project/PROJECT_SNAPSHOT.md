@@ -195,6 +195,14 @@ sheet flow stable.
   processed through the `Compendium Import System`, not as ad hoc direct app
   data.
 
+## Newly Confirmed Future Direction
+
+- A future `Compendio` management screen should include a content selector for
+  installed compendium packs.
+- The bundled base compendium should remain always active.
+- Future imported compendium packs should be manageable as optional active /
+  inactive content sources instead of being treated as implicitly enabled.
+
 ## Next Recommended Steps
 
 1. Build the next editing-oriented character domain on top of the current

@@ -158,6 +158,9 @@ Goal: allow controlled ingestion of external content into the local app model.
 ### Screens and Flows
 
 - Import entry screen
+- Compendium screen with content selector
+- Installed compendium-pack list
+- Active/inactive pack state management
 - File selection or import source flow
 - Validation progress screen
 - Import result summary
@@ -166,6 +169,9 @@ Goal: allow controlled ingestion of external content into the local app model.
 ### Expected Outcomes
 
 - Import workflows are explicit and auditable.
+- The active compendium can be reviewed and managed explicitly by the player.
+- The bundled base compendium remains active while future imported packs can
+  be enabled or disabled through a content selector.
 - XML or structured content errors are visible and actionable.
 - Imported content fits the offline-first local model cleanly.
 

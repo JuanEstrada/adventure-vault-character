@@ -148,6 +148,9 @@ Verified on 2026-03-25:
 - Project terminology now treats the imported rules dataset as the
   `Compendio`, and the XML ingestion subsystem as the
   `Compendium Import System`.
+- Future compendium management should include a content selector so the player
+  can review installed compendium packs and control which optional packs are
+  active while the bundled base compendium remains always enabled.
 - `test/widget_test.dart` covers the offline path into the main menu.
 - `flutter test` passed after the schema and repository changes.
 
@@ -276,6 +279,9 @@ Resolved MVP decision:
 - Future uploaded XML files that add or modify classes, races, spells,
   equipment, and similar rules content are considered `compendium packs` and
   belong to the `Compendium Import System`.
+- A future `Compendio` screen should expose a content selector for installed
+  compendium packs, with the bundled base compendium fixed as active and
+  imported packs treated as optional content sources.
 - The first character sheet contents and the first domain-model proposal are
   documented in `docs/specs/first-character-sheet-contents.md` and
   `docs/specs/initial-character-domain-model.md`.

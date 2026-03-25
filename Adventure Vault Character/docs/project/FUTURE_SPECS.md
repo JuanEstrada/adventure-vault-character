@@ -66,3 +66,35 @@ possible without requiring cloud sync.
   source-of-truth rule.
 - A later iteration should define backup format, encryption needs, versioning,
   partial restore behavior, and validation rules.
+
+## FS-003: Compendium Content Selector
+
+### Summary
+
+Add a future compendium-management screen that lets the player review bundled
+and imported compendium packs and control which optional packs are active.
+
+### Goal
+
+Make the active rules/content set explicit once the app supports a bundled
+base compendium plus future imported XML compendium packs.
+
+### Expected Behavior
+
+- The player can open a `Compendio` management screen from the app.
+- The screen shows the bundled base compendium and any imported compendium
+  packs.
+- The bundled base compendium remains always active.
+- Optional imported packs can be enabled or disabled from the selector.
+- The app warns the player before disabling a pack that may affect existing
+  characters or creation options.
+- The create-character flow and other compendium-backed screens read from the
+  currently active compendium set.
+
+### Notes
+
+- This should be treated as a future content-management feature, not MVP.
+- The feature depends on the `Compendium Import System` and on support for
+  multiple compendium packs in local persistence.
+- A later iteration should define precedence rules, conflict handling,
+  compatibility warnings, and pack metadata shown in the UI.
