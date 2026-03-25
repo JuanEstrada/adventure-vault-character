@@ -7,6 +7,7 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/editable_character.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
+import 'package:adventure_vault_character/src/features/characters/presentation/character_editor_controller.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:flutter/foundation.dart';
@@ -21,6 +22,7 @@ class AppState {
     required this.compendiumCatalog,
     required this.selectedCharacterSheet,
     required this.selectedEditableCharacter,
+    required this.characterEditorController,
     this.errorMessage,
   });
 
@@ -32,6 +34,7 @@ class AppState {
       compendiumCatalog = null,
       selectedCharacterSheet = null,
       selectedEditableCharacter = null,
+      characterEditorController = null,
       errorMessage = null;
 
   final AppScreen screen;
@@ -41,6 +44,7 @@ class AppState {
   final CompendiumCatalog? compendiumCatalog;
   final CharacterDomainModel? selectedCharacterSheet;
   final EditableCharacter? selectedEditableCharacter;
+  final CharacterEditorController? characterEditorController;
   final String? errorMessage;
 
   AppState copyWith({
@@ -51,9 +55,11 @@ class AppState {
     CompendiumCatalog? compendiumCatalog,
     CharacterDomainModel? selectedCharacterSheet,
     EditableCharacter? selectedEditableCharacter,
+    CharacterEditorController? characterEditorController,
     String? errorMessage,
     bool clearSelectedCharacter = false,
     bool clearSelectedEditableCharacter = false,
+    bool clearCharacterEditorController = false,
     bool clearError = false,
   }) {
     return AppState(
@@ -68,6 +74,9 @@ class AppState {
       selectedEditableCharacter: clearSelectedEditableCharacter
           ? null
           : selectedEditableCharacter ?? this.selectedEditableCharacter,
+      characterEditorController: clearCharacterEditorController
+          ? null
+          : characterEditorController ?? this.characterEditorController,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     );
   }
@@ -126,20 +135,24 @@ class AppController extends ChangeNotifier {
   }
 
   void openCreateCharacter() {
+    _disposeCharacterEditorController();
     _state = _state.copyWith(
       screen: AppScreen.createCharacter,
       clearSelectedCharacter: true,
       clearSelectedEditableCharacter: true,
+      clearCharacterEditorController: true,
       clearError: true,
     );
     notifyListeners();
   }
 
   void openMainMenu() {
+    _disposeCharacterEditorController();
     _state = _state.copyWith(
       screen: AppScreen.mainMenu,
       clearSelectedCharacter: true,
       clearSelectedEditableCharacter: true,
+      clearCharacterEditorController: true,
       clearError: true,
     );
     notifyListeners();
@@ -160,6 +173,7 @@ class AppController extends ChangeNotifier {
       final created = await _characterRepository.createCharacter(input);
       await _selectedCharacterSubscription?.cancel();
       _selectedCharacterSubscription = null;
+      _disposeCharacterEditorController();
       final sheet = await _characterRepository
           .watchCharacterSheetById(created.id)
           .first;
@@ -170,6 +184,7 @@ class AppController extends ChangeNotifier {
         isSavingCharacter: false,
         selectedCharacterSheet: sheet,
         clearSelectedEditableCharacter: true,
+        clearCharacterEditorController: true,
         clearError: true,
       );
     } catch (_) {
@@ -193,11 +208,13 @@ class AppController extends ChangeNotifier {
           errorMessage: 'El personaje seleccionado ya no existe.',
         );
       } else {
+        _disposeCharacterEditorController();
         _subscribeToSelectedCharacter(characterId);
         _state = _state.copyWith(
           screen: AppScreen.characterSheet,
           selectedCharacterSheet: character,
           clearSelectedEditableCharacter: true,
+          clearCharacterEditorController: true,
           clearError: true,
         );
       }
@@ -216,21 +233,31 @@ class AppController extends ChangeNotifier {
           .getEditableCharacterById(characterId);
 
       if (editableCharacter == null) {
+        _disposeCharacterEditorController();
         _state = _state.copyWith(
           errorMessage: 'The selected character is no longer available.',
           clearSelectedEditableCharacter: true,
+          clearCharacterEditorController: true,
         );
       } else {
+        _disposeCharacterEditorController();
         _state = _state.copyWith(
           selectedEditableCharacter: editableCharacter,
+          characterEditorController: CharacterEditorController(
+            characterId: characterId,
+            catalog: _state.compendiumCatalog!,
+            editableCharacter: editableCharacter,
+          ),
           clearError: true,
         );
       }
     } catch (_) {
+      _disposeCharacterEditorController();
       _state = _state.copyWith(
         errorMessage:
             'The selected character could not be prepared for editing.',
         clearSelectedEditableCharacter: true,
+        clearCharacterEditorController: true,
       );
     }
 
@@ -239,6 +266,7 @@ class AppController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposeCharacterEditorController();
     unawaited(_characterSummariesSubscription?.cancel());
     unawaited(_selectedCharacterSubscription?.cancel());
     super.dispose();
@@ -266,5 +294,9 @@ class AppController extends ChangeNotifier {
           _state = _state.copyWith(selectedCharacterSheet: character);
           notifyListeners();
         });
+  }
+
+  void _disposeCharacterEditorController() {
+    _state.characterEditorController?.dispose();
   }
 }
