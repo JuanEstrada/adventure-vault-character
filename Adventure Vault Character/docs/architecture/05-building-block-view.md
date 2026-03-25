@@ -6,7 +6,7 @@
 
 Adventure Vault Character is the complete player-facing Flutter system. It
 stores and manages character state locally, automates D20 mechanics, and
-imports rules content through XML.
+imports compendium content through XML.
 
 ## Level 2: Containers
 
@@ -25,10 +25,11 @@ supporting metadata using Drift over SQLite.
 The Dice Engine encapsulates D20 roll execution, modifier application, and
 deterministic business rules related to rolling outcomes.
 
-### XML Import Module
+### Compendium Import System
 
-The XML Import Module validates, parses, maps, and stores imported rules
-content.
+The Compendium Import System validates, parses, maps, and stores imported
+compendium content from XML sources, including future user-uploaded packs that
+add or modify classes, races, spells, equipment, and related rules data.
 
 ## Level 3: Components
 
@@ -74,8 +75,8 @@ including derived values and rule-driven summaries.
 
 ### Import Processor
 
-Responsible for validating XML input, transforming source content into
-internal models, and storing imported entities safely.
+Responsible for validating XML input, transforming source compendium content
+into internal models, and storing imported entities safely.
 
 ## Decomposition Notes
 

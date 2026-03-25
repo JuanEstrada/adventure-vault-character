@@ -18,11 +18,14 @@ D20 mechanics should be implemented as explicit domain logic rather than
 embedded inside user interface code. This supports correctness, reuse, and
 future extension.
 
-## XML Content Import
+## Compendium Import
 
-Imported rules content requires validation, mapping, and separation from core
-application code. The import path must prevent malformed or incompatible
-content from corrupting the local model.
+Imported compendium content requires validation, mapping, and separation from
+core application code. The `Compendium Import System` is the project term for
+the subsystem that ingests XML sources, including future user-supplied
+compendium packs that add or modify classes, races, backgrounds, spells,
+equipment, and related rules data. The import path must prevent malformed or
+incompatible content from corrupting the local model.
 
 ## Synchronization Readiness
 

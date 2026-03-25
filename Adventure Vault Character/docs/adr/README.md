@@ -14,6 +14,7 @@ Character.
 | [ADR-005](ADR-005-use-jetpack-compose-for-ui.md) | Superseded | Original Jetpack Compose UI decision. |
 | [ADR-006](ADR-006-use-flutter-for-client-application.md) | Accepted | Use Flutter and Dart for the client application. |
 | [ADR-007](ADR-007-use-drift-for-local-persistence.md) | Accepted | Use Drift over SQLite for local persistence. |
+| [ADR-008](ADR-008-use-compendium-and-compendium-import-system-terminology.md) | Accepted | Standardize compendium and import-system terminology. |
 
 ## How To Use This Folder
 

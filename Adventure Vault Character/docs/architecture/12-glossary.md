@@ -11,5 +11,11 @@
   the primary source for application behavior.
 - **D20 mechanics**: rules involving twenty-sided dice rolls, modifiers, and
   related outcome calculations.
-- **XML import**: the process of loading rules-related content into the
-  application from XML files.
+- **Compendio**: the imported and queryable set of game content used by the
+  app, including official SRD data and future custom content packs.
+- **Compendium Import System**: the subsystem responsible for validating,
+  parsing, mapping, and storing compendium content from XML files.
+- **Compendium pack**: a source package of compendium content, such as the SRD
+  baseline or a future custom XML pack uploaded to the app.
+- **XML import**: the process of loading compendium content into the
+  application from XML files through the `Compendium Import System`.

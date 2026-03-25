@@ -16,6 +16,10 @@ The flow should begin from a builder overview screen that shows the major
 creation sections and exposes entry actions for loading a character from XML
 or advancing into the guided creation path.
 
+For terminology consistency, XML-based content loading and future uploaded XML
+packs should be treated as part of the app's `Compendium Import System`, and
+the imported rules set should be referred to as the `Compendio`.
+
 ## Goals
 
 - Give first-time users a direct path from the main menu to a usable
@@ -250,6 +254,9 @@ or advancing into the guided creation path.
   files under
   `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`
   and normalize them into creation-friendly domain outputs.
+- Future XML uploads that add or modify compendium content must be routed
+  through the same `Compendium Import System` boundary rather than bypassing
+  compendium normalization with widget- or screen-level parsing.
 - The visual interaction for the ability score step should use
   `local-ui-assets/character-builder/10_builder_ability_scores.jpg` as a
   flow reference, especially the always-visible six-ability layout and the

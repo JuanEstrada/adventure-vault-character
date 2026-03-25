@@ -145,6 +145,9 @@ Verified on 2026-03-25:
 - The generated ability-score path now applies the
   `Standard Array by Class` recommendation on initial load and every time the
   selected class changes.
+- Project terminology now treats the imported rules dataset as the
+  `Compendio`, and the XML ingestion subsystem as the
+  `Compendium Import System`.
 - `test/widget_test.dart` covers the offline path into the main menu.
 - `flutter test` passed after the schema and repository changes.
 
@@ -270,6 +273,9 @@ Resolved MVP decision:
 - `Alignment` is captured inside finishing details for MVP.
 - The `LOAD XML` action remains visible from the main menu, but full XML
   import behavior is deferred.
+- Future uploaded XML files that add or modify classes, races, spells,
+  equipment, and similar rules content are considered `compendium packs` and
+  belong to the `Compendium Import System`.
 - The first character sheet contents and the first domain-model proposal are
   documented in `docs/specs/first-character-sheet-contents.md` and
   `docs/specs/initial-character-domain-model.md`.

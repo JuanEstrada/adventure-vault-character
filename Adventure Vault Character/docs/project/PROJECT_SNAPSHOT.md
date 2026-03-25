@@ -185,6 +185,16 @@ sheet flow stable.
 - The first character sheet includes real hit-points content.
 - `Equipment` can remain a simple placeholder panel in the first sheet.
 
+## Newly Confirmed Naming Decision
+
+- The project term for the imported rules/content dataset is `Compendio`.
+- The project term for the XML ingestion subsystem is
+  `Compendium Import System`.
+- Future XML files uploaded to add or modify classes, races, spells,
+  equipment, and related rules content should be treated as `compendium packs`
+  processed through the `Compendium Import System`, not as ad hoc direct app
+  data.
+
 ## Next Recommended Steps
 
 1. Build the next editing-oriented character domain on top of the current
