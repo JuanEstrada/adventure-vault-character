@@ -38,7 +38,7 @@ class EditableCharacterMapper {
       progression: character.identity.progression,
       hitPoints: character.combat.hitPoints,
       equipment: EditableCharacterEquipment(
-        loadoutId: row.equipmentLoadoutId,
+        loadoutId: record.equipmentLoadout?.loadoutId,
         loadoutLabel: character.equipment.selectedEquipmentLabel,
         startingMoneySummary: character.equipment.money.startingMoneySummary,
         currencySummary: character.equipment.money.currencySummary,

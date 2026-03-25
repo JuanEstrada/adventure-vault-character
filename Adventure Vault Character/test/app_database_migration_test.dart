@@ -7,7 +7,7 @@ import 'package:sqlite3/sqlite3.dart' as sqlite;
 
 void main() {
   group('AppDatabase migrations', () {
-    test('upgrades a v1 database to v7 and preserves character data', () async {
+    test('upgrades a v1 database to v8 and preserves character data', () async {
       final file = await _createTempDatabaseFile();
       addTearDown(() async {
         if (await file.exists()) {
@@ -42,9 +42,12 @@ void main() {
       final database = AppDatabase.executor(NativeDatabase(file));
       addTearDown(database.close);
 
-      final character = await (database.select(
+      await (database.select(
         database.characters,
       )..where((table) => table.id.equals('char-1'))).getSingle();
+      final equipmentLoadout = await (database.select(
+        database.characterEquipmentLoadouts,
+      )..where((table) => table.characterId.equals('char-1'))).getSingle();
       final abilityScores = await (database.select(
         database.characterAbilityScores,
       )..where((table) => table.characterId.equals('char-1'))).getSingle();
@@ -64,7 +67,8 @@ void main() {
         database.characterSavingThrows,
       )..where((table) => table.characterId.equals('char-1'))).get();
 
-      expect(character.equipmentLoadoutId, isNull);
+      expect(equipmentLoadout.loadoutId, isNull);
+      expect(equipmentLoadout.loadoutLabel, isNull);
       expect(abilityScores.strengthScore, 0);
       expect(abilityScores.charismaModifier, -5);
       expect(provenance.methodKey, isNull);
@@ -79,7 +83,7 @@ void main() {
     });
 
     test(
-      'upgrades a v4 database to v7, preserves normalized data, migrates provenance, and drops redundant snapshot columns',
+      'upgrades a v4 database to v8, preserves normalized data, migrates provenance, and drops redundant snapshot columns',
       () async {
         final file = await _createTempDatabaseFile();
         addTearDown(() async {
@@ -296,6 +300,9 @@ void main() {
         final abilityScores = await (database.select(
           database.characterAbilityScores,
         )..where((table) => table.characterId.equals('char-2'))).getSingle();
+        final equipmentLoadout = await (database.select(
+          database.characterEquipmentLoadouts,
+        )..where((table) => table.characterId.equals('char-2'))).getSingle();
         final provenance = await (database.select(
           database.characterAbilityScoreProvenances,
         )..where((table) => table.characterId.equals('char-2'))).getSingle();
@@ -322,6 +329,8 @@ void main() {
         expect(character.backgroundDefinitionRefId, 'acolyte');
         expect(abilityScores.intelligenceScore, 15);
         expect(abilityScores.intelligenceModifier, 2);
+        expect(equipmentLoadout.loadoutId, 'wizard-focus');
+        expect(equipmentLoadout.loadoutLabel, 'Arcane focus kit');
         expect(provenance.methodKey, 'generatedSetAssignment');
         expect(provenance.intelligenceAssignedScore, 15);
         expect(hitPoints.current, 28);
@@ -340,6 +349,8 @@ void main() {
         expect(columnNames, isNot(contains('ability_score_provenance')));
         expect(columnNames, isNot(contains('starting_money_summary')));
         expect(columnNames, isNot(contains('selected_equipment_items')));
+        expect(columnNames, isNot(contains('equipment_loadout_id')));
+        expect(columnNames, isNot(contains('equipment_loadout_label')));
         expect(columnNames, isNot(contains('current_hit_points')));
         expect(columnNames, isNot(contains('maximum_hit_points')));
         expect(columnNames, isNot(contains('temporary_hit_points')));

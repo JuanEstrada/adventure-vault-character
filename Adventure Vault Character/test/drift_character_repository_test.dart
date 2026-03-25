@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(
-    'createCharacter persists v7 character rows and reads normalized data for sheet',
+    'createCharacter persists v8 character rows and normalized loadout data for sheet',
     () async {
       final database = AppDatabase.executor(NativeDatabase.memory());
       addTearDown(database.close);
@@ -69,6 +69,9 @@ void main() {
       final provenance = await (database.select(
         database.characterAbilityScoreProvenances,
       )..where((table) => table.characterId.equals(summary.id))).getSingle();
+      final equipmentLoadout = await (database.select(
+        database.characterEquipmentLoadouts,
+      )..where((table) => table.characterId.equals(summary.id))).getSingle();
       final hitPoints = await (database.select(
         database.characterHitPoints,
       )..where((table) => table.characterId.equals(summary.id))).getSingle();
@@ -84,9 +87,13 @@ void main() {
       expect(rawCharacterRow.containsKey('strength'), isFalse);
       expect(rawCharacterRow.containsKey('starting_money_summary'), isFalse);
       expect(rawCharacterRow.containsKey('selected_equipment_items'), isFalse);
+      expect(rawCharacterRow.containsKey('equipment_loadout_id'), isFalse);
+      expect(rawCharacterRow.containsKey('equipment_loadout_label'), isFalse);
       expect(rawCharacterRow.containsKey('current_hit_points'), isFalse);
       expect(rawCharacterRow.containsKey('portrait_asset_path'), isFalse);
       expect(provenance.methodKey, 'generatedSetAssignment');
+      expect(equipmentLoadout.loadoutId, 'wizard-focus');
+      expect(equipmentLoadout.loadoutLabel, 'Arcane focus kit');
       expect(hitPoints.maximum, 27);
       expect(finishingDetails.alignment, 'Neutral');
       expect(finishingDetails.appearanceDetails, 'Tall and quiet');
@@ -115,7 +122,7 @@ void main() {
   );
 
   test(
-    'updateCharacter rewrites normalized rows against the v7 character schema',
+    'updateCharacter rewrites normalized rows against the v8 character schema',
     () async {
       final database = AppDatabase.executor(NativeDatabase.memory());
       addTearDown(database.close);
@@ -211,6 +218,9 @@ void main() {
       final provenance = await (database.select(
         database.characterAbilityScoreProvenances,
       )..where((table) => table.characterId.equals(created.id))).getSingle();
+      final equipmentLoadout = await (database.select(
+        database.characterEquipmentLoadouts,
+      )..where((table) => table.characterId.equals(created.id))).getSingle();
       final hitPoints = await (database.select(
         database.characterHitPoints,
       )..where((table) => table.characterId.equals(created.id))).getSingle();
@@ -229,6 +239,8 @@ void main() {
       expect(rawCharacterRow.containsKey('strength'), isFalse);
       expect(rawCharacterRow.containsKey('selected_equipment_items'), isFalse);
       expect(rawCharacterRow.containsKey('starting_money_summary'), isFalse);
+      expect(rawCharacterRow.containsKey('equipment_loadout_id'), isFalse);
+      expect(rawCharacterRow.containsKey('equipment_loadout_label'), isFalse);
       expect(rawCharacterRow.containsKey('current_hit_points'), isFalse);
       expect(rawCharacterRow.containsKey('alignment'), isFalse);
 
@@ -236,6 +248,8 @@ void main() {
       expect(abilityScores.intelligenceScore, 12);
       expect(provenance.methodKey, 'manualPointAllocation');
       expect(provenance.strengthAssignedScore, 15);
+      expect(equipmentLoadout.loadoutId, 'wizard-focus');
+      expect(equipmentLoadout.loadoutLabel, 'Arcane focus kit');
       expect(hitPoints.maximum, 7);
       expect(hitPoints.current, 7);
       expect(finishingDetails.alignment, 'Lawful Good');

@@ -11,6 +11,7 @@ class CharacterDomainMapper {
     final background = row.backgroundDefinitionRefId == null
         ? null
         : catalog.backgroundById(row.backgroundDefinitionRefId);
+    final persistedLoadout = record.equipmentLoadout;
     final fallbackLoadout = catalog
         .equipmentLoadoutsForClass(row.className)
         .first;
@@ -142,7 +143,7 @@ class CharacterDomainMapper {
       equipment: CharacterEquipmentDomainModel(
         equipmentSummary: catalog.equipmentSummaryForClass(row.className),
         selectedEquipmentLabel:
-            row.equipmentLoadoutLabel ?? fallbackLoadout.label,
+            persistedLoadout?.loadoutLabel ?? fallbackLoadout.label,
         money: CharacterMoneySummaryDomainModel(
           currencySummary: startingMoneySummary,
           startingMoneySummary: startingMoneySummary,

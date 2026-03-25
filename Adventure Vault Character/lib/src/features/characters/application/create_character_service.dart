@@ -115,8 +115,6 @@ class CreateCharacterService {
         className: Value(input.className),
         level: Value(input.level),
         experience: Value(input.experience),
-        equipmentLoadoutId: Value(input.equipmentLoadoutId),
-        equipmentLoadoutLabel: Value(input.equipmentLoadoutLabel),
         createdAt: Value(createdAt),
         updatedAt: Value(updatedAt),
       );
@@ -143,6 +141,11 @@ class CreateCharacterService {
         replaceExisting: existingRow != null,
       );
       await _writeFinishingDetails(
+        id,
+        input,
+        replaceExisting: existingRow != null,
+      );
+      await _writeEquipmentLoadout(
         id,
         input,
         replaceExisting: existingRow != null,
@@ -356,6 +359,30 @@ class CreateCharacterService {
         alignment: Value(input.alignment),
         appearanceDetails: Value(input.appearanceDetails),
         narrativeDetails: Value(input.narrativeDetails),
+      ),
+    );
+  }
+
+  Future<void> _writeEquipmentLoadout(
+    String id,
+    CreateCharacterInput input, {
+    required bool replaceExisting,
+  }) async {
+    final companion = CharacterEquipmentLoadoutsCompanion(
+      characterId: Value(id),
+      loadoutId: Value(input.equipmentLoadoutId),
+      loadoutLabel: Value(input.equipmentLoadoutLabel),
+    );
+    if (replaceExisting) {
+      await _writeDao.replaceEquipmentLoadout(companion);
+      return;
+    }
+
+    await _writeDao.insertEquipmentLoadout(
+      CharacterEquipmentLoadoutsCompanion.insert(
+        characterId: id,
+        loadoutId: Value(input.equipmentLoadoutId),
+        loadoutLabel: Value(input.equipmentLoadoutLabel),
       ),
     );
   }

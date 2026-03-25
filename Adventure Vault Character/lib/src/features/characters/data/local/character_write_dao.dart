@@ -70,6 +70,20 @@ class CharacterWriteDao {
         .insertOnConflictUpdate(companion);
   }
 
+  Future<void> insertEquipmentLoadout(
+    CharacterEquipmentLoadoutsCompanion companion,
+  ) {
+    return _database.into(_database.characterEquipmentLoadouts).insert(companion);
+  }
+
+  Future<void> replaceEquipmentLoadout(
+    CharacterEquipmentLoadoutsCompanion companion,
+  ) async {
+    await _database
+        .into(_database.characterEquipmentLoadouts)
+        .insertOnConflictUpdate(companion);
+  }
+
   Future<void> insertSkills(List<CharacterSkillsCompanion> companions) async {
     if (companions.isEmpty) {
       return;

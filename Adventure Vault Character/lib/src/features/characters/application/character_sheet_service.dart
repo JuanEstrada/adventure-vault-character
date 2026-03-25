@@ -55,6 +55,11 @@ class CharacterSheetService {
             )
             .listen((_) => emitCurrent()),
         _database
+            .tableUpdates(
+              TableUpdateQuery.onTable(_database.characterEquipmentLoadouts),
+            )
+            .listen((_) => emitCurrent()),
+        _database
             .tableUpdates(TableUpdateQuery.onTable(_database.characterCurrency))
             .listen((_) => emitCurrent()),
         _database

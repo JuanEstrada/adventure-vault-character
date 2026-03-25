@@ -18,7 +18,7 @@ Implementation shell established
 ## Current Focus
 
 Stabilizing the normalized Drift model now that the `characters` row has been
-trimmed back further in Drift `v7`, while keeping the guided draft, sheet
+trimmed back further in Drift `v8`, while keeping the guided draft, sheet
 flow, and edit/reopen path stable on top of normalized reads.
 
 ## Repository State
@@ -30,9 +30,9 @@ flow, and edit/reopen path stable on top of normalized reads.
   state.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- The Drift schema is now at `v7` and includes normalized character-side
+- The Drift schema is now at `v8` and includes normalized character-side
   tables for `ability scores`, `ability score provenance`, `hit points`,
-  `finishing details`, `skills`, `saving throws`, `inventory`,
+  `finishing details`, `equipment loadout`, `skills`, `saving throws`, `inventory`,
   `proficiencies`, and `currency`.
 - The local database now also includes compendium definition tables for
   `skills`, `equipment`, `classes`, `backgrounds`, `spells`, and `trinkets`.
@@ -69,6 +69,10 @@ flow, and edit/reopen path stable on top of normalized reads.
   columns from `characters`, migrates those values into dedicated normalized
   tables, and keeps summary, sheet, and editable-character reads on the same
   normalized source of truth.
+- Drift `v8` now also removes `equipment_loadout_id` and
+  `equipment_loadout_label` from `characters`, migrates them into a dedicated
+  normalized loadout table, and keeps edit/draft reopening on an explicit
+  persisted loadout reference instead of inventory inference.
 - The characters feature now uses explicit application services for
   `create character` and `character sheet` loading, with shared summary
   mapping extracted from the repository implementation.
@@ -176,12 +180,6 @@ flow, and edit/reopen path stable on top of normalized reads.
 - Session continuity simplified around a single handoff file:
   `docs/project/SESSION_RESUME.md`.
 
-## Work In Progress
-
-- Deciding whether the remaining equipment-loadout metadata in `characters`
-  should be normalized next, now that ability-score provenance, hit points,
-  and finishing details have been moved out of the row.
-
 ## Pending Work
 
 - Expand the edit flow beyond the current guided MVP fields and decide how
@@ -235,13 +233,10 @@ flow, and edit/reopen path stable on top of normalized reads.
 
 1. Build the next editing-oriented character domain on top of the current
    read-side model instead of introducing another UI-facing mapper layer.
-2. Decide whether `equipment_loadout_id` and `equipment_loadout_label` should
-   remain lightweight edit metadata in `characters` or move into a dedicated
-   normalized contract.
-3. Deepen the parsed compendium fidelity beyond the current seeded FightClub
+2. Deepen the parsed compendium fidelity beyond the current seeded FightClub
    SRD subset and static progression defaults.
-4. Break the approved MVP flow into implementation tasks in `lib/`.
-5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
+3. Break the approved MVP flow into implementation tasks in `lib/`.
+4. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
 ## Next Session Guardrail
 

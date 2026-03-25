@@ -92,28 +92,6 @@ class $CharactersTable extends Characters
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _equipmentLoadoutIdMeta =
-      const VerificationMeta('equipmentLoadoutId');
-  @override
-  late final GeneratedColumn<String> equipmentLoadoutId =
-      GeneratedColumn<String>(
-        'equipment_loadout_id',
-        aliasedName,
-        true,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-      );
-  static const VerificationMeta _equipmentLoadoutLabelMeta =
-      const VerificationMeta('equipmentLoadoutLabel');
-  @override
-  late final GeneratedColumn<String> equipmentLoadoutLabel =
-      GeneratedColumn<String>(
-        'equipment_loadout_label',
-        aliasedName,
-        true,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-      );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -146,8 +124,6 @@ class $CharactersTable extends Characters
     className,
     level,
     experience,
-    equipmentLoadoutId,
-    equipmentLoadoutLabel,
     createdAt,
     updatedAt,
   ];
@@ -224,24 +200,6 @@ class $CharactersTable extends Characters
         experience.isAcceptableOrUnknown(data['experience']!, _experienceMeta),
       );
     }
-    if (data.containsKey('equipment_loadout_id')) {
-      context.handle(
-        _equipmentLoadoutIdMeta,
-        equipmentLoadoutId.isAcceptableOrUnknown(
-          data['equipment_loadout_id']!,
-          _equipmentLoadoutIdMeta,
-        ),
-      );
-    }
-    if (data.containsKey('equipment_loadout_label')) {
-      context.handle(
-        _equipmentLoadoutLabelMeta,
-        equipmentLoadoutLabel.isAcceptableOrUnknown(
-          data['equipment_loadout_label']!,
-          _equipmentLoadoutLabelMeta,
-        ),
-      );
-    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -299,14 +257,6 @@ class $CharactersTable extends Characters
         DriftSqlType.int,
         data['${effectivePrefix}experience'],
       ),
-      equipmentLoadoutId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}equipment_loadout_id'],
-      ),
-      equipmentLoadoutLabel: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}equipment_loadout_label'],
-      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -333,8 +283,6 @@ class Character extends DataClass implements Insertable<Character> {
   final String className;
   final int level;
   final int? experience;
-  final String? equipmentLoadoutId;
-  final String? equipmentLoadoutLabel;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Character({
@@ -346,8 +294,6 @@ class Character extends DataClass implements Insertable<Character> {
     required this.className,
     required this.level,
     this.experience,
-    this.equipmentLoadoutId,
-    this.equipmentLoadoutLabel,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -369,12 +315,6 @@ class Character extends DataClass implements Insertable<Character> {
     map['level'] = Variable<int>(level);
     if (!nullToAbsent || experience != null) {
       map['experience'] = Variable<int>(experience);
-    }
-    if (!nullToAbsent || equipmentLoadoutId != null) {
-      map['equipment_loadout_id'] = Variable<String>(equipmentLoadoutId);
-    }
-    if (!nullToAbsent || equipmentLoadoutLabel != null) {
-      map['equipment_loadout_label'] = Variable<String>(equipmentLoadoutLabel);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -398,12 +338,6 @@ class Character extends DataClass implements Insertable<Character> {
       experience: experience == null && nullToAbsent
           ? const Value.absent()
           : Value(experience),
-      equipmentLoadoutId: equipmentLoadoutId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(equipmentLoadoutId),
-      equipmentLoadoutLabel: equipmentLoadoutLabel == null && nullToAbsent
-          ? const Value.absent()
-          : Value(equipmentLoadoutLabel),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -427,12 +361,6 @@ class Character extends DataClass implements Insertable<Character> {
       className: serializer.fromJson<String>(json['className']),
       level: serializer.fromJson<int>(json['level']),
       experience: serializer.fromJson<int?>(json['experience']),
-      equipmentLoadoutId: serializer.fromJson<String?>(
-        json['equipmentLoadoutId'],
-      ),
-      equipmentLoadoutLabel: serializer.fromJson<String?>(
-        json['equipmentLoadoutLabel'],
-      ),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -451,10 +379,6 @@ class Character extends DataClass implements Insertable<Character> {
       'className': serializer.toJson<String>(className),
       'level': serializer.toJson<int>(level),
       'experience': serializer.toJson<int?>(experience),
-      'equipmentLoadoutId': serializer.toJson<String?>(equipmentLoadoutId),
-      'equipmentLoadoutLabel': serializer.toJson<String?>(
-        equipmentLoadoutLabel,
-      ),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -469,8 +393,6 @@ class Character extends DataClass implements Insertable<Character> {
     String? className,
     int? level,
     Value<int?> experience = const Value.absent(),
-    Value<String?> equipmentLoadoutId = const Value.absent(),
-    Value<String?> equipmentLoadoutLabel = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Character(
@@ -486,12 +408,6 @@ class Character extends DataClass implements Insertable<Character> {
     className: className ?? this.className,
     level: level ?? this.level,
     experience: experience.present ? experience.value : this.experience,
-    equipmentLoadoutId: equipmentLoadoutId.present
-        ? equipmentLoadoutId.value
-        : this.equipmentLoadoutId,
-    equipmentLoadoutLabel: equipmentLoadoutLabel.present
-        ? equipmentLoadoutLabel.value
-        : this.equipmentLoadoutLabel,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -511,12 +427,6 @@ class Character extends DataClass implements Insertable<Character> {
       experience: data.experience.present
           ? data.experience.value
           : this.experience,
-      equipmentLoadoutId: data.equipmentLoadoutId.present
-          ? data.equipmentLoadoutId.value
-          : this.equipmentLoadoutId,
-      equipmentLoadoutLabel: data.equipmentLoadoutLabel.present
-          ? data.equipmentLoadoutLabel.value
-          : this.equipmentLoadoutLabel,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -533,8 +443,6 @@ class Character extends DataClass implements Insertable<Character> {
           ..write('className: $className, ')
           ..write('level: $level, ')
           ..write('experience: $experience, ')
-          ..write('equipmentLoadoutId: $equipmentLoadoutId, ')
-          ..write('equipmentLoadoutLabel: $equipmentLoadoutLabel, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -551,8 +459,6 @@ class Character extends DataClass implements Insertable<Character> {
     className,
     level,
     experience,
-    equipmentLoadoutId,
-    equipmentLoadoutLabel,
     createdAt,
     updatedAt,
   );
@@ -568,8 +474,6 @@ class Character extends DataClass implements Insertable<Character> {
           other.className == this.className &&
           other.level == this.level &&
           other.experience == this.experience &&
-          other.equipmentLoadoutId == this.equipmentLoadoutId &&
-          other.equipmentLoadoutLabel == this.equipmentLoadoutLabel &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -583,8 +487,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
   final Value<String> className;
   final Value<int> level;
   final Value<int?> experience;
-  final Value<String?> equipmentLoadoutId;
-  final Value<String?> equipmentLoadoutLabel;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -597,8 +499,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     this.className = const Value.absent(),
     this.level = const Value.absent(),
     this.experience = const Value.absent(),
-    this.equipmentLoadoutId = const Value.absent(),
-    this.equipmentLoadoutLabel = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -612,8 +512,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     required String className,
     required int level,
     this.experience = const Value.absent(),
-    this.equipmentLoadoutId = const Value.absent(),
-    this.equipmentLoadoutLabel = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -633,8 +531,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     Expression<String>? className,
     Expression<int>? level,
     Expression<int>? experience,
-    Expression<String>? equipmentLoadoutId,
-    Expression<String>? equipmentLoadoutLabel,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -649,10 +545,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
       if (className != null) 'class_name': className,
       if (level != null) 'level': level,
       if (experience != null) 'experience': experience,
-      if (equipmentLoadoutId != null)
-        'equipment_loadout_id': equipmentLoadoutId,
-      if (equipmentLoadoutLabel != null)
-        'equipment_loadout_label': equipmentLoadoutLabel,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -668,8 +560,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     Value<String>? className,
     Value<int>? level,
     Value<int?>? experience,
-    Value<String?>? equipmentLoadoutId,
-    Value<String?>? equipmentLoadoutLabel,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -684,9 +574,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
       className: className ?? this.className,
       level: level ?? this.level,
       experience: experience ?? this.experience,
-      equipmentLoadoutId: equipmentLoadoutId ?? this.equipmentLoadoutId,
-      equipmentLoadoutLabel:
-          equipmentLoadoutLabel ?? this.equipmentLoadoutLabel,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -722,14 +609,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     if (experience.present) {
       map['experience'] = Variable<int>(experience.value);
     }
-    if (equipmentLoadoutId.present) {
-      map['equipment_loadout_id'] = Variable<String>(equipmentLoadoutId.value);
-    }
-    if (equipmentLoadoutLabel.present) {
-      map['equipment_loadout_label'] = Variable<String>(
-        equipmentLoadoutLabel.value,
-      );
-    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -753,8 +632,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
           ..write('className: $className, ')
           ..write('level: $level, ')
           ..write('experience: $experience, ')
-          ..write('equipmentLoadoutId: $equipmentLoadoutId, ')
-          ..write('equipmentLoadoutLabel: $equipmentLoadoutLabel, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -2990,6 +2867,298 @@ class CharacterFinishingDetailsCompanion
           ..write('alignment: $alignment, ')
           ..write('appearanceDetails: $appearanceDetails, ')
           ..write('narrativeDetails: $narrativeDetails, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CharacterEquipmentLoadoutsTable extends CharacterEquipmentLoadouts
+    with
+        TableInfo<$CharacterEquipmentLoadoutsTable, CharacterEquipmentLoadout> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CharacterEquipmentLoadoutsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _characterIdMeta = const VerificationMeta(
+    'characterId',
+  );
+  @override
+  late final GeneratedColumn<String> characterId = GeneratedColumn<String>(
+    'character_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES characters (id)',
+    ),
+  );
+  static const VerificationMeta _loadoutIdMeta = const VerificationMeta(
+    'loadoutId',
+  );
+  @override
+  late final GeneratedColumn<String> loadoutId = GeneratedColumn<String>(
+    'loadout_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _loadoutLabelMeta = const VerificationMeta(
+    'loadoutLabel',
+  );
+  @override
+  late final GeneratedColumn<String> loadoutLabel = GeneratedColumn<String>(
+    'loadout_label',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [characterId, loadoutId, loadoutLabel];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'character_equipment_loadouts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CharacterEquipmentLoadout> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('character_id')) {
+      context.handle(
+        _characterIdMeta,
+        characterId.isAcceptableOrUnknown(
+          data['character_id']!,
+          _characterIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_characterIdMeta);
+    }
+    if (data.containsKey('loadout_id')) {
+      context.handle(
+        _loadoutIdMeta,
+        loadoutId.isAcceptableOrUnknown(data['loadout_id']!, _loadoutIdMeta),
+      );
+    }
+    if (data.containsKey('loadout_label')) {
+      context.handle(
+        _loadoutLabelMeta,
+        loadoutLabel.isAcceptableOrUnknown(
+          data['loadout_label']!,
+          _loadoutLabelMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {characterId};
+  @override
+  CharacterEquipmentLoadout map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CharacterEquipmentLoadout(
+      characterId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}character_id'],
+      )!,
+      loadoutId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}loadout_id'],
+      ),
+      loadoutLabel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}loadout_label'],
+      ),
+    );
+  }
+
+  @override
+  $CharacterEquipmentLoadoutsTable createAlias(String alias) {
+    return $CharacterEquipmentLoadoutsTable(attachedDatabase, alias);
+  }
+}
+
+class CharacterEquipmentLoadout extends DataClass
+    implements Insertable<CharacterEquipmentLoadout> {
+  final String characterId;
+  final String? loadoutId;
+  final String? loadoutLabel;
+  const CharacterEquipmentLoadout({
+    required this.characterId,
+    this.loadoutId,
+    this.loadoutLabel,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['character_id'] = Variable<String>(characterId);
+    if (!nullToAbsent || loadoutId != null) {
+      map['loadout_id'] = Variable<String>(loadoutId);
+    }
+    if (!nullToAbsent || loadoutLabel != null) {
+      map['loadout_label'] = Variable<String>(loadoutLabel);
+    }
+    return map;
+  }
+
+  CharacterEquipmentLoadoutsCompanion toCompanion(bool nullToAbsent) {
+    return CharacterEquipmentLoadoutsCompanion(
+      characterId: Value(characterId),
+      loadoutId: loadoutId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(loadoutId),
+      loadoutLabel: loadoutLabel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(loadoutLabel),
+    );
+  }
+
+  factory CharacterEquipmentLoadout.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CharacterEquipmentLoadout(
+      characterId: serializer.fromJson<String>(json['characterId']),
+      loadoutId: serializer.fromJson<String?>(json['loadoutId']),
+      loadoutLabel: serializer.fromJson<String?>(json['loadoutLabel']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'characterId': serializer.toJson<String>(characterId),
+      'loadoutId': serializer.toJson<String?>(loadoutId),
+      'loadoutLabel': serializer.toJson<String?>(loadoutLabel),
+    };
+  }
+
+  CharacterEquipmentLoadout copyWith({
+    String? characterId,
+    Value<String?> loadoutId = const Value.absent(),
+    Value<String?> loadoutLabel = const Value.absent(),
+  }) => CharacterEquipmentLoadout(
+    characterId: characterId ?? this.characterId,
+    loadoutId: loadoutId.present ? loadoutId.value : this.loadoutId,
+    loadoutLabel: loadoutLabel.present ? loadoutLabel.value : this.loadoutLabel,
+  );
+  CharacterEquipmentLoadout copyWithCompanion(
+    CharacterEquipmentLoadoutsCompanion data,
+  ) {
+    return CharacterEquipmentLoadout(
+      characterId: data.characterId.present
+          ? data.characterId.value
+          : this.characterId,
+      loadoutId: data.loadoutId.present ? data.loadoutId.value : this.loadoutId,
+      loadoutLabel: data.loadoutLabel.present
+          ? data.loadoutLabel.value
+          : this.loadoutLabel,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterEquipmentLoadout(')
+          ..write('characterId: $characterId, ')
+          ..write('loadoutId: $loadoutId, ')
+          ..write('loadoutLabel: $loadoutLabel')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(characterId, loadoutId, loadoutLabel);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CharacterEquipmentLoadout &&
+          other.characterId == this.characterId &&
+          other.loadoutId == this.loadoutId &&
+          other.loadoutLabel == this.loadoutLabel);
+}
+
+class CharacterEquipmentLoadoutsCompanion
+    extends UpdateCompanion<CharacterEquipmentLoadout> {
+  final Value<String> characterId;
+  final Value<String?> loadoutId;
+  final Value<String?> loadoutLabel;
+  final Value<int> rowid;
+  const CharacterEquipmentLoadoutsCompanion({
+    this.characterId = const Value.absent(),
+    this.loadoutId = const Value.absent(),
+    this.loadoutLabel = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CharacterEquipmentLoadoutsCompanion.insert({
+    required String characterId,
+    this.loadoutId = const Value.absent(),
+    this.loadoutLabel = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : characterId = Value(characterId);
+  static Insertable<CharacterEquipmentLoadout> custom({
+    Expression<String>? characterId,
+    Expression<String>? loadoutId,
+    Expression<String>? loadoutLabel,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (characterId != null) 'character_id': characterId,
+      if (loadoutId != null) 'loadout_id': loadoutId,
+      if (loadoutLabel != null) 'loadout_label': loadoutLabel,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CharacterEquipmentLoadoutsCompanion copyWith({
+    Value<String>? characterId,
+    Value<String?>? loadoutId,
+    Value<String?>? loadoutLabel,
+    Value<int>? rowid,
+  }) {
+    return CharacterEquipmentLoadoutsCompanion(
+      characterId: characterId ?? this.characterId,
+      loadoutId: loadoutId ?? this.loadoutId,
+      loadoutLabel: loadoutLabel ?? this.loadoutLabel,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (characterId.present) {
+      map['character_id'] = Variable<String>(characterId.value);
+    }
+    if (loadoutId.present) {
+      map['loadout_id'] = Variable<String>(loadoutId.value);
+    }
+    if (loadoutLabel.present) {
+      map['loadout_label'] = Variable<String>(loadoutLabel.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterEquipmentLoadoutsCompanion(')
+          ..write('characterId: $characterId, ')
+          ..write('loadoutId: $loadoutId, ')
+          ..write('loadoutLabel: $loadoutLabel, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -9134,6 +9303,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $CharacterHitPointsTable(this);
   late final $CharacterFinishingDetailsTable characterFinishingDetails =
       $CharacterFinishingDetailsTable(this);
+  late final $CharacterEquipmentLoadoutsTable characterEquipmentLoadouts =
+      $CharacterEquipmentLoadoutsTable(this);
   late final $SkillDefinitionsTable skillDefinitions = $SkillDefinitionsTable(
     this,
   );
@@ -9170,6 +9341,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     characterAbilityScoreProvenances,
     characterHitPoints,
     characterFinishingDetails,
+    characterEquipmentLoadouts,
     skillDefinitions,
     characterSkills,
     characterSavingThrows,
@@ -9194,8 +9366,6 @@ typedef $$CharactersTableCreateCompanionBuilder =
       required String className,
       required int level,
       Value<int?> experience,
-      Value<String?> equipmentLoadoutId,
-      Value<String?> equipmentLoadoutLabel,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -9210,8 +9380,6 @@ typedef $$CharactersTableUpdateCompanionBuilder =
       Value<String> className,
       Value<int> level,
       Value<int?> experience,
-      Value<String?> equipmentLoadoutId,
-      Value<String?> equipmentLoadoutLabel,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -9323,6 +9491,34 @@ final class $$CharactersTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _characterFinishingDetailsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $CharacterEquipmentLoadoutsTable,
+    List<CharacterEquipmentLoadout>
+  >
+  _characterEquipmentLoadoutsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.characterEquipmentLoadouts,
+        aliasName: $_aliasNameGenerator(
+          db.characters.id,
+          db.characterEquipmentLoadouts.characterId,
+        ),
+      );
+
+  $$CharacterEquipmentLoadoutsTableProcessedTableManager
+  get characterEquipmentLoadoutsRefs {
+    final manager = $$CharacterEquipmentLoadoutsTableTableManager(
+      $_db,
+      $_db.characterEquipmentLoadouts,
+    ).filter((f) => f.characterId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _characterEquipmentLoadoutsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -9512,16 +9708,6 @@ class $$CharactersTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get equipmentLoadoutId => $composableBuilder(
-    column: $table.equipmentLoadoutId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get equipmentLoadoutLabel => $composableBuilder(
-    column: $table.equipmentLoadoutLabel,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
@@ -9630,6 +9816,33 @@ class $$CharactersTableFilterComposer
               }) => $$CharacterFinishingDetailsTableFilterComposer(
                 $db: $db,
                 $table: $db.characterFinishingDetails,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> characterEquipmentLoadoutsRefs(
+    Expression<bool> Function($$CharacterEquipmentLoadoutsTableFilterComposer f)
+    f,
+  ) {
+    final $$CharacterEquipmentLoadoutsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.characterEquipmentLoadouts,
+          getReferencedColumn: (t) => t.characterId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$CharacterEquipmentLoadoutsTableFilterComposer(
+                $db: $db,
+                $table: $db.characterEquipmentLoadouts,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -9816,16 +10029,6 @@ class $$CharactersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get equipmentLoadoutId => $composableBuilder(
-    column: $table.equipmentLoadoutId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get equipmentLoadoutLabel => $composableBuilder(
-    column: $table.equipmentLoadoutLabel,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -9873,16 +10076,6 @@ class $$CharactersTableAnnotationComposer
 
   GeneratedColumn<int> get experience => $composableBuilder(
     column: $table.experience,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get equipmentLoadoutId => $composableBuilder(
-    column: $table.equipmentLoadoutId,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get equipmentLoadoutLabel => $composableBuilder(
-    column: $table.equipmentLoadoutLabel,
     builder: (column) => column,
   );
 
@@ -9991,6 +10184,35 @@ class $$CharactersTableAnnotationComposer
               }) => $$CharacterFinishingDetailsTableAnnotationComposer(
                 $db: $db,
                 $table: $db.characterFinishingDetails,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> characterEquipmentLoadoutsRefs<T extends Object>(
+    Expression<T> Function(
+      $$CharacterEquipmentLoadoutsTableAnnotationComposer a,
+    )
+    f,
+  ) {
+    final $$CharacterEquipmentLoadoutsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.characterEquipmentLoadouts,
+          getReferencedColumn: (t) => t.characterId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$CharacterEquipmentLoadoutsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.characterEquipmentLoadouts,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -10148,6 +10370,7 @@ class $$CharactersTableTableManager
             bool characterAbilityScoreProvenancesRefs,
             bool characterHitPointsRefs,
             bool characterFinishingDetailsRefs,
+            bool characterEquipmentLoadoutsRefs,
             bool characterSkillsRefs,
             bool characterSavingThrowsRefs,
             bool characterInventoryRefs,
@@ -10176,8 +10399,6 @@ class $$CharactersTableTableManager
                 Value<String> className = const Value.absent(),
                 Value<int> level = const Value.absent(),
                 Value<int?> experience = const Value.absent(),
-                Value<String?> equipmentLoadoutId = const Value.absent(),
-                Value<String?> equipmentLoadoutLabel = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -10190,8 +10411,6 @@ class $$CharactersTableTableManager
                 className: className,
                 level: level,
                 experience: experience,
-                equipmentLoadoutId: equipmentLoadoutId,
-                equipmentLoadoutLabel: equipmentLoadoutLabel,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -10206,8 +10425,6 @@ class $$CharactersTableTableManager
                 required String className,
                 required int level,
                 Value<int?> experience = const Value.absent(),
-                Value<String?> equipmentLoadoutId = const Value.absent(),
-                Value<String?> equipmentLoadoutLabel = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -10220,8 +10437,6 @@ class $$CharactersTableTableManager
                 className: className,
                 level: level,
                 experience: experience,
-                equipmentLoadoutId: equipmentLoadoutId,
-                equipmentLoadoutLabel: equipmentLoadoutLabel,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -10240,6 +10455,7 @@ class $$CharactersTableTableManager
                 characterAbilityScoreProvenancesRefs = false,
                 characterHitPointsRefs = false,
                 characterFinishingDetailsRefs = false,
+                characterEquipmentLoadoutsRefs = false,
                 characterSkillsRefs = false,
                 characterSavingThrowsRefs = false,
                 characterInventoryRefs = false,
@@ -10255,6 +10471,8 @@ class $$CharactersTableTableManager
                     if (characterHitPointsRefs) db.characterHitPoints,
                     if (characterFinishingDetailsRefs)
                       db.characterFinishingDetails,
+                    if (characterEquipmentLoadoutsRefs)
+                      db.characterEquipmentLoadouts,
                     if (characterSkillsRefs) db.characterSkills,
                     if (characterSavingThrowsRefs) db.characterSavingThrows,
                     if (characterInventoryRefs) db.characterInventory,
@@ -10342,6 +10560,27 @@ class $$CharactersTableTableManager
                                 table,
                                 p0,
                               ).characterFinishingDetailsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.characterId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (characterEquipmentLoadoutsRefs)
+                        await $_getPrefetchedData<
+                          Character,
+                          $CharactersTable,
+                          CharacterEquipmentLoadout
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CharactersTableReferences
+                              ._characterEquipmentLoadoutsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CharactersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).characterEquipmentLoadoutsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.characterId == item.id,
@@ -10478,6 +10717,7 @@ typedef $$CharactersTableProcessedTableManager =
         bool characterAbilityScoreProvenancesRefs,
         bool characterHitPointsRefs,
         bool characterFinishingDetailsRefs,
+        bool characterEquipmentLoadoutsRefs,
         bool characterSkillsRefs,
         bool characterSavingThrowsRefs,
         bool characterInventoryRefs,
@@ -12098,6 +12338,317 @@ typedef $$CharacterFinishingDetailsTableProcessedTableManager =
       $$CharacterFinishingDetailsTableUpdateCompanionBuilder,
       (CharacterFinishingDetail, $$CharacterFinishingDetailsTableReferences),
       CharacterFinishingDetail,
+      PrefetchHooks Function({bool characterId})
+    >;
+typedef $$CharacterEquipmentLoadoutsTableCreateCompanionBuilder =
+    CharacterEquipmentLoadoutsCompanion Function({
+      required String characterId,
+      Value<String?> loadoutId,
+      Value<String?> loadoutLabel,
+      Value<int> rowid,
+    });
+typedef $$CharacterEquipmentLoadoutsTableUpdateCompanionBuilder =
+    CharacterEquipmentLoadoutsCompanion Function({
+      Value<String> characterId,
+      Value<String?> loadoutId,
+      Value<String?> loadoutLabel,
+      Value<int> rowid,
+    });
+
+final class $$CharacterEquipmentLoadoutsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $CharacterEquipmentLoadoutsTable,
+          CharacterEquipmentLoadout
+        > {
+  $$CharacterEquipmentLoadoutsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CharactersTable _characterIdTable(_$AppDatabase db) =>
+      db.characters.createAlias(
+        $_aliasNameGenerator(
+          db.characterEquipmentLoadouts.characterId,
+          db.characters.id,
+        ),
+      );
+
+  $$CharactersTableProcessedTableManager get characterId {
+    final $_column = $_itemColumn<String>('character_id')!;
+
+    final manager = $$CharactersTableTableManager(
+      $_db,
+      $_db.characters,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_characterIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CharacterEquipmentLoadoutsTableFilterComposer
+    extends Composer<_$AppDatabase, $CharacterEquipmentLoadoutsTable> {
+  $$CharacterEquipmentLoadoutsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get loadoutId => $composableBuilder(
+    column: $table.loadoutId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get loadoutLabel => $composableBuilder(
+    column: $table.loadoutLabel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CharactersTableFilterComposer get characterId {
+    final $$CharactersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableFilterComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterEquipmentLoadoutsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CharacterEquipmentLoadoutsTable> {
+  $$CharacterEquipmentLoadoutsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get loadoutId => $composableBuilder(
+    column: $table.loadoutId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get loadoutLabel => $composableBuilder(
+    column: $table.loadoutLabel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CharactersTableOrderingComposer get characterId {
+    final $$CharactersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableOrderingComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterEquipmentLoadoutsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CharacterEquipmentLoadoutsTable> {
+  $$CharacterEquipmentLoadoutsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get loadoutId =>
+      $composableBuilder(column: $table.loadoutId, builder: (column) => column);
+
+  GeneratedColumn<String> get loadoutLabel => $composableBuilder(
+    column: $table.loadoutLabel,
+    builder: (column) => column,
+  );
+
+  $$CharactersTableAnnotationComposer get characterId {
+    final $$CharactersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterEquipmentLoadoutsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CharacterEquipmentLoadoutsTable,
+          CharacterEquipmentLoadout,
+          $$CharacterEquipmentLoadoutsTableFilterComposer,
+          $$CharacterEquipmentLoadoutsTableOrderingComposer,
+          $$CharacterEquipmentLoadoutsTableAnnotationComposer,
+          $$CharacterEquipmentLoadoutsTableCreateCompanionBuilder,
+          $$CharacterEquipmentLoadoutsTableUpdateCompanionBuilder,
+          (
+            CharacterEquipmentLoadout,
+            $$CharacterEquipmentLoadoutsTableReferences,
+          ),
+          CharacterEquipmentLoadout,
+          PrefetchHooks Function({bool characterId})
+        > {
+  $$CharacterEquipmentLoadoutsTableTableManager(
+    _$AppDatabase db,
+    $CharacterEquipmentLoadoutsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CharacterEquipmentLoadoutsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$CharacterEquipmentLoadoutsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$CharacterEquipmentLoadoutsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> characterId = const Value.absent(),
+                Value<String?> loadoutId = const Value.absent(),
+                Value<String?> loadoutLabel = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterEquipmentLoadoutsCompanion(
+                characterId: characterId,
+                loadoutId: loadoutId,
+                loadoutLabel: loadoutLabel,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String characterId,
+                Value<String?> loadoutId = const Value.absent(),
+                Value<String?> loadoutLabel = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterEquipmentLoadoutsCompanion.insert(
+                characterId: characterId,
+                loadoutId: loadoutId,
+                loadoutLabel: loadoutLabel,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CharacterEquipmentLoadoutsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({characterId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (characterId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.characterId,
+                                referencedTable:
+                                    $$CharacterEquipmentLoadoutsTableReferences
+                                        ._characterIdTable(db),
+                                referencedColumn:
+                                    $$CharacterEquipmentLoadoutsTableReferences
+                                        ._characterIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CharacterEquipmentLoadoutsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CharacterEquipmentLoadoutsTable,
+      CharacterEquipmentLoadout,
+      $$CharacterEquipmentLoadoutsTableFilterComposer,
+      $$CharacterEquipmentLoadoutsTableOrderingComposer,
+      $$CharacterEquipmentLoadoutsTableAnnotationComposer,
+      $$CharacterEquipmentLoadoutsTableCreateCompanionBuilder,
+      $$CharacterEquipmentLoadoutsTableUpdateCompanionBuilder,
+      (CharacterEquipmentLoadout, $$CharacterEquipmentLoadoutsTableReferences),
+      CharacterEquipmentLoadout,
       PrefetchHooks Function({bool characterId})
     >;
 typedef $$SkillDefinitionsTableCreateCompanionBuilder =
@@ -16478,6 +17029,12 @@ class $AppDatabaseManager {
       $$CharacterFinishingDetailsTableTableManager(
         _db,
         _db.characterFinishingDetails,
+      );
+  $$CharacterEquipmentLoadoutsTableTableManager
+  get characterEquipmentLoadouts =>
+      $$CharacterEquipmentLoadoutsTableTableManager(
+        _db,
+        _db.characterEquipmentLoadouts,
       );
   $$SkillDefinitionsTableTableManager get skillDefinitions =>
       $$SkillDefinitionsTableTableManager(_db, _db.skillDefinitions);

@@ -61,6 +61,14 @@ class CharacterReadDao {
     )..where((table) => table.characterId.equals(id))).getSingleOrNull();
   }
 
+  Future<CharacterEquipmentLoadout?> getEquipmentLoadoutByCharacterId(
+    String id,
+  ) {
+    return (_database.select(
+      _database.characterEquipmentLoadouts,
+    )..where((table) => table.characterId.equals(id))).getSingleOrNull();
+  }
+
   Future<CharacterCurrencyData?> getCurrencyByCharacterId(String id) {
     return (_database.select(
       _database.characterCurrency,
