@@ -1,4 +1,5 @@
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 import 'package:flutter/foundation.dart';
 
 @immutable
@@ -48,28 +49,11 @@ class CharacterProgressionDomainModel {
   final int? proficiencyBonusOverride;
 
   int get proficiencyBonus =>
-      proficiencyBonusOverride ?? (2 + ((level - 1) ~/ 4));
+      proficiencyBonusOverride ??
+      CharacterRules.proficiencyBonusForLevel(level);
 
-  int get levelProgressPercent {
-    const thresholds = <int, int>{
-      1: 0,
-      2: 300,
-      3: 900,
-      4: 2700,
-      5: 6500,
-      6: 14000,
-    };
-
-    final currentFloor = thresholds[level] ?? 0;
-    final nextFloor = thresholds[level + 1];
-    if (nextFloor == null || nextFloor <= currentFloor) {
-      return 100;
-    }
-
-    final progress = ((experience - currentFloor) / (nextFloor - currentFloor))
-        .clamp(0, 1);
-    return (progress * 100).round();
-  }
+  int get levelProgressPercent =>
+      CharacterRules.levelProgressPercent(level: level, experience: experience);
 }
 
 @immutable
@@ -149,7 +133,7 @@ class CharacterAbilityScoreDomainModel {
   final String label;
   final int score;
 
-  int get modifier => ((score - 10) / 2).floor();
+  int get modifier => CharacterRules.abilityModifier(score);
 }
 
 @immutable

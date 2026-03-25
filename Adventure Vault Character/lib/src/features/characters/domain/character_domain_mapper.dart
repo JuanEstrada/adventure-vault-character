@@ -1,6 +1,7 @@
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_record.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 
 class CharacterDomainMapper {
   const CharacterDomainMapper();
@@ -209,20 +210,24 @@ class CharacterDomainMapper {
       intelligenceScore: row.intelligence ?? 0,
       wisdomScore: row.wisdom ?? 0,
       charismaScore: row.charisma ?? 0,
-      strengthModifier: row.strength == null ? null : _modifier(row.strength!),
+      strengthModifier: row.strength == null
+          ? null
+          : CharacterRules.abilityModifier(row.strength!),
       dexterityModifier: row.dexterity == null
           ? null
-          : _modifier(row.dexterity!),
+          : CharacterRules.abilityModifier(row.dexterity!),
       constitutionModifier: row.constitution == null
           ? null
-          : _modifier(row.constitution!),
+          : CharacterRules.abilityModifier(row.constitution!),
       intelligenceModifier: row.intelligence == null
           ? null
-          : _modifier(row.intelligence!),
-      wisdomModifier: row.wisdom == null ? null : _modifier(row.wisdom!),
-      charismaModifier: row.charisma == null ? null : _modifier(row.charisma!),
+          : CharacterRules.abilityModifier(row.intelligence!),
+      wisdomModifier: row.wisdom == null
+          ? null
+          : CharacterRules.abilityModifier(row.wisdom!),
+      charismaModifier: row.charisma == null
+          ? null
+          : CharacterRules.abilityModifier(row.charisma!),
     );
   }
-
-  int _modifier(int score) => ((score - 10) / 2).floor();
 }

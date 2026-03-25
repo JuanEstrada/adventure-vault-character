@@ -92,6 +92,11 @@ Verified on 2026-03-25:
 - The character sheet now renders normalized `saving throws`,
   `skill proficiencies`, `other proficiencies`, and inventory-derived
   equipment labels.
+- Character loading now also supports an editing-oriented aggregate:
+  `EditableCharacterService` reuses the normalized read assembly,
+  `EditableCharacterMapper` projects `CharacterRecord` into an editable
+  domain model, and `CharacterRepository` now exposes
+  `getEditableCharacterById`.
 - Drift persistence is now split across focused DAOs for `read`,
   `reference/seed`, and `write` responsibilities.
 - The characters feature now also has an explicit application layer:
@@ -108,6 +113,10 @@ Verified on 2026-03-25:
   instead of a sheet view mapper, including `ability score modifiers`,
   `proficiency bonus by level`, `level progress percent`,
   `other proficiency formatting`, and visible equipment item composition.
+- Shared character rules are now centralized under `CharacterRules`, and the
+  same formulas are reused by sheet derivation, editable-character loading,
+  and create-character persistence for `ability modifiers`,
+  `proficiency bonus`, `level progress`, and initial `hit points`.
 - The read-side domain is now also structured around dedicated value objects
   for `progression`, `hit points`, `background`, and `money/equipment`
   summaries, so future sheet growth can stay inside the domain layer before
@@ -157,8 +166,9 @@ Verified on 2026-03-25:
 This means the repository has moved beyond the single-screen bootstrap and now
 has real local persistence scaffolding, a parsed local compendium baseline,
 reactive character flows, normalized read/write paths, and migration coverage.
-The next major improvement is reducing duplicated snapshot state and tightening
-the normalized model before expanding more player-facing features.
+The next major improvement is using the new editable aggregate to open real
+edit flows while continuing to reduce duplicated snapshot state in
+`characters`.
 
 ## Current Phase
 
@@ -255,6 +265,12 @@ These are the highest-value unresolved items:
 3. Decide when deeper `Combat` features and the `Equipment` panel move from
    MVP-minimal states into populated panels.
 
+Resolved architecture decision:
+
+- The next domain refactor does introduce a real editing-oriented character
+  aggregate on top of the normalized read-side model instead of reintroducing
+  flat UI-facing DTOs.
+
 Resolved MVP decision:
 
 - Guided creation does require one additional mandatory step before save:
@@ -293,11 +309,14 @@ restructuring it again:
 
 1. Start defining an editing-oriented character domain on top of the new
    read-side value objects instead of reintroducing flat UI view models.
-2. Reduce the remaining static SRD defaults in the compendium repository by
+2. Build the first real edit/reopen flow on top of
+   `getEditableCharacterById`, keeping widgets thin and avoiding new
+   persistence-specific contracts in presentation.
+3. Reduce the remaining static SRD defaults in the compendium repository by
    deriving more gameplay data directly from the FightClub source set.
-3. Break the approved `create -> save -> card -> open sheet` flow into
+4. Break the approved `create -> save -> card -> open sheet` flow into
    concrete implementation tasks in `lib/`.
-4. Keep `HP` in scope as real MVP character-sheet data, not as a deferred
+5. Keep `HP` in scope as real MVP character-sheet data, not as a deferred
    combat placeholder.
 
 Next-session starting point:

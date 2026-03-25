@@ -5,6 +5,7 @@ import 'package:adventure_vault_character/src/features/characters/data/character
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_draft_validator.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/editable_character.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
@@ -19,6 +20,7 @@ class AppState {
     required this.characterSummaries,
     required this.compendiumCatalog,
     required this.selectedCharacterSheet,
+    required this.selectedEditableCharacter,
     this.errorMessage,
   });
 
@@ -29,6 +31,7 @@ class AppState {
       characterSummaries = const <CharacterSummary>[],
       compendiumCatalog = null,
       selectedCharacterSheet = null,
+      selectedEditableCharacter = null,
       errorMessage = null;
 
   final AppScreen screen;
@@ -37,6 +40,7 @@ class AppState {
   final List<CharacterSummary> characterSummaries;
   final CompendiumCatalog? compendiumCatalog;
   final CharacterDomainModel? selectedCharacterSheet;
+  final EditableCharacter? selectedEditableCharacter;
   final String? errorMessage;
 
   AppState copyWith({
@@ -46,8 +50,10 @@ class AppState {
     List<CharacterSummary>? characterSummaries,
     CompendiumCatalog? compendiumCatalog,
     CharacterDomainModel? selectedCharacterSheet,
+    EditableCharacter? selectedEditableCharacter,
     String? errorMessage,
     bool clearSelectedCharacter = false,
+    bool clearSelectedEditableCharacter = false,
     bool clearError = false,
   }) {
     return AppState(
@@ -59,6 +65,9 @@ class AppState {
       selectedCharacterSheet: clearSelectedCharacter
           ? null
           : selectedCharacterSheet ?? this.selectedCharacterSheet,
+      selectedEditableCharacter: clearSelectedEditableCharacter
+          ? null
+          : selectedEditableCharacter ?? this.selectedEditableCharacter,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     );
   }
@@ -120,6 +129,7 @@ class AppController extends ChangeNotifier {
     _state = _state.copyWith(
       screen: AppScreen.createCharacter,
       clearSelectedCharacter: true,
+      clearSelectedEditableCharacter: true,
       clearError: true,
     );
     notifyListeners();
@@ -129,6 +139,7 @@ class AppController extends ChangeNotifier {
     _state = _state.copyWith(
       screen: AppScreen.mainMenu,
       clearSelectedCharacter: true,
+      clearSelectedEditableCharacter: true,
       clearError: true,
     );
     notifyListeners();
@@ -158,6 +169,7 @@ class AppController extends ChangeNotifier {
         screen: AppScreen.characterSheet,
         isSavingCharacter: false,
         selectedCharacterSheet: sheet,
+        clearSelectedEditableCharacter: true,
         clearError: true,
       );
     } catch (_) {
@@ -185,12 +197,40 @@ class AppController extends ChangeNotifier {
         _state = _state.copyWith(
           screen: AppScreen.characterSheet,
           selectedCharacterSheet: character,
+          clearSelectedEditableCharacter: true,
           clearError: true,
         );
       }
     } catch (_) {
       _state = _state.copyWith(
         errorMessage: 'No se pudo abrir el personaje seleccionado.',
+      );
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> loadEditableCharacter(String characterId) async {
+    try {
+      final editableCharacter = await _characterRepository
+          .getEditableCharacterById(characterId);
+
+      if (editableCharacter == null) {
+        _state = _state.copyWith(
+          errorMessage: 'The selected character is no longer available.',
+          clearSelectedEditableCharacter: true,
+        );
+      } else {
+        _state = _state.copyWith(
+          selectedEditableCharacter: editableCharacter,
+          clearError: true,
+        );
+      }
+    } catch (_) {
+      _state = _state.copyWith(
+        errorMessage:
+            'The selected character could not be prepared for editing.',
+        clearSelectedEditableCharacter: true,
       );
     }
 

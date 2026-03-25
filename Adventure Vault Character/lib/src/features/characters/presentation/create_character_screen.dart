@@ -612,7 +612,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                       children: [
                         FilledButton(
                           onPressed:
-                              widget.isSaving || !_hasSupportedEquipmentSelection
+                              widget.isSaving ||
+                                  !_hasSupportedEquipmentSelection
                               ? null
                               : _submit,
                           child: Text(

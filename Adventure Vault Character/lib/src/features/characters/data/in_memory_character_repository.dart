@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary_mapper.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/editable_character.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 
@@ -81,13 +83,11 @@ class InMemoryCharacterRepository implements CharacterRepository {
         catalog.backgroundById(createdInput?.backgroundId) ??
         catalog.backgrounds.first;
     final className = createdInput?.className ?? summary.className;
-    final equipmentLoadout = catalog
-        .equipmentLoadoutsForClass(className)
-        .first;
+    final equipmentLoadout = catalog.equipmentLoadoutsForClass(className).first;
     final constitutionScore = createdInput?.constitution ?? 13;
     final level = createdInput?.level ?? summary.level;
-    final hitPoints = _startingHitPointsFor(
-      className: className,
+    final hitPoints = CharacterRules.startingHitPoints(
+      hitDie: _hitDieForClass(className),
       constitutionScore: constitutionScore,
       level: level,
     );
@@ -196,6 +196,77 @@ class InMemoryCharacterRepository implements CharacterRepository {
     yield* _changes.stream.asyncMap((_) => getCharacterSheetById(id));
   }
 
+  @override
+  Future<EditableCharacter?> getEditableCharacterById(String id) async {
+    final sheet = await getCharacterSheetById(id);
+    final createdInput = _createdInputsById[id];
+    if (sheet == null) {
+      return null;
+    }
+
+    final provenance = <String, int>{
+      'Strength': createdInput?.strength ?? sheet.abilities.entries[0].score,
+      'Dexterity': createdInput?.dexterity ?? sheet.abilities.entries[1].score,
+      'Constitution':
+          createdInput?.constitution ?? sheet.abilities.entries[2].score,
+      'Intelligence':
+          createdInput?.intelligence ?? sheet.abilities.entries[3].score,
+      'Wisdom': createdInput?.wisdom ?? sheet.abilities.entries[4].score,
+      'Charisma': createdInput?.charisma ?? sheet.abilities.entries[5].score,
+    };
+
+    return EditableCharacter(
+      id: id,
+      identity: EditableCharacterIdentity(
+        name: sheet.identity.name,
+        raceName: sheet.identity.raceName,
+        className: sheet.identity.className,
+        portraitAssetPath: createdInput?.portraitAssetPath,
+      ),
+      background: EditableCharacterBackground(
+        id: createdInput?.backgroundId,
+        name: sheet.featuresNotes.background.name,
+        summary: sheet.featuresNotes.background.summary,
+        bonuses: sheet.featuresNotes.background.bonuses,
+        socialPerks: sheet.featuresNotes.background.socialPerks,
+      ),
+      abilities: EditableCharacterAbilities(
+        methodKey: sheet.abilities.methodKey,
+        entries: sheet.abilities.entries,
+        provenance: EditableAbilityScoreProvenance(
+          rawValue: createdInput?.abilityScoreProvenance,
+          methodKey:
+              createdInput?.abilityScoreMethod ?? sheet.abilities.methodKey,
+          assignedScoresByAbility: provenance,
+        ),
+      ),
+      progression: sheet.identity.progression,
+      hitPoints: sheet.combat.hitPoints,
+      equipment: EditableCharacterEquipment(
+        loadoutId: createdInput?.equipmentLoadoutId,
+        loadoutLabel: sheet.equipment.selectedEquipmentLabel,
+        startingMoneySummary: sheet.equipment.money.startingMoneySummary,
+        currencySummary: sheet.equipment.money.currencySummary,
+        items: sheet.equipment.items
+            .map(
+              (item) => EditableCharacterEquipmentItem(
+                name: item.name,
+                quantity: item.quantity,
+                isEquipped: item.isEquipped,
+              ),
+            )
+            .toList(growable: false),
+      ),
+      finishingDetails: EditableCharacterFinishingDetails(
+        alignment: sheet.featuresNotes.alignment,
+        appearanceDetails: sheet.featuresNotes.appearanceDetails,
+        narrativeDetails: sheet.featuresNotes.narrativeDetails,
+      ),
+      createdAt: DateTime.fromMicrosecondsSinceEpoch(int.tryParse(id) ?? 0),
+      updatedAt: DateTime.fromMicrosecondsSinceEpoch(int.tryParse(id) ?? 0),
+    );
+  }
+
   CharacterAbilityScoreDomainModel _abilityRow(String label, int score) {
     return CharacterAbilityScoreDomainModel(label: label, score: score);
   }
@@ -215,11 +286,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
     );
   }
 
-  int _startingHitPointsFor({
-    required String className,
-    required int constitutionScore,
-    required int level,
-  }) {
+  int _hitDieForClass(String className) {
     const hitDieByClass = <String, int>{
       'barbarian': 12,
       'bard': 8,
@@ -235,20 +302,8 @@ class InMemoryCharacterRepository implements CharacterRepository {
       'wizard': 6,
     };
     final key = _slugify(className);
-    final hitDie = hitDieByClass[key] ?? 10;
-    final constitutionModifier = _abilityModifier(constitutionScore);
-    final firstLevelHitPoints = hitDie + constitutionModifier;
-    if (level <= 1) {
-      return firstLevelHitPoints.clamp(1, 999);
-    }
-
-    final averagePerLevel = ((hitDie / 2).floor() + 1) + constitutionModifier;
-    return (firstLevelHitPoints +
-            ((level - 1) * averagePerLevel.clamp(1, 999)))
-        .clamp(1, 999);
+    return hitDieByClass[key] ?? 10;
   }
-
-  int _abilityModifier(int score) => ((score - 10) / 2).floor();
 
   _InventoryItemSpec _parseInventoryItemSpec(String raw) {
     final trimmed = raw.trim();
@@ -314,12 +369,14 @@ class InMemoryCharacterRepository implements CharacterRepository {
   List<String> _extractBackgroundNarrativeBonuses(
     CompendiumBackground background,
   ) {
-    return background.bonuses.where((bonus) {
-      final normalized = bonus.toLowerCase();
-      return !normalized.startsWith('skills:') &&
-          !normalized.startsWith('languages:') &&
-          bonus.trim().isNotEmpty;
-    }).toList(growable: false);
+    return background.bonuses
+        .where((bonus) {
+          final normalized = bonus.toLowerCase();
+          return !normalized.startsWith('skills:') &&
+              !normalized.startsWith('languages:') &&
+              bonus.trim().isNotEmpty;
+        })
+        .toList(growable: false);
   }
 
   String _slugify(String raw) {
@@ -331,10 +388,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
 }
 
 class _InventoryItemSpec {
-  const _InventoryItemSpec({
-    required this.name,
-    required this.quantity,
-  });
+  const _InventoryItemSpec({required this.name, required this.quantity});
 
   final String name;
   final int quantity;

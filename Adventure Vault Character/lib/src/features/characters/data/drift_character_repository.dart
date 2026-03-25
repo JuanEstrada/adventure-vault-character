@@ -1,5 +1,7 @@
 import 'package:adventure_vault_character/src/features/characters/application/character_sheet_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/create_character_service.dart';
+import 'package:adventure_vault_character/src/features/characters/application/editable_character_service.dart';
+import 'package:adventure_vault_character/src/features/characters/application/character_record_loader.dart';
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_read_dao.dart';
@@ -9,6 +11,7 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary_mapper.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/editable_character.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 
 class DriftCharacterRepository implements CharacterRepository {
@@ -30,12 +33,19 @@ class DriftCharacterRepository implements CharacterRepository {
          database: database,
          readDao: CharacterReadDao(database),
          compendiumRepository: compendiumRepository,
+       ),
+       _editableCharacterService = EditableCharacterService(
+         recordLoader: CharacterRecordLoader(
+           readDao: CharacterReadDao(database),
+           compendiumRepository: compendiumRepository,
+         ),
        );
 
   final CharacterReadDao _readDao;
   final CharacterSummaryMapper _characterSummaryMapper;
   final CreateCharacterService _createCharacterService;
   final CharacterSheetService _characterSheetService;
+  final EditableCharacterService _editableCharacterService;
 
   @override
   Future<List<CharacterSummary>> getCharacterSummaries() async {
@@ -76,5 +86,10 @@ class DriftCharacterRepository implements CharacterRepository {
   @override
   Stream<CharacterDomainModel?> watchCharacterSheetById(String id) {
     return _characterSheetService.watchCharacterSheetById(id);
+  }
+
+  @override
+  Future<EditableCharacter?> getEditableCharacterById(String id) {
+    return _editableCharacterService.getEditableCharacterById(id);
   }
 }

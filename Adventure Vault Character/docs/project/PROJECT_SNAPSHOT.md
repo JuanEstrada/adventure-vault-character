@@ -60,6 +60,10 @@ sheet flow stable.
 - The characters feature now uses explicit application services for
   `create character` and `character sheet` loading, with shared summary
   mapping extracted from the repository implementation.
+- The characters feature now also exposes an editing-oriented load path:
+  `CharacterRecordLoader` assembles normalized read inputs once,
+  `EditableCharacterService` maps them into an editable aggregate, and the
+  repository now exposes `getEditableCharacterById`.
 - Character-sheet reads now flow through a dedicated read-side domain layer:
   `CharacterRecord` gathers the read inputs and `CharacterDomainMapper`
   translates them into `CharacterDomainModel`.
@@ -69,6 +73,9 @@ sheet flow stable.
   view mapper, including ability modifiers, proficiency bonus by level,
   level progress percent, formatted proficiencies, and visible equipment item
   composition.
+- Shared formulas for `ability modifiers`, `proficiency bonus`,
+  `level progress`, and initial `hit points` are now centralized in
+  `CharacterRules` and reused by create, read, and editable-character paths.
 - The read-side domain now also uses dedicated value objects for progression,
   hit points, background outputs, and money/equipment summaries, which makes
   the UI path closer to a direct domain render path.
@@ -84,6 +91,9 @@ sheet flow stable.
   abilities, progression, hit points, structured equipment data, normalized
   saving throws, proficiencies, and finishing details.
 - Regression tests now cover Drift migrations from legacy schemas into `v4`.
+- Regression tests now also cover loading an editable aggregate from
+  normalized persistence and mapping it back into the current
+  `CreateCharacterInput` contract.
 - A dedicated `CompendiumRepository` now loads active XML assets directly from
   `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`,
   with JSON fallback preserved.
@@ -146,8 +156,8 @@ sheet flow stable.
 
 ## Work In Progress
 
-- Extending the new read-side domain model and using it as the basis for
-  future edit flows without reintroducing flat UI mapping layers.
+- Using the new editable aggregate as the basis for a real reopen/edit flow
+  without reintroducing flat UI mapping layers.
 
 ## Pending Work
 
@@ -157,8 +167,8 @@ sheet flow stable.
 - Define application services and mappers for full guided character creation,
   card summaries, and character-sheet rendering beyond the current first
   service split.
-- Define how the next editing-oriented character domain should reuse the
-  current read-side value objects and boundaries.
+- Build the first presentation flow that reopens a persisted character through
+  the new editable aggregate and allows controlled mutation.
 - Decide when the local normalized compendium catalog becomes a generated or
   parsed XML-backed source instead of curated asset data.
 - Map the approved MVP flow into implementation tasks in `lib/`.
@@ -207,10 +217,11 @@ sheet flow stable.
 
 1. Build the next editing-oriented character domain on top of the current
    read-side model instead of introducing another UI-facing mapper layer.
-2. Deepen the parsed compendium fidelity beyond the current seeded FightClub
+2. Build the first reopen/edit workflow on top of the new editable load path.
+3. Deepen the parsed compendium fidelity beyond the current seeded FightClub
    SRD subset and static progression defaults.
-3. Break the approved MVP flow into implementation tasks in `lib/`.
-4. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
+4. Break the approved MVP flow into implementation tasks in `lib/`.
+5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
 ## Next Session Guardrail
 
@@ -221,7 +232,6 @@ sheet flow stable.
 
 ## Risks and Unknowns
 
-- The first domain model is not yet finalized.
 - Schema-level snapshot cleanup is still pending even though new writes and
   sheet reads now prefer the normalized model.
 - Background bonuses and social perks still need deeper normalized

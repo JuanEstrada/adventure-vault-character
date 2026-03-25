@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_reference_dao.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_write_dao.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary_mapper.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
@@ -37,10 +38,12 @@ class CreateCharacterService {
     final catalog = await _loadCatalog();
     final background = catalog.backgroundById(input.backgroundId);
     final classSeed = _classSeedFor(input.className);
-    final proficiencyBonus = _calculateProficiencyBonus(input.level);
+    final proficiencyBonus = CharacterRules.proficiencyBonusForLevel(
+      input.level,
+    );
     final currency = _parseCurrencySummary(input.startingMoneySummary);
-    final hitPoints = _startingHitPointsFor(
-      classSeed: classSeed,
+    final hitPoints = CharacterRules.startingHitPoints(
+      hitDie: classSeed.hitDie ?? 10,
       constitutionScore: input.constitution,
       level: input.level,
     );
@@ -125,10 +128,7 @@ class CreateCharacterService {
         ),
       );
       await _writeDao.insertInventory(
-        _buildInventoryRows(
-          characterId: id,
-          items: inventoryItems,
-        ),
+        _buildInventoryRows(characterId: id, items: inventoryItems),
       );
     });
 
@@ -148,12 +148,18 @@ class CreateCharacterService {
         intelligenceScore: input.intelligence,
         wisdomScore: input.wisdom,
         charismaScore: input.charisma,
-        strengthModifier: Value(_abilityModifier(input.strength)),
-        dexterityModifier: Value(_abilityModifier(input.dexterity)),
-        constitutionModifier: Value(_abilityModifier(input.constitution)),
-        intelligenceModifier: Value(_abilityModifier(input.intelligence)),
-        wisdomModifier: Value(_abilityModifier(input.wisdom)),
-        charismaModifier: Value(_abilityModifier(input.charisma)),
+        strengthModifier: Value(CharacterRules.abilityModifier(input.strength)),
+        dexterityModifier: Value(
+          CharacterRules.abilityModifier(input.dexterity),
+        ),
+        constitutionModifier: Value(
+          CharacterRules.abilityModifier(input.constitution),
+        ),
+        intelligenceModifier: Value(
+          CharacterRules.abilityModifier(input.intelligence),
+        ),
+        wisdomModifier: Value(CharacterRules.abilityModifier(input.wisdom)),
+        charismaModifier: Value(CharacterRules.abilityModifier(input.charisma)),
       ),
     );
   }
@@ -224,7 +230,9 @@ class CreateCharacterService {
     );
   }
 
-  Future<void> _ensureEquipmentDefinitions(List<_InventoryItemSpec> items) async {
+  Future<void> _ensureEquipmentDefinitions(
+    List<_InventoryItemSpec> items,
+  ) async {
     await _referenceDao.upsertEquipmentDefinitions(
       items
           .map(
@@ -352,6 +360,8 @@ class CreateCharacterService {
     ];
   }
 
+  int _abilityModifier(int score) => CharacterRules.abilityModifier(score);
+
   CharacterProficienciesCompanion _buildProficiencyRow({
     required String characterId,
     required String proficiencyType,
@@ -399,28 +409,6 @@ class CreateCharacterService {
           ),
         )
         .toList(growable: false);
-  }
-
-  int _abilityModifier(int score) => ((score - 10) / 2).floor();
-
-  int _calculateProficiencyBonus(int level) => 2 + ((level - 1) ~/ 4);
-
-  int _startingHitPointsFor({
-    required _ClassSeed classSeed,
-    required int constitutionScore,
-    required int level,
-  }) {
-    final hitDie = classSeed.hitDie ?? 10;
-    final constitutionModifier = _abilityModifier(constitutionScore);
-    final firstLevelHitPoints = hitDie + constitutionModifier;
-    if (level <= 1) {
-      return firstLevelHitPoints.clamp(1, 999);
-    }
-
-    final averagePerLevel = ((hitDie / 2).floor() + 1) + constitutionModifier;
-    final total =
-        firstLevelHitPoints + ((level - 1) * averagePerLevel.clamp(1, 999));
-    return total.clamp(1, 999);
   }
 
   String _equipmentDefinitionId(String name) => 'equipment-${_slugify(name)}';
@@ -539,12 +527,14 @@ class CreateCharacterService {
       return const <String>[];
     }
 
-    return background.bonuses.where((bonus) {
-      final normalized = bonus.toLowerCase();
-      return !normalized.startsWith('skills:') &&
-          !normalized.startsWith('languages:') &&
-          bonus.trim().isNotEmpty;
-    }).toList(growable: false);
+    return background.bonuses
+        .where((bonus) {
+          final normalized = bonus.toLowerCase();
+          return !normalized.startsWith('skills:') &&
+              !normalized.startsWith('languages:') &&
+              bonus.trim().isNotEmpty;
+        })
+        .toList(growable: false);
   }
 
   _CurrencyBreakdown _parseCurrencySummary(String raw) {
@@ -629,10 +619,7 @@ class _CurrencyBreakdown {
 }
 
 class _InventoryItemSpec {
-  const _InventoryItemSpec({
-    required this.name,
-    required this.quantity,
-  });
+  const _InventoryItemSpec({required this.name, required this.quantity});
 
   final String name;
   final int quantity;
