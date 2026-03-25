@@ -265,12 +265,57 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void saveEditedCharacter(CreateCharacterInput input) {
-    _state.characterEditorController?.replaceDraft(input);
-    _state = _state.copyWith(
-      errorMessage:
-          'Saving changes for existing characters is not implemented yet.',
-    );
+  Future<void> saveEditedCharacter(CreateCharacterInput input) async {
+    final editorController = _state.characterEditorController;
+    if (editorController == null) {
+      _state = _state.copyWith(
+        errorMessage: 'No editable character is currently loaded.',
+      );
+      notifyListeners();
+      return;
+    }
+
+    editorController.replaceDraft(input);
+    _state = _state.copyWith(isSavingCharacter: true, clearError: true);
+    notifyListeners();
+
+    try {
+      await _characterRepository.updateCharacter(
+        editorController.characterId,
+        input,
+      );
+      await _selectedCharacterSubscription?.cancel();
+      _selectedCharacterSubscription = null;
+      final sheet = await _characterRepository
+          .watchCharacterSheetById(editorController.characterId)
+          .first;
+
+      if (sheet == null) {
+        _state = _state.copyWith(
+          isSavingCharacter: false,
+          errorMessage: 'The selected character is no longer available.',
+          clearSelectedEditableCharacter: true,
+          clearCharacterEditorController: true,
+        );
+      } else {
+        _subscribeToSelectedCharacter(editorController.characterId);
+        _disposeCharacterEditorController();
+        _state = _state.copyWith(
+          screen: AppScreen.characterSheet,
+          isSavingCharacter: false,
+          selectedCharacterSheet: sheet,
+          clearSelectedEditableCharacter: true,
+          clearCharacterEditorController: true,
+          clearError: true,
+        );
+      }
+    } catch (_) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: 'The character could not be updated locally.',
+      );
+    }
+
     notifyListeners();
   }
 

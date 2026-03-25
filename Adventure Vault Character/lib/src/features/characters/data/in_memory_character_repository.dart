@@ -61,6 +61,26 @@ class InMemoryCharacterRepository implements CharacterRepository {
   }
 
   @override
+  Future<CharacterSummary> updateCharacter(
+    String id,
+    CreateCharacterInput input,
+  ) async {
+    final existingIndex = _summaries.indexWhere((summary) => summary.id == id);
+    if (existingIndex < 0) {
+      throw StateError('Character not found.');
+    }
+
+    final summary = _characterSummaryMapper.fromCreateInput(
+      id: id,
+      input: input,
+    );
+    _summaries[existingIndex] = summary;
+    _createdInputsById[id] = input;
+    _changes.add(null);
+    return summary;
+  }
+
+  @override
   Future<CharacterSummary?> getCharacterSummaryById(String id) async {
     for (final summary in _summaries) {
       if (summary.id == id) {

@@ -1,4 +1,5 @@
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:flutter/material.dart';
 
@@ -55,8 +56,13 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   String _selectedAbilityMethod = 'generatedSetAssignment';
   late String _selectedClass;
   int _selectedLevel = 1;
+  int _selectedExperience = 0;
   String _selectedAlignment = 'Neutral';
   late CompendiumEquipmentLoadout _selectedEquipmentLoadout;
+  int _currentHitPoints = 10;
+  int _maximumHitPoints = 10;
+  int _temporaryHitPoints = 0;
+  String? _portraitAssetPath;
 
   static const List<String> _abilityOrder = <String>[
     'Strength',
@@ -132,7 +138,14 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     _selectedAbilityMethod =
         initialDraft?.abilityScoreMethod ?? 'generatedSetAssignment';
     _selectedLevel = initialDraft?.level ?? 1;
+    _selectedExperience =
+        initialDraft?.experience ??
+        CharacterRules.experienceFloorForLevel(_selectedLevel);
     _selectedAlignment = initialDraft?.alignment ?? 'Neutral';
+    _currentHitPoints = initialDraft?.currentHitPoints ?? 10;
+    _maximumHitPoints = initialDraft?.maximumHitPoints ?? 10;
+    _temporaryHitPoints = initialDraft?.temporaryHitPoints ?? 0;
+    _portraitAssetPath = initialDraft?.portraitAssetPath;
     _nameController.text = initialDraft?.name ?? '';
     _appearanceController.text = initialDraft?.appearanceDetails ?? '';
     _narrativeController.text = initialDraft?.narrativeDetails ?? '';
@@ -213,17 +226,18 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
         charisma: assignments['Charisma']!,
         className: _selectedClass,
         level: _selectedLevel,
-        experience: (_selectedLevel - 1) * 300,
+        experience: _selectedExperience,
         equipmentLoadoutId: _selectedEquipmentLoadout.id,
         equipmentLoadoutLabel: _selectedEquipmentLoadout.label,
         startingMoneySummary: _selectedEquipmentLoadout.startingMoneySummary,
         selectedEquipmentItems: _selectedEquipmentLoadout.selectedItems,
-        currentHitPoints: 10,
-        maximumHitPoints: 10,
-        temporaryHitPoints: 0,
+        currentHitPoints: _currentHitPoints,
+        maximumHitPoints: _maximumHitPoints,
+        temporaryHitPoints: _temporaryHitPoints,
         alignment: _selectedAlignment,
         appearanceDetails: _appearanceController.text.trim(),
         narrativeDetails: _narrativeController.text.trim(),
+        portraitAssetPath: _portraitAssetPath,
       ),
     );
   }
@@ -458,6 +472,10 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                                     if (value == null) return;
                                     setState(() {
                                       _selectedLevel = value;
+                                      _selectedExperience =
+                                          CharacterRules.experienceFloorForLevel(
+                                            value,
+                                          );
                                     });
                                   },
                           ),
@@ -465,7 +483,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'Experience inicial: ${(_selectedLevel - 1) * 300}',
+                              'Experience inicial: $_selectedExperience',
                               style: theme.textTheme.bodyLarge,
                             ),
                           ),

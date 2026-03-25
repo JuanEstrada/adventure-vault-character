@@ -69,6 +69,14 @@ class DriftCharacterRepository implements CharacterRepository {
   }
 
   @override
+  Future<CharacterSummary> updateCharacter(
+    String id,
+    CreateCharacterInput input,
+  ) {
+    return _createCharacterService.updateCharacter(id, input);
+  }
+
+  @override
   Future<CharacterSummary?> getCharacterSummaryById(String id) async {
     final row = await _readDao.getCharacterRowById(id);
     if (row == null) {

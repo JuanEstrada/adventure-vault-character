@@ -10,6 +10,11 @@ abstract interface class CharacterRepository {
 
   Future<CharacterSummary> createCharacter(CreateCharacterInput input);
 
+  Future<CharacterSummary> updateCharacter(
+    String id,
+    CreateCharacterInput input,
+  );
+
   Future<CharacterSummary?> getCharacterSummaryById(String id);
 
   Future<CharacterDomainModel?> getCharacterSheetById(String id);

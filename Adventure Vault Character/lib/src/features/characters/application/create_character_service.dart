@@ -35,6 +35,42 @@ class CreateCharacterService {
   Future<CharacterSummary> createCharacter(CreateCharacterInput input) async {
     final now = DateTime.now();
     final id = now.microsecondsSinceEpoch.toString();
+    return _persistCharacter(
+      id: id,
+      input: input,
+      createdAt: now,
+      updatedAt: now,
+      existingRow: null,
+    );
+  }
+
+  Future<CharacterSummary> updateCharacter(
+    String id,
+    CreateCharacterInput input,
+  ) async {
+    final existingRow = await (_database.select(
+      _database.characters,
+    )..where((table) => table.id.equals(id))).getSingleOrNull();
+    if (existingRow == null) {
+      throw StateError('Character not found.');
+    }
+
+    return _persistCharacter(
+      id: id,
+      input: input,
+      createdAt: existingRow.createdAt,
+      updatedAt: DateTime.now(),
+      existingRow: existingRow,
+    );
+  }
+
+  Future<CharacterSummary> _persistCharacter({
+    required String id,
+    required CreateCharacterInput input,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    required Character? existingRow,
+  }) async {
     final catalog = await _loadCatalog();
     final background = catalog.backgroundById(input.backgroundId);
     final classSeed = _classSeedFor(input.className);
@@ -42,10 +78,14 @@ class CreateCharacterService {
       input.level,
     );
     final currency = _parseCurrencySummary(input.startingMoneySummary);
-    final hitPoints = CharacterRules.startingHitPoints(
+    final recomputedHitPoints = CharacterRules.startingHitPoints(
       hitDie: classSeed.hitDie ?? 10,
       constitutionScore: input.constitution,
       level: input.level,
+    );
+    final resolvedHitPoints = _resolveHitPoints(
+      existingRow: existingRow,
+      recomputedMaximum: recomputedHitPoints,
     );
     final inventoryItems = input.selectedEquipmentItems
         .map(_parseInventoryItemSpec)
@@ -62,38 +102,58 @@ class CreateCharacterService {
       await _ensureBackgroundDefinition(catalog, input, input.backgroundId);
       await _ensureEquipmentDefinitions(inventoryItems);
 
-      await _writeDao.insertCharacter(
-        CharactersCompanion.insert(
-          id: id,
-          name: input.name,
-          raceName: input.raceName,
-          classDefinitionId: Value(classSeed.id),
-          backgroundDefinitionRefId: Value(input.backgroundId),
-          backgroundId: Value(input.backgroundId),
-          abilityScoreMethod: Value(input.abilityScoreMethod),
-          abilityScoreProvenance: Value(input.abilityScoreProvenance),
-          className: input.className,
-          level: input.level,
-          experience: Value(input.experience),
-          proficiencyBonus: Value(proficiencyBonus),
-          equipmentLoadoutId: Value(input.equipmentLoadoutId),
-          equipmentLoadoutLabel: Value(input.equipmentLoadoutLabel),
-          currentHitPoints: Value(hitPoints),
-          maximumHitPoints: Value(hitPoints),
-          temporaryHitPoints: const Value(0),
-          portraitAssetPath: Value(input.portraitAssetPath),
-          alignment: Value(input.alignment),
-          appearanceDetails: Value(input.appearanceDetails),
-          narrativeDetails: Value(input.narrativeDetails),
-          createdAt: now,
-          updatedAt: now,
-        ),
+      final characterCompanion = CharactersCompanion(
+        id: Value(id),
+        name: Value(input.name),
+        raceName: Value(input.raceName),
+        classDefinitionId: Value(classSeed.id),
+        backgroundDefinitionRefId: Value(input.backgroundId),
+        backgroundId: Value(input.backgroundId),
+        backgroundName: const Value(null),
+        backgroundSummary: const Value(null),
+        abilityScoreMethod: Value(input.abilityScoreMethod),
+        abilityScoreProvenance: Value(input.abilityScoreProvenance),
+        strength: const Value(null),
+        dexterity: const Value(null),
+        constitution: const Value(null),
+        intelligence: const Value(null),
+        wisdom: const Value(null),
+        charisma: const Value(null),
+        className: Value(input.className),
+        level: Value(input.level),
+        experience: Value(input.experience),
+        proficiencyBonus: Value(proficiencyBonus),
+        equipmentLoadoutId: Value(input.equipmentLoadoutId),
+        equipmentLoadoutLabel: Value(input.equipmentLoadoutLabel),
+        startingMoneySummary: const Value(null),
+        selectedEquipmentItems: const Value(null),
+        currentHitPoints: Value(resolvedHitPoints.current),
+        maximumHitPoints: Value(resolvedHitPoints.maximum),
+        temporaryHitPoints: Value(resolvedHitPoints.temporary),
+        portraitAssetPath: Value(input.portraitAssetPath),
+        alignment: Value(input.alignment),
+        appearanceDetails: Value(input.appearanceDetails),
+        narrativeDetails: Value(input.narrativeDetails),
+        createdAt: Value(createdAt),
+        updatedAt: Value(updatedAt),
       );
 
-      await _writeAbilityScores(id, input);
+      if (existingRow == null) {
+        await _writeDao.insertCharacter(characterCompanion);
+      } else {
+        await _writeDao.updateCharacter(id, characterCompanion);
+      }
+
+      await _writeAbilityScores(
+        id,
+        input,
+        replaceExisting: existingRow != null,
+      );
+      await _writeDao.deleteSkillsByCharacterId(id);
       await _writeDao.insertSkills(
         _buildCharacterSkillRows(characterId: id, background: background),
       );
+      await _writeDao.deleteSavingThrowsByCharacterId(id);
       await _writeDao.insertSavingThrows(
         _buildCharacterSavingThrowRows(
           characterId: id,
@@ -109,6 +169,7 @@ class CreateCharacterService {
           proficiencyBonus: proficiencyBonus,
         ),
       );
+      await _writeDao.deleteProficienciesByCharacterId(id);
       await _writeDao.insertProficiencies(
         _buildCharacterProficiencyRows(
           characterId: id,
@@ -116,17 +177,31 @@ class CreateCharacterService {
           background: background,
         ),
       );
-      await _writeDao.insertCurrency(
-        CharacterCurrencyCompanion.insert(
-          characterId: id,
-          copper: Value(currency.copper),
-          silver: Value(currency.silver),
-          electrum: Value(currency.electrum),
-          gold: Value(currency.gold),
-          platinum: Value(currency.platinum),
-          summarySnapshot: Value(input.startingMoneySummary),
-        ),
+      final currencyCompanion = CharacterCurrencyCompanion(
+        characterId: Value(id),
+        copper: Value(currency.copper),
+        silver: Value(currency.silver),
+        electrum: Value(currency.electrum),
+        gold: Value(currency.gold),
+        platinum: Value(currency.platinum),
+        summarySnapshot: Value(input.startingMoneySummary),
       );
+      if (existingRow == null) {
+        await _writeDao.insertCurrency(
+          CharacterCurrencyCompanion.insert(
+            characterId: id,
+            copper: Value(currency.copper),
+            silver: Value(currency.silver),
+            electrum: Value(currency.electrum),
+            gold: Value(currency.gold),
+            platinum: Value(currency.platinum),
+            summarySnapshot: Value(input.startingMoneySummary),
+          ),
+        );
+      } else {
+        await _writeDao.replaceCurrency(currencyCompanion);
+      }
+      await _writeDao.deleteInventoryByCharacterId(id);
       await _writeDao.insertInventory(
         _buildInventoryRows(characterId: id, items: inventoryItems),
       );
@@ -137,8 +212,40 @@ class CreateCharacterService {
 
   Future<void> _writeAbilityScores(
     String id,
-    CreateCharacterInput input,
-  ) async {
+    CreateCharacterInput input, {
+    required bool replaceExisting,
+  }) async {
+    if (replaceExisting) {
+      await _writeDao.replaceAbilityScores(
+        CharacterAbilityScoresCompanion(
+          characterId: Value(id),
+          strengthScore: Value(input.strength),
+          dexterityScore: Value(input.dexterity),
+          constitutionScore: Value(input.constitution),
+          intelligenceScore: Value(input.intelligence),
+          wisdomScore: Value(input.wisdom),
+          charismaScore: Value(input.charisma),
+          strengthModifier: Value(
+            CharacterRules.abilityModifier(input.strength),
+          ),
+          dexterityModifier: Value(
+            CharacterRules.abilityModifier(input.dexterity),
+          ),
+          constitutionModifier: Value(
+            CharacterRules.abilityModifier(input.constitution),
+          ),
+          intelligenceModifier: Value(
+            CharacterRules.abilityModifier(input.intelligence),
+          ),
+          wisdomModifier: Value(CharacterRules.abilityModifier(input.wisdom)),
+          charismaModifier: Value(
+            CharacterRules.abilityModifier(input.charisma),
+          ),
+        ),
+      );
+      return;
+    }
+
     await _writeDao.insertAbilityScores(
       CharacterAbilityScoresCompanion.insert(
         characterId: id,
@@ -358,6 +465,32 @@ class CreateCharacterService {
         ),
       ),
     ];
+  }
+
+  _ResolvedHitPoints _resolveHitPoints({
+    required Character? existingRow,
+    required int recomputedMaximum,
+  }) {
+    if (existingRow == null) {
+      return _ResolvedHitPoints(
+        current: recomputedMaximum,
+        maximum: recomputedMaximum,
+        temporary: 0,
+      );
+    }
+
+    final previousCurrent = existingRow.currentHitPoints ?? recomputedMaximum;
+    final previousMaximum = existingRow.maximumHitPoints ?? recomputedMaximum;
+    final previousTemporary = existingRow.temporaryHitPoints ?? 0;
+    final current = previousCurrent >= previousMaximum
+        ? recomputedMaximum
+        : previousCurrent.clamp(0, recomputedMaximum);
+
+    return _ResolvedHitPoints(
+      current: current,
+      maximum: recomputedMaximum,
+      temporary: previousTemporary,
+    );
   }
 
   int _abilityModifier(int score) => CharacterRules.abilityModifier(score);
@@ -600,6 +733,18 @@ class _AbilityScores {
       _ => 0,
     };
   }
+}
+
+class _ResolvedHitPoints {
+  const _ResolvedHitPoints({
+    required this.current,
+    required this.maximum,
+    required this.temporary,
+  });
+
+  final int current;
+  final int maximum;
+  final int temporary;
 }
 
 class _CurrencyBreakdown {
