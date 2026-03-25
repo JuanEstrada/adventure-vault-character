@@ -97,6 +97,11 @@ Verified on 2026-03-25:
   `EditableCharacterMapper` projects `CharacterRecord` into an editable
   domain model, and `CharacterRepository` now exposes
   `getEditableCharacterById`.
+- Existing characters can now reopen into a guided edit flow from the
+  character sheet. The app uses a dedicated `CharacterEditorController`,
+  reuses the guided builder sections for editing, and persists updates back
+  through the normalized Drift model instead of recreating snapshot-heavy
+  writes.
 - Drift persistence is now split across focused DAOs for `read`,
   `reference/seed`, and `write` responsibilities.
 - The characters feature now also has an explicit application layer:
@@ -117,6 +122,9 @@ Verified on 2026-03-25:
   same formulas are reused by sheet derivation, editable-character loading,
   and create-character persistence for `ability modifiers`,
   `proficiency bonus`, `level progress`, and initial `hit points`.
+- Character updates now also reuse those shared rules. When class, level, or
+  Constitution change during edit, maximum HP is recomputed deterministically
+  and current HP is preserved when possible, then clamped to the new maximum.
 - The read-side domain is now also structured around dedicated value objects
   for `progression`, `hit points`, `background`, and `money/equipment`
   summaries, so future sheet growth can stay inside the domain layer before
@@ -163,12 +171,11 @@ Verified on 2026-03-25:
 - `test/widget_test.dart` covers the offline path into the main menu.
 - `flutter test` passed after the schema and repository changes.
 
-This means the repository has moved beyond the single-screen bootstrap and now
-has real local persistence scaffolding, a parsed local compendium baseline,
-reactive character flows, normalized read/write paths, and migration coverage.
-The next major improvement is using the new editable aggregate to open real
-edit flows while continuing to reduce duplicated snapshot state in
-`characters`.
+This means the repository now has an end-to-end offline character edit flow on
+top of the normalized read/write model, with shared rules and regression
+coverage protecting both create and update paths. The next major improvement
+is tightening the remaining duplicated snapshot state and extending the edit
+flow beyond the current guided MVP fields.
 
 ## Current Phase
 
@@ -318,6 +325,13 @@ restructuring it again:
    concrete implementation tasks in `lib/`.
 5. Keep `HP` in scope as real MVP character-sheet data, not as a deferred
    combat placeholder.
+
+Completed since the previous handoff:
+
+- The first real `open -> edit -> save -> reopen` flow is now implemented.
+- The edit flow reuses the guided builder sections instead of introducing a
+  second form surface.
+- Repository and widget regression coverage now includes the edit/update path.
 
 Next-session starting point:
 

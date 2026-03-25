@@ -64,6 +64,10 @@ sheet flow stable.
   `CharacterRecordLoader` assembles normalized read inputs once,
   `EditableCharacterService` maps them into an editable aggregate, and the
   repository now exposes `getEditableCharacterById`.
+- Existing characters can now be edited through a guided form reopened from
+  the character sheet. The app uses a dedicated
+  `CharacterEditorController`, reuses the existing builder sections for edit,
+  and persists updates back into normalized Drift rows.
 - Character-sheet reads now flow through a dedicated read-side domain layer:
   `CharacterRecord` gathers the read inputs and `CharacterDomainMapper`
   translates them into `CharacterDomainModel`.
@@ -76,6 +80,9 @@ sheet flow stable.
 - Shared formulas for `ability modifiers`, `proficiency bonus`,
   `level progress`, and initial `hit points` are now centralized in
   `CharacterRules` and reused by create, read, and editable-character paths.
+- Character updates now also apply those shared rules so changes to class,
+  level, or Constitution recompute maximum HP deterministically while
+  preserving current HP when possible.
 - The read-side domain now also uses dedicated value objects for progression,
   hit points, background outputs, and money/equipment summaries, which makes
   the UI path closer to a direct domain render path.
@@ -94,6 +101,8 @@ sheet flow stable.
 - Regression tests now also cover loading an editable aggregate from
   normalized persistence and mapping it back into the current
   `CreateCharacterInput` contract.
+- Regression tests now also cover `open -> edit -> save -> reopen` through
+  both repository and widget-level flows.
 - A dedicated `CompendiumRepository` now loads active XML assets directly from
   `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`,
   with JSON fallback preserved.
@@ -156,19 +165,17 @@ sheet flow stable.
 
 ## Work In Progress
 
-- Using the new editable aggregate as the basis for a real reopen/edit flow
-  without reintroducing flat UI mapping layers.
+- Tightening the remaining snapshot compatibility fields now that both create
+  and update flows use normalized tables as the real source of truth.
 
 ## Pending Work
 
 - Remove or narrow redundant snapshot state in `characters` where the
   normalized tables are now the real source of truth, including any remaining
   schema-level cleanup that should only happen with a deliberate migration.
-- Define application services and mappers for full guided character creation,
-  card summaries, and character-sheet rendering beyond the current first
-  service split.
-- Build the first presentation flow that reopens a persisted character through
-  the new editable aggregate and allows controlled mutation.
+- Expand the edit flow beyond the current guided MVP fields and decide how
+  later post-creation inventory or combat editing should interact with the
+  same aggregate.
 - Decide when the local normalized compendium catalog becomes a generated or
   parsed XML-backed source instead of curated asset data.
 - Map the approved MVP flow into implementation tasks in `lib/`.
@@ -217,7 +224,8 @@ sheet flow stable.
 
 1. Build the next editing-oriented character domain on top of the current
    read-side model instead of introducing another UI-facing mapper layer.
-2. Build the first reopen/edit workflow on top of the new editable load path.
+2. Reduce the remaining compatibility snapshots in `characters` now that edit
+   writes also use the normalized model.
 3. Deepen the parsed compendium fidelity beyond the current seeded FightClub
    SRD subset and static progression defaults.
 4. Break the approved MVP flow into implementation tasks in `lib/`.
@@ -236,8 +244,9 @@ sheet flow stable.
   sheet reads now prefer the normalized model.
 - Background bonuses and social perks still need deeper normalized
   representation if the app moves beyond the current MVP-compatible snapshots.
-- Ability score method state and assignment provenance still need a richer
-  normalized representation that supports later editing.
+- Ability score method state and assignment provenance still depend on the
+  current persisted string contract and still need a richer normalized shape
+  for longer-term editing safety.
 - Future sync and network features remain out of implementation scope.
 - Legal and content-boundary constraints for D&D-related material may still
   need refinement later.

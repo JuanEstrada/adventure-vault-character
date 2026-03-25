@@ -156,6 +156,63 @@ void main() {
     expect(savedCharacter.equipment.selectedEquipmentLabel, 'Arcane focus kit');
   });
 
+  testWidgets('open edit save and reopen keeps updated character data', (
+    WidgetTester tester,
+  ) async {
+    const compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
+    final repository = InMemoryCharacterRepository.empty(
+      compendiumRepository: compendiumRepository,
+    );
+    await tester.binding.setSurfaceSize(const Size(1200, 2400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      AdventureVaultApp(
+        characterRepository: repository,
+        compendiumRepository: compendiumRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Continuar offline'));
+    await tester.tap(find.text('Continuar offline'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Crear personaje nuevo'));
+    await tester.tap(find.text('Crear personaje nuevo'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).first, 'Aelar');
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar draft'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Aelar'), findsWidgets);
+
+    await tester.tap(find.widgetWithText(TextButton, 'Edit'));
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(FilledButton, 'Save changes'), findsOneWidget);
+    await tester.enterText(find.byType(TextFormField).first, 'Meris');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save changes'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Meris'), findsWidgets);
+    expect(find.text('Aelar'), findsNothing);
+
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Meris'), findsOneWidget);
+
+    final updatedCard = find.byType(InkWell).first;
+    await tester.ensureVisible(updatedCard);
+    await tester.tap(updatedCard);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Meris'), findsWidgets);
+    expect(find.text('Aelar'), findsNothing);
+  });
+
   testWidgets(
     'create screen shows blocked state when compendium is incomplete',
     (WidgetTester tester) async {

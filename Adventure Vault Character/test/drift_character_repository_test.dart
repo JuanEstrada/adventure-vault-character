@@ -93,6 +93,127 @@ void main() {
       );
     },
   );
+
+  test(
+    'updateCharacter rewrites normalized rows and keeps snapshot columns narrow',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: const InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final created = await repository.createCharacter(
+        const CreateCharacterInput(
+          name: 'Meris',
+          raceName: 'Elf',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'generatedSetAssignment',
+          abilityScoreProvenance:
+              'method=generatedSetAssignment;Strength=8;Dexterity=12;Constitution=13;Intelligence=15;Wisdom=14;Charisma=10',
+          strength: 8,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 15,
+          wisdom: 14,
+          charisma: 10,
+          className: 'Wizard',
+          level: 5,
+          experience: 6500,
+          equipmentLoadoutId: 'wizard-focus',
+          equipmentLoadoutLabel: 'Arcane focus kit',
+          startingMoneySummary: '15 gp, 4 sp',
+          selectedEquipmentItems: <String>[
+            'Quarterstaff',
+            'Component pouch',
+            'Scholar pack',
+          ],
+          currentHitPoints: 28,
+          maximumHitPoints: 28,
+          temporaryHitPoints: 0,
+          alignment: 'Neutral',
+          appearanceDetails: 'Tall and quiet',
+          narrativeDetails: 'Keeps careful notes.',
+        ),
+      );
+
+      await repository.updateCharacter(
+        created.id,
+        const CreateCharacterInput(
+          name: 'Aelar',
+          raceName: 'Elf',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'manualPointAllocation',
+          abilityScoreProvenance:
+              'method=manualPointAllocation;Strength=15;Dexterity=14;Constitution=13;Intelligence=12;Wisdom=10;Charisma=8',
+          strength: 15,
+          dexterity: 14,
+          constitution: 13,
+          intelligence: 12,
+          wisdom: 10,
+          charisma: 8,
+          className: 'Wizard',
+          level: 1,
+          experience: 0,
+          equipmentLoadoutId: 'wizard-focus',
+          equipmentLoadoutLabel: 'Arcane focus kit',
+          startingMoneySummary: '20 gp',
+          selectedEquipmentItems: <String>['Quarterstaff', '2 Torch'],
+          currentHitPoints: 28,
+          maximumHitPoints: 28,
+          temporaryHitPoints: 0,
+          alignment: 'Lawful Good',
+          appearanceDetails: 'Short hair',
+          narrativeDetails: 'Updated after review.',
+        ),
+      );
+
+      final row = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(created.id))).getSingle();
+      final abilityScores = await (database.select(
+        database.characterAbilityScores,
+      )..where((table) => table.characterId.equals(created.id))).getSingle();
+      final inventory = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(created.id))).get();
+      final sheet = await repository.getCharacterSheetById(created.id);
+
+      expect(row.name, 'Aelar');
+      expect(row.backgroundName, isNull);
+      expect(row.backgroundSummary, isNull);
+      expect(row.strength, isNull);
+      expect(row.selectedEquipmentItems, isNull);
+      expect(row.startingMoneySummary, isNull);
+      expect(row.maximumHitPoints, 7);
+      expect(row.currentHitPoints, 7);
+
+      expect(abilityScores.strengthScore, 15);
+      expect(abilityScores.intelligenceScore, 12);
+      expect(inventory.map((item) => item.displayNameSnapshot), <String>[
+        'Quarterstaff',
+        'Torch',
+      ]);
+      expect(inventory.map((item) => item.quantity), <int>[1, 2]);
+
+      expect(sheet, isNotNull);
+      expect(sheet!.identity.name, 'Aelar');
+      expect(sheet.identity.progression.level, 1);
+      expect(sheet.abilities.methodLabel, 'Manual point allocation');
+      expect(sheet.featuresNotes.alignment, 'Lawful Good');
+      expect(sheet.equipment.money.startingMoneySummary, '20 gp');
+      expect(sheet.equipment.visibleItems, <String>[
+        'Quarterstaff (equipped)',
+        'Torch x2',
+      ]);
+    },
+  );
 }
 
 const _testCatalog = CompendiumCatalog(
