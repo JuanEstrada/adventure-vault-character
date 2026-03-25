@@ -1,10 +1,5 @@
 local-ui-assets/
 local-assets/
-!local-assets/
-!local-assets/README.md
-!local-assets/reference/
-!local-assets/reference/removed_assets/
-!local-assets/reference/removed_assets/removed_local_assets_2026-03-25.md
 .agents/
 skills-lock.json
 .dart_tool/
