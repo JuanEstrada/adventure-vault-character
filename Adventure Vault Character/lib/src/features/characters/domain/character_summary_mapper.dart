@@ -5,14 +5,17 @@ import 'package:adventure_vault_character/src/features/characters/domain/create_
 class CharacterSummaryMapper {
   const CharacterSummaryMapper();
 
-  CharacterSummary fromCharacterRow(Character row) {
+  CharacterSummary fromCharacterRow(
+    Character row, {
+    CharacterFinishingDetail? finishingDetails,
+  }) {
     return CharacterSummary(
       id: row.id,
       name: row.name,
       raceName: row.raceName,
       className: row.className,
       level: row.level,
-      portraitAssetPath: row.portraitAssetPath,
+      portraitAssetPath: finishingDetails?.portraitAssetPath,
     );
   }
 

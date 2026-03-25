@@ -41,6 +41,7 @@ class CreateCharacterService {
       createdAt: now,
       updatedAt: now,
       existingRow: null,
+      existingHitPoints: null,
     );
   }
 
@@ -54,6 +55,7 @@ class CreateCharacterService {
     if (existingRow == null) {
       throw StateError('Character not found.');
     }
+    final existingHitPoints = await _readExistingHitPoints(id);
 
     return _persistCharacter(
       id: id,
@@ -61,6 +63,7 @@ class CreateCharacterService {
       createdAt: existingRow.createdAt,
       updatedAt: DateTime.now(),
       existingRow: existingRow,
+      existingHitPoints: existingHitPoints,
     );
   }
 
@@ -70,6 +73,7 @@ class CreateCharacterService {
     required DateTime createdAt,
     required DateTime updatedAt,
     required Character? existingRow,
+    required CharacterHitPoint? existingHitPoints,
   }) async {
     final catalog = await _loadCatalog();
     final background = catalog.backgroundById(input.backgroundId);
@@ -84,7 +88,7 @@ class CreateCharacterService {
       level: input.level,
     );
     final resolvedHitPoints = _resolveHitPoints(
-      existingRow: existingRow,
+      existingHitPoints: existingHitPoints,
       recomputedMaximum: recomputedHitPoints,
     );
     final inventoryItems = input.selectedEquipmentItems
@@ -113,13 +117,6 @@ class CreateCharacterService {
         experience: Value(input.experience),
         equipmentLoadoutId: Value(input.equipmentLoadoutId),
         equipmentLoadoutLabel: Value(input.equipmentLoadoutLabel),
-        currentHitPoints: Value(resolvedHitPoints.current),
-        maximumHitPoints: Value(resolvedHitPoints.maximum),
-        temporaryHitPoints: Value(resolvedHitPoints.temporary),
-        portraitAssetPath: Value(input.portraitAssetPath),
-        alignment: Value(input.alignment),
-        appearanceDetails: Value(input.appearanceDetails),
-        narrativeDetails: Value(input.narrativeDetails),
         createdAt: Value(createdAt),
         updatedAt: Value(updatedAt),
       );
@@ -136,6 +133,16 @@ class CreateCharacterService {
         replaceExisting: existingRow != null,
       );
       await _writeAbilityScoreProvenance(
+        id,
+        input,
+        replaceExisting: existingRow != null,
+      );
+      await _writeHitPoints(
+        id,
+        resolvedHitPoints,
+        replaceExisting: existingRow != null,
+      );
+      await _writeFinishingDetails(
         id,
         input,
         replaceExisting: existingRow != null,
@@ -297,6 +304,60 @@ class CreateCharacterService {
     }
 
     await _writeDao.insertAbilityScoreProvenance(companion);
+  }
+
+  Future<void> _writeHitPoints(
+    String id,
+    _ResolvedHitPoints hitPoints, {
+    required bool replaceExisting,
+  }) async {
+    final companion = CharacterHitPointsCompanion(
+      characterId: Value(id),
+      current: Value(hitPoints.current),
+      maximum: Value(hitPoints.maximum),
+      temporary: Value(hitPoints.temporary),
+    );
+    if (replaceExisting) {
+      await _writeDao.replaceHitPoints(companion);
+      return;
+    }
+
+    await _writeDao.insertHitPoints(
+      CharacterHitPointsCompanion.insert(
+        characterId: id,
+        current: hitPoints.current,
+        maximum: hitPoints.maximum,
+        temporary: hitPoints.temporary,
+      ),
+    );
+  }
+
+  Future<void> _writeFinishingDetails(
+    String id,
+    CreateCharacterInput input, {
+    required bool replaceExisting,
+  }) async {
+    final companion = CharacterFinishingDetailsCompanion(
+      characterId: Value(id),
+      portraitAssetPath: Value(input.portraitAssetPath),
+      alignment: Value(input.alignment),
+      appearanceDetails: Value(input.appearanceDetails),
+      narrativeDetails: Value(input.narrativeDetails),
+    );
+    if (replaceExisting) {
+      await _writeDao.replaceFinishingDetails(companion);
+      return;
+    }
+
+    await _writeDao.insertFinishingDetails(
+      CharacterFinishingDetailsCompanion.insert(
+        characterId: id,
+        portraitAssetPath: Value(input.portraitAssetPath),
+        alignment: Value(input.alignment),
+        appearanceDetails: Value(input.appearanceDetails),
+        narrativeDetails: Value(input.narrativeDetails),
+      ),
+    );
   }
 
   Future<CompendiumCatalog> _loadCatalog() {
@@ -496,10 +557,10 @@ class CreateCharacterService {
   }
 
   _ResolvedHitPoints _resolveHitPoints({
-    required Character? existingRow,
+    required CharacterHitPoint? existingHitPoints,
     required int recomputedMaximum,
   }) {
-    if (existingRow == null) {
+    if (existingHitPoints == null) {
       return _ResolvedHitPoints(
         current: recomputedMaximum,
         maximum: recomputedMaximum,
@@ -507,9 +568,9 @@ class CreateCharacterService {
       );
     }
 
-    final previousCurrent = existingRow.currentHitPoints ?? recomputedMaximum;
-    final previousMaximum = existingRow.maximumHitPoints ?? recomputedMaximum;
-    final previousTemporary = existingRow.temporaryHitPoints ?? 0;
+    final previousCurrent = existingHitPoints.current;
+    final previousMaximum = existingHitPoints.maximum;
+    final previousTemporary = existingHitPoints.temporary;
     final current = previousCurrent >= previousMaximum
         ? recomputedMaximum
         : previousCurrent.clamp(0, recomputedMaximum);
@@ -519,6 +580,12 @@ class CreateCharacterService {
       maximum: recomputedMaximum,
       temporary: previousTemporary,
     );
+  }
+
+  Future<CharacterHitPoint?> _readExistingHitPoints(String id) {
+    return (_database.select(
+      _database.characterHitPoints,
+    )..where((table) => table.characterId.equals(id))).getSingleOrNull();
   }
 
   int _abilityModifier(int score) => CharacterRules.abilityModifier(score);

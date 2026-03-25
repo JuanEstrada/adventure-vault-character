@@ -37,6 +37,8 @@ class CharacterDomainMapper {
     };
     final resolvedAbilityScores =
         record.abilityScores ?? _emptyAbilityScores(row.id);
+    final resolvedHitPoints = record.hitPoints;
+    final finishingDetails = record.finishingDetails;
 
     return CharacterDomainModel(
       id: row.id,
@@ -51,9 +53,9 @@ class CharacterDomainMapper {
       ),
       combat: CharacterCombatDomainModel(
         hitPoints: CharacterHitPointsDomainModel(
-          current: row.currentHitPoints ?? 0,
-          maximum: row.maximumHitPoints ?? 0,
-          temporary: row.temporaryHitPoints ?? 0,
+          current: resolvedHitPoints?.current ?? 0,
+          maximum: resolvedHitPoints?.maximum ?? 0,
+          temporary: resolvedHitPoints?.temporary ?? 0,
         ),
         savingThrows: record.savingThrows
             .map(
@@ -133,9 +135,9 @@ class CharacterDomainMapper {
               ),
             )
             .toList(growable: false),
-        alignment: row.alignment ?? 'Unaligned',
-        appearanceDetails: row.appearanceDetails ?? '',
-        narrativeDetails: row.narrativeDetails ?? '',
+        alignment: finishingDetails?.alignment ?? 'Unaligned',
+        appearanceDetails: finishingDetails?.appearanceDetails ?? '',
+        narrativeDetails: finishingDetails?.narrativeDetails ?? '',
       ),
       equipment: CharacterEquipmentDomainModel(
         equipmentSummary: catalog.equipmentSummaryForClass(row.className),

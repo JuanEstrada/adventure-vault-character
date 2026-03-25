@@ -18,7 +18,7 @@ Implementation shell established
 ## Current Focus
 
 Stabilizing the normalized Drift model now that the `characters` row has been
-trimmed back further in Drift `v6`, while keeping the guided draft, sheet
+trimmed back further in Drift `v7`, while keeping the guided draft, sheet
 flow, and edit/reopen path stable on top of normalized reads.
 
 ## Repository State
@@ -30,9 +30,10 @@ flow, and edit/reopen path stable on top of normalized reads.
   state.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- The Drift schema is now at `v6` and includes normalized character-side
-  tables for `ability scores`, `ability score provenance`, `skills`,
-  `saving throws`, `inventory`, `proficiencies`, and `currency`.
+- The Drift schema is now at `v7` and includes normalized character-side
+  tables for `ability scores`, `ability score provenance`, `hit points`,
+  `finishing details`, `skills`, `saving throws`, `inventory`,
+  `proficiencies`, and `currency`.
 - The local database now also includes compendium definition tables for
   `skills`, `equipment`, `classes`, `backgrounds`, `spells`, and `trinkets`.
 - The create-character screen now uses a first guided draft covering
@@ -64,6 +65,10 @@ flow, and edit/reopen path stable on top of normalized reads.
   `ability_score_provenance` from `characters`, migrates the previous
   semicolon provenance string into a dedicated normalized provenance table,
   and uses that normalized record for sheet/edit ability method reads.
+- Drift `v7` now also removes `hit point`, `portrait`, and finishing-detail
+  columns from `characters`, migrates those values into dedicated normalized
+  tables, and keeps summary, sheet, and editable-character reads on the same
+  normalized source of truth.
 - The characters feature now uses explicit application services for
   `create character` and `character sheet` loading, with shared summary
   mapping extracted from the repository implementation.
@@ -173,9 +178,9 @@ flow, and edit/reopen path stable on top of normalized reads.
 
 ## Work In Progress
 
-- Deciding which remaining edit-oriented metadata in `characters` should be
-  normalized next, now that ability-score provenance has been moved out of
-  the row.
+- Deciding whether the remaining equipment-loadout metadata in `characters`
+  should be normalized next, now that ability-score provenance, hit points,
+  and finishing details have been moved out of the row.
 
 ## Pending Work
 
@@ -230,8 +235,9 @@ flow, and edit/reopen path stable on top of normalized reads.
 
 1. Build the next editing-oriented character domain on top of the current
    read-side model instead of introducing another UI-facing mapper layer.
-2. Normalize the remaining edit-oriented metadata in `characters` only where
-   the current string or snapshot contract is becoming a real limitation.
+2. Decide whether `equipment_loadout_id` and `equipment_loadout_label` should
+   remain lightweight edit metadata in `characters` or move into a dedicated
+   normalized contract.
 3. Deepen the parsed compendium fidelity beyond the current seeded FightClub
    SRD subset and static progression defaults.
 4. Break the approved MVP flow into implementation tasks in `lib/`.

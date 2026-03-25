@@ -47,6 +47,20 @@ class CharacterReadDao {
     )..where((table) => table.characterId.equals(id))).getSingleOrNull();
   }
 
+  Future<CharacterHitPoint?> getHitPointsByCharacterId(String id) {
+    return (_database.select(
+      _database.characterHitPoints,
+    )..where((table) => table.characterId.equals(id))).getSingleOrNull();
+  }
+
+  Future<CharacterFinishingDetail?> getFinishingDetailsByCharacterId(
+    String id,
+  ) {
+    return (_database.select(
+      _database.characterFinishingDetails,
+    )..where((table) => table.characterId.equals(id))).getSingleOrNull();
+  }
+
   Future<CharacterCurrencyData?> getCurrencyByCharacterId(String id) {
     return (_database.select(
       _database.characterCurrency,

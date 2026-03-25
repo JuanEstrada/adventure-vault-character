@@ -21,7 +21,7 @@ class EditableCharacterMapper {
         name: character.identity.name,
         raceName: character.identity.raceName,
         className: character.identity.className,
-        portraitAssetPath: row.portraitAssetPath,
+        portraitAssetPath: record.finishingDetails?.portraitAssetPath,
       ),
       background: EditableCharacterBackground(
         id: row.backgroundDefinitionRefId,

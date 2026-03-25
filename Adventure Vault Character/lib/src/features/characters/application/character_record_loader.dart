@@ -26,6 +26,10 @@ class CharacterRecordLoader {
     final abilityScores = await _readDao.getAbilityScoresByCharacterId(id);
     final abilityScoreProvenance = await _readDao
         .getAbilityScoreProvenanceByCharacterId(id);
+    final hitPoints = await _readDao.getHitPointsByCharacterId(id);
+    final finishingDetails = await _readDao.getFinishingDetailsByCharacterId(
+      id,
+    );
     final currency = await _readDao.getCurrencyByCharacterId(id);
     final inventory = await _readDao.getInventoryByCharacterId(id);
     final savingThrows = await _readDao.getSavingThrowsByCharacterId(id);
@@ -39,6 +43,8 @@ class CharacterRecordLoader {
       backgroundDefinition: backgroundDefinition,
       abilityScores: abilityScores,
       abilityScoreProvenance: abilityScoreProvenance,
+      hitPoints: hitPoints,
+      finishingDetails: finishingDetails,
       currency: currency,
       inventory: inventory,
       savingThrows: savingThrows,

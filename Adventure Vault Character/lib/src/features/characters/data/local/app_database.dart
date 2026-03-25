@@ -28,26 +28,6 @@ class Characters extends Table {
   TextColumn get equipmentLoadoutLabel =>
       text().named('equipment_loadout_label').nullable()();
 
-  IntColumn get currentHitPoints =>
-      integer().named('current_hit_points').nullable()();
-
-  IntColumn get maximumHitPoints =>
-      integer().named('maximum_hit_points').nullable()();
-
-  IntColumn get temporaryHitPoints =>
-      integer().named('temporary_hit_points').nullable()();
-
-  TextColumn get portraitAssetPath =>
-      text().named('portrait_asset_path').nullable()();
-
-  TextColumn get alignment => text().nullable()();
-
-  TextColumn get appearanceDetails =>
-      text().named('appearance_details').nullable()();
-
-  TextColumn get narrativeDetails =>
-      text().named('narrative_details').nullable()();
-
   DateTimeColumn get createdAt => dateTime().named('created_at')();
 
   DateTimeColumn get updatedAt => dateTime().named('updated_at')();
@@ -115,6 +95,37 @@ class CharacterAbilityScoreProvenances extends Table {
 
   IntColumn get charismaAssignedScore =>
       integer().named('charisma_assigned_score').nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {characterId};
+}
+
+class CharacterHitPoints extends Table {
+  TextColumn get characterId => text().references(Characters, #id)();
+
+  IntColumn get current => integer().named('current_hit_points')();
+
+  IntColumn get maximum => integer().named('maximum_hit_points')();
+
+  IntColumn get temporary => integer().named('temporary_hit_points')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {characterId};
+}
+
+class CharacterFinishingDetails extends Table {
+  TextColumn get characterId => text().references(Characters, #id)();
+
+  TextColumn get portraitAssetPath =>
+      text().named('portrait_asset_path').nullable()();
+
+  TextColumn get alignment => text().nullable()();
+
+  TextColumn get appearanceDetails =>
+      text().named('appearance_details').nullable()();
+
+  TextColumn get narrativeDetails =>
+      text().named('narrative_details').nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {characterId};
@@ -430,6 +441,8 @@ class TrinketDefinitions extends Table {
     Characters,
     CharacterAbilityScores,
     CharacterAbilityScoreProvenances,
+    CharacterHitPoints,
+    CharacterFinishingDetails,
     SkillDefinitions,
     CharacterSkills,
     CharacterSavingThrows,
@@ -459,7 +472,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.executor(super.executor);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -576,6 +589,13 @@ class AppDatabase extends _$AppDatabase {
         await _backfillAbilityScoreProvenanceData();
         await _migrateCharactersToV6();
       }
+      if (from < 7) {
+        await migrator.createTable(characterHitPoints);
+        await migrator.createTable(characterFinishingDetails);
+        await _backfillCharacterHitPointsData();
+        await _backfillCharacterFinishingDetailsData();
+        await _migrateCharactersToV7();
+      }
 
       await _createIndexes();
     },
@@ -589,6 +609,14 @@ class AppDatabase extends _$AppDatabase {
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_character_ability_score_provenances_character '
       'ON character_ability_score_provenances (character_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_character_hit_points_character '
+      'ON character_hit_points (character_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_character_finishing_details_character '
+      'ON character_finishing_details (character_id)',
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_character_skills_character '
@@ -802,6 +830,42 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
+  Future<void> _backfillCharacterHitPointsData() async {
+    await customStatement('''
+      INSERT INTO character_hit_points (
+        character_id,
+        current_hit_points,
+        maximum_hit_points,
+        temporary_hit_points
+      )
+      SELECT
+        id,
+        COALESCE(current_hit_points, 0),
+        COALESCE(maximum_hit_points, 0),
+        COALESCE(temporary_hit_points, 0)
+      FROM characters
+    ''');
+  }
+
+  Future<void> _backfillCharacterFinishingDetailsData() async {
+    await customStatement('''
+      INSERT INTO character_finishing_details (
+        character_id,
+        portrait_asset_path,
+        alignment,
+        appearance_details,
+        narrative_details
+      )
+      SELECT
+        id,
+        portrait_asset_path,
+        alignment,
+        appearance_details,
+        narrative_details
+      FROM characters
+    ''');
+  }
+
   Future<void> _migrateCharactersToV6() async {
     await customStatement('PRAGMA foreign_keys = OFF');
 
@@ -876,6 +940,62 @@ class AppDatabase extends _$AppDatabase {
 
     await customStatement('DROP TABLE characters');
     await customStatement('ALTER TABLE characters_v6 RENAME TO characters');
+    await customStatement('PRAGMA foreign_keys = ON');
+  }
+
+  Future<void> _migrateCharactersToV7() async {
+    await customStatement('PRAGMA foreign_keys = OFF');
+
+    await customStatement('''
+      CREATE TABLE characters_v7 (
+        id TEXT NOT NULL PRIMARY KEY,
+        name TEXT NOT NULL,
+        race_name TEXT NOT NULL,
+        class_definition_id TEXT NULL,
+        background_definition_ref_id TEXT NULL,
+        class_name TEXT NOT NULL,
+        level INTEGER NOT NULL,
+        experience INTEGER NULL,
+        equipment_loadout_id TEXT NULL,
+        equipment_loadout_label TEXT NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    ''');
+
+    await customStatement('''
+      INSERT INTO characters_v7 (
+        id,
+        name,
+        race_name,
+        class_definition_id,
+        background_definition_ref_id,
+        class_name,
+        level,
+        experience,
+        equipment_loadout_id,
+        equipment_loadout_label,
+        created_at,
+        updated_at
+      )
+      SELECT
+        id,
+        name,
+        race_name,
+        class_definition_id,
+        background_definition_ref_id,
+        class_name,
+        level,
+        experience,
+        equipment_loadout_id,
+        equipment_loadout_label,
+        created_at,
+        updated_at
+      FROM characters
+    ''');
+
+    await customStatement('DROP TABLE characters');
+    await customStatement('ALTER TABLE characters_v7 RENAME TO characters');
     await customStatement('PRAGMA foreign_keys = ON');
   }
 

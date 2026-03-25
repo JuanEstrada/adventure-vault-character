@@ -7,7 +7,7 @@ import 'package:sqlite3/sqlite3.dart' as sqlite;
 
 void main() {
   group('AppDatabase migrations', () {
-    test('upgrades a v1 database to v6 and preserves character data', () async {
+    test('upgrades a v1 database to v7 and preserves character data', () async {
       final file = await _createTempDatabaseFile();
       addTearDown(() async {
         if (await file.exists()) {
@@ -51,6 +51,12 @@ void main() {
       final provenance = await (database.select(
         database.characterAbilityScoreProvenances,
       )..where((table) => table.characterId.equals('char-1'))).getSingle();
+      final hitPoints = await (database.select(
+        database.characterHitPoints,
+      )..where((table) => table.characterId.equals('char-1'))).getSingle();
+      final finishingDetails = await (database.select(
+        database.characterFinishingDetails,
+      )..where((table) => table.characterId.equals('char-1'))).getSingle();
       final currency = await (database.select(
         database.characterCurrency,
       )..where((table) => table.characterId.equals('char-1'))).getSingle();
@@ -62,6 +68,8 @@ void main() {
       expect(abilityScores.strengthScore, 0);
       expect(abilityScores.charismaModifier, -5);
       expect(provenance.methodKey, isNull);
+      expect(hitPoints.current, 0);
+      expect(finishingDetails.portraitAssetPath, isNull);
       expect(currency.summarySnapshot, isNull);
       expect(savingThrows, hasLength(6));
       expect(
@@ -71,7 +79,7 @@ void main() {
     });
 
     test(
-      'upgrades a v4 database to v6, preserves normalized data, migrates provenance, and drops redundant snapshot columns',
+      'upgrades a v4 database to v7, preserves normalized data, migrates provenance, and drops redundant snapshot columns',
       () async {
         final file = await _createTempDatabaseFile();
         addTearDown(() async {
@@ -291,6 +299,12 @@ void main() {
         final provenance = await (database.select(
           database.characterAbilityScoreProvenances,
         )..where((table) => table.characterId.equals('char-2'))).getSingle();
+        final hitPoints = await (database.select(
+          database.characterHitPoints,
+        )..where((table) => table.characterId.equals('char-2'))).getSingle();
+        final finishingDetails = await (database.select(
+          database.characterFinishingDetails,
+        )..where((table) => table.characterId.equals('char-2'))).getSingle();
         final currency = await (database.select(
           database.characterCurrency,
         )..where((table) => table.characterId.equals('char-2'))).getSingle();
@@ -310,6 +324,11 @@ void main() {
         expect(abilityScores.intelligenceModifier, 2);
         expect(provenance.methodKey, 'generatedSetAssignment');
         expect(provenance.intelligenceAssignedScore, 15);
+        expect(hitPoints.current, 28);
+        expect(hitPoints.maximum, 28);
+        expect(finishingDetails.alignment, 'Neutral');
+        expect(finishingDetails.appearanceDetails, 'Tall and quiet');
+        expect(finishingDetails.narrativeDetails, 'Keeps careful notes.');
         expect(currency.summarySnapshot, '15 gp, 4 sp');
         expect(inventory.single.displayNameSnapshot, 'Quarterstaff');
         expect(columnNames, isNot(contains('background_id')));
@@ -321,6 +340,13 @@ void main() {
         expect(columnNames, isNot(contains('ability_score_provenance')));
         expect(columnNames, isNot(contains('starting_money_summary')));
         expect(columnNames, isNot(contains('selected_equipment_items')));
+        expect(columnNames, isNot(contains('current_hit_points')));
+        expect(columnNames, isNot(contains('maximum_hit_points')));
+        expect(columnNames, isNot(contains('temporary_hit_points')));
+        expect(columnNames, isNot(contains('portrait_asset_path')));
+        expect(columnNames, isNot(contains('alignment')));
+        expect(columnNames, isNot(contains('appearance_details')));
+        expect(columnNames, isNot(contains('narrative_details')));
       },
     );
   });

@@ -44,6 +44,32 @@ class CharacterWriteDao {
         .insertOnConflictUpdate(companion);
   }
 
+  Future<void> insertHitPoints(CharacterHitPointsCompanion companion) {
+    return _database.into(_database.characterHitPoints).insert(companion);
+  }
+
+  Future<void> replaceHitPoints(CharacterHitPointsCompanion companion) async {
+    await _database
+        .into(_database.characterHitPoints)
+        .insertOnConflictUpdate(companion);
+  }
+
+  Future<void> insertFinishingDetails(
+    CharacterFinishingDetailsCompanion companion,
+  ) {
+    return _database
+        .into(_database.characterFinishingDetails)
+        .insert(companion);
+  }
+
+  Future<void> replaceFinishingDetails(
+    CharacterFinishingDetailsCompanion companion,
+  ) async {
+    await _database
+        .into(_database.characterFinishingDetails)
+        .insertOnConflictUpdate(companion);
+  }
+
   Future<void> insertSkills(List<CharacterSkillsCompanion> companions) async {
     if (companions.isEmpty) {
       return;

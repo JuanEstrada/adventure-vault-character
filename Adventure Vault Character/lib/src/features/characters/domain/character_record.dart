@@ -10,6 +10,8 @@ class CharacterRecord {
     required this.backgroundDefinition,
     required this.abilityScores,
     required this.abilityScoreProvenance,
+    required this.hitPoints,
+    required this.finishingDetails,
     required this.currency,
     required this.inventory,
     required this.savingThrows,
@@ -23,6 +25,8 @@ class CharacterRecord {
   final BackgroundDefinition? backgroundDefinition;
   final CharacterAbilityScore? abilityScores;
   final CharacterAbilityScoreProvenance? abilityScoreProvenance;
+  final CharacterHitPoint? hitPoints;
+  final CharacterFinishingDetail? finishingDetails;
   final CharacterCurrencyData? currency;
   final List<CharacterInventoryData> inventory;
   final List<CharacterSavingThrow> savingThrows;

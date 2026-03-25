@@ -114,84 +114,6 @@ class $CharactersTable extends Characters
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
-  static const VerificationMeta _currentHitPointsMeta = const VerificationMeta(
-    'currentHitPoints',
-  );
-  @override
-  late final GeneratedColumn<int> currentHitPoints = GeneratedColumn<int>(
-    'current_hit_points',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _maximumHitPointsMeta = const VerificationMeta(
-    'maximumHitPoints',
-  );
-  @override
-  late final GeneratedColumn<int> maximumHitPoints = GeneratedColumn<int>(
-    'maximum_hit_points',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _temporaryHitPointsMeta =
-      const VerificationMeta('temporaryHitPoints');
-  @override
-  late final GeneratedColumn<int> temporaryHitPoints = GeneratedColumn<int>(
-    'temporary_hit_points',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _portraitAssetPathMeta = const VerificationMeta(
-    'portraitAssetPath',
-  );
-  @override
-  late final GeneratedColumn<String> portraitAssetPath =
-      GeneratedColumn<String>(
-        'portrait_asset_path',
-        aliasedName,
-        true,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-      );
-  static const VerificationMeta _alignmentMeta = const VerificationMeta(
-    'alignment',
-  );
-  @override
-  late final GeneratedColumn<String> alignment = GeneratedColumn<String>(
-    'alignment',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _appearanceDetailsMeta = const VerificationMeta(
-    'appearanceDetails',
-  );
-  @override
-  late final GeneratedColumn<String> appearanceDetails =
-      GeneratedColumn<String>(
-        'appearance_details',
-        aliasedName,
-        true,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-      );
-  static const VerificationMeta _narrativeDetailsMeta = const VerificationMeta(
-    'narrativeDetails',
-  );
-  @override
-  late final GeneratedColumn<String> narrativeDetails = GeneratedColumn<String>(
-    'narrative_details',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -226,13 +148,6 @@ class $CharactersTable extends Characters
     experience,
     equipmentLoadoutId,
     equipmentLoadoutLabel,
-    currentHitPoints,
-    maximumHitPoints,
-    temporaryHitPoints,
-    portraitAssetPath,
-    alignment,
-    appearanceDetails,
-    narrativeDetails,
     createdAt,
     updatedAt,
   ];
@@ -327,66 +242,6 @@ class $CharactersTable extends Characters
         ),
       );
     }
-    if (data.containsKey('current_hit_points')) {
-      context.handle(
-        _currentHitPointsMeta,
-        currentHitPoints.isAcceptableOrUnknown(
-          data['current_hit_points']!,
-          _currentHitPointsMeta,
-        ),
-      );
-    }
-    if (data.containsKey('maximum_hit_points')) {
-      context.handle(
-        _maximumHitPointsMeta,
-        maximumHitPoints.isAcceptableOrUnknown(
-          data['maximum_hit_points']!,
-          _maximumHitPointsMeta,
-        ),
-      );
-    }
-    if (data.containsKey('temporary_hit_points')) {
-      context.handle(
-        _temporaryHitPointsMeta,
-        temporaryHitPoints.isAcceptableOrUnknown(
-          data['temporary_hit_points']!,
-          _temporaryHitPointsMeta,
-        ),
-      );
-    }
-    if (data.containsKey('portrait_asset_path')) {
-      context.handle(
-        _portraitAssetPathMeta,
-        portraitAssetPath.isAcceptableOrUnknown(
-          data['portrait_asset_path']!,
-          _portraitAssetPathMeta,
-        ),
-      );
-    }
-    if (data.containsKey('alignment')) {
-      context.handle(
-        _alignmentMeta,
-        alignment.isAcceptableOrUnknown(data['alignment']!, _alignmentMeta),
-      );
-    }
-    if (data.containsKey('appearance_details')) {
-      context.handle(
-        _appearanceDetailsMeta,
-        appearanceDetails.isAcceptableOrUnknown(
-          data['appearance_details']!,
-          _appearanceDetailsMeta,
-        ),
-      );
-    }
-    if (data.containsKey('narrative_details')) {
-      context.handle(
-        _narrativeDetailsMeta,
-        narrativeDetails.isAcceptableOrUnknown(
-          data['narrative_details']!,
-          _narrativeDetailsMeta,
-        ),
-      );
-    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -452,34 +307,6 @@ class $CharactersTable extends Characters
         DriftSqlType.string,
         data['${effectivePrefix}equipment_loadout_label'],
       ),
-      currentHitPoints: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}current_hit_points'],
-      ),
-      maximumHitPoints: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}maximum_hit_points'],
-      ),
-      temporaryHitPoints: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}temporary_hit_points'],
-      ),
-      portraitAssetPath: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}portrait_asset_path'],
-      ),
-      alignment: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}alignment'],
-      ),
-      appearanceDetails: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}appearance_details'],
-      ),
-      narrativeDetails: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}narrative_details'],
-      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -508,13 +335,6 @@ class Character extends DataClass implements Insertable<Character> {
   final int? experience;
   final String? equipmentLoadoutId;
   final String? equipmentLoadoutLabel;
-  final int? currentHitPoints;
-  final int? maximumHitPoints;
-  final int? temporaryHitPoints;
-  final String? portraitAssetPath;
-  final String? alignment;
-  final String? appearanceDetails;
-  final String? narrativeDetails;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Character({
@@ -528,13 +348,6 @@ class Character extends DataClass implements Insertable<Character> {
     this.experience,
     this.equipmentLoadoutId,
     this.equipmentLoadoutLabel,
-    this.currentHitPoints,
-    this.maximumHitPoints,
-    this.temporaryHitPoints,
-    this.portraitAssetPath,
-    this.alignment,
-    this.appearanceDetails,
-    this.narrativeDetails,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -562,27 +375,6 @@ class Character extends DataClass implements Insertable<Character> {
     }
     if (!nullToAbsent || equipmentLoadoutLabel != null) {
       map['equipment_loadout_label'] = Variable<String>(equipmentLoadoutLabel);
-    }
-    if (!nullToAbsent || currentHitPoints != null) {
-      map['current_hit_points'] = Variable<int>(currentHitPoints);
-    }
-    if (!nullToAbsent || maximumHitPoints != null) {
-      map['maximum_hit_points'] = Variable<int>(maximumHitPoints);
-    }
-    if (!nullToAbsent || temporaryHitPoints != null) {
-      map['temporary_hit_points'] = Variable<int>(temporaryHitPoints);
-    }
-    if (!nullToAbsent || portraitAssetPath != null) {
-      map['portrait_asset_path'] = Variable<String>(portraitAssetPath);
-    }
-    if (!nullToAbsent || alignment != null) {
-      map['alignment'] = Variable<String>(alignment);
-    }
-    if (!nullToAbsent || appearanceDetails != null) {
-      map['appearance_details'] = Variable<String>(appearanceDetails);
-    }
-    if (!nullToAbsent || narrativeDetails != null) {
-      map['narrative_details'] = Variable<String>(narrativeDetails);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -612,27 +404,6 @@ class Character extends DataClass implements Insertable<Character> {
       equipmentLoadoutLabel: equipmentLoadoutLabel == null && nullToAbsent
           ? const Value.absent()
           : Value(equipmentLoadoutLabel),
-      currentHitPoints: currentHitPoints == null && nullToAbsent
-          ? const Value.absent()
-          : Value(currentHitPoints),
-      maximumHitPoints: maximumHitPoints == null && nullToAbsent
-          ? const Value.absent()
-          : Value(maximumHitPoints),
-      temporaryHitPoints: temporaryHitPoints == null && nullToAbsent
-          ? const Value.absent()
-          : Value(temporaryHitPoints),
-      portraitAssetPath: portraitAssetPath == null && nullToAbsent
-          ? const Value.absent()
-          : Value(portraitAssetPath),
-      alignment: alignment == null && nullToAbsent
-          ? const Value.absent()
-          : Value(alignment),
-      appearanceDetails: appearanceDetails == null && nullToAbsent
-          ? const Value.absent()
-          : Value(appearanceDetails),
-      narrativeDetails: narrativeDetails == null && nullToAbsent
-          ? const Value.absent()
-          : Value(narrativeDetails),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -662,17 +433,6 @@ class Character extends DataClass implements Insertable<Character> {
       equipmentLoadoutLabel: serializer.fromJson<String?>(
         json['equipmentLoadoutLabel'],
       ),
-      currentHitPoints: serializer.fromJson<int?>(json['currentHitPoints']),
-      maximumHitPoints: serializer.fromJson<int?>(json['maximumHitPoints']),
-      temporaryHitPoints: serializer.fromJson<int?>(json['temporaryHitPoints']),
-      portraitAssetPath: serializer.fromJson<String?>(
-        json['portraitAssetPath'],
-      ),
-      alignment: serializer.fromJson<String?>(json['alignment']),
-      appearanceDetails: serializer.fromJson<String?>(
-        json['appearanceDetails'],
-      ),
-      narrativeDetails: serializer.fromJson<String?>(json['narrativeDetails']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -695,13 +455,6 @@ class Character extends DataClass implements Insertable<Character> {
       'equipmentLoadoutLabel': serializer.toJson<String?>(
         equipmentLoadoutLabel,
       ),
-      'currentHitPoints': serializer.toJson<int?>(currentHitPoints),
-      'maximumHitPoints': serializer.toJson<int?>(maximumHitPoints),
-      'temporaryHitPoints': serializer.toJson<int?>(temporaryHitPoints),
-      'portraitAssetPath': serializer.toJson<String?>(portraitAssetPath),
-      'alignment': serializer.toJson<String?>(alignment),
-      'appearanceDetails': serializer.toJson<String?>(appearanceDetails),
-      'narrativeDetails': serializer.toJson<String?>(narrativeDetails),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -718,13 +471,6 @@ class Character extends DataClass implements Insertable<Character> {
     Value<int?> experience = const Value.absent(),
     Value<String?> equipmentLoadoutId = const Value.absent(),
     Value<String?> equipmentLoadoutLabel = const Value.absent(),
-    Value<int?> currentHitPoints = const Value.absent(),
-    Value<int?> maximumHitPoints = const Value.absent(),
-    Value<int?> temporaryHitPoints = const Value.absent(),
-    Value<String?> portraitAssetPath = const Value.absent(),
-    Value<String?> alignment = const Value.absent(),
-    Value<String?> appearanceDetails = const Value.absent(),
-    Value<String?> narrativeDetails = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Character(
@@ -746,25 +492,6 @@ class Character extends DataClass implements Insertable<Character> {
     equipmentLoadoutLabel: equipmentLoadoutLabel.present
         ? equipmentLoadoutLabel.value
         : this.equipmentLoadoutLabel,
-    currentHitPoints: currentHitPoints.present
-        ? currentHitPoints.value
-        : this.currentHitPoints,
-    maximumHitPoints: maximumHitPoints.present
-        ? maximumHitPoints.value
-        : this.maximumHitPoints,
-    temporaryHitPoints: temporaryHitPoints.present
-        ? temporaryHitPoints.value
-        : this.temporaryHitPoints,
-    portraitAssetPath: portraitAssetPath.present
-        ? portraitAssetPath.value
-        : this.portraitAssetPath,
-    alignment: alignment.present ? alignment.value : this.alignment,
-    appearanceDetails: appearanceDetails.present
-        ? appearanceDetails.value
-        : this.appearanceDetails,
-    narrativeDetails: narrativeDetails.present
-        ? narrativeDetails.value
-        : this.narrativeDetails,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -790,25 +517,6 @@ class Character extends DataClass implements Insertable<Character> {
       equipmentLoadoutLabel: data.equipmentLoadoutLabel.present
           ? data.equipmentLoadoutLabel.value
           : this.equipmentLoadoutLabel,
-      currentHitPoints: data.currentHitPoints.present
-          ? data.currentHitPoints.value
-          : this.currentHitPoints,
-      maximumHitPoints: data.maximumHitPoints.present
-          ? data.maximumHitPoints.value
-          : this.maximumHitPoints,
-      temporaryHitPoints: data.temporaryHitPoints.present
-          ? data.temporaryHitPoints.value
-          : this.temporaryHitPoints,
-      portraitAssetPath: data.portraitAssetPath.present
-          ? data.portraitAssetPath.value
-          : this.portraitAssetPath,
-      alignment: data.alignment.present ? data.alignment.value : this.alignment,
-      appearanceDetails: data.appearanceDetails.present
-          ? data.appearanceDetails.value
-          : this.appearanceDetails,
-      narrativeDetails: data.narrativeDetails.present
-          ? data.narrativeDetails.value
-          : this.narrativeDetails,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -827,13 +535,6 @@ class Character extends DataClass implements Insertable<Character> {
           ..write('experience: $experience, ')
           ..write('equipmentLoadoutId: $equipmentLoadoutId, ')
           ..write('equipmentLoadoutLabel: $equipmentLoadoutLabel, ')
-          ..write('currentHitPoints: $currentHitPoints, ')
-          ..write('maximumHitPoints: $maximumHitPoints, ')
-          ..write('temporaryHitPoints: $temporaryHitPoints, ')
-          ..write('portraitAssetPath: $portraitAssetPath, ')
-          ..write('alignment: $alignment, ')
-          ..write('appearanceDetails: $appearanceDetails, ')
-          ..write('narrativeDetails: $narrativeDetails, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -852,13 +553,6 @@ class Character extends DataClass implements Insertable<Character> {
     experience,
     equipmentLoadoutId,
     equipmentLoadoutLabel,
-    currentHitPoints,
-    maximumHitPoints,
-    temporaryHitPoints,
-    portraitAssetPath,
-    alignment,
-    appearanceDetails,
-    narrativeDetails,
     createdAt,
     updatedAt,
   );
@@ -876,13 +570,6 @@ class Character extends DataClass implements Insertable<Character> {
           other.experience == this.experience &&
           other.equipmentLoadoutId == this.equipmentLoadoutId &&
           other.equipmentLoadoutLabel == this.equipmentLoadoutLabel &&
-          other.currentHitPoints == this.currentHitPoints &&
-          other.maximumHitPoints == this.maximumHitPoints &&
-          other.temporaryHitPoints == this.temporaryHitPoints &&
-          other.portraitAssetPath == this.portraitAssetPath &&
-          other.alignment == this.alignment &&
-          other.appearanceDetails == this.appearanceDetails &&
-          other.narrativeDetails == this.narrativeDetails &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -898,13 +585,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
   final Value<int?> experience;
   final Value<String?> equipmentLoadoutId;
   final Value<String?> equipmentLoadoutLabel;
-  final Value<int?> currentHitPoints;
-  final Value<int?> maximumHitPoints;
-  final Value<int?> temporaryHitPoints;
-  final Value<String?> portraitAssetPath;
-  final Value<String?> alignment;
-  final Value<String?> appearanceDetails;
-  final Value<String?> narrativeDetails;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -919,13 +599,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     this.experience = const Value.absent(),
     this.equipmentLoadoutId = const Value.absent(),
     this.equipmentLoadoutLabel = const Value.absent(),
-    this.currentHitPoints = const Value.absent(),
-    this.maximumHitPoints = const Value.absent(),
-    this.temporaryHitPoints = const Value.absent(),
-    this.portraitAssetPath = const Value.absent(),
-    this.alignment = const Value.absent(),
-    this.appearanceDetails = const Value.absent(),
-    this.narrativeDetails = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -941,13 +614,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     this.experience = const Value.absent(),
     this.equipmentLoadoutId = const Value.absent(),
     this.equipmentLoadoutLabel = const Value.absent(),
-    this.currentHitPoints = const Value.absent(),
-    this.maximumHitPoints = const Value.absent(),
-    this.temporaryHitPoints = const Value.absent(),
-    this.portraitAssetPath = const Value.absent(),
-    this.alignment = const Value.absent(),
-    this.appearanceDetails = const Value.absent(),
-    this.narrativeDetails = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -969,13 +635,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     Expression<int>? experience,
     Expression<String>? equipmentLoadoutId,
     Expression<String>? equipmentLoadoutLabel,
-    Expression<int>? currentHitPoints,
-    Expression<int>? maximumHitPoints,
-    Expression<int>? temporaryHitPoints,
-    Expression<String>? portraitAssetPath,
-    Expression<String>? alignment,
-    Expression<String>? appearanceDetails,
-    Expression<String>? narrativeDetails,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -994,14 +653,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
         'equipment_loadout_id': equipmentLoadoutId,
       if (equipmentLoadoutLabel != null)
         'equipment_loadout_label': equipmentLoadoutLabel,
-      if (currentHitPoints != null) 'current_hit_points': currentHitPoints,
-      if (maximumHitPoints != null) 'maximum_hit_points': maximumHitPoints,
-      if (temporaryHitPoints != null)
-        'temporary_hit_points': temporaryHitPoints,
-      if (portraitAssetPath != null) 'portrait_asset_path': portraitAssetPath,
-      if (alignment != null) 'alignment': alignment,
-      if (appearanceDetails != null) 'appearance_details': appearanceDetails,
-      if (narrativeDetails != null) 'narrative_details': narrativeDetails,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -1019,13 +670,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     Value<int?>? experience,
     Value<String?>? equipmentLoadoutId,
     Value<String?>? equipmentLoadoutLabel,
-    Value<int?>? currentHitPoints,
-    Value<int?>? maximumHitPoints,
-    Value<int?>? temporaryHitPoints,
-    Value<String?>? portraitAssetPath,
-    Value<String?>? alignment,
-    Value<String?>? appearanceDetails,
-    Value<String?>? narrativeDetails,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -1043,13 +687,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
       equipmentLoadoutId: equipmentLoadoutId ?? this.equipmentLoadoutId,
       equipmentLoadoutLabel:
           equipmentLoadoutLabel ?? this.equipmentLoadoutLabel,
-      currentHitPoints: currentHitPoints ?? this.currentHitPoints,
-      maximumHitPoints: maximumHitPoints ?? this.maximumHitPoints,
-      temporaryHitPoints: temporaryHitPoints ?? this.temporaryHitPoints,
-      portraitAssetPath: portraitAssetPath ?? this.portraitAssetPath,
-      alignment: alignment ?? this.alignment,
-      appearanceDetails: appearanceDetails ?? this.appearanceDetails,
-      narrativeDetails: narrativeDetails ?? this.narrativeDetails,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -1093,27 +730,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
         equipmentLoadoutLabel.value,
       );
     }
-    if (currentHitPoints.present) {
-      map['current_hit_points'] = Variable<int>(currentHitPoints.value);
-    }
-    if (maximumHitPoints.present) {
-      map['maximum_hit_points'] = Variable<int>(maximumHitPoints.value);
-    }
-    if (temporaryHitPoints.present) {
-      map['temporary_hit_points'] = Variable<int>(temporaryHitPoints.value);
-    }
-    if (portraitAssetPath.present) {
-      map['portrait_asset_path'] = Variable<String>(portraitAssetPath.value);
-    }
-    if (alignment.present) {
-      map['alignment'] = Variable<String>(alignment.value);
-    }
-    if (appearanceDetails.present) {
-      map['appearance_details'] = Variable<String>(appearanceDetails.value);
-    }
-    if (narrativeDetails.present) {
-      map['narrative_details'] = Variable<String>(narrativeDetails.value);
-    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1139,13 +755,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
           ..write('experience: $experience, ')
           ..write('equipmentLoadoutId: $equipmentLoadoutId, ')
           ..write('equipmentLoadoutLabel: $equipmentLoadoutLabel, ')
-          ..write('currentHitPoints: $currentHitPoints, ')
-          ..write('maximumHitPoints: $maximumHitPoints, ')
-          ..write('temporaryHitPoints: $temporaryHitPoints, ')
-          ..write('portraitAssetPath: $portraitAssetPath, ')
-          ..write('alignment: $alignment, ')
-          ..write('appearanceDetails: $appearanceDetails, ')
-          ..write('narrativeDetails: $narrativeDetails, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -2624,6 +2233,763 @@ class CharacterAbilityScoreProvenancesCompanion
           ..write('intelligenceAssignedScore: $intelligenceAssignedScore, ')
           ..write('wisdomAssignedScore: $wisdomAssignedScore, ')
           ..write('charismaAssignedScore: $charismaAssignedScore, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CharacterHitPointsTable extends CharacterHitPoints
+    with TableInfo<$CharacterHitPointsTable, CharacterHitPoint> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CharacterHitPointsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _characterIdMeta = const VerificationMeta(
+    'characterId',
+  );
+  @override
+  late final GeneratedColumn<String> characterId = GeneratedColumn<String>(
+    'character_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES characters (id)',
+    ),
+  );
+  static const VerificationMeta _currentMeta = const VerificationMeta(
+    'current',
+  );
+  @override
+  late final GeneratedColumn<int> current = GeneratedColumn<int>(
+    'current_hit_points',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _maximumMeta = const VerificationMeta(
+    'maximum',
+  );
+  @override
+  late final GeneratedColumn<int> maximum = GeneratedColumn<int>(
+    'maximum_hit_points',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _temporaryMeta = const VerificationMeta(
+    'temporary',
+  );
+  @override
+  late final GeneratedColumn<int> temporary = GeneratedColumn<int>(
+    'temporary_hit_points',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    characterId,
+    current,
+    maximum,
+    temporary,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'character_hit_points';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CharacterHitPoint> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('character_id')) {
+      context.handle(
+        _characterIdMeta,
+        characterId.isAcceptableOrUnknown(
+          data['character_id']!,
+          _characterIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_characterIdMeta);
+    }
+    if (data.containsKey('current_hit_points')) {
+      context.handle(
+        _currentMeta,
+        current.isAcceptableOrUnknown(
+          data['current_hit_points']!,
+          _currentMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_currentMeta);
+    }
+    if (data.containsKey('maximum_hit_points')) {
+      context.handle(
+        _maximumMeta,
+        maximum.isAcceptableOrUnknown(
+          data['maximum_hit_points']!,
+          _maximumMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_maximumMeta);
+    }
+    if (data.containsKey('temporary_hit_points')) {
+      context.handle(
+        _temporaryMeta,
+        temporary.isAcceptableOrUnknown(
+          data['temporary_hit_points']!,
+          _temporaryMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_temporaryMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {characterId};
+  @override
+  CharacterHitPoint map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CharacterHitPoint(
+      characterId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}character_id'],
+      )!,
+      current: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}current_hit_points'],
+      )!,
+      maximum: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}maximum_hit_points'],
+      )!,
+      temporary: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}temporary_hit_points'],
+      )!,
+    );
+  }
+
+  @override
+  $CharacterHitPointsTable createAlias(String alias) {
+    return $CharacterHitPointsTable(attachedDatabase, alias);
+  }
+}
+
+class CharacterHitPoint extends DataClass
+    implements Insertable<CharacterHitPoint> {
+  final String characterId;
+  final int current;
+  final int maximum;
+  final int temporary;
+  const CharacterHitPoint({
+    required this.characterId,
+    required this.current,
+    required this.maximum,
+    required this.temporary,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['character_id'] = Variable<String>(characterId);
+    map['current_hit_points'] = Variable<int>(current);
+    map['maximum_hit_points'] = Variable<int>(maximum);
+    map['temporary_hit_points'] = Variable<int>(temporary);
+    return map;
+  }
+
+  CharacterHitPointsCompanion toCompanion(bool nullToAbsent) {
+    return CharacterHitPointsCompanion(
+      characterId: Value(characterId),
+      current: Value(current),
+      maximum: Value(maximum),
+      temporary: Value(temporary),
+    );
+  }
+
+  factory CharacterHitPoint.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CharacterHitPoint(
+      characterId: serializer.fromJson<String>(json['characterId']),
+      current: serializer.fromJson<int>(json['current']),
+      maximum: serializer.fromJson<int>(json['maximum']),
+      temporary: serializer.fromJson<int>(json['temporary']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'characterId': serializer.toJson<String>(characterId),
+      'current': serializer.toJson<int>(current),
+      'maximum': serializer.toJson<int>(maximum),
+      'temporary': serializer.toJson<int>(temporary),
+    };
+  }
+
+  CharacterHitPoint copyWith({
+    String? characterId,
+    int? current,
+    int? maximum,
+    int? temporary,
+  }) => CharacterHitPoint(
+    characterId: characterId ?? this.characterId,
+    current: current ?? this.current,
+    maximum: maximum ?? this.maximum,
+    temporary: temporary ?? this.temporary,
+  );
+  CharacterHitPoint copyWithCompanion(CharacterHitPointsCompanion data) {
+    return CharacterHitPoint(
+      characterId: data.characterId.present
+          ? data.characterId.value
+          : this.characterId,
+      current: data.current.present ? data.current.value : this.current,
+      maximum: data.maximum.present ? data.maximum.value : this.maximum,
+      temporary: data.temporary.present ? data.temporary.value : this.temporary,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterHitPoint(')
+          ..write('characterId: $characterId, ')
+          ..write('current: $current, ')
+          ..write('maximum: $maximum, ')
+          ..write('temporary: $temporary')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(characterId, current, maximum, temporary);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CharacterHitPoint &&
+          other.characterId == this.characterId &&
+          other.current == this.current &&
+          other.maximum == this.maximum &&
+          other.temporary == this.temporary);
+}
+
+class CharacterHitPointsCompanion extends UpdateCompanion<CharacterHitPoint> {
+  final Value<String> characterId;
+  final Value<int> current;
+  final Value<int> maximum;
+  final Value<int> temporary;
+  final Value<int> rowid;
+  const CharacterHitPointsCompanion({
+    this.characterId = const Value.absent(),
+    this.current = const Value.absent(),
+    this.maximum = const Value.absent(),
+    this.temporary = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CharacterHitPointsCompanion.insert({
+    required String characterId,
+    required int current,
+    required int maximum,
+    required int temporary,
+    this.rowid = const Value.absent(),
+  }) : characterId = Value(characterId),
+       current = Value(current),
+       maximum = Value(maximum),
+       temporary = Value(temporary);
+  static Insertable<CharacterHitPoint> custom({
+    Expression<String>? characterId,
+    Expression<int>? current,
+    Expression<int>? maximum,
+    Expression<int>? temporary,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (characterId != null) 'character_id': characterId,
+      if (current != null) 'current_hit_points': current,
+      if (maximum != null) 'maximum_hit_points': maximum,
+      if (temporary != null) 'temporary_hit_points': temporary,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CharacterHitPointsCompanion copyWith({
+    Value<String>? characterId,
+    Value<int>? current,
+    Value<int>? maximum,
+    Value<int>? temporary,
+    Value<int>? rowid,
+  }) {
+    return CharacterHitPointsCompanion(
+      characterId: characterId ?? this.characterId,
+      current: current ?? this.current,
+      maximum: maximum ?? this.maximum,
+      temporary: temporary ?? this.temporary,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (characterId.present) {
+      map['character_id'] = Variable<String>(characterId.value);
+    }
+    if (current.present) {
+      map['current_hit_points'] = Variable<int>(current.value);
+    }
+    if (maximum.present) {
+      map['maximum_hit_points'] = Variable<int>(maximum.value);
+    }
+    if (temporary.present) {
+      map['temporary_hit_points'] = Variable<int>(temporary.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterHitPointsCompanion(')
+          ..write('characterId: $characterId, ')
+          ..write('current: $current, ')
+          ..write('maximum: $maximum, ')
+          ..write('temporary: $temporary, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CharacterFinishingDetailsTable extends CharacterFinishingDetails
+    with TableInfo<$CharacterFinishingDetailsTable, CharacterFinishingDetail> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CharacterFinishingDetailsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _characterIdMeta = const VerificationMeta(
+    'characterId',
+  );
+  @override
+  late final GeneratedColumn<String> characterId = GeneratedColumn<String>(
+    'character_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES characters (id)',
+    ),
+  );
+  static const VerificationMeta _portraitAssetPathMeta = const VerificationMeta(
+    'portraitAssetPath',
+  );
+  @override
+  late final GeneratedColumn<String> portraitAssetPath =
+      GeneratedColumn<String>(
+        'portrait_asset_path',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _alignmentMeta = const VerificationMeta(
+    'alignment',
+  );
+  @override
+  late final GeneratedColumn<String> alignment = GeneratedColumn<String>(
+    'alignment',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _appearanceDetailsMeta = const VerificationMeta(
+    'appearanceDetails',
+  );
+  @override
+  late final GeneratedColumn<String> appearanceDetails =
+      GeneratedColumn<String>(
+        'appearance_details',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _narrativeDetailsMeta = const VerificationMeta(
+    'narrativeDetails',
+  );
+  @override
+  late final GeneratedColumn<String> narrativeDetails = GeneratedColumn<String>(
+    'narrative_details',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    characterId,
+    portraitAssetPath,
+    alignment,
+    appearanceDetails,
+    narrativeDetails,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'character_finishing_details';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CharacterFinishingDetail> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('character_id')) {
+      context.handle(
+        _characterIdMeta,
+        characterId.isAcceptableOrUnknown(
+          data['character_id']!,
+          _characterIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_characterIdMeta);
+    }
+    if (data.containsKey('portrait_asset_path')) {
+      context.handle(
+        _portraitAssetPathMeta,
+        portraitAssetPath.isAcceptableOrUnknown(
+          data['portrait_asset_path']!,
+          _portraitAssetPathMeta,
+        ),
+      );
+    }
+    if (data.containsKey('alignment')) {
+      context.handle(
+        _alignmentMeta,
+        alignment.isAcceptableOrUnknown(data['alignment']!, _alignmentMeta),
+      );
+    }
+    if (data.containsKey('appearance_details')) {
+      context.handle(
+        _appearanceDetailsMeta,
+        appearanceDetails.isAcceptableOrUnknown(
+          data['appearance_details']!,
+          _appearanceDetailsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('narrative_details')) {
+      context.handle(
+        _narrativeDetailsMeta,
+        narrativeDetails.isAcceptableOrUnknown(
+          data['narrative_details']!,
+          _narrativeDetailsMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {characterId};
+  @override
+  CharacterFinishingDetail map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CharacterFinishingDetail(
+      characterId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}character_id'],
+      )!,
+      portraitAssetPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}portrait_asset_path'],
+      ),
+      alignment: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}alignment'],
+      ),
+      appearanceDetails: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}appearance_details'],
+      ),
+      narrativeDetails: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}narrative_details'],
+      ),
+    );
+  }
+
+  @override
+  $CharacterFinishingDetailsTable createAlias(String alias) {
+    return $CharacterFinishingDetailsTable(attachedDatabase, alias);
+  }
+}
+
+class CharacterFinishingDetail extends DataClass
+    implements Insertable<CharacterFinishingDetail> {
+  final String characterId;
+  final String? portraitAssetPath;
+  final String? alignment;
+  final String? appearanceDetails;
+  final String? narrativeDetails;
+  const CharacterFinishingDetail({
+    required this.characterId,
+    this.portraitAssetPath,
+    this.alignment,
+    this.appearanceDetails,
+    this.narrativeDetails,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['character_id'] = Variable<String>(characterId);
+    if (!nullToAbsent || portraitAssetPath != null) {
+      map['portrait_asset_path'] = Variable<String>(portraitAssetPath);
+    }
+    if (!nullToAbsent || alignment != null) {
+      map['alignment'] = Variable<String>(alignment);
+    }
+    if (!nullToAbsent || appearanceDetails != null) {
+      map['appearance_details'] = Variable<String>(appearanceDetails);
+    }
+    if (!nullToAbsent || narrativeDetails != null) {
+      map['narrative_details'] = Variable<String>(narrativeDetails);
+    }
+    return map;
+  }
+
+  CharacterFinishingDetailsCompanion toCompanion(bool nullToAbsent) {
+    return CharacterFinishingDetailsCompanion(
+      characterId: Value(characterId),
+      portraitAssetPath: portraitAssetPath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(portraitAssetPath),
+      alignment: alignment == null && nullToAbsent
+          ? const Value.absent()
+          : Value(alignment),
+      appearanceDetails: appearanceDetails == null && nullToAbsent
+          ? const Value.absent()
+          : Value(appearanceDetails),
+      narrativeDetails: narrativeDetails == null && nullToAbsent
+          ? const Value.absent()
+          : Value(narrativeDetails),
+    );
+  }
+
+  factory CharacterFinishingDetail.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CharacterFinishingDetail(
+      characterId: serializer.fromJson<String>(json['characterId']),
+      portraitAssetPath: serializer.fromJson<String?>(
+        json['portraitAssetPath'],
+      ),
+      alignment: serializer.fromJson<String?>(json['alignment']),
+      appearanceDetails: serializer.fromJson<String?>(
+        json['appearanceDetails'],
+      ),
+      narrativeDetails: serializer.fromJson<String?>(json['narrativeDetails']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'characterId': serializer.toJson<String>(characterId),
+      'portraitAssetPath': serializer.toJson<String?>(portraitAssetPath),
+      'alignment': serializer.toJson<String?>(alignment),
+      'appearanceDetails': serializer.toJson<String?>(appearanceDetails),
+      'narrativeDetails': serializer.toJson<String?>(narrativeDetails),
+    };
+  }
+
+  CharacterFinishingDetail copyWith({
+    String? characterId,
+    Value<String?> portraitAssetPath = const Value.absent(),
+    Value<String?> alignment = const Value.absent(),
+    Value<String?> appearanceDetails = const Value.absent(),
+    Value<String?> narrativeDetails = const Value.absent(),
+  }) => CharacterFinishingDetail(
+    characterId: characterId ?? this.characterId,
+    portraitAssetPath: portraitAssetPath.present
+        ? portraitAssetPath.value
+        : this.portraitAssetPath,
+    alignment: alignment.present ? alignment.value : this.alignment,
+    appearanceDetails: appearanceDetails.present
+        ? appearanceDetails.value
+        : this.appearanceDetails,
+    narrativeDetails: narrativeDetails.present
+        ? narrativeDetails.value
+        : this.narrativeDetails,
+  );
+  CharacterFinishingDetail copyWithCompanion(
+    CharacterFinishingDetailsCompanion data,
+  ) {
+    return CharacterFinishingDetail(
+      characterId: data.characterId.present
+          ? data.characterId.value
+          : this.characterId,
+      portraitAssetPath: data.portraitAssetPath.present
+          ? data.portraitAssetPath.value
+          : this.portraitAssetPath,
+      alignment: data.alignment.present ? data.alignment.value : this.alignment,
+      appearanceDetails: data.appearanceDetails.present
+          ? data.appearanceDetails.value
+          : this.appearanceDetails,
+      narrativeDetails: data.narrativeDetails.present
+          ? data.narrativeDetails.value
+          : this.narrativeDetails,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterFinishingDetail(')
+          ..write('characterId: $characterId, ')
+          ..write('portraitAssetPath: $portraitAssetPath, ')
+          ..write('alignment: $alignment, ')
+          ..write('appearanceDetails: $appearanceDetails, ')
+          ..write('narrativeDetails: $narrativeDetails')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    characterId,
+    portraitAssetPath,
+    alignment,
+    appearanceDetails,
+    narrativeDetails,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CharacterFinishingDetail &&
+          other.characterId == this.characterId &&
+          other.portraitAssetPath == this.portraitAssetPath &&
+          other.alignment == this.alignment &&
+          other.appearanceDetails == this.appearanceDetails &&
+          other.narrativeDetails == this.narrativeDetails);
+}
+
+class CharacterFinishingDetailsCompanion
+    extends UpdateCompanion<CharacterFinishingDetail> {
+  final Value<String> characterId;
+  final Value<String?> portraitAssetPath;
+  final Value<String?> alignment;
+  final Value<String?> appearanceDetails;
+  final Value<String?> narrativeDetails;
+  final Value<int> rowid;
+  const CharacterFinishingDetailsCompanion({
+    this.characterId = const Value.absent(),
+    this.portraitAssetPath = const Value.absent(),
+    this.alignment = const Value.absent(),
+    this.appearanceDetails = const Value.absent(),
+    this.narrativeDetails = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CharacterFinishingDetailsCompanion.insert({
+    required String characterId,
+    this.portraitAssetPath = const Value.absent(),
+    this.alignment = const Value.absent(),
+    this.appearanceDetails = const Value.absent(),
+    this.narrativeDetails = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : characterId = Value(characterId);
+  static Insertable<CharacterFinishingDetail> custom({
+    Expression<String>? characterId,
+    Expression<String>? portraitAssetPath,
+    Expression<String>? alignment,
+    Expression<String>? appearanceDetails,
+    Expression<String>? narrativeDetails,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (characterId != null) 'character_id': characterId,
+      if (portraitAssetPath != null) 'portrait_asset_path': portraitAssetPath,
+      if (alignment != null) 'alignment': alignment,
+      if (appearanceDetails != null) 'appearance_details': appearanceDetails,
+      if (narrativeDetails != null) 'narrative_details': narrativeDetails,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CharacterFinishingDetailsCompanion copyWith({
+    Value<String>? characterId,
+    Value<String?>? portraitAssetPath,
+    Value<String?>? alignment,
+    Value<String?>? appearanceDetails,
+    Value<String?>? narrativeDetails,
+    Value<int>? rowid,
+  }) {
+    return CharacterFinishingDetailsCompanion(
+      characterId: characterId ?? this.characterId,
+      portraitAssetPath: portraitAssetPath ?? this.portraitAssetPath,
+      alignment: alignment ?? this.alignment,
+      appearanceDetails: appearanceDetails ?? this.appearanceDetails,
+      narrativeDetails: narrativeDetails ?? this.narrativeDetails,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (characterId.present) {
+      map['character_id'] = Variable<String>(characterId.value);
+    }
+    if (portraitAssetPath.present) {
+      map['portrait_asset_path'] = Variable<String>(portraitAssetPath.value);
+    }
+    if (alignment.present) {
+      map['alignment'] = Variable<String>(alignment.value);
+    }
+    if (appearanceDetails.present) {
+      map['appearance_details'] = Variable<String>(appearanceDetails.value);
+    }
+    if (narrativeDetails.present) {
+      map['narrative_details'] = Variable<String>(narrativeDetails.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterFinishingDetailsCompanion(')
+          ..write('characterId: $characterId, ')
+          ..write('portraitAssetPath: $portraitAssetPath, ')
+          ..write('alignment: $alignment, ')
+          ..write('appearanceDetails: $appearanceDetails, ')
+          ..write('narrativeDetails: $narrativeDetails, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -8764,6 +9130,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   characterAbilityScoreProvenances = $CharacterAbilityScoreProvenancesTable(
     this,
   );
+  late final $CharacterHitPointsTable characterHitPoints =
+      $CharacterHitPointsTable(this);
+  late final $CharacterFinishingDetailsTable characterFinishingDetails =
+      $CharacterFinishingDetailsTable(this);
   late final $SkillDefinitionsTable skillDefinitions = $SkillDefinitionsTable(
     this,
   );
@@ -8798,6 +9168,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     characters,
     characterAbilityScores,
     characterAbilityScoreProvenances,
+    characterHitPoints,
+    characterFinishingDetails,
     skillDefinitions,
     characterSkills,
     characterSavingThrows,
@@ -8824,13 +9196,6 @@ typedef $$CharactersTableCreateCompanionBuilder =
       Value<int?> experience,
       Value<String?> equipmentLoadoutId,
       Value<String?> equipmentLoadoutLabel,
-      Value<int?> currentHitPoints,
-      Value<int?> maximumHitPoints,
-      Value<int?> temporaryHitPoints,
-      Value<String?> portraitAssetPath,
-      Value<String?> alignment,
-      Value<String?> appearanceDetails,
-      Value<String?> narrativeDetails,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -8847,13 +9212,6 @@ typedef $$CharactersTableUpdateCompanionBuilder =
       Value<int?> experience,
       Value<String?> equipmentLoadoutId,
       Value<String?> equipmentLoadoutLabel,
-      Value<int?> currentHitPoints,
-      Value<int?> maximumHitPoints,
-      Value<int?> temporaryHitPoints,
-      Value<String?> portraitAssetPath,
-      Value<String?> alignment,
-      Value<String?> appearanceDetails,
-      Value<String?> narrativeDetails,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -8913,6 +9271,58 @@ final class $$CharactersTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _characterAbilityScoreProvenancesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$CharacterHitPointsTable, List<CharacterHitPoint>>
+  _characterHitPointsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.characterHitPoints,
+        aliasName: $_aliasNameGenerator(
+          db.characters.id,
+          db.characterHitPoints.characterId,
+        ),
+      );
+
+  $$CharacterHitPointsTableProcessedTableManager get characterHitPointsRefs {
+    final manager = $$CharacterHitPointsTableTableManager(
+      $_db,
+      $_db.characterHitPoints,
+    ).filter((f) => f.characterId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _characterHitPointsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $CharacterFinishingDetailsTable,
+    List<CharacterFinishingDetail>
+  >
+  _characterFinishingDetailsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.characterFinishingDetails,
+        aliasName: $_aliasNameGenerator(
+          db.characters.id,
+          db.characterFinishingDetails.characterId,
+        ),
+      );
+
+  $$CharacterFinishingDetailsTableProcessedTableManager
+  get characterFinishingDetailsRefs {
+    final manager = $$CharacterFinishingDetailsTableTableManager(
+      $_db,
+      $_db.characterFinishingDetails,
+    ).filter((f) => f.characterId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _characterFinishingDetailsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -9112,41 +9522,6 @@ class $$CharactersTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get currentHitPoints => $composableBuilder(
-    column: $table.currentHitPoints,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get maximumHitPoints => $composableBuilder(
-    column: $table.maximumHitPoints,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get temporaryHitPoints => $composableBuilder(
-    column: $table.temporaryHitPoints,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get portraitAssetPath => $composableBuilder(
-    column: $table.portraitAssetPath,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get alignment => $composableBuilder(
-    column: $table.alignment,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get appearanceDetails => $composableBuilder(
-    column: $table.appearanceDetails,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get narrativeDetails => $composableBuilder(
-    column: $table.narrativeDetails,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
@@ -9203,6 +9578,58 @@ class $$CharactersTableFilterComposer
               }) => $$CharacterAbilityScoreProvenancesTableFilterComposer(
                 $db: $db,
                 $table: $db.characterAbilityScoreProvenances,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> characterHitPointsRefs(
+    Expression<bool> Function($$CharacterHitPointsTableFilterComposer f) f,
+  ) {
+    final $$CharacterHitPointsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.characterHitPoints,
+      getReferencedColumn: (t) => t.characterId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharacterHitPointsTableFilterComposer(
+            $db: $db,
+            $table: $db.characterHitPoints,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> characterFinishingDetailsRefs(
+    Expression<bool> Function($$CharacterFinishingDetailsTableFilterComposer f)
+    f,
+  ) {
+    final $$CharacterFinishingDetailsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.characterFinishingDetails,
+          getReferencedColumn: (t) => t.characterId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$CharacterFinishingDetailsTableFilterComposer(
+                $db: $db,
+                $table: $db.characterFinishingDetails,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -9399,41 +9826,6 @@ class $$CharactersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get currentHitPoints => $composableBuilder(
-    column: $table.currentHitPoints,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get maximumHitPoints => $composableBuilder(
-    column: $table.maximumHitPoints,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get temporaryHitPoints => $composableBuilder(
-    column: $table.temporaryHitPoints,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get portraitAssetPath => $composableBuilder(
-    column: $table.portraitAssetPath,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get alignment => $composableBuilder(
-    column: $table.alignment,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get appearanceDetails => $composableBuilder(
-    column: $table.appearanceDetails,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get narrativeDetails => $composableBuilder(
-    column: $table.narrativeDetails,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -9494,39 +9886,6 @@ class $$CharactersTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<int> get currentHitPoints => $composableBuilder(
-    column: $table.currentHitPoints,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get maximumHitPoints => $composableBuilder(
-    column: $table.maximumHitPoints,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get temporaryHitPoints => $composableBuilder(
-    column: $table.temporaryHitPoints,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get portraitAssetPath => $composableBuilder(
-    column: $table.portraitAssetPath,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get alignment =>
-      $composableBuilder(column: $table.alignment, builder: (column) => column);
-
-  GeneratedColumn<String> get appearanceDetails => $composableBuilder(
-    column: $table.appearanceDetails,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get narrativeDetails => $composableBuilder(
-    column: $table.narrativeDetails,
-    builder: (column) => column,
-  );
-
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -9579,6 +9938,59 @@ class $$CharactersTableAnnotationComposer
               }) => $$CharacterAbilityScoreProvenancesTableAnnotationComposer(
                 $db: $db,
                 $table: $db.characterAbilityScoreProvenances,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> characterHitPointsRefs<T extends Object>(
+    Expression<T> Function($$CharacterHitPointsTableAnnotationComposer a) f,
+  ) {
+    final $$CharacterHitPointsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.characterHitPoints,
+          getReferencedColumn: (t) => t.characterId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$CharacterHitPointsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.characterHitPoints,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> characterFinishingDetailsRefs<T extends Object>(
+    Expression<T> Function($$CharacterFinishingDetailsTableAnnotationComposer a)
+    f,
+  ) {
+    final $$CharacterFinishingDetailsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.characterFinishingDetails,
+          getReferencedColumn: (t) => t.characterId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$CharacterFinishingDetailsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.characterFinishingDetails,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -9734,6 +10146,8 @@ class $$CharactersTableTableManager
           PrefetchHooks Function({
             bool characterAbilityScoresRefs,
             bool characterAbilityScoreProvenancesRefs,
+            bool characterHitPointsRefs,
+            bool characterFinishingDetailsRefs,
             bool characterSkillsRefs,
             bool characterSavingThrowsRefs,
             bool characterInventoryRefs,
@@ -9764,13 +10178,6 @@ class $$CharactersTableTableManager
                 Value<int?> experience = const Value.absent(),
                 Value<String?> equipmentLoadoutId = const Value.absent(),
                 Value<String?> equipmentLoadoutLabel = const Value.absent(),
-                Value<int?> currentHitPoints = const Value.absent(),
-                Value<int?> maximumHitPoints = const Value.absent(),
-                Value<int?> temporaryHitPoints = const Value.absent(),
-                Value<String?> portraitAssetPath = const Value.absent(),
-                Value<String?> alignment = const Value.absent(),
-                Value<String?> appearanceDetails = const Value.absent(),
-                Value<String?> narrativeDetails = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -9785,13 +10192,6 @@ class $$CharactersTableTableManager
                 experience: experience,
                 equipmentLoadoutId: equipmentLoadoutId,
                 equipmentLoadoutLabel: equipmentLoadoutLabel,
-                currentHitPoints: currentHitPoints,
-                maximumHitPoints: maximumHitPoints,
-                temporaryHitPoints: temporaryHitPoints,
-                portraitAssetPath: portraitAssetPath,
-                alignment: alignment,
-                appearanceDetails: appearanceDetails,
-                narrativeDetails: narrativeDetails,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -9808,13 +10208,6 @@ class $$CharactersTableTableManager
                 Value<int?> experience = const Value.absent(),
                 Value<String?> equipmentLoadoutId = const Value.absent(),
                 Value<String?> equipmentLoadoutLabel = const Value.absent(),
-                Value<int?> currentHitPoints = const Value.absent(),
-                Value<int?> maximumHitPoints = const Value.absent(),
-                Value<int?> temporaryHitPoints = const Value.absent(),
-                Value<String?> portraitAssetPath = const Value.absent(),
-                Value<String?> alignment = const Value.absent(),
-                Value<String?> appearanceDetails = const Value.absent(),
-                Value<String?> narrativeDetails = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -9829,13 +10222,6 @@ class $$CharactersTableTableManager
                 experience: experience,
                 equipmentLoadoutId: equipmentLoadoutId,
                 equipmentLoadoutLabel: equipmentLoadoutLabel,
-                currentHitPoints: currentHitPoints,
-                maximumHitPoints: maximumHitPoints,
-                temporaryHitPoints: temporaryHitPoints,
-                portraitAssetPath: portraitAssetPath,
-                alignment: alignment,
-                appearanceDetails: appearanceDetails,
-                narrativeDetails: narrativeDetails,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -9852,6 +10238,8 @@ class $$CharactersTableTableManager
               ({
                 characterAbilityScoresRefs = false,
                 characterAbilityScoreProvenancesRefs = false,
+                characterHitPointsRefs = false,
+                characterFinishingDetailsRefs = false,
                 characterSkillsRefs = false,
                 characterSavingThrowsRefs = false,
                 characterInventoryRefs = false,
@@ -9864,6 +10252,9 @@ class $$CharactersTableTableManager
                     if (characterAbilityScoresRefs) db.characterAbilityScores,
                     if (characterAbilityScoreProvenancesRefs)
                       db.characterAbilityScoreProvenances,
+                    if (characterHitPointsRefs) db.characterHitPoints,
+                    if (characterFinishingDetailsRefs)
+                      db.characterFinishingDetails,
                     if (characterSkillsRefs) db.characterSkills,
                     if (characterSavingThrowsRefs) db.characterSavingThrows,
                     if (characterInventoryRefs) db.characterInventory,
@@ -9909,6 +10300,48 @@ class $$CharactersTableTableManager
                                 table,
                                 p0,
                               ).characterAbilityScoreProvenancesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.characterId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (characterHitPointsRefs)
+                        await $_getPrefetchedData<
+                          Character,
+                          $CharactersTable,
+                          CharacterHitPoint
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CharactersTableReferences
+                              ._characterHitPointsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CharactersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).characterHitPointsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.characterId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (characterFinishingDetailsRefs)
+                        await $_getPrefetchedData<
+                          Character,
+                          $CharactersTable,
+                          CharacterFinishingDetail
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CharactersTableReferences
+                              ._characterFinishingDetailsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CharactersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).characterFinishingDetailsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.characterId == item.id,
@@ -10043,6 +10476,8 @@ typedef $$CharactersTableProcessedTableManager =
       PrefetchHooks Function({
         bool characterAbilityScoresRefs,
         bool characterAbilityScoreProvenancesRefs,
+        bool characterHitPointsRefs,
+        bool characterFinishingDetailsRefs,
         bool characterSkillsRefs,
         bool characterSavingThrowsRefs,
         bool characterInventoryRefs,
@@ -10991,6 +11426,678 @@ typedef $$CharacterAbilityScoreProvenancesTableProcessedTableManager =
         $$CharacterAbilityScoreProvenancesTableReferences,
       ),
       CharacterAbilityScoreProvenance,
+      PrefetchHooks Function({bool characterId})
+    >;
+typedef $$CharacterHitPointsTableCreateCompanionBuilder =
+    CharacterHitPointsCompanion Function({
+      required String characterId,
+      required int current,
+      required int maximum,
+      required int temporary,
+      Value<int> rowid,
+    });
+typedef $$CharacterHitPointsTableUpdateCompanionBuilder =
+    CharacterHitPointsCompanion Function({
+      Value<String> characterId,
+      Value<int> current,
+      Value<int> maximum,
+      Value<int> temporary,
+      Value<int> rowid,
+    });
+
+final class $$CharacterHitPointsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $CharacterHitPointsTable,
+          CharacterHitPoint
+        > {
+  $$CharacterHitPointsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CharactersTable _characterIdTable(_$AppDatabase db) =>
+      db.characters.createAlias(
+        $_aliasNameGenerator(
+          db.characterHitPoints.characterId,
+          db.characters.id,
+        ),
+      );
+
+  $$CharactersTableProcessedTableManager get characterId {
+    final $_column = $_itemColumn<String>('character_id')!;
+
+    final manager = $$CharactersTableTableManager(
+      $_db,
+      $_db.characters,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_characterIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CharacterHitPointsTableFilterComposer
+    extends Composer<_$AppDatabase, $CharacterHitPointsTable> {
+  $$CharacterHitPointsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get current => $composableBuilder(
+    column: $table.current,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get maximum => $composableBuilder(
+    column: $table.maximum,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get temporary => $composableBuilder(
+    column: $table.temporary,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CharactersTableFilterComposer get characterId {
+    final $$CharactersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableFilterComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterHitPointsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CharacterHitPointsTable> {
+  $$CharacterHitPointsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get current => $composableBuilder(
+    column: $table.current,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get maximum => $composableBuilder(
+    column: $table.maximum,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get temporary => $composableBuilder(
+    column: $table.temporary,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CharactersTableOrderingComposer get characterId {
+    final $$CharactersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableOrderingComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterHitPointsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CharacterHitPointsTable> {
+  $$CharacterHitPointsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get current =>
+      $composableBuilder(column: $table.current, builder: (column) => column);
+
+  GeneratedColumn<int> get maximum =>
+      $composableBuilder(column: $table.maximum, builder: (column) => column);
+
+  GeneratedColumn<int> get temporary =>
+      $composableBuilder(column: $table.temporary, builder: (column) => column);
+
+  $$CharactersTableAnnotationComposer get characterId {
+    final $$CharactersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterHitPointsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CharacterHitPointsTable,
+          CharacterHitPoint,
+          $$CharacterHitPointsTableFilterComposer,
+          $$CharacterHitPointsTableOrderingComposer,
+          $$CharacterHitPointsTableAnnotationComposer,
+          $$CharacterHitPointsTableCreateCompanionBuilder,
+          $$CharacterHitPointsTableUpdateCompanionBuilder,
+          (CharacterHitPoint, $$CharacterHitPointsTableReferences),
+          CharacterHitPoint,
+          PrefetchHooks Function({bool characterId})
+        > {
+  $$CharacterHitPointsTableTableManager(
+    _$AppDatabase db,
+    $CharacterHitPointsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CharacterHitPointsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CharacterHitPointsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CharacterHitPointsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> characterId = const Value.absent(),
+                Value<int> current = const Value.absent(),
+                Value<int> maximum = const Value.absent(),
+                Value<int> temporary = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterHitPointsCompanion(
+                characterId: characterId,
+                current: current,
+                maximum: maximum,
+                temporary: temporary,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String characterId,
+                required int current,
+                required int maximum,
+                required int temporary,
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterHitPointsCompanion.insert(
+                characterId: characterId,
+                current: current,
+                maximum: maximum,
+                temporary: temporary,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CharacterHitPointsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({characterId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (characterId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.characterId,
+                                referencedTable:
+                                    $$CharacterHitPointsTableReferences
+                                        ._characterIdTable(db),
+                                referencedColumn:
+                                    $$CharacterHitPointsTableReferences
+                                        ._characterIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CharacterHitPointsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CharacterHitPointsTable,
+      CharacterHitPoint,
+      $$CharacterHitPointsTableFilterComposer,
+      $$CharacterHitPointsTableOrderingComposer,
+      $$CharacterHitPointsTableAnnotationComposer,
+      $$CharacterHitPointsTableCreateCompanionBuilder,
+      $$CharacterHitPointsTableUpdateCompanionBuilder,
+      (CharacterHitPoint, $$CharacterHitPointsTableReferences),
+      CharacterHitPoint,
+      PrefetchHooks Function({bool characterId})
+    >;
+typedef $$CharacterFinishingDetailsTableCreateCompanionBuilder =
+    CharacterFinishingDetailsCompanion Function({
+      required String characterId,
+      Value<String?> portraitAssetPath,
+      Value<String?> alignment,
+      Value<String?> appearanceDetails,
+      Value<String?> narrativeDetails,
+      Value<int> rowid,
+    });
+typedef $$CharacterFinishingDetailsTableUpdateCompanionBuilder =
+    CharacterFinishingDetailsCompanion Function({
+      Value<String> characterId,
+      Value<String?> portraitAssetPath,
+      Value<String?> alignment,
+      Value<String?> appearanceDetails,
+      Value<String?> narrativeDetails,
+      Value<int> rowid,
+    });
+
+final class $$CharacterFinishingDetailsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $CharacterFinishingDetailsTable,
+          CharacterFinishingDetail
+        > {
+  $$CharacterFinishingDetailsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CharactersTable _characterIdTable(_$AppDatabase db) =>
+      db.characters.createAlias(
+        $_aliasNameGenerator(
+          db.characterFinishingDetails.characterId,
+          db.characters.id,
+        ),
+      );
+
+  $$CharactersTableProcessedTableManager get characterId {
+    final $_column = $_itemColumn<String>('character_id')!;
+
+    final manager = $$CharactersTableTableManager(
+      $_db,
+      $_db.characters,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_characterIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CharacterFinishingDetailsTableFilterComposer
+    extends Composer<_$AppDatabase, $CharacterFinishingDetailsTable> {
+  $$CharacterFinishingDetailsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get portraitAssetPath => $composableBuilder(
+    column: $table.portraitAssetPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get alignment => $composableBuilder(
+    column: $table.alignment,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get appearanceDetails => $composableBuilder(
+    column: $table.appearanceDetails,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get narrativeDetails => $composableBuilder(
+    column: $table.narrativeDetails,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CharactersTableFilterComposer get characterId {
+    final $$CharactersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableFilterComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterFinishingDetailsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CharacterFinishingDetailsTable> {
+  $$CharacterFinishingDetailsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get portraitAssetPath => $composableBuilder(
+    column: $table.portraitAssetPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get alignment => $composableBuilder(
+    column: $table.alignment,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get appearanceDetails => $composableBuilder(
+    column: $table.appearanceDetails,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get narrativeDetails => $composableBuilder(
+    column: $table.narrativeDetails,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CharactersTableOrderingComposer get characterId {
+    final $$CharactersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableOrderingComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterFinishingDetailsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CharacterFinishingDetailsTable> {
+  $$CharacterFinishingDetailsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get portraitAssetPath => $composableBuilder(
+    column: $table.portraitAssetPath,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get alignment =>
+      $composableBuilder(column: $table.alignment, builder: (column) => column);
+
+  GeneratedColumn<String> get appearanceDetails => $composableBuilder(
+    column: $table.appearanceDetails,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get narrativeDetails => $composableBuilder(
+    column: $table.narrativeDetails,
+    builder: (column) => column,
+  );
+
+  $$CharactersTableAnnotationComposer get characterId {
+    final $$CharactersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterFinishingDetailsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CharacterFinishingDetailsTable,
+          CharacterFinishingDetail,
+          $$CharacterFinishingDetailsTableFilterComposer,
+          $$CharacterFinishingDetailsTableOrderingComposer,
+          $$CharacterFinishingDetailsTableAnnotationComposer,
+          $$CharacterFinishingDetailsTableCreateCompanionBuilder,
+          $$CharacterFinishingDetailsTableUpdateCompanionBuilder,
+          (
+            CharacterFinishingDetail,
+            $$CharacterFinishingDetailsTableReferences,
+          ),
+          CharacterFinishingDetail,
+          PrefetchHooks Function({bool characterId})
+        > {
+  $$CharacterFinishingDetailsTableTableManager(
+    _$AppDatabase db,
+    $CharacterFinishingDetailsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CharacterFinishingDetailsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$CharacterFinishingDetailsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$CharacterFinishingDetailsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> characterId = const Value.absent(),
+                Value<String?> portraitAssetPath = const Value.absent(),
+                Value<String?> alignment = const Value.absent(),
+                Value<String?> appearanceDetails = const Value.absent(),
+                Value<String?> narrativeDetails = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterFinishingDetailsCompanion(
+                characterId: characterId,
+                portraitAssetPath: portraitAssetPath,
+                alignment: alignment,
+                appearanceDetails: appearanceDetails,
+                narrativeDetails: narrativeDetails,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String characterId,
+                Value<String?> portraitAssetPath = const Value.absent(),
+                Value<String?> alignment = const Value.absent(),
+                Value<String?> appearanceDetails = const Value.absent(),
+                Value<String?> narrativeDetails = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterFinishingDetailsCompanion.insert(
+                characterId: characterId,
+                portraitAssetPath: portraitAssetPath,
+                alignment: alignment,
+                appearanceDetails: appearanceDetails,
+                narrativeDetails: narrativeDetails,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CharacterFinishingDetailsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({characterId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (characterId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.characterId,
+                                referencedTable:
+                                    $$CharacterFinishingDetailsTableReferences
+                                        ._characterIdTable(db),
+                                referencedColumn:
+                                    $$CharacterFinishingDetailsTableReferences
+                                        ._characterIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CharacterFinishingDetailsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CharacterFinishingDetailsTable,
+      CharacterFinishingDetail,
+      $$CharacterFinishingDetailsTableFilterComposer,
+      $$CharacterFinishingDetailsTableOrderingComposer,
+      $$CharacterFinishingDetailsTableAnnotationComposer,
+      $$CharacterFinishingDetailsTableCreateCompanionBuilder,
+      $$CharacterFinishingDetailsTableUpdateCompanionBuilder,
+      (CharacterFinishingDetail, $$CharacterFinishingDetailsTableReferences),
+      CharacterFinishingDetail,
       PrefetchHooks Function({bool characterId})
     >;
 typedef $$SkillDefinitionsTableCreateCompanionBuilder =
@@ -15364,6 +16471,13 @@ class $AppDatabaseManager {
       $$CharacterAbilityScoreProvenancesTableTableManager(
         _db,
         _db.characterAbilityScoreProvenances,
+      );
+  $$CharacterHitPointsTableTableManager get characterHitPoints =>
+      $$CharacterHitPointsTableTableManager(_db, _db.characterHitPoints);
+  $$CharacterFinishingDetailsTableTableManager get characterFinishingDetails =>
+      $$CharacterFinishingDetailsTableTableManager(
+        _db,
+        _db.characterFinishingDetails,
       );
   $$SkillDefinitionsTableTableManager get skillDefinitions =>
       $$SkillDefinitionsTableTableManager(_db, _db.skillDefinitions);

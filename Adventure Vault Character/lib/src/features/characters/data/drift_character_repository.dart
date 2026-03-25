@@ -13,6 +13,8 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/editable_character.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
+import 'package:drift/drift.dart';
+import 'dart:async';
 
 class DriftCharacterRepository implements CharacterRepository {
   DriftCharacterRepository({
@@ -21,6 +23,7 @@ class DriftCharacterRepository implements CharacterRepository {
     CharacterSummaryMapper characterSummaryMapper =
         const CharacterSummaryMapper(),
   }) : _readDao = CharacterReadDao(database),
+       _database = database,
        _characterSummaryMapper = characterSummaryMapper,
        _createCharacterService = CreateCharacterService(
          database: database,
@@ -42,6 +45,7 @@ class DriftCharacterRepository implements CharacterRepository {
        );
 
   final CharacterReadDao _readDao;
+  final AppDatabase _database;
   final CharacterSummaryMapper _characterSummaryMapper;
   final CreateCharacterService _createCharacterService;
   final CharacterSheetService _characterSheetService;
@@ -49,18 +53,34 @@ class DriftCharacterRepository implements CharacterRepository {
 
   @override
   Future<List<CharacterSummary>> getCharacterSummaries() async {
-    return (await _readDao.getCharacterRows())
-        .map(_characterSummaryMapper.fromCharacterRow)
-        .toList(growable: false);
+    final rows = await _readDao.getCharacterRows();
+    return _mapSummaries(rows);
   }
 
   @override
   Stream<List<CharacterSummary>> watchCharacterSummaries() {
-    return _readDao.watchCharacterRows().map(
-      (rows) => rows
-          .map(_characterSummaryMapper.fromCharacterRow)
-          .toList(growable: false),
-    );
+    return Stream<List<CharacterSummary>>.multi((controller) {
+      Future<void> emitCurrent() async {
+        controller.add(await getCharacterSummaries());
+      }
+
+      final subscriptions = <StreamSubscription<Object?>>[
+        _readDao.watchCharacterRows().listen((_) => emitCurrent()),
+        _database
+            .tableUpdates(
+              TableUpdateQuery.onTable(_database.characterFinishingDetails),
+            )
+            .listen((_) => emitCurrent()),
+      ];
+
+      unawaited(emitCurrent());
+
+      controller.onCancel = () async {
+        for (final subscription in subscriptions) {
+          await subscription.cancel();
+        }
+      };
+    });
   }
 
   @override
@@ -83,7 +103,13 @@ class DriftCharacterRepository implements CharacterRepository {
       return null;
     }
 
-    return _characterSummaryMapper.fromCharacterRow(row);
+    final finishingDetails = await _readDao.getFinishingDetailsByCharacterId(
+      id,
+    );
+    return _characterSummaryMapper.fromCharacterRow(
+      row,
+      finishingDetails: finishingDetails,
+    );
   }
 
   @override
@@ -99,5 +125,21 @@ class DriftCharacterRepository implements CharacterRepository {
   @override
   Future<EditableCharacter?> getEditableCharacterById(String id) {
     return _editableCharacterService.getEditableCharacterById(id);
+  }
+
+  Future<List<CharacterSummary>> _mapSummaries(List<Character> rows) async {
+    final summaries = <CharacterSummary>[];
+    for (final row in rows) {
+      final finishingDetails = await _readDao.getFinishingDetailsByCharacterId(
+        row.id,
+      );
+      summaries.add(
+        _characterSummaryMapper.fromCharacterRow(
+          row,
+          finishingDetails: finishingDetails,
+        ),
+      );
+    }
+    return summaries;
   }
 }
