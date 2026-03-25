@@ -56,7 +56,7 @@ Verified on 2026-03-25:
   SQLite database.
 - The previous single-table character persistence has now been extended into a
   normalized Drift schema.
-- The Drift schema is now at `v4` and includes dedicated character-side tables
+- The Drift schema is now at `v5` and includes dedicated character-side tables
   for `ability scores`, `skills`, `saving throws`, `inventory`,
   `proficiencies`, and `currency`, plus compendium-side definition tables for
   `skills`, `equipment`, `classes`, `backgrounds`, `spells`, and `trinkets`.
@@ -89,6 +89,10 @@ Verified on 2026-03-25:
 - `background_definition_ref_id` now stores the raw background id
   consistently with the migration backfill, while the read path still accepts
   the previous prefixed legacy form for compatibility.
+- Drift `v5` now removes the redundant `background`, raw `ability score`,
+  `proficiency bonus`, and equipment/currency snapshot columns from
+  `characters`, preserving old data through migration and treating the
+  normalized tables as the only source of truth for those areas.
 - The character sheet now renders normalized `saving throws`,
   `skill proficiencies`, `other proficiencies`, and inventory-derived
   equipment labels.
@@ -174,8 +178,8 @@ Verified on 2026-03-25:
 This means the repository now has an end-to-end offline character edit flow on
 top of the normalized read/write model, with shared rules and regression
 coverage protecting both create and update paths. The next major improvement
-is tightening the remaining duplicated snapshot state and extending the edit
-flow beyond the current guided MVP fields.
+is extending the edit flow beyond the current guided MVP fields and continuing
+to normalize the remaining editing metadata that still lives in `characters`.
 
 ## Current Phase
 
@@ -332,6 +336,9 @@ Completed since the previous handoff:
 - The edit flow reuses the guided builder sections instead of introducing a
   second form surface.
 - Repository and widget regression coverage now includes the edit/update path.
+- Drift schema cleanup is now implemented in `v5`, and redundant snapshot
+  columns have been removed from `characters` with migration coverage for the
+  preserved normalized data path.
 
 Next-session starting point:
 
@@ -348,10 +355,9 @@ Next-session starting point:
   through the `CompendiumRepository` boundary as the active source of truth
   for local creation data, with `assets/compendium/catalog.json` retained only
   as fallback.
-- Treat the current `characters` table snapshot fields as compatibility support
-  only where the normalized model still lacks a deliberate replacement; for
-  new records, avoid writing redundant snapshot values when normalized tables
-  already persist the same data.
+- Treat `characters` as the identity/resume row plus edit metadata, while
+  normalized tables remain the source of truth for background details,
+  abilities, inventory, and currency.
 - Use the accepted flow specs and proposed domain-model docs as the source of
   truth unless a new decision replaces them.
 

@@ -24,7 +24,7 @@ class EditableCharacterMapper {
         portraitAssetPath: row.portraitAssetPath,
       ),
       background: EditableCharacterBackground(
-        id: row.backgroundDefinitionRefId ?? row.backgroundId,
+        id: row.backgroundDefinitionRefId,
         name: character.featuresNotes.background.name,
         summary: character.featuresNotes.background.summary,
         bonuses: character.featuresNotes.background.bonuses,

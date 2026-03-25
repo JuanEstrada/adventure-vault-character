@@ -4,12 +4,13 @@ import 'package:adventure_vault_character/src/features/characters/domain/equipme
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/in_memory_compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
+import 'package:drift/drift.dart' show Variable;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(
-    'createCharacter keeps redundant snapshots out of characters and reads normalized data for sheet',
+    'createCharacter persists v5 character rows and reads normalized data for sheet',
     () async {
       final database = AppDatabase.executor(NativeDatabase.memory());
       addTearDown(database.close);
@@ -57,19 +58,21 @@ void main() {
       final row = await (database.select(
         database.characters,
       )..where((table) => table.id.equals(summary.id))).getSingle();
+      final rawCharacterRow =
+          (await database
+                  .customSelect(
+                    'SELECT * FROM characters WHERE id = ?',
+                    variables: <Variable<Object>>[Variable<String>(summary.id)],
+                  )
+                  .getSingle())
+              .data;
       final sheet = await repository.getCharacterSheetById(summary.id);
 
       expect(row.backgroundDefinitionRefId, 'acolyte');
-      expect(row.backgroundName, isNull);
-      expect(row.backgroundSummary, isNull);
-      expect(row.strength, isNull);
-      expect(row.dexterity, isNull);
-      expect(row.constitution, isNull);
-      expect(row.intelligence, isNull);
-      expect(row.wisdom, isNull);
-      expect(row.charisma, isNull);
-      expect(row.startingMoneySummary, isNull);
-      expect(row.selectedEquipmentItems, isNull);
+      expect(rawCharacterRow.containsKey('background_name'), isFalse);
+      expect(rawCharacterRow.containsKey('strength'), isFalse);
+      expect(rawCharacterRow.containsKey('starting_money_summary'), isFalse);
+      expect(rawCharacterRow.containsKey('selected_equipment_items'), isFalse);
 
       expect(sheet, isNotNull);
       expect(sheet!.featuresNotes.background.name, 'Acolyte');
@@ -95,7 +98,7 @@ void main() {
   );
 
   test(
-    'updateCharacter rewrites normalized rows and keeps snapshot columns narrow',
+    'updateCharacter rewrites normalized rows against the v5 character schema',
     () async {
       final database = AppDatabase.executor(NativeDatabase.memory());
       addTearDown(database.close);
@@ -177,6 +180,14 @@ void main() {
       final row = await (database.select(
         database.characters,
       )..where((table) => table.id.equals(created.id))).getSingle();
+      final rawCharacterRow =
+          (await database
+                  .customSelect(
+                    'SELECT * FROM characters WHERE id = ?',
+                    variables: <Variable<Object>>[Variable<String>(created.id)],
+                  )
+                  .getSingle())
+              .data;
       final abilityScores = await (database.select(
         database.characterAbilityScores,
       )..where((table) => table.characterId.equals(created.id))).getSingle();
@@ -186,11 +197,10 @@ void main() {
       final sheet = await repository.getCharacterSheetById(created.id);
 
       expect(row.name, 'Aelar');
-      expect(row.backgroundName, isNull);
-      expect(row.backgroundSummary, isNull);
-      expect(row.strength, isNull);
-      expect(row.selectedEquipmentItems, isNull);
-      expect(row.startingMoneySummary, isNull);
+      expect(rawCharacterRow.containsKey('background_name'), isFalse);
+      expect(rawCharacterRow.containsKey('strength'), isFalse);
+      expect(rawCharacterRow.containsKey('selected_equipment_items'), isFalse);
+      expect(rawCharacterRow.containsKey('starting_money_summary'), isFalse);
       expect(row.maximumHitPoints, 7);
       expect(row.currentHitPoints, 7);
 

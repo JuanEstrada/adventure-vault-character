@@ -61,40 +61,6 @@ class $CharactersTable extends Characters
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
-  static const VerificationMeta _backgroundIdMeta = const VerificationMeta(
-    'backgroundId',
-  );
-  @override
-  late final GeneratedColumn<String> backgroundId = GeneratedColumn<String>(
-    'background_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _backgroundNameMeta = const VerificationMeta(
-    'backgroundName',
-  );
-  @override
-  late final GeneratedColumn<String> backgroundName = GeneratedColumn<String>(
-    'background_name',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _backgroundSummaryMeta = const VerificationMeta(
-    'backgroundSummary',
-  );
-  @override
-  late final GeneratedColumn<String> backgroundSummary =
-      GeneratedColumn<String>(
-        'background_summary',
-        aliasedName,
-        true,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-      );
   static const VerificationMeta _abilityScoreMethodMeta =
       const VerificationMeta('abilityScoreMethod');
   @override
@@ -117,70 +83,6 @@ class $CharactersTable extends Characters
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
-  static const VerificationMeta _strengthMeta = const VerificationMeta(
-    'strength',
-  );
-  @override
-  late final GeneratedColumn<int> strength = GeneratedColumn<int>(
-    'strength',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _dexterityMeta = const VerificationMeta(
-    'dexterity',
-  );
-  @override
-  late final GeneratedColumn<int> dexterity = GeneratedColumn<int>(
-    'dexterity',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _constitutionMeta = const VerificationMeta(
-    'constitution',
-  );
-  @override
-  late final GeneratedColumn<int> constitution = GeneratedColumn<int>(
-    'constitution',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _intelligenceMeta = const VerificationMeta(
-    'intelligence',
-  );
-  @override
-  late final GeneratedColumn<int> intelligence = GeneratedColumn<int>(
-    'intelligence',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _wisdomMeta = const VerificationMeta('wisdom');
-  @override
-  late final GeneratedColumn<int> wisdom = GeneratedColumn<int>(
-    'wisdom',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _charismaMeta = const VerificationMeta(
-    'charisma',
-  );
-  @override
-  late final GeneratedColumn<int> charisma = GeneratedColumn<int>(
-    'charisma',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
   static const VerificationMeta _classNameMeta = const VerificationMeta(
     'className',
   );
@@ -212,17 +114,6 @@ class $CharactersTable extends Characters
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _proficiencyBonusMeta = const VerificationMeta(
-    'proficiencyBonus',
-  );
-  @override
-  late final GeneratedColumn<int> proficiencyBonus = GeneratedColumn<int>(
-    'proficiency_bonus',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
   static const VerificationMeta _equipmentLoadoutIdMeta =
       const VerificationMeta('equipmentLoadoutId');
   @override
@@ -240,28 +131,6 @@ class $CharactersTable extends Characters
   late final GeneratedColumn<String> equipmentLoadoutLabel =
       GeneratedColumn<String>(
         'equipment_loadout_label',
-        aliasedName,
-        true,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-      );
-  static const VerificationMeta _startingMoneySummaryMeta =
-      const VerificationMeta('startingMoneySummary');
-  @override
-  late final GeneratedColumn<String> startingMoneySummary =
-      GeneratedColumn<String>(
-        'starting_money_summary',
-        aliasedName,
-        true,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-      );
-  static const VerificationMeta _selectedEquipmentItemsMeta =
-      const VerificationMeta('selectedEquipmentItems');
-  @override
-  late final GeneratedColumn<String> selectedEquipmentItems =
-      GeneratedColumn<String>(
-        'selected_equipment_items',
         aliasedName,
         true,
         type: DriftSqlType.string,
@@ -374,25 +243,13 @@ class $CharactersTable extends Characters
     raceName,
     classDefinitionId,
     backgroundDefinitionRefId,
-    backgroundId,
-    backgroundName,
-    backgroundSummary,
     abilityScoreMethod,
     abilityScoreProvenance,
-    strength,
-    dexterity,
-    constitution,
-    intelligence,
-    wisdom,
-    charisma,
     className,
     level,
     experience,
-    proficiencyBonus,
     equipmentLoadoutId,
     equipmentLoadoutLabel,
-    startingMoneySummary,
-    selectedEquipmentItems,
     currentHitPoints,
     maximumHitPoints,
     temporaryHitPoints,
@@ -454,33 +311,6 @@ class $CharactersTable extends Characters
         ),
       );
     }
-    if (data.containsKey('background_id')) {
-      context.handle(
-        _backgroundIdMeta,
-        backgroundId.isAcceptableOrUnknown(
-          data['background_id']!,
-          _backgroundIdMeta,
-        ),
-      );
-    }
-    if (data.containsKey('background_name')) {
-      context.handle(
-        _backgroundNameMeta,
-        backgroundName.isAcceptableOrUnknown(
-          data['background_name']!,
-          _backgroundNameMeta,
-        ),
-      );
-    }
-    if (data.containsKey('background_summary')) {
-      context.handle(
-        _backgroundSummaryMeta,
-        backgroundSummary.isAcceptableOrUnknown(
-          data['background_summary']!,
-          _backgroundSummaryMeta,
-        ),
-      );
-    }
     if (data.containsKey('ability_score_method')) {
       context.handle(
         _abilityScoreMethodMeta,
@@ -497,48 +327,6 @@ class $CharactersTable extends Characters
           data['ability_score_provenance']!,
           _abilityScoreProvenanceMeta,
         ),
-      );
-    }
-    if (data.containsKey('strength')) {
-      context.handle(
-        _strengthMeta,
-        strength.isAcceptableOrUnknown(data['strength']!, _strengthMeta),
-      );
-    }
-    if (data.containsKey('dexterity')) {
-      context.handle(
-        _dexterityMeta,
-        dexterity.isAcceptableOrUnknown(data['dexterity']!, _dexterityMeta),
-      );
-    }
-    if (data.containsKey('constitution')) {
-      context.handle(
-        _constitutionMeta,
-        constitution.isAcceptableOrUnknown(
-          data['constitution']!,
-          _constitutionMeta,
-        ),
-      );
-    }
-    if (data.containsKey('intelligence')) {
-      context.handle(
-        _intelligenceMeta,
-        intelligence.isAcceptableOrUnknown(
-          data['intelligence']!,
-          _intelligenceMeta,
-        ),
-      );
-    }
-    if (data.containsKey('wisdom')) {
-      context.handle(
-        _wisdomMeta,
-        wisdom.isAcceptableOrUnknown(data['wisdom']!, _wisdomMeta),
-      );
-    }
-    if (data.containsKey('charisma')) {
-      context.handle(
-        _charismaMeta,
-        charisma.isAcceptableOrUnknown(data['charisma']!, _charismaMeta),
       );
     }
     if (data.containsKey('class_name')) {
@@ -563,15 +351,6 @@ class $CharactersTable extends Characters
         experience.isAcceptableOrUnknown(data['experience']!, _experienceMeta),
       );
     }
-    if (data.containsKey('proficiency_bonus')) {
-      context.handle(
-        _proficiencyBonusMeta,
-        proficiencyBonus.isAcceptableOrUnknown(
-          data['proficiency_bonus']!,
-          _proficiencyBonusMeta,
-        ),
-      );
-    }
     if (data.containsKey('equipment_loadout_id')) {
       context.handle(
         _equipmentLoadoutIdMeta,
@@ -587,24 +366,6 @@ class $CharactersTable extends Characters
         equipmentLoadoutLabel.isAcceptableOrUnknown(
           data['equipment_loadout_label']!,
           _equipmentLoadoutLabelMeta,
-        ),
-      );
-    }
-    if (data.containsKey('starting_money_summary')) {
-      context.handle(
-        _startingMoneySummaryMeta,
-        startingMoneySummary.isAcceptableOrUnknown(
-          data['starting_money_summary']!,
-          _startingMoneySummaryMeta,
-        ),
-      );
-    }
-    if (data.containsKey('selected_equipment_items')) {
-      context.handle(
-        _selectedEquipmentItemsMeta,
-        selectedEquipmentItems.isAcceptableOrUnknown(
-          data['selected_equipment_items']!,
-          _selectedEquipmentItemsMeta,
         ),
       );
     }
@@ -713,18 +474,6 @@ class $CharactersTable extends Characters
         DriftSqlType.string,
         data['${effectivePrefix}background_definition_ref_id'],
       ),
-      backgroundId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}background_id'],
-      ),
-      backgroundName: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}background_name'],
-      ),
-      backgroundSummary: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}background_summary'],
-      ),
       abilityScoreMethod: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}ability_score_method'],
@@ -732,30 +481,6 @@ class $CharactersTable extends Characters
       abilityScoreProvenance: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}ability_score_provenance'],
-      ),
-      strength: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}strength'],
-      ),
-      dexterity: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}dexterity'],
-      ),
-      constitution: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}constitution'],
-      ),
-      intelligence: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}intelligence'],
-      ),
-      wisdom: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}wisdom'],
-      ),
-      charisma: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}charisma'],
       ),
       className: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -769,10 +494,6 @@ class $CharactersTable extends Characters
         DriftSqlType.int,
         data['${effectivePrefix}experience'],
       ),
-      proficiencyBonus: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}proficiency_bonus'],
-      ),
       equipmentLoadoutId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}equipment_loadout_id'],
@@ -780,14 +501,6 @@ class $CharactersTable extends Characters
       equipmentLoadoutLabel: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}equipment_loadout_label'],
-      ),
-      startingMoneySummary: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}starting_money_summary'],
-      ),
-      selectedEquipmentItems: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}selected_equipment_items'],
       ),
       currentHitPoints: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -840,25 +553,13 @@ class Character extends DataClass implements Insertable<Character> {
   final String raceName;
   final String? classDefinitionId;
   final String? backgroundDefinitionRefId;
-  final String? backgroundId;
-  final String? backgroundName;
-  final String? backgroundSummary;
   final String? abilityScoreMethod;
   final String? abilityScoreProvenance;
-  final int? strength;
-  final int? dexterity;
-  final int? constitution;
-  final int? intelligence;
-  final int? wisdom;
-  final int? charisma;
   final String className;
   final int level;
   final int? experience;
-  final int? proficiencyBonus;
   final String? equipmentLoadoutId;
   final String? equipmentLoadoutLabel;
-  final String? startingMoneySummary;
-  final String? selectedEquipmentItems;
   final int? currentHitPoints;
   final int? maximumHitPoints;
   final int? temporaryHitPoints;
@@ -874,25 +575,13 @@ class Character extends DataClass implements Insertable<Character> {
     required this.raceName,
     this.classDefinitionId,
     this.backgroundDefinitionRefId,
-    this.backgroundId,
-    this.backgroundName,
-    this.backgroundSummary,
     this.abilityScoreMethod,
     this.abilityScoreProvenance,
-    this.strength,
-    this.dexterity,
-    this.constitution,
-    this.intelligence,
-    this.wisdom,
-    this.charisma,
     required this.className,
     required this.level,
     this.experience,
-    this.proficiencyBonus,
     this.equipmentLoadoutId,
     this.equipmentLoadoutLabel,
-    this.startingMoneySummary,
-    this.selectedEquipmentItems,
     this.currentHitPoints,
     this.maximumHitPoints,
     this.temporaryHitPoints,
@@ -917,15 +606,6 @@ class Character extends DataClass implements Insertable<Character> {
         backgroundDefinitionRefId,
       );
     }
-    if (!nullToAbsent || backgroundId != null) {
-      map['background_id'] = Variable<String>(backgroundId);
-    }
-    if (!nullToAbsent || backgroundName != null) {
-      map['background_name'] = Variable<String>(backgroundName);
-    }
-    if (!nullToAbsent || backgroundSummary != null) {
-      map['background_summary'] = Variable<String>(backgroundSummary);
-    }
     if (!nullToAbsent || abilityScoreMethod != null) {
       map['ability_score_method'] = Variable<String>(abilityScoreMethod);
     }
@@ -934,45 +614,16 @@ class Character extends DataClass implements Insertable<Character> {
         abilityScoreProvenance,
       );
     }
-    if (!nullToAbsent || strength != null) {
-      map['strength'] = Variable<int>(strength);
-    }
-    if (!nullToAbsent || dexterity != null) {
-      map['dexterity'] = Variable<int>(dexterity);
-    }
-    if (!nullToAbsent || constitution != null) {
-      map['constitution'] = Variable<int>(constitution);
-    }
-    if (!nullToAbsent || intelligence != null) {
-      map['intelligence'] = Variable<int>(intelligence);
-    }
-    if (!nullToAbsent || wisdom != null) {
-      map['wisdom'] = Variable<int>(wisdom);
-    }
-    if (!nullToAbsent || charisma != null) {
-      map['charisma'] = Variable<int>(charisma);
-    }
     map['class_name'] = Variable<String>(className);
     map['level'] = Variable<int>(level);
     if (!nullToAbsent || experience != null) {
       map['experience'] = Variable<int>(experience);
-    }
-    if (!nullToAbsent || proficiencyBonus != null) {
-      map['proficiency_bonus'] = Variable<int>(proficiencyBonus);
     }
     if (!nullToAbsent || equipmentLoadoutId != null) {
       map['equipment_loadout_id'] = Variable<String>(equipmentLoadoutId);
     }
     if (!nullToAbsent || equipmentLoadoutLabel != null) {
       map['equipment_loadout_label'] = Variable<String>(equipmentLoadoutLabel);
-    }
-    if (!nullToAbsent || startingMoneySummary != null) {
-      map['starting_money_summary'] = Variable<String>(startingMoneySummary);
-    }
-    if (!nullToAbsent || selectedEquipmentItems != null) {
-      map['selected_equipment_items'] = Variable<String>(
-        selectedEquipmentItems,
-      );
     }
     if (!nullToAbsent || currentHitPoints != null) {
       map['current_hit_points'] = Variable<int>(currentHitPoints);
@@ -1012,59 +663,23 @@ class Character extends DataClass implements Insertable<Character> {
           backgroundDefinitionRefId == null && nullToAbsent
           ? const Value.absent()
           : Value(backgroundDefinitionRefId),
-      backgroundId: backgroundId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(backgroundId),
-      backgroundName: backgroundName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(backgroundName),
-      backgroundSummary: backgroundSummary == null && nullToAbsent
-          ? const Value.absent()
-          : Value(backgroundSummary),
       abilityScoreMethod: abilityScoreMethod == null && nullToAbsent
           ? const Value.absent()
           : Value(abilityScoreMethod),
       abilityScoreProvenance: abilityScoreProvenance == null && nullToAbsent
           ? const Value.absent()
           : Value(abilityScoreProvenance),
-      strength: strength == null && nullToAbsent
-          ? const Value.absent()
-          : Value(strength),
-      dexterity: dexterity == null && nullToAbsent
-          ? const Value.absent()
-          : Value(dexterity),
-      constitution: constitution == null && nullToAbsent
-          ? const Value.absent()
-          : Value(constitution),
-      intelligence: intelligence == null && nullToAbsent
-          ? const Value.absent()
-          : Value(intelligence),
-      wisdom: wisdom == null && nullToAbsent
-          ? const Value.absent()
-          : Value(wisdom),
-      charisma: charisma == null && nullToAbsent
-          ? const Value.absent()
-          : Value(charisma),
       className: Value(className),
       level: Value(level),
       experience: experience == null && nullToAbsent
           ? const Value.absent()
           : Value(experience),
-      proficiencyBonus: proficiencyBonus == null && nullToAbsent
-          ? const Value.absent()
-          : Value(proficiencyBonus),
       equipmentLoadoutId: equipmentLoadoutId == null && nullToAbsent
           ? const Value.absent()
           : Value(equipmentLoadoutId),
       equipmentLoadoutLabel: equipmentLoadoutLabel == null && nullToAbsent
           ? const Value.absent()
           : Value(equipmentLoadoutLabel),
-      startingMoneySummary: startingMoneySummary == null && nullToAbsent
-          ? const Value.absent()
-          : Value(startingMoneySummary),
-      selectedEquipmentItems: selectedEquipmentItems == null && nullToAbsent
-          ? const Value.absent()
-          : Value(selectedEquipmentItems),
       currentHitPoints: currentHitPoints == null && nullToAbsent
           ? const Value.absent()
           : Value(currentHitPoints),
@@ -1106,38 +721,20 @@ class Character extends DataClass implements Insertable<Character> {
       backgroundDefinitionRefId: serializer.fromJson<String?>(
         json['backgroundDefinitionRefId'],
       ),
-      backgroundId: serializer.fromJson<String?>(json['backgroundId']),
-      backgroundName: serializer.fromJson<String?>(json['backgroundName']),
-      backgroundSummary: serializer.fromJson<String?>(
-        json['backgroundSummary'],
-      ),
       abilityScoreMethod: serializer.fromJson<String?>(
         json['abilityScoreMethod'],
       ),
       abilityScoreProvenance: serializer.fromJson<String?>(
         json['abilityScoreProvenance'],
       ),
-      strength: serializer.fromJson<int?>(json['strength']),
-      dexterity: serializer.fromJson<int?>(json['dexterity']),
-      constitution: serializer.fromJson<int?>(json['constitution']),
-      intelligence: serializer.fromJson<int?>(json['intelligence']),
-      wisdom: serializer.fromJson<int?>(json['wisdom']),
-      charisma: serializer.fromJson<int?>(json['charisma']),
       className: serializer.fromJson<String>(json['className']),
       level: serializer.fromJson<int>(json['level']),
       experience: serializer.fromJson<int?>(json['experience']),
-      proficiencyBonus: serializer.fromJson<int?>(json['proficiencyBonus']),
       equipmentLoadoutId: serializer.fromJson<String?>(
         json['equipmentLoadoutId'],
       ),
       equipmentLoadoutLabel: serializer.fromJson<String?>(
         json['equipmentLoadoutLabel'],
-      ),
-      startingMoneySummary: serializer.fromJson<String?>(
-        json['startingMoneySummary'],
-      ),
-      selectedEquipmentItems: serializer.fromJson<String?>(
-        json['selectedEquipmentItems'],
       ),
       currentHitPoints: serializer.fromJson<int?>(json['currentHitPoints']),
       maximumHitPoints: serializer.fromJson<int?>(json['maximumHitPoints']),
@@ -1165,30 +762,16 @@ class Character extends DataClass implements Insertable<Character> {
       'backgroundDefinitionRefId': serializer.toJson<String?>(
         backgroundDefinitionRefId,
       ),
-      'backgroundId': serializer.toJson<String?>(backgroundId),
-      'backgroundName': serializer.toJson<String?>(backgroundName),
-      'backgroundSummary': serializer.toJson<String?>(backgroundSummary),
       'abilityScoreMethod': serializer.toJson<String?>(abilityScoreMethod),
       'abilityScoreProvenance': serializer.toJson<String?>(
         abilityScoreProvenance,
       ),
-      'strength': serializer.toJson<int?>(strength),
-      'dexterity': serializer.toJson<int?>(dexterity),
-      'constitution': serializer.toJson<int?>(constitution),
-      'intelligence': serializer.toJson<int?>(intelligence),
-      'wisdom': serializer.toJson<int?>(wisdom),
-      'charisma': serializer.toJson<int?>(charisma),
       'className': serializer.toJson<String>(className),
       'level': serializer.toJson<int>(level),
       'experience': serializer.toJson<int?>(experience),
-      'proficiencyBonus': serializer.toJson<int?>(proficiencyBonus),
       'equipmentLoadoutId': serializer.toJson<String?>(equipmentLoadoutId),
       'equipmentLoadoutLabel': serializer.toJson<String?>(
         equipmentLoadoutLabel,
-      ),
-      'startingMoneySummary': serializer.toJson<String?>(startingMoneySummary),
-      'selectedEquipmentItems': serializer.toJson<String?>(
-        selectedEquipmentItems,
       ),
       'currentHitPoints': serializer.toJson<int?>(currentHitPoints),
       'maximumHitPoints': serializer.toJson<int?>(maximumHitPoints),
@@ -1208,25 +791,13 @@ class Character extends DataClass implements Insertable<Character> {
     String? raceName,
     Value<String?> classDefinitionId = const Value.absent(),
     Value<String?> backgroundDefinitionRefId = const Value.absent(),
-    Value<String?> backgroundId = const Value.absent(),
-    Value<String?> backgroundName = const Value.absent(),
-    Value<String?> backgroundSummary = const Value.absent(),
     Value<String?> abilityScoreMethod = const Value.absent(),
     Value<String?> abilityScoreProvenance = const Value.absent(),
-    Value<int?> strength = const Value.absent(),
-    Value<int?> dexterity = const Value.absent(),
-    Value<int?> constitution = const Value.absent(),
-    Value<int?> intelligence = const Value.absent(),
-    Value<int?> wisdom = const Value.absent(),
-    Value<int?> charisma = const Value.absent(),
     String? className,
     int? level,
     Value<int?> experience = const Value.absent(),
-    Value<int?> proficiencyBonus = const Value.absent(),
     Value<String?> equipmentLoadoutId = const Value.absent(),
     Value<String?> equipmentLoadoutLabel = const Value.absent(),
-    Value<String?> startingMoneySummary = const Value.absent(),
-    Value<String?> selectedEquipmentItems = const Value.absent(),
     Value<int?> currentHitPoints = const Value.absent(),
     Value<int?> maximumHitPoints = const Value.absent(),
     Value<int?> temporaryHitPoints = const Value.absent(),
@@ -1246,43 +817,21 @@ class Character extends DataClass implements Insertable<Character> {
     backgroundDefinitionRefId: backgroundDefinitionRefId.present
         ? backgroundDefinitionRefId.value
         : this.backgroundDefinitionRefId,
-    backgroundId: backgroundId.present ? backgroundId.value : this.backgroundId,
-    backgroundName: backgroundName.present
-        ? backgroundName.value
-        : this.backgroundName,
-    backgroundSummary: backgroundSummary.present
-        ? backgroundSummary.value
-        : this.backgroundSummary,
     abilityScoreMethod: abilityScoreMethod.present
         ? abilityScoreMethod.value
         : this.abilityScoreMethod,
     abilityScoreProvenance: abilityScoreProvenance.present
         ? abilityScoreProvenance.value
         : this.abilityScoreProvenance,
-    strength: strength.present ? strength.value : this.strength,
-    dexterity: dexterity.present ? dexterity.value : this.dexterity,
-    constitution: constitution.present ? constitution.value : this.constitution,
-    intelligence: intelligence.present ? intelligence.value : this.intelligence,
-    wisdom: wisdom.present ? wisdom.value : this.wisdom,
-    charisma: charisma.present ? charisma.value : this.charisma,
     className: className ?? this.className,
     level: level ?? this.level,
     experience: experience.present ? experience.value : this.experience,
-    proficiencyBonus: proficiencyBonus.present
-        ? proficiencyBonus.value
-        : this.proficiencyBonus,
     equipmentLoadoutId: equipmentLoadoutId.present
         ? equipmentLoadoutId.value
         : this.equipmentLoadoutId,
     equipmentLoadoutLabel: equipmentLoadoutLabel.present
         ? equipmentLoadoutLabel.value
         : this.equipmentLoadoutLabel,
-    startingMoneySummary: startingMoneySummary.present
-        ? startingMoneySummary.value
-        : this.startingMoneySummary,
-    selectedEquipmentItems: selectedEquipmentItems.present
-        ? selectedEquipmentItems.value
-        : this.selectedEquipmentItems,
     currentHitPoints: currentHitPoints.present
         ? currentHitPoints.value
         : this.currentHitPoints,
@@ -1316,51 +865,23 @@ class Character extends DataClass implements Insertable<Character> {
       backgroundDefinitionRefId: data.backgroundDefinitionRefId.present
           ? data.backgroundDefinitionRefId.value
           : this.backgroundDefinitionRefId,
-      backgroundId: data.backgroundId.present
-          ? data.backgroundId.value
-          : this.backgroundId,
-      backgroundName: data.backgroundName.present
-          ? data.backgroundName.value
-          : this.backgroundName,
-      backgroundSummary: data.backgroundSummary.present
-          ? data.backgroundSummary.value
-          : this.backgroundSummary,
       abilityScoreMethod: data.abilityScoreMethod.present
           ? data.abilityScoreMethod.value
           : this.abilityScoreMethod,
       abilityScoreProvenance: data.abilityScoreProvenance.present
           ? data.abilityScoreProvenance.value
           : this.abilityScoreProvenance,
-      strength: data.strength.present ? data.strength.value : this.strength,
-      dexterity: data.dexterity.present ? data.dexterity.value : this.dexterity,
-      constitution: data.constitution.present
-          ? data.constitution.value
-          : this.constitution,
-      intelligence: data.intelligence.present
-          ? data.intelligence.value
-          : this.intelligence,
-      wisdom: data.wisdom.present ? data.wisdom.value : this.wisdom,
-      charisma: data.charisma.present ? data.charisma.value : this.charisma,
       className: data.className.present ? data.className.value : this.className,
       level: data.level.present ? data.level.value : this.level,
       experience: data.experience.present
           ? data.experience.value
           : this.experience,
-      proficiencyBonus: data.proficiencyBonus.present
-          ? data.proficiencyBonus.value
-          : this.proficiencyBonus,
       equipmentLoadoutId: data.equipmentLoadoutId.present
           ? data.equipmentLoadoutId.value
           : this.equipmentLoadoutId,
       equipmentLoadoutLabel: data.equipmentLoadoutLabel.present
           ? data.equipmentLoadoutLabel.value
           : this.equipmentLoadoutLabel,
-      startingMoneySummary: data.startingMoneySummary.present
-          ? data.startingMoneySummary.value
-          : this.startingMoneySummary,
-      selectedEquipmentItems: data.selectedEquipmentItems.present
-          ? data.selectedEquipmentItems.value
-          : this.selectedEquipmentItems,
       currentHitPoints: data.currentHitPoints.present
           ? data.currentHitPoints.value
           : this.currentHitPoints,
@@ -1393,25 +914,13 @@ class Character extends DataClass implements Insertable<Character> {
           ..write('raceName: $raceName, ')
           ..write('classDefinitionId: $classDefinitionId, ')
           ..write('backgroundDefinitionRefId: $backgroundDefinitionRefId, ')
-          ..write('backgroundId: $backgroundId, ')
-          ..write('backgroundName: $backgroundName, ')
-          ..write('backgroundSummary: $backgroundSummary, ')
           ..write('abilityScoreMethod: $abilityScoreMethod, ')
           ..write('abilityScoreProvenance: $abilityScoreProvenance, ')
-          ..write('strength: $strength, ')
-          ..write('dexterity: $dexterity, ')
-          ..write('constitution: $constitution, ')
-          ..write('intelligence: $intelligence, ')
-          ..write('wisdom: $wisdom, ')
-          ..write('charisma: $charisma, ')
           ..write('className: $className, ')
           ..write('level: $level, ')
           ..write('experience: $experience, ')
-          ..write('proficiencyBonus: $proficiencyBonus, ')
           ..write('equipmentLoadoutId: $equipmentLoadoutId, ')
           ..write('equipmentLoadoutLabel: $equipmentLoadoutLabel, ')
-          ..write('startingMoneySummary: $startingMoneySummary, ')
-          ..write('selectedEquipmentItems: $selectedEquipmentItems, ')
           ..write('currentHitPoints: $currentHitPoints, ')
           ..write('maximumHitPoints: $maximumHitPoints, ')
           ..write('temporaryHitPoints: $temporaryHitPoints, ')
@@ -1432,25 +941,13 @@ class Character extends DataClass implements Insertable<Character> {
     raceName,
     classDefinitionId,
     backgroundDefinitionRefId,
-    backgroundId,
-    backgroundName,
-    backgroundSummary,
     abilityScoreMethod,
     abilityScoreProvenance,
-    strength,
-    dexterity,
-    constitution,
-    intelligence,
-    wisdom,
-    charisma,
     className,
     level,
     experience,
-    proficiencyBonus,
     equipmentLoadoutId,
     equipmentLoadoutLabel,
-    startingMoneySummary,
-    selectedEquipmentItems,
     currentHitPoints,
     maximumHitPoints,
     temporaryHitPoints,
@@ -1470,25 +967,13 @@ class Character extends DataClass implements Insertable<Character> {
           other.raceName == this.raceName &&
           other.classDefinitionId == this.classDefinitionId &&
           other.backgroundDefinitionRefId == this.backgroundDefinitionRefId &&
-          other.backgroundId == this.backgroundId &&
-          other.backgroundName == this.backgroundName &&
-          other.backgroundSummary == this.backgroundSummary &&
           other.abilityScoreMethod == this.abilityScoreMethod &&
           other.abilityScoreProvenance == this.abilityScoreProvenance &&
-          other.strength == this.strength &&
-          other.dexterity == this.dexterity &&
-          other.constitution == this.constitution &&
-          other.intelligence == this.intelligence &&
-          other.wisdom == this.wisdom &&
-          other.charisma == this.charisma &&
           other.className == this.className &&
           other.level == this.level &&
           other.experience == this.experience &&
-          other.proficiencyBonus == this.proficiencyBonus &&
           other.equipmentLoadoutId == this.equipmentLoadoutId &&
           other.equipmentLoadoutLabel == this.equipmentLoadoutLabel &&
-          other.startingMoneySummary == this.startingMoneySummary &&
-          other.selectedEquipmentItems == this.selectedEquipmentItems &&
           other.currentHitPoints == this.currentHitPoints &&
           other.maximumHitPoints == this.maximumHitPoints &&
           other.temporaryHitPoints == this.temporaryHitPoints &&
@@ -1506,25 +991,13 @@ class CharactersCompanion extends UpdateCompanion<Character> {
   final Value<String> raceName;
   final Value<String?> classDefinitionId;
   final Value<String?> backgroundDefinitionRefId;
-  final Value<String?> backgroundId;
-  final Value<String?> backgroundName;
-  final Value<String?> backgroundSummary;
   final Value<String?> abilityScoreMethod;
   final Value<String?> abilityScoreProvenance;
-  final Value<int?> strength;
-  final Value<int?> dexterity;
-  final Value<int?> constitution;
-  final Value<int?> intelligence;
-  final Value<int?> wisdom;
-  final Value<int?> charisma;
   final Value<String> className;
   final Value<int> level;
   final Value<int?> experience;
-  final Value<int?> proficiencyBonus;
   final Value<String?> equipmentLoadoutId;
   final Value<String?> equipmentLoadoutLabel;
-  final Value<String?> startingMoneySummary;
-  final Value<String?> selectedEquipmentItems;
   final Value<int?> currentHitPoints;
   final Value<int?> maximumHitPoints;
   final Value<int?> temporaryHitPoints;
@@ -1541,25 +1014,13 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     this.raceName = const Value.absent(),
     this.classDefinitionId = const Value.absent(),
     this.backgroundDefinitionRefId = const Value.absent(),
-    this.backgroundId = const Value.absent(),
-    this.backgroundName = const Value.absent(),
-    this.backgroundSummary = const Value.absent(),
     this.abilityScoreMethod = const Value.absent(),
     this.abilityScoreProvenance = const Value.absent(),
-    this.strength = const Value.absent(),
-    this.dexterity = const Value.absent(),
-    this.constitution = const Value.absent(),
-    this.intelligence = const Value.absent(),
-    this.wisdom = const Value.absent(),
-    this.charisma = const Value.absent(),
     this.className = const Value.absent(),
     this.level = const Value.absent(),
     this.experience = const Value.absent(),
-    this.proficiencyBonus = const Value.absent(),
     this.equipmentLoadoutId = const Value.absent(),
     this.equipmentLoadoutLabel = const Value.absent(),
-    this.startingMoneySummary = const Value.absent(),
-    this.selectedEquipmentItems = const Value.absent(),
     this.currentHitPoints = const Value.absent(),
     this.maximumHitPoints = const Value.absent(),
     this.temporaryHitPoints = const Value.absent(),
@@ -1577,25 +1038,13 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     required String raceName,
     this.classDefinitionId = const Value.absent(),
     this.backgroundDefinitionRefId = const Value.absent(),
-    this.backgroundId = const Value.absent(),
-    this.backgroundName = const Value.absent(),
-    this.backgroundSummary = const Value.absent(),
     this.abilityScoreMethod = const Value.absent(),
     this.abilityScoreProvenance = const Value.absent(),
-    this.strength = const Value.absent(),
-    this.dexterity = const Value.absent(),
-    this.constitution = const Value.absent(),
-    this.intelligence = const Value.absent(),
-    this.wisdom = const Value.absent(),
-    this.charisma = const Value.absent(),
     required String className,
     required int level,
     this.experience = const Value.absent(),
-    this.proficiencyBonus = const Value.absent(),
     this.equipmentLoadoutId = const Value.absent(),
     this.equipmentLoadoutLabel = const Value.absent(),
-    this.startingMoneySummary = const Value.absent(),
-    this.selectedEquipmentItems = const Value.absent(),
     this.currentHitPoints = const Value.absent(),
     this.maximumHitPoints = const Value.absent(),
     this.temporaryHitPoints = const Value.absent(),
@@ -1619,25 +1068,13 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     Expression<String>? raceName,
     Expression<String>? classDefinitionId,
     Expression<String>? backgroundDefinitionRefId,
-    Expression<String>? backgroundId,
-    Expression<String>? backgroundName,
-    Expression<String>? backgroundSummary,
     Expression<String>? abilityScoreMethod,
     Expression<String>? abilityScoreProvenance,
-    Expression<int>? strength,
-    Expression<int>? dexterity,
-    Expression<int>? constitution,
-    Expression<int>? intelligence,
-    Expression<int>? wisdom,
-    Expression<int>? charisma,
     Expression<String>? className,
     Expression<int>? level,
     Expression<int>? experience,
-    Expression<int>? proficiencyBonus,
     Expression<String>? equipmentLoadoutId,
     Expression<String>? equipmentLoadoutLabel,
-    Expression<String>? startingMoneySummary,
-    Expression<String>? selectedEquipmentItems,
     Expression<int>? currentHitPoints,
     Expression<int>? maximumHitPoints,
     Expression<int>? temporaryHitPoints,
@@ -1656,31 +1093,17 @@ class CharactersCompanion extends UpdateCompanion<Character> {
       if (classDefinitionId != null) 'class_definition_id': classDefinitionId,
       if (backgroundDefinitionRefId != null)
         'background_definition_ref_id': backgroundDefinitionRefId,
-      if (backgroundId != null) 'background_id': backgroundId,
-      if (backgroundName != null) 'background_name': backgroundName,
-      if (backgroundSummary != null) 'background_summary': backgroundSummary,
       if (abilityScoreMethod != null)
         'ability_score_method': abilityScoreMethod,
       if (abilityScoreProvenance != null)
         'ability_score_provenance': abilityScoreProvenance,
-      if (strength != null) 'strength': strength,
-      if (dexterity != null) 'dexterity': dexterity,
-      if (constitution != null) 'constitution': constitution,
-      if (intelligence != null) 'intelligence': intelligence,
-      if (wisdom != null) 'wisdom': wisdom,
-      if (charisma != null) 'charisma': charisma,
       if (className != null) 'class_name': className,
       if (level != null) 'level': level,
       if (experience != null) 'experience': experience,
-      if (proficiencyBonus != null) 'proficiency_bonus': proficiencyBonus,
       if (equipmentLoadoutId != null)
         'equipment_loadout_id': equipmentLoadoutId,
       if (equipmentLoadoutLabel != null)
         'equipment_loadout_label': equipmentLoadoutLabel,
-      if (startingMoneySummary != null)
-        'starting_money_summary': startingMoneySummary,
-      if (selectedEquipmentItems != null)
-        'selected_equipment_items': selectedEquipmentItems,
       if (currentHitPoints != null) 'current_hit_points': currentHitPoints,
       if (maximumHitPoints != null) 'maximum_hit_points': maximumHitPoints,
       if (temporaryHitPoints != null)
@@ -1701,25 +1124,13 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     Value<String>? raceName,
     Value<String?>? classDefinitionId,
     Value<String?>? backgroundDefinitionRefId,
-    Value<String?>? backgroundId,
-    Value<String?>? backgroundName,
-    Value<String?>? backgroundSummary,
     Value<String?>? abilityScoreMethod,
     Value<String?>? abilityScoreProvenance,
-    Value<int?>? strength,
-    Value<int?>? dexterity,
-    Value<int?>? constitution,
-    Value<int?>? intelligence,
-    Value<int?>? wisdom,
-    Value<int?>? charisma,
     Value<String>? className,
     Value<int>? level,
     Value<int?>? experience,
-    Value<int?>? proficiencyBonus,
     Value<String?>? equipmentLoadoutId,
     Value<String?>? equipmentLoadoutLabel,
-    Value<String?>? startingMoneySummary,
-    Value<String?>? selectedEquipmentItems,
     Value<int?>? currentHitPoints,
     Value<int?>? maximumHitPoints,
     Value<int?>? temporaryHitPoints,
@@ -1738,28 +1149,15 @@ class CharactersCompanion extends UpdateCompanion<Character> {
       classDefinitionId: classDefinitionId ?? this.classDefinitionId,
       backgroundDefinitionRefId:
           backgroundDefinitionRefId ?? this.backgroundDefinitionRefId,
-      backgroundId: backgroundId ?? this.backgroundId,
-      backgroundName: backgroundName ?? this.backgroundName,
-      backgroundSummary: backgroundSummary ?? this.backgroundSummary,
       abilityScoreMethod: abilityScoreMethod ?? this.abilityScoreMethod,
       abilityScoreProvenance:
           abilityScoreProvenance ?? this.abilityScoreProvenance,
-      strength: strength ?? this.strength,
-      dexterity: dexterity ?? this.dexterity,
-      constitution: constitution ?? this.constitution,
-      intelligence: intelligence ?? this.intelligence,
-      wisdom: wisdom ?? this.wisdom,
-      charisma: charisma ?? this.charisma,
       className: className ?? this.className,
       level: level ?? this.level,
       experience: experience ?? this.experience,
-      proficiencyBonus: proficiencyBonus ?? this.proficiencyBonus,
       equipmentLoadoutId: equipmentLoadoutId ?? this.equipmentLoadoutId,
       equipmentLoadoutLabel:
           equipmentLoadoutLabel ?? this.equipmentLoadoutLabel,
-      startingMoneySummary: startingMoneySummary ?? this.startingMoneySummary,
-      selectedEquipmentItems:
-          selectedEquipmentItems ?? this.selectedEquipmentItems,
       currentHitPoints: currentHitPoints ?? this.currentHitPoints,
       maximumHitPoints: maximumHitPoints ?? this.maximumHitPoints,
       temporaryHitPoints: temporaryHitPoints ?? this.temporaryHitPoints,
@@ -1793,15 +1191,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
         backgroundDefinitionRefId.value,
       );
     }
-    if (backgroundId.present) {
-      map['background_id'] = Variable<String>(backgroundId.value);
-    }
-    if (backgroundName.present) {
-      map['background_name'] = Variable<String>(backgroundName.value);
-    }
-    if (backgroundSummary.present) {
-      map['background_summary'] = Variable<String>(backgroundSummary.value);
-    }
     if (abilityScoreMethod.present) {
       map['ability_score_method'] = Variable<String>(abilityScoreMethod.value);
     }
@@ -1809,24 +1198,6 @@ class CharactersCompanion extends UpdateCompanion<Character> {
       map['ability_score_provenance'] = Variable<String>(
         abilityScoreProvenance.value,
       );
-    }
-    if (strength.present) {
-      map['strength'] = Variable<int>(strength.value);
-    }
-    if (dexterity.present) {
-      map['dexterity'] = Variable<int>(dexterity.value);
-    }
-    if (constitution.present) {
-      map['constitution'] = Variable<int>(constitution.value);
-    }
-    if (intelligence.present) {
-      map['intelligence'] = Variable<int>(intelligence.value);
-    }
-    if (wisdom.present) {
-      map['wisdom'] = Variable<int>(wisdom.value);
-    }
-    if (charisma.present) {
-      map['charisma'] = Variable<int>(charisma.value);
     }
     if (className.present) {
       map['class_name'] = Variable<String>(className.value);
@@ -1837,25 +1208,12 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     if (experience.present) {
       map['experience'] = Variable<int>(experience.value);
     }
-    if (proficiencyBonus.present) {
-      map['proficiency_bonus'] = Variable<int>(proficiencyBonus.value);
-    }
     if (equipmentLoadoutId.present) {
       map['equipment_loadout_id'] = Variable<String>(equipmentLoadoutId.value);
     }
     if (equipmentLoadoutLabel.present) {
       map['equipment_loadout_label'] = Variable<String>(
         equipmentLoadoutLabel.value,
-      );
-    }
-    if (startingMoneySummary.present) {
-      map['starting_money_summary'] = Variable<String>(
-        startingMoneySummary.value,
-      );
-    }
-    if (selectedEquipmentItems.present) {
-      map['selected_equipment_items'] = Variable<String>(
-        selectedEquipmentItems.value,
       );
     }
     if (currentHitPoints.present) {
@@ -1899,25 +1257,13 @@ class CharactersCompanion extends UpdateCompanion<Character> {
           ..write('raceName: $raceName, ')
           ..write('classDefinitionId: $classDefinitionId, ')
           ..write('backgroundDefinitionRefId: $backgroundDefinitionRefId, ')
-          ..write('backgroundId: $backgroundId, ')
-          ..write('backgroundName: $backgroundName, ')
-          ..write('backgroundSummary: $backgroundSummary, ')
           ..write('abilityScoreMethod: $abilityScoreMethod, ')
           ..write('abilityScoreProvenance: $abilityScoreProvenance, ')
-          ..write('strength: $strength, ')
-          ..write('dexterity: $dexterity, ')
-          ..write('constitution: $constitution, ')
-          ..write('intelligence: $intelligence, ')
-          ..write('wisdom: $wisdom, ')
-          ..write('charisma: $charisma, ')
           ..write('className: $className, ')
           ..write('level: $level, ')
           ..write('experience: $experience, ')
-          ..write('proficiencyBonus: $proficiencyBonus, ')
           ..write('equipmentLoadoutId: $equipmentLoadoutId, ')
           ..write('equipmentLoadoutLabel: $equipmentLoadoutLabel, ')
-          ..write('startingMoneySummary: $startingMoneySummary, ')
-          ..write('selectedEquipmentItems: $selectedEquipmentItems, ')
           ..write('currentHitPoints: $currentHitPoints, ')
           ..write('maximumHitPoints: $maximumHitPoints, ')
           ..write('temporaryHitPoints: $temporaryHitPoints, ')
@@ -8968,25 +8314,13 @@ typedef $$CharactersTableCreateCompanionBuilder =
       required String raceName,
       Value<String?> classDefinitionId,
       Value<String?> backgroundDefinitionRefId,
-      Value<String?> backgroundId,
-      Value<String?> backgroundName,
-      Value<String?> backgroundSummary,
       Value<String?> abilityScoreMethod,
       Value<String?> abilityScoreProvenance,
-      Value<int?> strength,
-      Value<int?> dexterity,
-      Value<int?> constitution,
-      Value<int?> intelligence,
-      Value<int?> wisdom,
-      Value<int?> charisma,
       required String className,
       required int level,
       Value<int?> experience,
-      Value<int?> proficiencyBonus,
       Value<String?> equipmentLoadoutId,
       Value<String?> equipmentLoadoutLabel,
-      Value<String?> startingMoneySummary,
-      Value<String?> selectedEquipmentItems,
       Value<int?> currentHitPoints,
       Value<int?> maximumHitPoints,
       Value<int?> temporaryHitPoints,
@@ -9005,25 +8339,13 @@ typedef $$CharactersTableUpdateCompanionBuilder =
       Value<String> raceName,
       Value<String?> classDefinitionId,
       Value<String?> backgroundDefinitionRefId,
-      Value<String?> backgroundId,
-      Value<String?> backgroundName,
-      Value<String?> backgroundSummary,
       Value<String?> abilityScoreMethod,
       Value<String?> abilityScoreProvenance,
-      Value<int?> strength,
-      Value<int?> dexterity,
-      Value<int?> constitution,
-      Value<int?> intelligence,
-      Value<int?> wisdom,
-      Value<int?> charisma,
       Value<String> className,
       Value<int> level,
       Value<int?> experience,
-      Value<int?> proficiencyBonus,
       Value<String?> equipmentLoadoutId,
       Value<String?> equipmentLoadoutLabel,
-      Value<String?> startingMoneySummary,
-      Value<String?> selectedEquipmentItems,
       Value<int?> currentHitPoints,
       Value<int?> maximumHitPoints,
       Value<int?> temporaryHitPoints,
@@ -9236,21 +8558,6 @@ class $$CharactersTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get backgroundId => $composableBuilder(
-    column: $table.backgroundId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get backgroundName => $composableBuilder(
-    column: $table.backgroundName,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get backgroundSummary => $composableBuilder(
-    column: $table.backgroundSummary,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<String> get abilityScoreMethod => $composableBuilder(
     column: $table.abilityScoreMethod,
     builder: (column) => ColumnFilters(column),
@@ -9258,36 +8565,6 @@ class $$CharactersTableFilterComposer
 
   ColumnFilters<String> get abilityScoreProvenance => $composableBuilder(
     column: $table.abilityScoreProvenance,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get strength => $composableBuilder(
-    column: $table.strength,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get dexterity => $composableBuilder(
-    column: $table.dexterity,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get constitution => $composableBuilder(
-    column: $table.constitution,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get intelligence => $composableBuilder(
-    column: $table.intelligence,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get wisdom => $composableBuilder(
-    column: $table.wisdom,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get charisma => $composableBuilder(
-    column: $table.charisma,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9306,11 +8583,6 @@ class $$CharactersTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get proficiencyBonus => $composableBuilder(
-    column: $table.proficiencyBonus,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<String> get equipmentLoadoutId => $composableBuilder(
     column: $table.equipmentLoadoutId,
     builder: (column) => ColumnFilters(column),
@@ -9318,16 +8590,6 @@ class $$CharactersTableFilterComposer
 
   ColumnFilters<String> get equipmentLoadoutLabel => $composableBuilder(
     column: $table.equipmentLoadoutLabel,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get startingMoneySummary => $composableBuilder(
-    column: $table.startingMoneySummary,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get selectedEquipmentItems => $composableBuilder(
-    column: $table.selectedEquipmentItems,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9564,21 +8826,6 @@ class $$CharactersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get backgroundId => $composableBuilder(
-    column: $table.backgroundId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get backgroundName => $composableBuilder(
-    column: $table.backgroundName,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get backgroundSummary => $composableBuilder(
-    column: $table.backgroundSummary,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get abilityScoreMethod => $composableBuilder(
     column: $table.abilityScoreMethod,
     builder: (column) => ColumnOrderings(column),
@@ -9586,36 +8833,6 @@ class $$CharactersTableOrderingComposer
 
   ColumnOrderings<String> get abilityScoreProvenance => $composableBuilder(
     column: $table.abilityScoreProvenance,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get strength => $composableBuilder(
-    column: $table.strength,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get dexterity => $composableBuilder(
-    column: $table.dexterity,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get constitution => $composableBuilder(
-    column: $table.constitution,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get intelligence => $composableBuilder(
-    column: $table.intelligence,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get wisdom => $composableBuilder(
-    column: $table.wisdom,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get charisma => $composableBuilder(
-    column: $table.charisma,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -9634,11 +8851,6 @@ class $$CharactersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get proficiencyBonus => $composableBuilder(
-    column: $table.proficiencyBonus,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get equipmentLoadoutId => $composableBuilder(
     column: $table.equipmentLoadoutId,
     builder: (column) => ColumnOrderings(column),
@@ -9646,16 +8858,6 @@ class $$CharactersTableOrderingComposer
 
   ColumnOrderings<String> get equipmentLoadoutLabel => $composableBuilder(
     column: $table.equipmentLoadoutLabel,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get startingMoneySummary => $composableBuilder(
-    column: $table.startingMoneySummary,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get selectedEquipmentItems => $composableBuilder(
-    column: $table.selectedEquipmentItems,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -9733,21 +8935,6 @@ class $$CharactersTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<String> get backgroundId => $composableBuilder(
-    column: $table.backgroundId,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get backgroundName => $composableBuilder(
-    column: $table.backgroundName,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get backgroundSummary => $composableBuilder(
-    column: $table.backgroundSummary,
-    builder: (column) => column,
-  );
-
   GeneratedColumn<String> get abilityScoreMethod => $composableBuilder(
     column: $table.abilityScoreMethod,
     builder: (column) => column,
@@ -9757,28 +8944,6 @@ class $$CharactersTableAnnotationComposer
     column: $table.abilityScoreProvenance,
     builder: (column) => column,
   );
-
-  GeneratedColumn<int> get strength =>
-      $composableBuilder(column: $table.strength, builder: (column) => column);
-
-  GeneratedColumn<int> get dexterity =>
-      $composableBuilder(column: $table.dexterity, builder: (column) => column);
-
-  GeneratedColumn<int> get constitution => $composableBuilder(
-    column: $table.constitution,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get intelligence => $composableBuilder(
-    column: $table.intelligence,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get wisdom =>
-      $composableBuilder(column: $table.wisdom, builder: (column) => column);
-
-  GeneratedColumn<int> get charisma =>
-      $composableBuilder(column: $table.charisma, builder: (column) => column);
 
   GeneratedColumn<String> get className =>
       $composableBuilder(column: $table.className, builder: (column) => column);
@@ -9791,11 +8956,6 @@ class $$CharactersTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<int> get proficiencyBonus => $composableBuilder(
-    column: $table.proficiencyBonus,
-    builder: (column) => column,
-  );
-
   GeneratedColumn<String> get equipmentLoadoutId => $composableBuilder(
     column: $table.equipmentLoadoutId,
     builder: (column) => column,
@@ -9803,16 +8963,6 @@ class $$CharactersTableAnnotationComposer
 
   GeneratedColumn<String> get equipmentLoadoutLabel => $composableBuilder(
     column: $table.equipmentLoadoutLabel,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get startingMoneySummary => $composableBuilder(
-    column: $table.startingMoneySummary,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get selectedEquipmentItems => $composableBuilder(
-    column: $table.selectedEquipmentItems,
     builder: (column) => column,
   );
 
@@ -10051,25 +9201,13 @@ class $$CharactersTableTableManager
                 Value<String> raceName = const Value.absent(),
                 Value<String?> classDefinitionId = const Value.absent(),
                 Value<String?> backgroundDefinitionRefId = const Value.absent(),
-                Value<String?> backgroundId = const Value.absent(),
-                Value<String?> backgroundName = const Value.absent(),
-                Value<String?> backgroundSummary = const Value.absent(),
                 Value<String?> abilityScoreMethod = const Value.absent(),
                 Value<String?> abilityScoreProvenance = const Value.absent(),
-                Value<int?> strength = const Value.absent(),
-                Value<int?> dexterity = const Value.absent(),
-                Value<int?> constitution = const Value.absent(),
-                Value<int?> intelligence = const Value.absent(),
-                Value<int?> wisdom = const Value.absent(),
-                Value<int?> charisma = const Value.absent(),
                 Value<String> className = const Value.absent(),
                 Value<int> level = const Value.absent(),
                 Value<int?> experience = const Value.absent(),
-                Value<int?> proficiencyBonus = const Value.absent(),
                 Value<String?> equipmentLoadoutId = const Value.absent(),
                 Value<String?> equipmentLoadoutLabel = const Value.absent(),
-                Value<String?> startingMoneySummary = const Value.absent(),
-                Value<String?> selectedEquipmentItems = const Value.absent(),
                 Value<int?> currentHitPoints = const Value.absent(),
                 Value<int?> maximumHitPoints = const Value.absent(),
                 Value<int?> temporaryHitPoints = const Value.absent(),
@@ -10086,25 +9224,13 @@ class $$CharactersTableTableManager
                 raceName: raceName,
                 classDefinitionId: classDefinitionId,
                 backgroundDefinitionRefId: backgroundDefinitionRefId,
-                backgroundId: backgroundId,
-                backgroundName: backgroundName,
-                backgroundSummary: backgroundSummary,
                 abilityScoreMethod: abilityScoreMethod,
                 abilityScoreProvenance: abilityScoreProvenance,
-                strength: strength,
-                dexterity: dexterity,
-                constitution: constitution,
-                intelligence: intelligence,
-                wisdom: wisdom,
-                charisma: charisma,
                 className: className,
                 level: level,
                 experience: experience,
-                proficiencyBonus: proficiencyBonus,
                 equipmentLoadoutId: equipmentLoadoutId,
                 equipmentLoadoutLabel: equipmentLoadoutLabel,
-                startingMoneySummary: startingMoneySummary,
-                selectedEquipmentItems: selectedEquipmentItems,
                 currentHitPoints: currentHitPoints,
                 maximumHitPoints: maximumHitPoints,
                 temporaryHitPoints: temporaryHitPoints,
@@ -10123,25 +9249,13 @@ class $$CharactersTableTableManager
                 required String raceName,
                 Value<String?> classDefinitionId = const Value.absent(),
                 Value<String?> backgroundDefinitionRefId = const Value.absent(),
-                Value<String?> backgroundId = const Value.absent(),
-                Value<String?> backgroundName = const Value.absent(),
-                Value<String?> backgroundSummary = const Value.absent(),
                 Value<String?> abilityScoreMethod = const Value.absent(),
                 Value<String?> abilityScoreProvenance = const Value.absent(),
-                Value<int?> strength = const Value.absent(),
-                Value<int?> dexterity = const Value.absent(),
-                Value<int?> constitution = const Value.absent(),
-                Value<int?> intelligence = const Value.absent(),
-                Value<int?> wisdom = const Value.absent(),
-                Value<int?> charisma = const Value.absent(),
                 required String className,
                 required int level,
                 Value<int?> experience = const Value.absent(),
-                Value<int?> proficiencyBonus = const Value.absent(),
                 Value<String?> equipmentLoadoutId = const Value.absent(),
                 Value<String?> equipmentLoadoutLabel = const Value.absent(),
-                Value<String?> startingMoneySummary = const Value.absent(),
-                Value<String?> selectedEquipmentItems = const Value.absent(),
                 Value<int?> currentHitPoints = const Value.absent(),
                 Value<int?> maximumHitPoints = const Value.absent(),
                 Value<int?> temporaryHitPoints = const Value.absent(),
@@ -10158,25 +9272,13 @@ class $$CharactersTableTableManager
                 raceName: raceName,
                 classDefinitionId: classDefinitionId,
                 backgroundDefinitionRefId: backgroundDefinitionRefId,
-                backgroundId: backgroundId,
-                backgroundName: backgroundName,
-                backgroundSummary: backgroundSummary,
                 abilityScoreMethod: abilityScoreMethod,
                 abilityScoreProvenance: abilityScoreProvenance,
-                strength: strength,
-                dexterity: dexterity,
-                constitution: constitution,
-                intelligence: intelligence,
-                wisdom: wisdom,
-                charisma: charisma,
                 className: className,
                 level: level,
                 experience: experience,
-                proficiencyBonus: proficiencyBonus,
                 equipmentLoadoutId: equipmentLoadoutId,
                 equipmentLoadoutLabel: equipmentLoadoutLabel,
-                startingMoneySummary: startingMoneySummary,
-                selectedEquipmentItems: selectedEquipmentItems,
                 currentHitPoints: currentHitPoints,
                 maximumHitPoints: maximumHitPoints,
                 temporaryHitPoints: temporaryHitPoints,

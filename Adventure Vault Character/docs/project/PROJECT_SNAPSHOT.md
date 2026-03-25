@@ -17,10 +17,9 @@ Implementation shell established
 
 ## Current Focus
 
-Stabilizing the normalized Drift model now that both write-side persistence
-and character-sheet read-side mapping use the expanded schema, while reducing
-redundant snapshot dependence in `characters` and keeping the guided draft and
-sheet flow stable.
+Stabilizing the normalized Drift model now that the `characters` row has been
+trimmed back in Drift `v5`, while keeping the guided draft, sheet flow, and
+edit/reopen path stable on top of normalized reads.
 
 ## Repository State
 
@@ -31,7 +30,7 @@ sheet flow stable.
   state.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- The Drift schema is now at `v4` and includes normalized character-side
+- The Drift schema is now at `v5` and includes normalized character-side
   tables for `ability scores`, `skills`, `saving throws`, `inventory`,
   `proficiencies`, and `currency`.
 - The local database now also includes compendium definition tables for
@@ -57,6 +56,10 @@ sheet flow stable.
   only for compatibility.
 - `background_definition_ref_id` is now aligned with migration backfill and
   stores the raw background id for new records.
+- Drift `v5` now removes redundant `background`, raw `ability score`,
+  `proficiency bonus`, and equipment/currency snapshot columns from
+  `characters`, with migration coverage preserving the normalized data path
+  for existing characters.
 - The characters feature now uses explicit application services for
   `create character` and `character sheet` loading, with shared summary
   mapping extracted from the repository implementation.
@@ -155,8 +158,9 @@ sheet flow stable.
 - A first non-widget validator now protects draft persistence by section.
 - A first character-sheet view-model mapper now derives MVP sheet content from
   persisted records.
-- The local persistence model now writes both a legacy-compatible snapshot row
-  and the new normalized tables introduced in Drift `v4`.
+- The local persistence model now treats `characters` as the identity/edit
+  metadata row and the normalized tables as the canonical source for
+  background detail, abilities, inventory, and currency.
 - Local catalog data is now centralized under `lib/src/features/compendium`
   behind a repository boundary and seeded from local asset examples for
   background, race, and class.
@@ -165,14 +169,12 @@ sheet flow stable.
 
 ## Work In Progress
 
-- Tightening the remaining snapshot compatibility fields now that both create
-  and update flows use normalized tables as the real source of truth.
+- Deciding which remaining edit-oriented metadata in `characters` should be
+  normalized next, starting with ability-score provenance if the current
+  string contract becomes limiting.
 
 ## Pending Work
 
-- Remove or narrow redundant snapshot state in `characters` where the
-  normalized tables are now the real source of truth, including any remaining
-  schema-level cleanup that should only happen with a deliberate migration.
 - Expand the edit flow beyond the current guided MVP fields and decide how
   later post-creation inventory or combat editing should interact with the
   same aggregate.
@@ -224,8 +226,8 @@ sheet flow stable.
 
 1. Build the next editing-oriented character domain on top of the current
    read-side model instead of introducing another UI-facing mapper layer.
-2. Reduce the remaining compatibility snapshots in `characters` now that edit
-   writes also use the normalized model.
+2. Normalize the remaining edit-oriented metadata in `characters` only where
+   the current string or snapshot contract is becoming a real limitation.
 3. Deepen the parsed compendium fidelity beyond the current seeded FightClub
    SRD subset and static progression defaults.
 4. Break the approved MVP flow into implementation tasks in `lib/`.
@@ -240,8 +242,6 @@ sheet flow stable.
 
 ## Risks and Unknowns
 
-- Schema-level snapshot cleanup is still pending even though new writes and
-  sheet reads now prefer the normalized model.
 - Background bonuses and social perks still need deeper normalized
   representation if the app moves beyond the current MVP-compatible snapshots.
 - Ability score method state and assignment provenance still depend on the

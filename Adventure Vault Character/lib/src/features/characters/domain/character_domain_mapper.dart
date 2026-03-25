@@ -1,7 +1,6 @@
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_record.dart';
-import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 
 class CharacterDomainMapper {
   const CharacterDomainMapper();
@@ -9,7 +8,9 @@ class CharacterDomainMapper {
   CharacterDomainModel map(CharacterRecord record) {
     final row = record.row;
     final catalog = record.catalog;
-    final background = catalog.backgroundById(row.backgroundId);
+    final background = row.backgroundDefinitionRefId == null
+        ? null
+        : catalog.backgroundById(row.backgroundDefinitionRefId);
     final fallbackLoadout = catalog
         .equipmentLoadoutsForClass(row.className)
         .first;
@@ -35,7 +36,7 @@ class CharacterDomainMapper {
         definition.id: definition,
     };
     final resolvedAbilityScores =
-        record.abilityScores ?? _abilityScoresFromSnapshot(row);
+        record.abilityScores ?? _emptyAbilityScores(row.id);
 
     return CharacterDomainModel(
       id: row.id,
@@ -46,7 +47,6 @@ class CharacterDomainMapper {
         progression: CharacterProgressionDomainModel(
           level: row.level,
           experience: row.experience ?? 0,
-          proficiencyBonusOverride: row.proficiencyBonus,
         ),
       ),
       combat: CharacterCombatDomainModel(
@@ -99,12 +99,10 @@ class CharacterDomainMapper {
           name:
               record.backgroundDefinition?.name ??
               background?.name ??
-              row.backgroundName ??
               'Sin background',
           summary:
               record.backgroundDefinition?.summary ??
               background?.summary ??
-              row.backgroundSummary ??
               'Sin resumen disponible.',
           bonuses: (background?.bonuses ?? const <String>['Sin bonos cargados'])
               .map(_mapBackgroundEntry)
@@ -201,33 +199,21 @@ class CharacterDomainMapper {
     return currency.summarySnapshot;
   }
 
-  CharacterAbilityScore _abilityScoresFromSnapshot(Character row) {
+  CharacterAbilityScore _emptyAbilityScores(String characterId) {
     return CharacterAbilityScore(
-      characterId: row.id,
-      strengthScore: row.strength ?? 0,
-      dexterityScore: row.dexterity ?? 0,
-      constitutionScore: row.constitution ?? 0,
-      intelligenceScore: row.intelligence ?? 0,
-      wisdomScore: row.wisdom ?? 0,
-      charismaScore: row.charisma ?? 0,
-      strengthModifier: row.strength == null
-          ? null
-          : CharacterRules.abilityModifier(row.strength!),
-      dexterityModifier: row.dexterity == null
-          ? null
-          : CharacterRules.abilityModifier(row.dexterity!),
-      constitutionModifier: row.constitution == null
-          ? null
-          : CharacterRules.abilityModifier(row.constitution!),
-      intelligenceModifier: row.intelligence == null
-          ? null
-          : CharacterRules.abilityModifier(row.intelligence!),
-      wisdomModifier: row.wisdom == null
-          ? null
-          : CharacterRules.abilityModifier(row.wisdom!),
-      charismaModifier: row.charisma == null
-          ? null
-          : CharacterRules.abilityModifier(row.charisma!),
+      characterId: characterId,
+      strengthScore: 0,
+      dexterityScore: 0,
+      constitutionScore: 0,
+      intelligenceScore: 0,
+      wisdomScore: 0,
+      charismaScore: 0,
+      strengthModifier: null,
+      dexterityModifier: null,
+      constitutionModifier: null,
+      intelligenceModifier: null,
+      wisdomModifier: null,
+      charismaModifier: null,
     );
   }
 }

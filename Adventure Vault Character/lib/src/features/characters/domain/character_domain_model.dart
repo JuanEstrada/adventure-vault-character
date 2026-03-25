@@ -41,16 +41,12 @@ class CharacterProgressionDomainModel {
   const CharacterProgressionDomainModel({
     required this.level,
     required this.experience,
-    this.proficiencyBonusOverride,
   });
 
   final int level;
   final int experience;
-  final int? proficiencyBonusOverride;
 
-  int get proficiencyBonus =>
-      proficiencyBonusOverride ??
-      CharacterRules.proficiencyBonusForLevel(level);
+  int get proficiencyBonus => CharacterRules.proficiencyBonusForLevel(level);
 
   int get levelProgressPercent =>
       CharacterRules.levelProgressPercent(level: level, experience: experience);

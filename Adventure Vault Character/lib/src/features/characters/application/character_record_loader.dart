@@ -63,9 +63,8 @@ class CharacterRecordLoader {
   List<String> _backgroundDefinitionLookupIds(Character row) {
     final ids = <String>{
       if (row.backgroundDefinitionRefId case final refId?) refId,
-      if (row.backgroundId case final backgroundId?) backgroundId,
-      if (row.backgroundId case final backgroundId?)
-        'background-${_slugify(backgroundId)}',
+      if (row.backgroundDefinitionRefId case final refId?)
+        'background-${_slugify(refId)}',
     };
     return ids.toList(growable: false);
   }

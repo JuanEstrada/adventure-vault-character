@@ -16,30 +16,11 @@ class Characters extends Table {
   TextColumn get backgroundDefinitionRefId =>
       text().named('background_definition_ref_id').nullable()();
 
-  TextColumn get backgroundId => text().named('background_id').nullable()();
-
-  TextColumn get backgroundName => text().named('background_name').nullable()();
-
-  TextColumn get backgroundSummary =>
-      text().named('background_summary').nullable()();
-
   TextColumn get abilityScoreMethod =>
       text().named('ability_score_method').nullable()();
 
   TextColumn get abilityScoreProvenance =>
       text().named('ability_score_provenance').nullable()();
-
-  IntColumn get strength => integer().nullable()();
-
-  IntColumn get dexterity => integer().nullable()();
-
-  IntColumn get constitution => integer().nullable()();
-
-  IntColumn get intelligence => integer().nullable()();
-
-  IntColumn get wisdom => integer().nullable()();
-
-  IntColumn get charisma => integer().nullable()();
 
   TextColumn get className => text().named('class_name')();
 
@@ -47,20 +28,11 @@ class Characters extends Table {
 
   IntColumn get experience => integer().nullable()();
 
-  IntColumn get proficiencyBonus =>
-      integer().named('proficiency_bonus').nullable()();
-
   TextColumn get equipmentLoadoutId =>
       text().named('equipment_loadout_id').nullable()();
 
   TextColumn get equipmentLoadoutLabel =>
       text().named('equipment_loadout_label').nullable()();
-
-  TextColumn get startingMoneySummary =>
-      text().named('starting_money_summary').nullable()();
-
-  TextColumn get selectedEquipmentItems =>
-      text().named('selected_equipment_items').nullable()();
 
   IntColumn get currentHitPoints =>
       integer().named('current_hit_points').nullable()();
@@ -465,7 +437,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.executor(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -573,6 +545,9 @@ class AppDatabase extends _$AppDatabase {
         await migrator.createTable(characterCurrency);
 
         await _backfillNormalizedCharacterData();
+      }
+      if (from < 5) {
+        await _migrateCharactersToV5();
       }
 
       await _createIndexes();
@@ -687,5 +662,88 @@ class AppDatabase extends _$AppDatabase {
       SET background_definition_ref_id = background_id,
           proficiency_bonus = 2 + CAST((level - 1) / 4 AS INTEGER)
     ''');
+  }
+
+  Future<void> _migrateCharactersToV5() async {
+    await customStatement('PRAGMA foreign_keys = OFF');
+
+    await customStatement('''
+      CREATE TABLE characters_v5 (
+        id TEXT NOT NULL PRIMARY KEY,
+        name TEXT NOT NULL,
+        race_name TEXT NOT NULL,
+        class_definition_id TEXT NULL,
+        background_definition_ref_id TEXT NULL,
+        ability_score_method TEXT NULL,
+        ability_score_provenance TEXT NULL,
+        class_name TEXT NOT NULL,
+        level INTEGER NOT NULL,
+        experience INTEGER NULL,
+        equipment_loadout_id TEXT NULL,
+        equipment_loadout_label TEXT NULL,
+        current_hit_points INTEGER NULL,
+        maximum_hit_points INTEGER NULL,
+        temporary_hit_points INTEGER NULL,
+        portrait_asset_path TEXT NULL,
+        alignment TEXT NULL,
+        appearance_details TEXT NULL,
+        narrative_details TEXT NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    ''');
+
+    await customStatement('''
+      INSERT INTO characters_v5 (
+        id,
+        name,
+        race_name,
+        class_definition_id,
+        background_definition_ref_id,
+        ability_score_method,
+        ability_score_provenance,
+        class_name,
+        level,
+        experience,
+        equipment_loadout_id,
+        equipment_loadout_label,
+        current_hit_points,
+        maximum_hit_points,
+        temporary_hit_points,
+        portrait_asset_path,
+        alignment,
+        appearance_details,
+        narrative_details,
+        created_at,
+        updated_at
+      )
+      SELECT
+        id,
+        name,
+        race_name,
+        class_definition_id,
+        COALESCE(background_definition_ref_id, background_id),
+        ability_score_method,
+        ability_score_provenance,
+        class_name,
+        level,
+        experience,
+        equipment_loadout_id,
+        equipment_loadout_label,
+        current_hit_points,
+        maximum_hit_points,
+        temporary_hit_points,
+        portrait_asset_path,
+        alignment,
+        appearance_details,
+        narrative_details,
+        created_at,
+        updated_at
+      FROM characters
+    ''');
+
+    await customStatement('DROP TABLE characters');
+    await customStatement('ALTER TABLE characters_v5 RENAME TO characters');
+    await customStatement('PRAGMA foreign_keys = ON');
   }
 }
