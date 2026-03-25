@@ -5,11 +5,13 @@ class CharacterSheetScreen extends StatelessWidget {
   const CharacterSheetScreen({
     required this.character,
     required this.onBack,
+    required this.onEdit,
     super.key,
   });
 
   final CharacterDomainModel character;
   final VoidCallback onBack;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +24,7 @@ class CharacterSheetScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back),
         ),
         title: Text(character.identity.name),
+        actions: [TextButton(onPressed: onEdit, child: const Text('Edit'))],
       ),
       body: ListView(
         padding: const EdgeInsets.all(24),

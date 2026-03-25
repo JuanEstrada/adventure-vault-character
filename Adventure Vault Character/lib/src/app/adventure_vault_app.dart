@@ -9,6 +9,7 @@ import 'package:adventure_vault_character/src/features/characters/data/drift_cha
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/presentation/character_sheet_screen.dart';
 import 'package:adventure_vault_character/src/features/characters/presentation/create_character_screen.dart';
+import 'package:adventure_vault_character/src/features/characters/presentation/edit_character_screen.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/asset_compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/main_menu/presentation/main_menu_screen.dart';
@@ -109,6 +110,18 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
             AppScreen.characterSheet => CharacterSheetScreen(
               character: state.selectedCharacterSheet!,
               onBack: _controller.openMainMenu,
+              onEdit: () => _controller.loadEditableCharacter(
+                state.selectedCharacterSheet!.id,
+              ),
+            ),
+            AppScreen.editCharacter => EditCharacterScreen(
+              controller: state.characterEditorController!,
+              isSaving: state.isSavingCharacter,
+              errorMessage: state.errorMessage,
+              onCancel: () => _controller.openCharacter(
+                state.characterEditorController!.characterId,
+              ),
+              onSave: _controller.saveEditedCharacter,
             ),
           };
         },

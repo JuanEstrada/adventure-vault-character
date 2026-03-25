@@ -9,6 +9,9 @@ class CreateCharacterScreen extends StatefulWidget {
     required this.errorMessage,
     required this.onCancel,
     required this.onSave,
+    this.initialDraft,
+    this.screenTitle = 'Crear personaje',
+    this.submitLabel = 'Guardar draft',
     super.key,
   });
 
@@ -17,6 +20,9 @@ class CreateCharacterScreen extends StatefulWidget {
   final String? errorMessage;
   final VoidCallback onCancel;
   final ValueChanged<CreateCharacterInput> onSave;
+  final CreateCharacterInput? initialDraft;
+  final String screenTitle;
+  final String submitLabel;
 
   @override
   State<CreateCharacterScreen> createState() => _CreateCharacterScreenState();
@@ -109,13 +115,55 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     if (!_hasRequiredCatalogData) {
       return;
     }
-    _selectedRace = widget.catalog.races.first;
-    _selectedBackground = widget.catalog.backgrounds.first;
-    _selectedClass = widget.catalog.classes.first;
+    final initialDraft = widget.initialDraft;
+    _selectedRace =
+        initialDraft != null &&
+            widget.catalog.races.contains(initialDraft.raceName)
+        ? initialDraft.raceName
+        : widget.catalog.races.first;
+    _selectedBackground =
+        widget.catalog.backgroundById(initialDraft?.backgroundId) ??
+        widget.catalog.backgrounds.first;
+    _selectedClass =
+        initialDraft != null &&
+            widget.catalog.classes.contains(initialDraft.className)
+        ? initialDraft.className
+        : widget.catalog.classes.first;
+    _selectedAbilityMethod =
+        initialDraft?.abilityScoreMethod ?? 'generatedSetAssignment';
+    _selectedLevel = initialDraft?.level ?? 1;
+    _selectedAlignment = initialDraft?.alignment ?? 'Neutral';
+    _nameController.text = initialDraft?.name ?? '';
+    _appearanceController.text = initialDraft?.appearanceDetails ?? '';
+    _narrativeController.text = initialDraft?.narrativeDetails ?? '';
+
     _applyGeneratedAssignmentsForClass(_selectedClass);
-    _selectedEquipmentLoadout = widget.catalog
-        .equipmentLoadoutsForClass(_selectedClass)
-        .first;
+    if (initialDraft != null) {
+      _generatedAssignments
+        ..['Strength'] = initialDraft.strength
+        ..['Dexterity'] = initialDraft.dexterity
+        ..['Constitution'] = initialDraft.constitution
+        ..['Intelligence'] = initialDraft.intelligence
+        ..['Wisdom'] = initialDraft.wisdom
+        ..['Charisma'] = initialDraft.charisma;
+      _manualAssignments
+        ..['Strength'] = initialDraft.strength
+        ..['Dexterity'] = initialDraft.dexterity
+        ..['Constitution'] = initialDraft.constitution
+        ..['Intelligence'] = initialDraft.intelligence
+        ..['Wisdom'] = initialDraft.wisdom
+        ..['Charisma'] = initialDraft.charisma;
+    }
+
+    final equipmentOptions = widget.catalog.equipmentLoadoutsForClass(
+      _selectedClass,
+    );
+    _selectedEquipmentLoadout = initialDraft == null
+        ? equipmentOptions.first
+        : equipmentOptions.firstWhere(
+            (option) => option.id == initialDraft.equipmentLoadoutId,
+            orElse: () => equipmentOptions.first,
+          );
   }
 
   void _applyGeneratedAssignmentsForClass(String className) {
@@ -202,7 +250,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
             onPressed: widget.onCancel,
             icon: const Icon(Icons.arrow_back),
           ),
-          title: const Text('Crear personaje'),
+          title: Text(widget.screenTitle),
         ),
         body: Center(
           child: ConstrainedBox(
@@ -248,7 +296,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           onPressed: widget.isSaving ? null : widget.onCancel,
           icon: const Icon(Icons.arrow_back),
         ),
-        title: const Text('Crear personaje'),
+        title: Text(widget.screenTitle),
       ),
       body: Center(
         child: ConstrainedBox(
@@ -617,7 +665,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                               ? null
                               : _submit,
                           child: Text(
-                            widget.isSaving ? 'Guardando...' : 'Guardar draft',
+                            widget.isSaving ? 'Saving...' : widget.submitLabel,
                           ),
                         ),
                         OutlinedButton(

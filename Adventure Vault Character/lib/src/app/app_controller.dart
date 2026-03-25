@@ -242,6 +242,7 @@ class AppController extends ChangeNotifier {
       } else {
         _disposeCharacterEditorController();
         _state = _state.copyWith(
+          screen: AppScreen.editCharacter,
           selectedEditableCharacter: editableCharacter,
           characterEditorController: CharacterEditorController(
             characterId: characterId,
@@ -261,6 +262,15 @@ class AppController extends ChangeNotifier {
       );
     }
 
+    notifyListeners();
+  }
+
+  void saveEditedCharacter(CreateCharacterInput input) {
+    _state.characterEditorController?.replaceDraft(input);
+    _state = _state.copyWith(
+      errorMessage:
+          'Saving changes for existing characters is not implemented yet.',
+    );
     notifyListeners();
   }
 
