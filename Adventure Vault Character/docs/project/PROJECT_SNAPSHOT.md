@@ -13,13 +13,14 @@ and delivery risks.
 
 ## Project Phase
 
-Implementation shell established
+Implementation shell established, with SRD source extraction materialized
 
 ## Current Focus
 
 Stabilizing the normalized Drift model now that the `characters` row has been
 trimmed back further in Drift `v8`, while keeping the guided draft, sheet
-flow, and edit/reopen path stable on top of normalized reads.
+flow, and edit/reopen path stable on top of normalized reads, and finishing
+cleanup of the new PDF-outline-split SRD markdown source tree.
 
 ## Repository State
 
@@ -139,6 +140,17 @@ flow, and edit/reopen path stable on top of normalized reads.
   now has a dedicated regeneration tool,
   `tool/normalize_srd_rules.py`, which rebuilds the files from
   `local-assets/por ordenar/SRD_CC_v5.2.1.pdf` and refreshes the local index.
+- The repo now also includes `tool/extract_srd_pdf_to_md.py`, which reads the
+  SRD PDF outline and regenerates a second markdown corpus under
+  `local-assets/por ordenar/sdr_55e_source/`.
+- `sdr_55e_source/` is now organized around real top-level outline titles,
+  using folder containers for `Playing the Game`, `Character Creation`,
+  `Classes`, `Character Origins`, `Feats`, `Equipment`, `Spells`, and
+  `Magic Items`; `Rules Glossary` remains a standalone markdown file.
+- The split SRD corpus intentionally skips `Monsters`, `Monsters A-Z`,
+  `Animals`, and individual creature entries.
+- The SRD extraction output plus generator are committed on `main` in
+  `e2a4d1a` (`Add SRD markdown extraction output`).
 - The generated ability-score method now tracks the selected class and applies
   the class-specific standard array recommendation whenever the class changes.
 - Widget coverage exists for the offline continuation path into the main menu.
@@ -181,6 +193,9 @@ flow, and edit/reopen path stable on top of normalized reads.
 - Local catalog data is now centralized under `lib/src/features/compendium`
   behind a repository boundary and seeded from local asset examples for
   background, race, and class.
+- The SRD PDF now also regenerates into a split markdown source tree that
+  mirrors the document outline and can be curated section by section without
+  depending on the older OCR-derived file layout.
 - Session continuity simplified around a single handoff file:
   `docs/project/SESSION_RESUME.md`.
 
@@ -189,6 +204,9 @@ flow, and edit/reopen path stable on top of normalized reads.
 - Expand the edit flow beyond the current guided MVP fields and decide how
   later post-creation inventory or combat editing should interact with the
   same aggregate.
+- Finish cleanup of the remaining large extracted class tables in
+  `local-assets/por ordenar/sdr_55e_source/052_classes/`, especially
+  `paladin`, `ranger`, `sorcerer`, and `wizard`.
 - Decide when the local normalized compendium catalog becomes a generated or
   parsed XML-backed source instead of curated asset data.
 - Map the approved MVP flow into implementation tasks in `lib/`.
@@ -237,10 +255,13 @@ flow, and edit/reopen path stable on top of normalized reads.
 
 1. Build the next editing-oriented character domain on top of the current
    read-side model instead of introducing another UI-facing mapper layer.
-2. Deepen the parsed compendium fidelity beyond the current seeded FightClub
+2. Finish the remaining table normalization pass in
+   `local-assets/por ordenar/sdr_55e_source/052_classes/` so the split SRD
+   corpus is structurally dependable.
+3. Deepen the parsed compendium fidelity beyond the current seeded FightClub
    SRD subset and static progression defaults.
-3. Break the approved MVP flow into implementation tasks in `lib/`.
-4. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
+4. Break the approved MVP flow into implementation tasks in `lib/`.
+5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
 ## Next Session Guardrail
 
@@ -256,6 +277,9 @@ flow, and edit/reopen path stable on top of normalized reads.
 - Ability score provenance is now normalized, but the UI/application contract
   still reconstructs the legacy string shape for compatibility and will need a
   future typed contract when edit behavior expands.
+- The split SRD markdown corpus is now committed, but several large class
+  tables still need manual cleanup after PDF extraction because merged cells
+  and wrapped rows do not convert cleanly by default.
 - Future sync and network features remain out of implementation scope.
 - Legal and content-boundary constraints for D&D-related material may still
   need refinement later.

@@ -179,6 +179,17 @@ Verified on 2026-03-25:
   text from the SRD PDF with `pypdf`, rewrites the markdown corpus in document
   order, and regenerates the local `srd_rules/README.md` index from the
   normalized files.
+- The repo now also includes `tool/extract_srd_pdf_to_md.py`, which uses the
+  SRD PDF outline to regenerate a split markdown corpus under
+  `local-assets/por ordenar/sdr_55e_source/`.
+- The generated `sdr_55e_source/` corpus is now organized by top-level index
+  blocks, with folder containers for `Playing the Game`, `Character Creation`,
+  `Classes`, `Character Origins`, `Feats`, `Equipment`, `Spells`, and
+  `Magic Items`, while `Rules Glossary` remains a standalone markdown file.
+- The generated split corpus explicitly skips `Monsters`, `Monsters A-Z`,
+  `Animals`, and individual creature entries from the PDF outline.
+- The SRD corpus generation and current folder layout are committed on
+  `main` in `e2a4d1a` (`Add SRD markdown extraction output`).
 - The generated ability-score path now applies the
   `Standard Array by Class` recommendation on initial load and every time the
   selected class changes.
@@ -201,14 +212,16 @@ beyond the current guided MVP fields.
 
 ## Current Phase
 
-Implementation shell established.
+Implementation shell established, with SRD source extraction now materialized
+as repository content.
 
 The project has moved from documentation-only preparation into a real app
 shell. The startup path, access screen, main menu shell, and character-summary
-repository boundary now exist in code. The next step is to build on the new
-Drift boundary and the new compendium repository by expanding the minimal
-saved-character slice into the approved guided create-character flow and a
-richer character sheet.
+repository boundary now exist in code. In parallel, the local SRD PDF now has
+two reproducible markdown pipelines: the normalized `srd_rules/` corpus and
+the outline-split `sdr_55e_source/` corpus. The next step is to keep the app
+work moving while finishing cleanup of the remaining large extracted class
+tables so the split SRD source is reliable as a local reference set.
 
 ## MVP Slice In Focus
 
@@ -358,6 +371,19 @@ Completed since the previous handoff:
   ability-provenance, hit-point, finishing-detail, and equipment-loadout
   columns have been removed from `characters` with migration coverage for the
   preserved normalized data path.
+- The SRD PDF at `local-assets/por ordenar/SRD_CC_v5.2.1.pdf` now also
+  regenerates into a split markdown source tree under
+  `local-assets/por ordenar/sdr_55e_source/`, using the real PDF outline
+  titles instead of OCR-era numbering as the primary segmentation key.
+- The generated SRD source tree now matches the top-level document structure
+  more closely by using folder containers for major index blocks rather than
+  empty placeholder markdown files.
+- Several broken extracted tables have already been repaired in the split SRD
+  corpus, including `ability checks`, `saving throws`, `attack rolls`,
+  `travel`, `scribing spell scrolls`, `life domain`, `oath of devotion`,
+  plus the large class tables in `bard`, `cleric`, and `druid`.
+- The SRD extraction output and generator are committed and pushed on
+  `main` in `e2a4d1a`.
 
 Next-session starting point:
 
@@ -378,6 +404,13 @@ Next-session starting point:
   `local-assets/por ordenar/srd_rules/`; the PDF
   `local-assets/por ordenar/SRD_CC_v5.2.1.pdf` is the source of truth for that
   markdown corpus, not the previous OCR-derived markdown text.
+- Use `tool/extract_srd_pdf_to_md.py` when refreshing
+  `local-assets/por ordenar/sdr_55e_source/`; that split corpus is meant to be
+  the PDF-outline-driven source tree, excluding monsters and animals.
+- Continue the pending table cleanup in the split class files under
+  `local-assets/por ordenar/sdr_55e_source/052_classes/`, especially the
+  remaining large progression/traits tables in `paladin`, `ranger`,
+  `sorcerer`, and `wizard`.
 - Treat `characters` as the identity/resume row plus remaining lightweight
   metadata, while normalized tables remain the source of truth for background
   details, abilities, hit points, finishing details, equipment loadout,
