@@ -135,6 +135,10 @@ flow, and edit/reopen path stable on top of normalized reads.
 - The repository root now includes `LICENSE` and
   `THIRD_PARTY_LICENSES.md` so the project license and the bundled
   FightClub5eXML MIT notice are kept with the source tree.
+- The local SRD markdown corpus under `local-assets/por ordenar/srd_rules/`
+  now has a dedicated regeneration tool,
+  `tool/normalize_srd_rules.py`, which rebuilds the files from
+  `local-assets/por ordenar/SRD_CC_v5.2.1.pdf` and refreshes the local index.
 - The generated ability-score method now tracks the selected class and applies
   the class-specific standard array recommendation whenever the class changes.
 - Widget coverage exists for the offline continuation path into the main menu.

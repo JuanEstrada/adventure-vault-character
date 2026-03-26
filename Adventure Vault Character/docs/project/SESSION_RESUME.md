@@ -172,6 +172,13 @@ Verified on 2026-03-25:
 - The repository root now includes a project `LICENSE` plus
   `THIRD_PARTY_LICENSES.md` so the bundled FightClub5eXML MIT notice ships
   with the project.
+- `local-assets/por ordenar/srd_rules/` now also has a reproducible
+  normalization pipeline driven by the canonical PDF source
+  `local-assets/por ordenar/SRD_CC_v5.2.1.pdf`.
+- The repo now includes `tool/normalize_srd_rules.py`, which extracts section
+  text from the SRD PDF with `pypdf`, rewrites the markdown corpus in document
+  order, and regenerates the local `srd_rules/README.md` index from the
+  normalized files.
 - The generated ability-score path now applies the
   `Standard Array by Class` recommendation on initial load and every time the
   selected class changes.
@@ -367,6 +374,10 @@ Next-session starting point:
   through the `CompendiumRepository` boundary as the active source of truth
   for local creation data, with `assets/compendium/catalog.json` retained only
   as fallback.
+- Use `tool/normalize_srd_rules.py` when refreshing
+  `local-assets/por ordenar/srd_rules/`; the PDF
+  `local-assets/por ordenar/SRD_CC_v5.2.1.pdf` is the source of truth for that
+  markdown corpus, not the previous OCR-derived markdown text.
 - Treat `characters` as the identity/resume row plus remaining lightweight
   metadata, while normalized tables remain the source of truth for background
   details, abilities, hit points, finishing details, equipment loadout,
