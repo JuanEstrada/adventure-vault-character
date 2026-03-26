@@ -179,17 +179,21 @@ Verified on 2026-03-25:
   text from the SRD PDF with `pypdf`, rewrites the markdown corpus in document
   order, and regenerates the local `srd_rules/README.md` index from the
   normalized files.
-- The repo now also includes `tool/extract_srd_pdf_to_md.py`, which uses the
-  SRD PDF outline to regenerate a split markdown corpus under
-  `local-assets/por ordenar/sdr_55e_source/`.
-- The generated `sdr_55e_source/` corpus is now organized by top-level index
-  blocks, with folder containers for `Playing the Game`, `Character Creation`,
-  `Classes`, `Character Origins`, `Feats`, `Equipment`, `Spells`, and
-  `Magic Items`, while `Rules Glossary` remains a standalone markdown file.
-- The generated split corpus explicitly skips `Monsters`, `Monsters A-Z`,
-  `Animals`, and individual creature entries from the PDF outline.
-- The SRD corpus generation and current folder layout are committed on
-  `main` in `e2a4d1a` (`Add SRD markdown extraction output`).
+- The repo now also includes `tool/extract_srd_markdown_source.py`, which
+  splits the clean third-party markdown corpus under
+  `local-assets/dnd-5e-srd-markdown-master/` into a section-based tree under
+  `local-assets/por ordenar/srd_55e_source_from_markdown/`.
+- The generated `srd_55e_source_from_markdown/` corpus is organized by
+  top-level SRD blocks, with dedicated folders for `Playing the Game`,
+  `Character Creation`, `Classes`, `Character Origins`, `Feats`, `Equipment`,
+  `Spells`, `Rules Glossary`, `Gameplay Toolbox`, and `Magic Items`.
+- `Rules Glossary` is further split into individual term files so definitions
+  can be referenced directly by rule name.
+- The split markdown corpus intentionally excludes `Monsters`, `Monsters A-Z`,
+  and `Animals` from the generated output tree.
+- The local assets area now also includes the upstream markdown source corpus
+  in `local-assets/dnd-5e-srd-markdown-master/`, which is treated as a
+  reference-quality text source rather than an app runtime asset.
 - The generated ability-score path now applies the
   `Standard Array by Class` recommendation on initial load and every time the
   selected class changes.
@@ -217,11 +221,12 @@ as repository content.
 
 The project has moved from documentation-only preparation into a real app
 shell. The startup path, access screen, main menu shell, and character-summary
-repository boundary now exist in code. In parallel, the local SRD PDF now has
-two reproducible markdown pipelines: the normalized `srd_rules/` corpus and
-the outline-split `sdr_55e_source/` corpus. The next step is to keep the app
-work moving while finishing cleanup of the remaining large extracted class
-tables so the split SRD source is reliable as a local reference set.
+repository boundary now exist in code. In parallel, the local SRD now has a
+reproducible normalized PDF-derived corpus in `srd_rules/` and a cleaner
+section-based reference tree in `srd_55e_source_from_markdown/` derived from a
+clean markdown source corpus. The next step is to keep the app work moving
+while using these sources to formalize deterministic rules and compendium
+contracts instead of spending more time on PDF cleanup.
 
 ## MVP Slice In Focus
 
@@ -371,19 +376,17 @@ Completed since the previous handoff:
   ability-provenance, hit-point, finishing-detail, and equipment-loadout
   columns have been removed from `characters` with migration coverage for the
   preserved normalized data path.
-- The SRD PDF at `local-assets/por ordenar/SRD_CC_v5.2.1.pdf` now also
-  regenerates into a split markdown source tree under
-  `local-assets/por ordenar/sdr_55e_source/`, using the real PDF outline
-  titles instead of OCR-era numbering as the primary segmentation key.
-- The generated SRD source tree now matches the top-level document structure
-  more closely by using folder containers for major index blocks rather than
-  empty placeholder markdown files.
-- Several broken extracted tables have already been repaired in the split SRD
-  corpus, including `ability checks`, `saving throws`, `attack rolls`,
-  `travel`, `scribing spell scrolls`, `life domain`, `oath of devotion`,
-  plus the large class tables in `bard`, `cleric`, and `druid`.
-- The SRD extraction output and generator are committed and pushed on
-  `main` in `e2a4d1a`.
+- The local assets area now includes the third-party markdown corpus
+  `local-assets/dnd-5e-srd-markdown-master/`, which is cleaner than the
+  previous PDF-split output for many rules sections and class tables.
+- The repo now also includes `tool/extract_srd_markdown_source.py`, which
+  regenerates a section-based SRD tree under
+  `local-assets/por ordenar/srd_55e_source_from_markdown/`.
+- The generated markdown-based SRD tree replaces the previous checked-in
+  `sdr_55e_source/` PDF-split corpus as the main section-level local reference
+  tree.
+- `srd_55e_source_from_markdown/` keeps the top-level SRD block structure and
+  additionally splits `Rules Glossary` into individual rule-definition files.
 
 Next-session starting point:
 
@@ -404,13 +407,13 @@ Next-session starting point:
   `local-assets/por ordenar/srd_rules/`; the PDF
   `local-assets/por ordenar/SRD_CC_v5.2.1.pdf` is the source of truth for that
   markdown corpus, not the previous OCR-derived markdown text.
-- Use `tool/extract_srd_pdf_to_md.py` when refreshing
-  `local-assets/por ordenar/sdr_55e_source/`; that split corpus is meant to be
-  the PDF-outline-driven source tree, excluding monsters and animals.
-- Continue the pending table cleanup in the split class files under
-  `local-assets/por ordenar/sdr_55e_source/052_classes/`, especially the
-  remaining large progression/traits tables in `paladin`, `ranger`,
-  `sorcerer`, and `wizard`.
+- Use `tool/extract_srd_markdown_source.py` when refreshing
+  `local-assets/por ordenar/srd_55e_source_from_markdown/`; that split corpus
+  is derived from `local-assets/dnd-5e-srd-markdown-master/` and currently
+  serves as the cleaner section-level SRD reference tree.
+- Treat `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`
+  as the canonical structured source for app logic and compendium ingestion,
+  and use the markdown corpora as supporting semantic references.
 - Treat `characters` as the identity/resume row plus remaining lightweight
   metadata, while normalized tables remain the source of truth for background
   details, abilities, hit points, finishing details, equipment loadout,

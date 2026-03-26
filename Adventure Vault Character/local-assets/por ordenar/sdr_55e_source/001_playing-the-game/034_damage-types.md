@@ -1,3 +1,0 @@
-# Damage Types
-
-Each instance of damage has a type, like Fire or Slashing. Damage types are listed in “Rules k nockin G o ut  a  c r Eatur E When you would reduce a creature to 0 Hit Points with a melee attack, you can instead reduce the crea - ture to 1 Hit Point and give it the Unconscious condi - tion. It then starts a Short Rest, at the end of which that condition ends on it. The condition ends early if the creature regains any Hit Points or if someone takes an action to administer first aid to it, making a successful DC 10 Wisdom (Medicine) check. Glossary” and have no rules of their own, but other rules, such as Resistance, rely on damage types.
