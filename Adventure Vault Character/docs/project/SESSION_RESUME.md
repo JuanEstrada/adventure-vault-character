@@ -178,6 +178,15 @@ Verified on 2026-03-27:
   `flaws` now reopen correctly through `create -> save -> open -> edit -> save -> reopen`.
 - The character sheet now renders the resolved narrative fields individually
   instead of depending only on the old merged `narrativeDetails` note.
+- The character sheet now also exposes a first deterministic spellcasting
+  summary for spellcaster classes, derived from normalized class definitions,
+  canonical ability scores, and the loaded compendium spell catalog.
+- The current spellcasting foundation now computes `casting ability`,
+  `ability modifier`, `spell save DC`, and `spell attack bonus` in the
+  read-side domain instead of deriving those values in widgets.
+- The sheet now lists the locally available compendium spells for the active
+  class as a first read-only spell foundation, ordered by spell level and
+  name.
 - Draft save now runs through a non-widget validator that reports missing
   sections using builder-facing names before persistence.
 - A dedicated `CompendiumRepository` boundary now sits between the app and
@@ -262,7 +271,8 @@ character-side table. The latest documentation pass also leaves the repo with
 a clearer product briefing, a better separation between automatic calculations
 and player input, and an explicit local-source inventory for future rules
 extraction. The next major improvement is extending the same deterministic
-approach into spells, combat, and richer inventory behavior.
+approach further into persisted spell selection, slots/resources, combat, and
+richer inventory behavior.
 
 ## Current Phase
 

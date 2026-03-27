@@ -22,6 +22,7 @@ class CharacterRecordLoader {
     }
 
     final catalog = await _loadCatalog();
+    final classDefinition = await _loadClassDefinition(row);
     final backgroundDefinition = await _loadBackgroundDefinition(row);
     final abilityScores = await _readDao.getAbilityScoresByCharacterId(id);
     final abilityScoreProvenance = await _readDao
@@ -32,7 +33,9 @@ class CharacterRecordLoader {
     );
     final narrativeSelections = await _readDao
         .getNarrativeSelectionsByCharacterId(id);
-    final equipmentLoadout = await _readDao.getEquipmentLoadoutByCharacterId(id);
+    final equipmentLoadout = await _readDao.getEquipmentLoadoutByCharacterId(
+      id,
+    );
     final currency = await _readDao.getCurrencyByCharacterId(id);
     final inventory = await _readDao.getInventoryByCharacterId(id);
     final savingThrows = await _readDao.getSavingThrowsByCharacterId(id);
@@ -43,6 +46,7 @@ class CharacterRecordLoader {
     return CharacterRecord(
       row: row,
       catalog: catalog,
+      classDefinition: classDefinition,
       backgroundDefinition: backgroundDefinition,
       abilityScores: abilityScores,
       abilityScoreProvenance: abilityScoreProvenance,
@@ -72,6 +76,15 @@ class CharacterRecordLoader {
     }
 
     return null;
+  }
+
+  Future<ClassDefinition?> _loadClassDefinition(Character row) async {
+    final classDefinitionId = row.classDefinitionId;
+    if (classDefinitionId == null || classDefinitionId.isEmpty) {
+      return null;
+    }
+
+    return _readDao.getClassDefinitionById(classDefinitionId);
   }
 
   List<String> _backgroundDefinitionLookupIds(Character row) {

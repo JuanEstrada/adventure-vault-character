@@ -7,6 +7,7 @@ class CharacterRecord {
   const CharacterRecord({
     required this.row,
     required this.catalog,
+    required this.classDefinition,
     required this.backgroundDefinition,
     required this.abilityScores,
     required this.abilityScoreProvenance,
@@ -24,6 +25,7 @@ class CharacterRecord {
 
   final Character row;
   final CompendiumCatalog catalog;
+  final ClassDefinition? classDefinition;
   final BackgroundDefinition? backgroundDefinition;
   final CharacterAbilityScore? abilityScores;
   final CharacterAbilityScoreProvenance? abilityScoreProvenance;

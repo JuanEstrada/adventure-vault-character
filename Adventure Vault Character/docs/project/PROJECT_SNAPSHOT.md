@@ -13,8 +13,9 @@ and delivery risks.
 
 ## Project Phase
 
-Implementation shell established, with SRD source extraction materialized and
-the first official finishing-details integration now implemented
+Implementation shell established, with SRD source extraction materialized, the
+first official finishing-details integration implemented, and a first
+spellcasting summary now exposed on the character sheet
 
 ## Current Focus
 
@@ -136,6 +137,10 @@ and richer inventory behavior.
   saving throws, proficiencies, and finishing details.
 - The character sheet now also renders the resolved narrative fields
   individually instead of depending only on the old merged narrative note.
+- The character sheet now also exposes a first `Spells` panel for
+  spellcaster classes, with deterministic `casting ability`,
+  `spell save DC`, `spell attack bonus`, and a read-only list of available
+  compendium spells for the active class.
 - Regression tests now cover Drift migrations from legacy schemas into `v4`.
 - Regression tests now also cover loading an editable aggregate from
   normalized persistence and mapping it back into the current
@@ -143,7 +148,8 @@ and richer inventory behavior.
 - Regression tests now also cover `open -> edit -> save -> reopen` through
   both repository and widget-level flows.
 - Regression tests now also cover deterministic narrative-option source
-  resolution and normalized persistence of narrative selections.
+  resolution, normalized persistence of narrative selections, and the new
+  spellcasting summary foundation.
 - A dedicated `CompendiumRepository` now loads active XML assets directly from
   `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`,
   with JSON fallback preserved.
@@ -309,8 +315,8 @@ and richer inventory behavior.
    and broader official Wizards XML.
 2. Continue translating the available rules sources into explicit
    deterministic application/domain services.
-3. Start the spell-system foundation using the existing class and spell
-   definitions already normalized into Drift.
+3. Extend the new spellcasting foundation into persisted slots, prepared/known
+   spells, and reopen-safe spell state.
 4. Expand the inventory/equipment model beyond starter loadouts.
 5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 

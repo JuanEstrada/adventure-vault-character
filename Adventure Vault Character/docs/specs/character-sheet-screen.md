@@ -39,7 +39,7 @@ replacing the core screen structure.
 
 - Full combat automation
 - Inventory management details
-- Spell management details
+- Full spell management details
 - Rich editing workflows
 - Fully implemented non-MVP panel interactions
 
@@ -194,6 +194,24 @@ MVP expectation:
 - it should use a simple placeholder state in MVP
 - detailed equipment interactions remain out of scope for the first sheet
 
+### Spells Panel
+
+The sheet may expose a first read-only `Spells` panel when the active class is
+a spellcaster.
+
+Foundation expectation:
+
+- the panel can exist as a structural and informational destination before
+  full spell management is implemented
+- it should show the character's spellcasting ability
+- it should show the derived spellcasting modifier
+- it should show `spell save DC`
+- it should show `spell attack bonus`
+- it may show a read-only list of locally available compendium spells for the
+  active class
+- prepared spells, spell slots, and resource editing remain out of scope for
+  this first spell foundation
+
 ## UI States
 
 - Loading: selected character data is being resolved
@@ -234,6 +252,8 @@ MVP expectation:
 - The six final ability scores and their modifiers are visible on the
   character sheet.
 - The combat panel shows current, maximum, and temporary hit points in MVP.
+- When the active class is a spellcaster, the sheet can show a read-only
+  spellcasting summary derived from domain logic and the local compendium.
 - `Equipment` may still appear as a simple placeholder in MVP.
 - The character sheet can be opened from the character card without layout
   mismatch or a separate temporary detail screen.

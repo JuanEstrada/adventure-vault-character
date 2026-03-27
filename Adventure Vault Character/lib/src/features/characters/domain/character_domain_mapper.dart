@@ -42,6 +42,10 @@ class CharacterDomainMapper {
     final resolvedHitPoints = record.hitPoints;
     final finishingDetails = record.finishingDetails;
     final narrativeSelections = _mapNarrativeSelections(record);
+    final progression = CharacterProgressionDomainModel(
+      level: row.level,
+      experience: row.experience ?? 0,
+    );
 
     return CharacterDomainModel(
       id: row.id,
@@ -49,10 +53,7 @@ class CharacterDomainMapper {
         name: row.name,
         raceName: row.raceName,
         className: row.className,
-        progression: CharacterProgressionDomainModel(
-          level: row.level,
-          experience: row.experience ?? 0,
-        ),
+        progression: progression,
       ),
       combat: CharacterCombatDomainModel(
         hitPoints: CharacterHitPointsDomainModel(
@@ -98,6 +99,11 @@ class CharacterDomainMapper {
             score: resolvedAbilityScores.charismaScore,
           ),
         ],
+      ),
+      spellcasting: _mapSpellcasting(
+        resolvedAbilityScores: resolvedAbilityScores,
+        progression: progression,
+        record: record,
       ),
       featuresNotes: CharacterFeaturesNotesDomainModel(
         background: CharacterBackgroundDomainModel(
@@ -158,6 +164,60 @@ class CharacterDomainMapper {
     );
   }
 
+  CharacterSpellcastingDomainModel? _mapSpellcasting({
+    required CharacterAbilityScore resolvedAbilityScores,
+    required CharacterProgressionDomainModel progression,
+    required CharacterRecord record,
+  }) {
+    final classDefinition = record.classDefinition;
+    final abilityKey = classDefinition?.spellcastingAbility
+        ?.trim()
+        .toUpperCase();
+    if (classDefinition == null ||
+        !classDefinition.isSpellcaster ||
+        abilityKey == null ||
+        abilityKey.isEmpty) {
+      return null;
+    }
+
+    final spells =
+        record.catalog.spells
+            .where(
+              (spell) =>
+                  _spellMatchesClass(spell.classes, record.row.className),
+            )
+            .map(
+              (spell) => CharacterSpellReferenceDomainModel(
+                name: spell.name,
+                level: spell.level,
+                school: spell.school,
+                castingTime: spell.castingTime,
+                range: spell.range,
+                duration: spell.duration,
+                source: spell.source,
+              ),
+            )
+            .toList(growable: false)
+          ..sort((left, right) {
+            final byLevel = left.level.compareTo(right.level);
+            if (byLevel != 0) {
+              return byLevel;
+            }
+            return left.name.compareTo(right.name);
+          });
+
+    return CharacterSpellcastingDomainModel(
+      abilityKey: abilityKey,
+      abilityLabel: _spellcastingAbilityLabel(abilityKey),
+      abilityScore: _abilityScoreForKey(
+        abilityKey: abilityKey,
+        scores: resolvedAbilityScores,
+      ),
+      proficiencyBonus: progression.proficiencyBonus,
+      availableSpells: spells,
+    );
+  }
+
   CharacterBackgroundEntryDomainModel _mapBackgroundEntry(String raw) {
     final separatorIndex = raw.indexOf(':');
     if (separatorIndex <= 0 || separatorIndex >= raw.length - 1) {
@@ -207,6 +267,47 @@ class CharacterDomainMapper {
     return currency.summarySnapshot;
   }
 
+  int _abilityScoreForKey({
+    required String abilityKey,
+    required CharacterAbilityScore scores,
+  }) {
+    return switch (abilityKey) {
+      'STR' => scores.strengthScore,
+      'DEX' => scores.dexterityScore,
+      'CON' => scores.constitutionScore,
+      'INT' => scores.intelligenceScore,
+      'WIS' => scores.wisdomScore,
+      'CHA' => scores.charismaScore,
+      _ => 0,
+    };
+  }
+
+  String _spellcastingAbilityLabel(String abilityKey) {
+    return switch (abilityKey) {
+      'STR' => 'Strength',
+      'DEX' => 'Dexterity',
+      'CON' => 'Constitution',
+      'INT' => 'Intelligence',
+      'WIS' => 'Wisdom',
+      'CHA' => 'Charisma',
+      _ => abilityKey,
+    };
+  }
+
+  bool _spellMatchesClass(List<String> spellClasses, String className) {
+    final normalizedClassName = _normalizeClassName(className);
+    for (final spellClass in spellClasses) {
+      if (_normalizeClassName(spellClass) == normalizedClassName) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  String _normalizeClassName(String raw) {
+    return raw.trim().toLowerCase();
+  }
+
   CharacterAbilityScore _emptyAbilityScores(String characterId) {
     return CharacterAbilityScore(
       characterId: characterId,
@@ -228,7 +329,8 @@ class CharacterDomainMapper {
   List<CharacterNarrativeSelectionDomainModel> _mapNarrativeSelections(
     CharacterRecord record,
   ) {
-    final selectionsByField = <NarrativeFieldKey, CharacterNarrativeSelectionDomainModel>{};
+    final selectionsByField =
+        <NarrativeFieldKey, CharacterNarrativeSelectionDomainModel>{};
 
     for (final row in record.narrativeSelections) {
       final fieldKey = NarrativeFieldKeyX.fromStorageKey(row.fieldKey);

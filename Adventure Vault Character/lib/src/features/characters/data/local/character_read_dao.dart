@@ -105,6 +105,12 @@ class CharacterReadDao {
     return _database.select(_database.skillDefinitions).get();
   }
 
+  Future<ClassDefinition?> getClassDefinitionById(String id) {
+    return (_database.select(
+      _database.classDefinitions,
+    )..where((table) => table.id.equals(id))).getSingleOrNull();
+  }
+
   Future<List<CharacterProficiency>> getProficienciesByCharacterId(String id) {
     return (_database.select(
       _database.characterProficiencies,

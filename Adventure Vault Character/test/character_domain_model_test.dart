@@ -119,6 +119,32 @@ void main() {
             ),
           ],
         ),
+        spellcasting: CharacterSpellcastingDomainModel(
+          abilityKey: 'INT',
+          abilityLabel: 'Intelligence',
+          abilityScore: 15,
+          proficiencyBonus: 3,
+          availableSpells: <CharacterSpellReferenceDomainModel>[
+            CharacterSpellReferenceDomainModel(
+              name: 'Mage Hand',
+              level: 0,
+              school: 'Conjuration',
+              castingTime: '1 action',
+              range: '30 feet',
+              duration: '1 minute',
+              source: 'SRD',
+            ),
+            CharacterSpellReferenceDomainModel(
+              name: 'Magic Missile',
+              level: 1,
+              school: 'Evocation',
+              castingTime: '1 action',
+              range: '120 feet',
+              duration: 'Instantaneous',
+              source: 'SRD',
+            ),
+          ],
+        ),
       );
 
       expect(character.identity.progression.proficiencyBonus, 3);
@@ -138,6 +164,14 @@ void main() {
       expect(character.featuresNotes.otherProficiencyLabels, <String>[
         'Weapon: Simple Weapons',
       ]);
+      expect(character.spellcasting, isNotNull);
+      expect(character.spellcasting!.displayAbilityModifier, '+2');
+      expect(character.spellcasting!.spellSaveDc, 13);
+      expect(character.spellcasting!.displaySpellAttackBonus, '+5');
+      expect(
+        character.spellcasting!.spellsByLevel.map((item) => item.label),
+        <String>['Cantrips', 'Level 1'],
+      );
       expect(character.equipment.visibleItems, <String>[
         'Quarterstaff (equipped)',
         'Torch x3',

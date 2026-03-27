@@ -60,6 +60,7 @@ class CharacterSheetScreen extends StatelessWidget {
             children: [
               _PanelChip(label: 'Combat'),
               _PanelChip(label: 'Abilities'),
+              _PanelChip(label: 'Spells'),
               _PanelChip(label: 'Equipment'),
               _PanelChip(label: 'Features / Notes'),
             ],
@@ -81,6 +82,10 @@ class CharacterSheetScreen extends StatelessWidget {
                           const SizedBox(height: 16),
                           _AbilitiesPanel(character: character),
                           const SizedBox(height: 16),
+                          if (character.spellcasting != null) ...[
+                            _SpellsPanel(character: character),
+                            const SizedBox(height: 16),
+                          ],
                           _FeaturesNotesPanel(character: character),
                           const SizedBox(height: 16),
                           _EquipmentPanel(character: character),
@@ -99,6 +104,10 @@ class CharacterSheetScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   _AbilitiesPanel(character: character),
                   const SizedBox(height: 16),
+                  if (character.spellcasting != null) ...[
+                    _SpellsPanel(character: character),
+                    const SizedBox(height: 16),
+                  ],
                   _FeaturesNotesPanel(character: character),
                   const SizedBox(height: 16),
                   _EquipmentPanel(character: character),
@@ -359,18 +368,21 @@ class _FeaturesNotesPanel extends StatelessWidget {
                 (item) => Text('• $item'),
               ),
             ],
-            if (character.featuresNotes.finishingDetails.visibleSelections.isNotEmpty)
-              ...[
-                const SizedBox(height: 12),
-                Text('Finishing details', style: theme.textTheme.titleMedium),
-                const SizedBox(height: 8),
-                ...character.featuresNotes.finishingDetails.visibleSelections.map(
-                  (item) => _FactRow(
-                    label: item.fieldKey.label,
-                    value: item.valueText!,
-                  ),
+            if (character
+                .featuresNotes
+                .finishingDetails
+                .visibleSelections
+                .isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text('Finishing details', style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              ...character.featuresNotes.finishingDetails.visibleSelections.map(
+                (item) => _FactRow(
+                  label: item.fieldKey.label,
+                  value: item.valueText!,
                 ),
-              ],
+              ),
+            ],
             if (character.featuresNotes.appearanceDetails.isNotEmpty)
               _FactRow(
                 label: 'Appearance',
@@ -380,6 +392,86 @@ class _FeaturesNotesPanel extends StatelessWidget {
               _FactRow(
                 label: 'Notes',
                 value: character.featuresNotes.narrativeDetails,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SpellsPanel extends StatelessWidget {
+  const _SpellsPanel({required this.character});
+
+  final CharacterDomainModel character;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final spellcasting = character.spellcasting;
+    if (spellcasting == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Spells',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _FactRow(
+              label: 'Casting ability',
+              value: spellcasting.abilityLabel,
+            ),
+            _FactRow(
+              label: 'Ability mod',
+              value: spellcasting.displayAbilityModifier,
+            ),
+            _FactRow(
+              label: 'Spell save DC',
+              value: '${spellcasting.spellSaveDc}',
+            ),
+            _FactRow(
+              label: 'Spell attack',
+              value: spellcasting.displaySpellAttackBonus,
+            ),
+            const SizedBox(height: 8),
+            Text('Available spells', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            if (spellcasting.availableSpells.isEmpty)
+              Text(
+                'No local spells available for this class yet.',
+                style: theme.textTheme.bodyLarge,
+              )
+            else
+              ...spellcasting.spellsByLevel.map(
+                (levelGroup) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        levelGroup.label,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      ...levelGroup.spells.map(
+                        (spell) => Text(
+                          '• ${spell.name} (${spell.school}, ${spell.castingTime})',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
           ],
         ),

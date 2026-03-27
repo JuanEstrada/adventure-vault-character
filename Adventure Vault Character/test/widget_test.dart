@@ -88,6 +88,7 @@ void main() {
     expect(find.text('Chain mail starter kit'), findsOneWidget);
     expect(find.text('Starting money'), findsOneWidget);
     expect(find.text('Strength'), findsWidgets);
+    expect(find.text('Spell save DC'), findsNothing);
 
     await tester.tap(find.byIcon(Icons.arrow_back));
     await tester.pumpAndSettle();
@@ -163,6 +164,16 @@ void main() {
       15,
     );
     expect(savedCharacter.equipment.selectedEquipmentLabel, 'Arcane focus kit');
+    expect(savedCharacter.spellcasting, isNotNull);
+    expect(savedCharacter.spellcasting!.abilityLabel, 'Intelligence');
+    expect(savedCharacter.spellcasting!.spellSaveDc, 12);
+    expect(
+      savedCharacter.spellcasting!.availableSpells.map((item) => item.name),
+      <String>['Mage Hand', 'Magic Missile'],
+    );
+    expect(find.text('Spells'), findsWidgets);
+    expect(find.text('Spell save DC'), findsOneWidget);
+    expect(find.textContaining('Magic Missile'), findsOneWidget);
   });
 
   testWidgets('open edit save and reopen keeps updated character data', (
@@ -331,7 +342,44 @@ const _testCatalog = CompendiumCatalog(
       charisma: 10,
     ),
   ],
-  spells: <CompendiumSpell>[],
+  spells: <CompendiumSpell>[
+    CompendiumSpell(
+      name: 'Mage Hand',
+      level: 0,
+      school: 'Conjuration',
+      castingTime: '1 action',
+      range: '30 feet',
+      components: 'V, S',
+      duration: '1 minute',
+      classes: <String>['Wizard', 'Sorcerer', 'Warlock'],
+      description: <String>['A spectral hand appears.'],
+      source: 'SRD',
+    ),
+    CompendiumSpell(
+      name: 'Magic Missile',
+      level: 1,
+      school: 'Evocation',
+      castingTime: '1 action',
+      range: '120 feet',
+      components: 'V, S',
+      duration: 'Instantaneous',
+      classes: <String>['Wizard', 'Sorcerer'],
+      description: <String>['Three glowing darts of magical force.'],
+      source: 'SRD',
+    ),
+    CompendiumSpell(
+      name: 'Cure Wounds',
+      level: 1,
+      school: 'Evocation',
+      castingTime: '1 action',
+      range: 'Touch',
+      components: 'V, S',
+      duration: 'Instantaneous',
+      classes: <String>['Cleric', 'Druid', 'Bard'],
+      description: <String>['Healing energy restores hit points.'],
+      source: 'SRD',
+    ),
+  ],
   feats: <CompendiumFeat>[],
   monsters: <CompendiumMonster>[],
   equipmentSummariesByClass: <String, EquipmentSummaryViewData>{

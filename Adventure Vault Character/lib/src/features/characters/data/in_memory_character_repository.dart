@@ -117,6 +117,21 @@ class InMemoryCharacterRepository implements CharacterRepository {
     final inventoryItems = selectedItems
         .map(_parseInventoryItemSpec)
         .toList(growable: false);
+    final progression = CharacterProgressionDomainModel(
+      level: summary.level,
+      experience: createdInput?.experience ?? 0,
+    );
+    final spellcasting = _buildSpellcastingSummary(
+      className: className,
+      catalog: catalog,
+      progression: progression,
+      strength: createdInput?.strength ?? 15,
+      dexterity: createdInput?.dexterity ?? 14,
+      constitution: createdInput?.constitution ?? 13,
+      intelligence: createdInput?.intelligence ?? 12,
+      wisdom: createdInput?.wisdom ?? 10,
+      charisma: createdInput?.charisma ?? 8,
+    );
 
     return CharacterDomainModel(
       id: summary.id,
@@ -124,10 +139,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
         name: summary.name,
         raceName: summary.raceName,
         className: summary.className,
-        progression: CharacterProgressionDomainModel(
-          level: summary.level,
-          experience: createdInput?.experience ?? 0,
-        ),
+        progression: progression,
       ),
       combat: CharacterCombatDomainModel(
         hitPoints: CharacterHitPointsDomainModel(
@@ -190,7 +202,8 @@ class InMemoryCharacterRepository implements CharacterRepository {
               .map(
                 (fieldKey) => CharacterNarrativeSelectionDomainModel(
                   fieldKey: fieldKey,
-                  mode: createdInput?.finishingDetails
+                  mode:
+                      createdInput?.finishingDetails
                           .selectionFor(fieldKey)
                           .mode ??
                       NarrativeSelectionMode.empty,
@@ -222,6 +235,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
             )
             .toList(growable: false),
       ),
+      spellcasting: spellcasting,
     );
   }
 
@@ -370,6 +384,68 @@ class InMemoryCharacterRepository implements CharacterRepository {
     return itemName.trim().toLowerCase().contains('pending');
   }
 
+  CharacterSpellcastingDomainModel? _buildSpellcastingSummary({
+    required String className,
+    required CompendiumCatalog catalog,
+    required CharacterProgressionDomainModel progression,
+    required int strength,
+    required int dexterity,
+    required int constitution,
+    required int intelligence,
+    required int wisdom,
+    required int charisma,
+  }) {
+    final abilityKey = _spellcastingAbilityForClass(className);
+    if (abilityKey == null) {
+      return null;
+    }
+
+    final abilityScore = switch (abilityKey) {
+      'STR' => strength,
+      'DEX' => dexterity,
+      'CON' => constitution,
+      'INT' => intelligence,
+      'WIS' => wisdom,
+      'CHA' => charisma,
+      _ => 0,
+    };
+    final availableSpells =
+        catalog.spells
+            .where(
+              (spell) => spell.classes.any(
+                (item) =>
+                    _normalizeClassName(item) == _normalizeClassName(className),
+              ),
+            )
+            .map(
+              (spell) => CharacterSpellReferenceDomainModel(
+                name: spell.name,
+                level: spell.level,
+                school: spell.school,
+                castingTime: spell.castingTime,
+                range: spell.range,
+                duration: spell.duration,
+                source: spell.source,
+              ),
+            )
+            .toList(growable: false)
+          ..sort((left, right) {
+            final byLevel = left.level.compareTo(right.level);
+            if (byLevel != 0) {
+              return byLevel;
+            }
+            return left.name.compareTo(right.name);
+          });
+
+    return CharacterSpellcastingDomainModel(
+      abilityKey: abilityKey,
+      abilityLabel: _spellcastingAbilityLabel(abilityKey),
+      abilityScore: abilityScore,
+      proficiencyBonus: progression.proficiencyBonus,
+      availableSpells: availableSpells,
+    );
+  }
+
   List<String> _extractBackgroundSkillLabels(CompendiumBackground background) {
     final skillBonus = background.bonuses.firstWhere(
       (bonus) => bonus.toLowerCase().startsWith('skills:'),
@@ -422,6 +498,36 @@ class InMemoryCharacterRepository implements CharacterRepository {
         .toLowerCase()
         .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
         .replaceAll(RegExp(r'^-|-$'), '');
+  }
+
+  String? _spellcastingAbilityForClass(String className) {
+    return switch (_normalizeClassName(className)) {
+      'bard' => 'CHA',
+      'cleric' => 'WIS',
+      'druid' => 'WIS',
+      'paladin' => 'CHA',
+      'ranger' => 'WIS',
+      'sorcerer' => 'CHA',
+      'warlock' => 'CHA',
+      'wizard' => 'INT',
+      _ => null,
+    };
+  }
+
+  String _spellcastingAbilityLabel(String abilityKey) {
+    return switch (abilityKey) {
+      'STR' => 'Strength',
+      'DEX' => 'Dexterity',
+      'CON' => 'Constitution',
+      'INT' => 'Intelligence',
+      'WIS' => 'Wisdom',
+      'CHA' => 'Charisma',
+      _ => abilityKey,
+    };
+  }
+
+  String _normalizeClassName(String raw) {
+    return raw.trim().toLowerCase();
   }
 }
 

@@ -12,6 +12,7 @@ class CharacterDomainModel {
     required this.abilities,
     required this.featuresNotes,
     required this.equipment,
+    this.spellcasting,
   });
 
   final String id;
@@ -20,6 +21,7 @@ class CharacterDomainModel {
   final CharacterAbilitiesDomainModel abilities;
   final CharacterFeaturesNotesDomainModel featuresNotes;
   final CharacterEquipmentDomainModel equipment;
+  final CharacterSpellcastingDomainModel? spellcasting;
 }
 
 @immutable
@@ -134,6 +136,93 @@ class CharacterAbilityScoreDomainModel {
 }
 
 @immutable
+class CharacterSpellcastingDomainModel {
+  const CharacterSpellcastingDomainModel({
+    required this.abilityKey,
+    required this.abilityLabel,
+    required this.abilityScore,
+    required this.proficiencyBonus,
+    required this.availableSpells,
+  });
+
+  final String abilityKey;
+  final String abilityLabel;
+  final int abilityScore;
+  final int proficiencyBonus;
+  final List<CharacterSpellReferenceDomainModel> availableSpells;
+
+  int get abilityModifier => CharacterRules.abilityModifier(abilityScore);
+
+  int get spellSaveDc => 8 + proficiencyBonus + abilityModifier;
+
+  int get spellAttackBonus => proficiencyBonus + abilityModifier;
+
+  String get displayAbilityModifier =>
+      abilityModifier >= 0 ? '+$abilityModifier' : '$abilityModifier';
+
+  String get displaySpellAttackBonus =>
+      spellAttackBonus >= 0 ? '+$spellAttackBonus' : '$spellAttackBonus';
+
+  List<CharacterSpellLevelDomainModel> get spellsByLevel {
+    final byLevel = <int, List<CharacterSpellReferenceDomainModel>>{};
+    for (final spell in availableSpells) {
+      byLevel
+          .putIfAbsent(
+            spell.level,
+            () => <CharacterSpellReferenceDomainModel>[],
+          )
+          .add(spell);
+    }
+
+    final levels = byLevel.keys.toList()..sort();
+    return levels
+        .map(
+          (level) => CharacterSpellLevelDomainModel(
+            level: level,
+            spells: List<CharacterSpellReferenceDomainModel>.unmodifiable(
+              byLevel[level]!,
+            ),
+          ),
+        )
+        .toList(growable: false);
+  }
+}
+
+@immutable
+class CharacterSpellLevelDomainModel {
+  const CharacterSpellLevelDomainModel({
+    required this.level,
+    required this.spells,
+  });
+
+  final int level;
+  final List<CharacterSpellReferenceDomainModel> spells;
+
+  String get label => level == 0 ? 'Cantrips' : 'Level $level';
+}
+
+@immutable
+class CharacterSpellReferenceDomainModel {
+  const CharacterSpellReferenceDomainModel({
+    required this.name,
+    required this.level,
+    required this.school,
+    required this.castingTime,
+    required this.range,
+    required this.duration,
+    required this.source,
+  });
+
+  final String name;
+  final int level;
+  final String school;
+  final String castingTime;
+  final String range;
+  final String duration;
+  final String source;
+}
+
+@immutable
 class CharacterFeaturesNotesDomainModel {
   const CharacterFeaturesNotesDomainModel({
     required this.background,
@@ -187,9 +276,9 @@ class CharacterFinishingDetailsDomainModel {
   }
 
   List<CharacterNarrativeSelectionDomainModel> get visibleSelections =>
-      narrativeSelections.where((selection) => selection.hasValue).toList(
-        growable: false,
-      );
+      narrativeSelections
+          .where((selection) => selection.hasValue)
+          .toList(growable: false);
 }
 
 @immutable
