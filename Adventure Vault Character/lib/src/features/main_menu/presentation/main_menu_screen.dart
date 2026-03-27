@@ -1,16 +1,19 @@
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
+import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:adventure_vault_character/src/features/main_menu/presentation/character_card.dart';
 import 'package:flutter/material.dart';
 
 class MainMenuScreen extends StatelessWidget {
   const MainMenuScreen({
     required this.characterSummaries,
+    required this.compendiumCatalog,
     required this.onCreateCharacter,
     required this.onOpenCharacter,
     super.key,
   });
 
   final List<CharacterSummary> characterSummaries;
+  final CompendiumCatalog compendiumCatalog;
   final VoidCallback onCreateCharacter;
   final ValueChanged<String> onOpenCharacter;
 
@@ -71,6 +74,8 @@ class MainMenuScreen extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            _CompendiumStatusCard(catalog: compendiumCatalog),
             const SizedBox(height: 24),
             Expanded(
               child: characterSummaries.isEmpty
@@ -114,5 +119,76 @@ class _TopAction extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: TextButton(onPressed: () {}, child: Text(label)),
     );
+  }
+}
+
+class _CompendiumStatusCard extends StatelessWidget {
+  const _CompendiumStatusCard({required this.catalog});
+
+  final CompendiumCatalog catalog;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final rows = _buildRows(catalog.sourcePolicy);
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0E6D6),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFD1BEA1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Compendio activo',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            catalog.sourcePolicy.activeSourceLabel,
+            style: theme.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 12),
+          ...rows.map(
+            (row) => Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(row, style: theme.textTheme.bodySmall),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<String> _buildRows(CompendiumSourcePolicy policy) {
+    if (policy.activeSourceType == 'fallback_json') {
+      return <String>[
+        'Modo fallback: ${policy.fallbackSourceLabel}',
+        'Cobertura reducida: el catalogo usa el JSON compacto empaquetado.',
+      ];
+    }
+
+    final buildSections = <String>[
+      if (catalog.sourcePolicyForSection('backgrounds') != null) 'backgrounds',
+      if (catalog.sourcePolicyForSection('races') != null) 'races',
+      if (catalog.sourcePolicyForSection('classes') != null) 'classes',
+      if (catalog.sourcePolicyForSection('spells') != null) 'spells',
+      if (catalog.sourcePolicyForSection('feats') != null) 'feats',
+      if (catalog.sourcePolicyForSection('monsters') != null) 'monsters',
+    ];
+    final narrative = catalog.sourcePolicyForSection('narrative_options');
+
+    return <String>[
+      if (buildSections.isNotEmpty)
+        'Base de reglas: SRD 5.5e FightClub XML para ${buildSections.join(', ')}.',
+      if (narrative != null)
+        'Narrativa: ${narrative.primarySources.length + narrative.supplementalSources.length} fuentes XML heredadas para traits, ideals, bonds, flaws y faction.',
+      'Fallback disponible: ${policy.fallbackSourceLabel}',
+    ];
   }
 }

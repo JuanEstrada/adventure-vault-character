@@ -30,6 +30,15 @@ void main() {
 
     expect(find.text('Compendio'), findsOneWidget);
     expect(find.text('Crear personaje nuevo'), findsOneWidget);
+    expect(find.text('Compendio activo'), findsOneWidget);
+    expect(
+      find.textContaining('FightClub XML asset bundle with SRD 5.5e core data'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Base de reglas: SRD 5.5e FightClub XML'),
+      findsOneWidget,
+    );
     expect(
       find.textContaining('Todavia no hay personajes guardados'),
       findsOneWidget,
@@ -421,4 +430,60 @@ const _testCatalog = CompendiumCatalog(
       ),
     ],
   },
+  sourcePolicy: CompendiumSourcePolicy(
+    activeSourceType: 'fightclub_xml',
+    activeSourceLabel:
+        'FightClub XML asset bundle with SRD 5.5e core data and legacy 5e narrative supplements',
+    fallbackSourceLabel: 'assets/compendium/catalog.json',
+    sections: <CompendiumSectionSourcePolicy>[
+      CompendiumSectionSourcePolicy(
+        sectionKey: 'backgrounds',
+        sectionLabel: 'Backgrounds',
+        sourceType: 'srd_5_5e_xml',
+        primarySources: <String>['default_backgrounds_5.5e.xml'],
+      ),
+      CompendiumSectionSourcePolicy(
+        sectionKey: 'races',
+        sectionLabel: 'Races',
+        sourceType: 'srd_5_5e_xml',
+        primarySources: <String>['default_races_5.5e.xml'],
+      ),
+      CompendiumSectionSourcePolicy(
+        sectionKey: 'classes',
+        sectionLabel: 'Classes',
+        sourceType: 'srd_5_5e_xml',
+        primarySources: <String>['default_classes_5.5e.xml'],
+      ),
+      CompendiumSectionSourcePolicy(
+        sectionKey: 'spells',
+        sectionLabel: 'Spells',
+        sourceType: 'srd_5_5e_xml',
+        primarySources: <String>['default_spells_5.5e.xml'],
+      ),
+      CompendiumSectionSourcePolicy(
+        sectionKey: 'feats',
+        sectionLabel: 'Feats',
+        sourceType: 'srd_5_5e_xml',
+        primarySources: <String>['default_feats_5.5e.xml'],
+      ),
+      CompendiumSectionSourcePolicy(
+        sectionKey: 'monsters',
+        sectionLabel: 'Monsters',
+        sourceType: 'srd_5_5e_xml',
+        primarySources: <String>['default_bestiary_5.5e.xml'],
+      ),
+      CompendiumSectionSourcePolicy(
+        sectionKey: 'narrative_options',
+        sectionLabel: 'Narrative options',
+        sourceType: 'legacy_5e_xml_supplements',
+        primarySources: <String>['backgrounds-phb.xml'],
+        supplementalSources: <String>[
+          'backgrounds-scag.xml',
+          'backgrounds-pam.xml',
+          'backgrounds-ggr.xml',
+          'backgrounds-erlw.xml',
+        ],
+      ),
+    ],
+  ),
 );

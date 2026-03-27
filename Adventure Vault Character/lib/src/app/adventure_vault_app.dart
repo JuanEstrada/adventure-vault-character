@@ -99,6 +99,7 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
             ),
             AppScreen.mainMenu => MainMenuScreen(
               characterSummaries: state.characterSummaries,
+              compendiumCatalog: state.compendiumCatalog!,
               onCreateCharacter: _controller.openCreateCharacter,
               onOpenCharacter: _controller.openCharacter,
             ),

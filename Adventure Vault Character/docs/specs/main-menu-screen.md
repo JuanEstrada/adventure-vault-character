@@ -19,6 +19,7 @@ rules, settings, existing character cards, and character creation.
 ## In Scope
 
 - Top-level menu actions for compendium, rules, and settings
+- Read-only summary of the active compendium source policy
 - Character cards for existing local characters
 - Persistent `Crear personaje nuevo` entry point
 - Navigation to character sheet from character cards
@@ -70,6 +71,9 @@ specification, not full character-detail payloads.
 
 - `Compendio`, `Reglas`, and `Settings` are visible in the upper section of
   the screen.
+- The screen shows which compendium source policy is active, including whether
+  the app is running from the FightClub XML bundle or the bundled JSON
+  fallback.
 - `Crear personaje nuevo` is always visible, even when characters already
   exist.
 - Tapping a character card opens that character's sheet directly.

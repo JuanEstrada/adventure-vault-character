@@ -445,7 +445,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
 
     final backgrounds = _extractElements(
       backgroundsXml,
-    'background',
+      'background',
     ).map(_parseFightClubBackground).toList(growable: false);
     final narrativeOptionGroups = _parseNarrativeOptionGroups(
       phbBackgroundsXml: phbBackgroundsXml,
@@ -469,6 +469,70 @@ class AssetCompendiumRepository implements CompendiumRepository {
       monsters: _parseSeededMonsters(monstersXml),
       equipmentSummariesByClass: equipmentSummariesByClass,
       equipmentLoadoutsByClass: equipmentLoadoutsByClass,
+      sourcePolicy: CompendiumSourcePolicy(
+        activeSourceType: 'fightclub_xml',
+        activeSourceLabel:
+            'FightClub XML asset bundle with SRD 5.5e core data and legacy 5e narrative supplements',
+        fallbackSourceLabel: _fallbackCatalogAssetPath,
+        sections: <CompendiumSectionSourcePolicy>[
+          CompendiumSectionSourcePolicy(
+            sectionKey: 'backgrounds',
+            sectionLabel: 'Backgrounds',
+            sourceType: 'srd_5_5e_xml',
+            primarySources: <String>[_backgroundsAssetPath],
+          ),
+          CompendiumSectionSourcePolicy(
+            sectionKey: 'races',
+            sectionLabel: 'Races',
+            sourceType: 'srd_5_5e_xml',
+            primarySources: <String>[_racesAssetPath],
+          ),
+          CompendiumSectionSourcePolicy(
+            sectionKey: 'classes',
+            sectionLabel: 'Classes',
+            sourceType: 'srd_5_5e_xml',
+            primarySources: <String>[_classesAssetPath],
+          ),
+          CompendiumSectionSourcePolicy(
+            sectionKey: 'spells',
+            sectionLabel: 'Spells',
+            sourceType: 'srd_5_5e_xml',
+            primarySources: <String>[_spellsAssetPath],
+            notes:
+                'The current catalog keeps a small deterministic spell seed from the SRD 5.5e source set.',
+          ),
+          CompendiumSectionSourcePolicy(
+            sectionKey: 'feats',
+            sectionLabel: 'Feats',
+            sourceType: 'srd_5_5e_xml',
+            primarySources: <String>[_featsAssetPath],
+            notes:
+                'The current catalog keeps a small deterministic feat seed from the SRD 5.5e source set.',
+          ),
+          CompendiumSectionSourcePolicy(
+            sectionKey: 'monsters',
+            sectionLabel: 'Monsters',
+            sourceType: 'srd_5_5e_xml',
+            primarySources: <String>[_monstersAssetPath],
+            notes:
+                'The current catalog keeps a small deterministic monster seed from the SRD 5.5e source set.',
+          ),
+          CompendiumSectionSourcePolicy(
+            sectionKey: 'narrative_options',
+            sectionLabel: 'Narrative options',
+            sourceType: 'legacy_5e_xml_supplements',
+            primarySources: <String>[_phbBackgroundsAssetPath],
+            supplementalSources: <String>[
+              _scagBackgroundsAssetPath,
+              _pamBackgroundsAssetPath,
+              _ggrBackgroundsAssetPath,
+              _erlwBackgroundsAssetPath,
+            ],
+            notes:
+                'Narrative tables currently mix the Player\'s Handbook (2014) plus setting books while SRD 5.5e remains the canonical source for structured character-build data.',
+          ),
+        ],
+      ),
     );
   }
 
@@ -533,6 +597,21 @@ class AssetCompendiumRepository implements CompendiumRepository {
                 .toList(growable: false);
             return MapEntry(key, entries);
           }),
+      sourcePolicy: CompendiumSourcePolicy(
+        activeSourceType: 'fallback_json',
+        activeSourceLabel: 'Fallback bundled JSON catalog',
+        fallbackSourceLabel: _fallbackCatalogAssetPath,
+        sections: <CompendiumSectionSourcePolicy>[
+          CompendiumSectionSourcePolicy(
+            sectionKey: 'catalog',
+            sectionLabel: 'Catalog',
+            sourceType: 'fallback_json',
+            primarySources: <String>[_fallbackCatalogAssetPath],
+            notes:
+                'Fallback mode provides a compact bundled catalog when FightClub XML assets cannot be loaded.',
+          ),
+        ],
+      ),
     );
   }
 
@@ -1176,13 +1255,13 @@ class AssetCompendiumRepository implements CompendiumRepository {
             backgroundName: backgroundName,
             title: '${field.groupTitle} for $backgroundName',
             diceFormula: rolls[field.tableLabel],
-            sourceBook:
-                sourceBook.isEmpty ? "Player's Handbook (2014)" : sourceBook,
+            sourceBook: sourceBook.isEmpty
+                ? "Player's Handbook (2014)"
+                : sourceBook,
             options: section.options
                 .map(
                   (option) => CompendiumNarrativeOption(
-                    id:
-                        'narrative-$backgroundId-${field.fieldKey}-${option.optionIndex}',
+                    id: 'narrative-$backgroundId-${field.fieldKey}-${option.optionIndex}',
                     optionIndex: option.optionIndex,
                     rollMin: option.rollMin,
                     rollMax: option.rollMax,
@@ -1204,7 +1283,11 @@ class AssetCompendiumRepository implements CompendiumRepository {
       return const <CompendiumNarrativeOptionGroup>[];
     }
 
-    final factionAgent = _findElementByExactName(xml, 'background', 'Faction Agent');
+    final factionAgent = _findElementByExactName(
+      xml,
+      'background',
+      'Faction Agent',
+    );
     if (factionAgent == null) {
       return const <CompendiumNarrativeOptionGroup>[];
     }
@@ -1278,7 +1361,10 @@ class AssetCompendiumRepository implements CompendiumRepository {
       return const <CompendiumNarrativeOptionGroup>[];
     }
 
-    final factionsTrait = _findTraitElement(philosopher.innerXml, 'Factions of Sigil');
+    final factionsTrait = _findTraitElement(
+      philosopher.innerXml,
+      'Factions of Sigil',
+    );
     final text = factionsTrait == null
         ? null
         : _extractRawTagText(factionsTrait.innerXml, 'text');
@@ -1287,9 +1373,9 @@ class AssetCompendiumRepository implements CompendiumRepository {
     }
 
     final options = <CompendiumNarrativeOption>[];
-    final matches = RegExp(r'•\s*([^:]+):\s*([^\n]+)').allMatches(
-      _normalizeMultilineText(text),
-    );
+    final matches = RegExp(
+      r'•\s*([^:]+):\s*([^\n]+)',
+    ).allMatches(_normalizeMultilineText(text));
     var index = 1;
     for (final match in matches) {
       final label = _normalizeText(match.group(1) ?? '');
@@ -1334,7 +1420,10 @@ class AssetCompendiumRepository implements CompendiumRepository {
     }
 
     final options = _extractElements(xml, 'background')
-        .map((background) => _extractSingleTagText(background.innerXml, 'name') ?? '')
+        .map(
+          (background) =>
+              _extractSingleTagText(background.innerXml, 'name') ?? '',
+        )
         .map(_normalizeCatalogName)
         .where((name) => name.isNotEmpty)
         .toSet()
@@ -1374,12 +1463,19 @@ class AssetCompendiumRepository implements CompendiumRepository {
       return const <CompendiumNarrativeOptionGroup>[];
     }
 
-    final houseAgent = _findElementByExactName(xml, 'background', 'House Agent');
+    final houseAgent = _findElementByExactName(
+      xml,
+      'background',
+      'House Agent',
+    );
     if (houseAgent == null) {
       return const <CompendiumNarrativeOptionGroup>[];
     }
 
-    final descriptionTrait = _findTraitElement(houseAgent.innerXml, 'Description');
+    final descriptionTrait = _findTraitElement(
+      houseAgent.innerXml,
+      'Description',
+    );
     final text = descriptionTrait == null
         ? null
         : _extractRawTagText(descriptionTrait.innerXml, 'text');
@@ -1501,10 +1597,9 @@ class AssetCompendiumRepository implements CompendiumRepository {
       final rollParts = rollText.split('-');
       final index = int.tryParse(rollParts.first) ?? options.length + 1;
       final rollMin = int.tryParse(rollParts.first);
-      final rollMax =
-          rollParts.length > 1
-              ? int.tryParse(rollParts.last)
-              : int.tryParse(rollParts.first);
+      final rollMax = rollParts.length > 1
+          ? int.tryParse(rollParts.last)
+          : int.tryParse(rollParts.first);
       options.add(
         _ParsedNarrativeOption(
           optionIndex: index,
@@ -1663,31 +1758,27 @@ class AssetCompendiumRepository implements CompendiumRepository {
   ) async {
     final advancementRows = await (database.select(
       database.characterAdvancementDefinitions,
-    )..orderBy([
-      (table) => OrderingTerm.asc(table.level),
-    ])).get();
+    )..orderBy([(table) => OrderingTerm.asc(table.level)])).get();
     final standardArrayRows = await (database.select(
       database.classStandardArrayRecommendations,
-    )..orderBy([
-      (table) => OrderingTerm.asc(table.className),
-    ])).get();
-    final narrativeGroupRows = await (database.select(
-      database.narrativeOptionGroups,
-    )..orderBy([
-      (table) => OrderingTerm.asc(table.fieldKey),
-      (table) => OrderingTerm.asc(table.title),
-    ])).get();
-    final narrativeOptionRows = await (database.select(
-      database.narrativeOptions,
-    )..orderBy([
-      (table) => OrderingTerm.asc(table.groupId),
-      (table) => OrderingTerm.asc(table.optionIndex),
-    ])).get();
+    )..orderBy([(table) => OrderingTerm.asc(table.className)])).get();
+    final narrativeGroupRows =
+        await (database.select(database.narrativeOptionGroups)..orderBy([
+              (table) => OrderingTerm.asc(table.fieldKey),
+              (table) => OrderingTerm.asc(table.title),
+            ]))
+            .get();
+    final narrativeOptionRows =
+        await (database.select(database.narrativeOptions)..orderBy([
+              (table) => OrderingTerm.asc(table.groupId),
+              (table) => OrderingTerm.asc(table.optionIndex),
+            ]))
+            .get();
     final optionsByGroupId = <String, List<NarrativeOption>>{};
     for (final row in narrativeOptionRows) {
-      optionsByGroupId.putIfAbsent(row.groupId, () => <NarrativeOption>[]).add(
-        row,
-      );
+      optionsByGroupId
+          .putIfAbsent(row.groupId, () => <NarrativeOption>[])
+          .add(row);
     }
 
     return catalog.copyWith(

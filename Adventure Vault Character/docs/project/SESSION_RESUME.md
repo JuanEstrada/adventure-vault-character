@@ -165,6 +165,18 @@ Verified on 2026-03-27:
   from `backgrounds-phb.xml`, and an initial `faction` base from
   `backgrounds-scag.xml`, `backgrounds-pam.xml`, `backgrounds-ggr.xml`, and
   `backgrounds-erlw.xml`.
+- The Flutter asset bundle now explicitly includes those narrative XML files,
+  so web builds no longer emit runtime `404` errors while seeding normalized
+  narrative options from the bundled FightClub sources.
+- The project now also declares `cupertino_icons` explicitly, removing the
+  residual web-build warning about the missing `CupertinoIcons` font family.
+- `CompendiumCatalog` now exposes an explicit `sourcePolicy`, so the app can
+  state which sections come from SRD 5.5e FightClub XML, which narrative
+  tables still come from legacy 5e supplement XML, and when the bundled JSON
+  fallback is active.
+- The main menu now surfaces that `sourcePolicy` in a read-only
+  `Compendio activo` card so the loaded rules basis is visible before entering
+  character creation.
 - `CompendiumCatalog` now exposes normalized `narrativeOptionGroups`, so the
   future finishing-details flow can consume official options without reparsing
   raw XML in widgets.
@@ -414,49 +426,33 @@ Resolved MVP decision:
 The next logical session should build on the current shell instead of
 restructuring it again:
 
-1. Start defining an editing-oriented character domain on top of the new
-   read-side value objects instead of reintroducing flat UI view models.
-2. Build the first real edit/reopen flow on top of
-   `getEditableCharacterById`, keeping widgets thin and avoiding new
-   persistence-specific contracts in presentation.
-3. Reduce the remaining static SRD defaults in the compendium repository by
-   deriving more gameplay data directly from the FightClub source set.
-4. Break the approved `create -> save -> card -> open sheet` flow into
-   concrete implementation tasks in `lib/`.
-5. Keep `HP` in scope as real MVP character-sheet data, not as a deferred
-   combat placeholder.
+1. Turn the read-only `Compendio activo` summary into a real compendium screen
+   that exposes the active source policy and section coverage in more detail.
+2. Decide whether narrative option catalogs should remain sourced from legacy
+   5e XML supplements or move to a more explicit import/pack model.
+3. Extend deterministic character rules into persisted spell preparation,
+   known spells, and spell-slot progression.
+4. Keep reducing static SRD defaults by deriving more gameplay data directly
+   from the FightClub source set through the compendium boundary.
 
 Completed since the previous handoff:
 
-- The first real `open -> edit -> save -> reopen` flow is now implemented.
-- The edit flow reuses the guided builder sections instead of introducing a
-  second form surface.
-- Repository and widget regression coverage now includes the edit/update path.
-- Drift schema cleanup is now implemented through `v8`, and redundant snapshot,
-  ability-provenance, hit-point, finishing-detail, and equipment-loadout
-  columns have been removed from `characters` with migration coverage for the
-  preserved normalized data path.
-- The local assets area now includes the third-party markdown corpus
-  `local-assets/dnd-5e-srd-markdown-master/`, which is cleaner than the
-  previous PDF-split output for many rules sections and class tables.
-- The repo now also includes `tool/extract_srd_markdown_source.py`, which
-  regenerates a section-based SRD tree under
-  `local-assets/por ordenar/srd_55e_source_from_markdown/`.
-- The generated markdown-based SRD tree replaces the previous checked-in
-  `sdr_55e_source/` PDF-split corpus as the main section-level local reference
-  tree.
-- `srd_55e_source_from_markdown/` keeps the top-level SRD block structure and
-  additionally splits `Rules Glossary` into individual rule-definition files.
-- Project docs now include a compact app-discovery snapshot and a dedicated
-  automatic-calculations vs player-input reference for AI-guided sessions.
-- The create-character and initial domain-model specs now capture the planned
-  three-path narrative finishing-detail rule:
-  custom or empty, roll from official options, or manual selection from
-  official options.
-- `local-assets/local-rule-bases/README.md` now identifies the current rule
-  source hierarchy and confirms that the best local official sources for
-  `traits`, `ideals`, `bonds`, `flaws`, and many `faction` options live in
-  `local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/.../backgrounds-*.xml`.
+- The Flutter asset bundle now explicitly includes the narrative XML files
+  used by compendium narrative-option seeding, so web builds no longer emit
+  runtime `404` asset fetches for those sources.
+- The project now declares `cupertino_icons` explicitly, removing the web
+  build warning about the missing `CupertinoIcons` font family.
+- `CompendiumCatalog` now exposes explicit `sourcePolicy` metadata that
+  identifies the active source mode, per-section source families, and JSON
+  fallback behavior.
+- `AssetCompendiumRepository` now publishes that source policy for both the
+  FightClub XML path and the bundled JSON fallback path.
+- Repository tests now cover both the explicit source-policy metadata and the
+  fallback-to-JSON catalog path.
+- The main menu now surfaces a read-only `Compendio activo` card so the
+  loaded rules basis is visible before entering character creation.
+- The main-menu spec and project snapshot/resume docs are aligned with that
+  visible compendium status behavior.
 
 Next-session starting point:
 
@@ -468,11 +464,16 @@ Next-session starting point:
 - Use the new migration regression tests in
   `test/app_database_migration_test.dart` as the safety net before changing the
   schema again.
+- Use `lib/src/features/compendium/domain/compendium_catalog.dart` and
+  `lib/src/features/compendium/data/asset_compendium_repository.dart` as the
+  source of truth for the current compendium source-policy contract.
+- Use `lib/src/features/main_menu/presentation/main_menu_screen.dart` as the
+  source of truth for the visible `Compendio activo` summary behavior.
 - Use the FightClub SRD 5.5e XML source files under
   `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`
-  through the `CompendiumRepository` boundary as the active source of truth
-  for local creation data, with `assets/compendium/catalog.json` retained only
-  as fallback.
+  as the canonical structured source for `backgrounds`, `races`, `classes`,
+  `spells`, `feats`, and `monsters`, with `assets/compendium/catalog.json`
+  retained only as fallback mode.
 - Use `tool/normalize_srd_rules.py` when refreshing
   `local-assets/por ordenar/srd_rules/`; the PDF
   `local-assets/por ordenar/SRD_CC_v5.2.1.pdf` is the source of truth for that
@@ -484,13 +485,13 @@ Next-session starting point:
 - Use `local-assets/local-rule-bases/README.md` as the source of truth for the
   current local rule-source inventory before extracting new option catalogs.
 - Use `local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/01_Core/01_Players_Handbook/backgrounds-phb.xml`
-  as the first extraction target for `personality traits`, `ideals`, `bonds`,
-  and `flaws`.
+  as the current primary narrative-option source for `personality traits`,
+  `ideals`, `bonds`, and `flaws`.
 - Use `local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Sword_Coast_Adventurers_Guide/backgrounds-scag.xml`,
   `.../Planescape_Adventures_in_the_Multiverse/backgrounds-pam.xml`,
   `.../Guildmasters_Guide_to_Ravnica/backgrounds-ggr.xml`, and
-  `.../Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml` as the first
-  faction-oriented extraction sources.
+  `.../Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml` as the current
+  supplemental faction-oriented narrative sources.
 - Treat `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`
   as the canonical structured source for app logic and compendium ingestion,
   and use the markdown corpora as supporting semantic references.

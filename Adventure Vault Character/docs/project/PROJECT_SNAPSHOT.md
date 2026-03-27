@@ -205,6 +205,18 @@ and richer inventory behavior.
 - `local-assets/local-rule-bases/README.md` now inventories the current local
   rule sources, confirms the best known official XML sources for narrative
   option tables, and records the main extraction gaps still pending.
+- The Flutter asset bundle now explicitly includes the narrative XML files
+  used for normalized finishing-detail option seeding, preventing web runtime
+  `404` asset fetches during compendium load.
+- The project now also declares `cupertino_icons` explicitly, so web builds no
+  longer warn about a missing `CupertinoIcons` font family.
+- `CompendiumCatalog` now exposes explicit source-policy metadata for the
+  active catalog, including the current split between SRD 5.5e structured
+  FightClub XML, legacy 5e narrative supplement XML, and bundled JSON
+  fallback mode.
+- The main menu now renders a read-only `Compendio activo` summary card from
+  that source-policy metadata, making the loaded rules basis visible in the
+  offline home flow.
 - Widget coverage exists for the offline continuation path into the main menu.
 - `flutter test` passed after the schema normalization changes.
 

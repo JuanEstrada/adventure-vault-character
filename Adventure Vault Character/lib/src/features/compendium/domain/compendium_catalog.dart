@@ -17,6 +17,12 @@ class CompendiumCatalog {
     required this.monsters,
     required this.equipmentSummariesByClass,
     required this.equipmentLoadoutsByClass,
+    this.sourcePolicy = const CompendiumSourcePolicy(
+      activeSourceType: 'unknown',
+      activeSourceLabel: 'Unknown compendium source',
+      fallbackSourceLabel: 'assets/compendium/catalog.json',
+      sections: <CompendiumSectionSourcePolicy>[],
+    ),
   });
 
   final List<String> races;
@@ -32,6 +38,7 @@ class CompendiumCatalog {
   final List<CompendiumMonster> monsters;
   final Map<String, EquipmentSummaryViewData> equipmentSummariesByClass;
   final Map<String, List<CompendiumEquipmentLoadout>> equipmentLoadoutsByClass;
+  final CompendiumSourcePolicy sourcePolicy;
 
   CompendiumCatalog copyWith({
     List<String>? races,
@@ -47,6 +54,7 @@ class CompendiumCatalog {
     List<CompendiumMonster>? monsters,
     Map<String, EquipmentSummaryViewData>? equipmentSummariesByClass,
     Map<String, List<CompendiumEquipmentLoadout>>? equipmentLoadoutsByClass,
+    CompendiumSourcePolicy? sourcePolicy,
   }) {
     return CompendiumCatalog(
       races: races ?? this.races,
@@ -67,6 +75,7 @@ class CompendiumCatalog {
           equipmentSummariesByClass ?? this.equipmentSummariesByClass,
       equipmentLoadoutsByClass:
           equipmentLoadoutsByClass ?? this.equipmentLoadoutsByClass,
+      sourcePolicy: sourcePolicy ?? this.sourcePolicy,
     );
   }
 
@@ -106,7 +115,9 @@ class CompendiumCatalog {
     ];
   }
 
-  List<CompendiumNarrativeOptionGroup> narrativeGroupsForField(String fieldKey) {
+  List<CompendiumNarrativeOptionGroup> narrativeGroupsForField(
+    String fieldKey,
+  ) {
     return narrativeOptionGroups
         .where((group) => group.fieldKey == fieldKey)
         .toList(growable: false);
@@ -123,6 +134,53 @@ class CompendiumCatalog {
         )
         .toList(growable: false);
   }
+
+  CompendiumSectionSourcePolicy? sourcePolicyForSection(String sectionKey) {
+    return sourcePolicy.sectionFor(sectionKey);
+  }
+}
+
+@immutable
+class CompendiumSourcePolicy {
+  const CompendiumSourcePolicy({
+    required this.activeSourceType,
+    required this.activeSourceLabel,
+    required this.fallbackSourceLabel,
+    required this.sections,
+  });
+
+  final String activeSourceType;
+  final String activeSourceLabel;
+  final String fallbackSourceLabel;
+  final List<CompendiumSectionSourcePolicy> sections;
+
+  CompendiumSectionSourcePolicy? sectionFor(String sectionKey) {
+    for (final section in sections) {
+      if (section.sectionKey == sectionKey) {
+        return section;
+      }
+    }
+    return null;
+  }
+}
+
+@immutable
+class CompendiumSectionSourcePolicy {
+  const CompendiumSectionSourcePolicy({
+    required this.sectionKey,
+    required this.sectionLabel,
+    required this.sourceType,
+    required this.primarySources,
+    this.supplementalSources = const <String>[],
+    this.notes,
+  });
+
+  final String sectionKey;
+  final String sectionLabel;
+  final String sourceType;
+  final List<String> primarySources;
+  final List<String> supplementalSources;
+  final String? notes;
 }
 
 @immutable

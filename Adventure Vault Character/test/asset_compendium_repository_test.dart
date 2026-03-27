@@ -82,6 +82,28 @@ void main() {
       catalog.equipmentLoadoutsForClass('Fighter').map((item) => item.id),
       containsAll(<String>['fighter-a', 'fighter-b']),
     );
+    expect(catalog.sourcePolicy.activeSourceType, 'fightclub_xml');
+    expect(
+      catalog.sourcePolicyForSection('backgrounds')?.primarySources,
+      contains(
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_backgrounds_5.5e.xml',
+      ),
+    );
+    expect(
+      catalog.sourcePolicyForSection('narrative_options')?.primarySources,
+      contains(
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/01_Core/01_Players_Handbook/backgrounds-phb.xml',
+      ),
+    );
+    expect(
+      catalog.sourcePolicyForSection('narrative_options')?.supplementalSources,
+      containsAll(<String>[
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Sword_Coast_Adventurers_Guide/backgrounds-scag.xml',
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Planescape_Adventures_in_the_Multiverse/backgrounds-pam.xml',
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Guildmasters_Guide_to_Ravnica/backgrounds-ggr.xml',
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml',
+      ]),
+    );
 
     final advancementRows = await database
         .select(database.characterAdvancementDefinitions)
@@ -102,12 +124,66 @@ void main() {
     );
     expect(standardArrayRows, isNotEmpty);
     expect(
-      standardArrayRows.firstWhere((row) => row.classId == 'wizard').intelligence,
+      standardArrayRows
+          .firstWhere((row) => row.classId == 'wizard')
+          .intelligence,
       15,
     );
     expect(narrativeGroupRows, isNotEmpty);
     expect(narrativeOptionRows, isNotEmpty);
   });
+
+  test(
+    'falls back to bundled json catalog when core XML assets fail',
+    () async {
+      final repository = AssetCompendiumRepository(
+        bundle: _FakeAssetBundle({
+          'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{
+            'races': <String>['Human'],
+            'classes': <String>['Fighter'],
+            'backgrounds': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 'acolyte',
+                'name': 'Acolyte',
+                'summary': 'Fallback summary',
+                'bonuses': <String>['Fallback bonus'],
+                'socialPerks': <String>['Fallback perk'],
+              },
+            ],
+            'generatedAbilityScoreSet': <int>[15, 14, 13, 12, 10, 8],
+            'manualAbilityScoreOptions': <int>[8, 9, 10, 11, 12, 13, 14, 15],
+            'equipmentSummariesByClass': <String, dynamic>{
+              'Fighter': <String, dynamic>{
+                'statusLabel': 'Fallback',
+                'description': 'Fallback description',
+                'highlightItems': <String>['Fallback item'],
+              },
+            },
+            'equipmentLoadoutsByClass': <String, dynamic>{
+              'Fighter': <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'id': 'fighter-fallback',
+                  'label': 'Fallback loadout',
+                  'startingMoneySummary': 'Fallback money',
+                  'selectedItems': <String>['Fallback item'],
+                },
+              ],
+            },
+          }),
+        }),
+      );
+
+      final catalog = await repository.loadCatalog();
+
+      expect(catalog.races, <String>['Human']);
+      expect(catalog.classes, <String>['Fighter']);
+      expect(catalog.sourcePolicy.activeSourceType, 'fallback_json');
+      expect(
+        catalog.sourcePolicyForSection('catalog')?.primarySources,
+        <String>['assets/compendium/catalog.json'],
+      );
+    },
+  );
 }
 
 class _FakeAssetBundle extends CachingAssetBundle {
