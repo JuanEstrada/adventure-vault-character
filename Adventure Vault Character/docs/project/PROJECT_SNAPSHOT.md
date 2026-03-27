@@ -1,7 +1,7 @@
 # Adventure Vault Character - Project Snapshot
 
 ## Last Update
-2026-03-25
+2026-03-27
 
 ## Role of This Document
 
@@ -21,6 +21,10 @@ Stabilizing the normalized Drift model now that the `characters` row has been
 trimmed back further in Drift `v8`, while keeping the guided draft, sheet
 flow, and edit/reopen path stable on top of normalized reads, and aligning the
 local SRD reference material around the cleaner markdown-derived source tree.
+In parallel, the project now also needs a product-ready local rules-source
+inventory so narrative finishing-detail options and future deterministic rules
+can be extracted from the right official files instead of being rediscovered
+ad hoc.
 
 ## Repository State
 
@@ -152,6 +156,23 @@ local SRD reference material around the cleaner markdown-derived source tree.
   `Monsters A-Z`, and `Animals`.
 - The generated ability-score method now tracks the selected class and applies
   the class-specific standard array recommendation whenever the class changes.
+- The project docs now also include
+  `docs/project/APP_DISCOVERY_QUESTIONNAIRE.md` as a compact current-state
+  briefing for AI-assisted sessions.
+- The project docs now also include
+  `docs/project/USER_INPUTS_AND_AUTOMATIC_CALCULATIONS.md`, which records what
+  the app calculates automatically, what the player must enter or confirm, and
+  which parts are current versus future.
+- The create-character and initial domain-model specs now capture the planned
+  three-path narrative finishing-detail model:
+  custom or empty input, roll from official options, or manual selection from
+  official options for `alignment`, `faction`, `personality traits`,
+  `ideals`, `bonds`, and `flaws`, while `portrait` and `appearance` remain
+  free optional fields.
+- `local-assets/README.md` now indexes `local-assets/local-rule-bases/`.
+- `local-assets/local-rule-bases/README.md` now inventories the current local
+  rule sources, confirms the best known official XML sources for narrative
+  option tables, and records the main extraction gaps still pending.
 - Widget coverage exists for the offline continuation path into the main menu.
 - `flutter test` passed after the schema normalization changes.
 
@@ -197,12 +218,24 @@ local SRD reference material around the cleaner markdown-derived source tree.
   manual PDF extraction cleanup when consulting rules text.
 - Session continuity simplified around a single handoff file:
   `docs/project/SESSION_RESUME.md`.
+- The documentation set now includes a short project briefing, a player-input
+  versus automatic-calculation reference, and a local rules-source inventory
+  to support faster future rule extraction work.
 
 ## Pending Work
 
 - Expand the edit flow beyond the current guided MVP fields and decide how
   later post-creation inventory or combat editing should interact with the
   same aggregate.
+- Extract a normalized official option base for
+  `personality traits`, `ideals`, `bonds`, and `flaws` from local Wizards
+  background XML instead of leaving those future finishing-detail options
+  only in source documents.
+- Extract and normalize an initial official `faction` base from local Wizards
+  setting backgrounds.
+- Decide the source-of-truth policy between runtime SRD 5.5e XML and the
+  broader official `DND_5e/WizardsOfTheCoast` background corpus for narrative
+  option catalogs.
 - Decide whether any additional reshaping is still needed in
   `local-assets/por ordenar/srd_55e_source_from_markdown/` before treating it
   as the stable long-term section reference tree.
@@ -252,21 +285,25 @@ local SRD reference material around the cleaner markdown-derived source tree.
 
 ## Next Recommended Steps
 
-1. Build the next editing-oriented character domain on top of the current
-   read-side model instead of introducing another UI-facing mapper layer.
-2. Start translating the now-available SRD source material into explicit rule
-   contracts and deterministic application/domain services.
-3. Deepen the parsed compendium fidelity beyond the current seeded FightClub
-   SRD subset and static progression defaults.
-4. Break the approved MVP flow into implementation tasks in `lib/`.
+1. Extract a first normalized official base for
+   `personality traits`, `ideals`, `bonds`, and `flaws` from
+   `backgrounds-phb.xml`.
+2. Extract an initial official `faction` base from
+   `backgrounds-scag.xml`, `backgrounds-pam.xml`, `backgrounds-ggr.xml`, and
+   `backgrounds-erlw.xml`.
+3. Build the source-of-truth policy for narrative option catalogs across SRD
+   and broader official Wizards XML.
+4. Continue translating the available rules sources into explicit
+   deterministic application/domain services.
 5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
 ## Next Session Guardrail
 
 - Resume by extending the current shell into persistence and creation flow,
   not by reopening closed MVP flow decisions.
-- Use the approved flow and proposed domain-model docs as the working basis
-  unless a new product decision replaces them.
+- Use the approved flow, the proposed domain-model docs, and
+  `local-assets/local-rule-bases/README.md` as the working basis unless a new
+  product decision replaces them.
 
 ## Risks and Unknowns
 
@@ -278,6 +315,9 @@ local SRD reference material around the cleaner markdown-derived source tree.
 - The app still needs a deliberate source-of-truth policy for each rules
   concern: FightClub XML for structured data, markdown corpora for semantic
   reference, and the PDF for source validation.
+- The best local official sources for finishing-detail narrative options are
+  currently outside the active SRD 5.5e runtime corpus, which introduces a
+  product and ingestion boundary that still needs a deliberate policy.
 - Future sync and network features remain out of implementation scope.
 - Legal and content-boundary constraints for D&D-related material may still
   need refinement later.
@@ -291,3 +331,4 @@ local SRD reference material around the cleaner markdown-derived source tree.
 - Specs index: `docs/specs/README.md`
 - Architecture index: `docs/architecture/README.md`
 - ADR index: `docs/adr/README.md`
+- Local rules inventory: `local-assets/local-rule-bases/README.md`

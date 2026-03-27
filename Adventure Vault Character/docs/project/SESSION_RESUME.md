@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-03-25
+Last updated: 2026-03-27
 
 This is the single file to read first when resuming work on Adventure Vault
 Character. It consolidates the current product, architecture, repository
@@ -44,7 +44,7 @@ Primary references:
 
 ## Repository Reality
 
-Verified on 2026-03-25:
+Verified on 2026-03-27:
 
 - Flutter project scaffolding exists for Android, iOS, web, Windows, Linux,
   and macOS.
@@ -197,6 +197,23 @@ Verified on 2026-03-25:
 - The generated ability-score path now applies the
   `Standard Array by Class` recommendation on initial load and every time the
   selected class changes.
+- Project docs now also include
+  `docs/project/APP_DISCOVERY_QUESTIONNAIRE.md` as a compact current-state
+  briefing for AI-assisted sessions.
+- Project docs now also include
+  `docs/project/USER_INPUTS_AND_AUTOMATIC_CALCULATIONS.md`, which separates
+  automatic app calculations from player-entered or player-confirmed data and
+  marks current versus future behavior.
+- The create-character and initial domain-model specs now document the planned
+  three-path capture model for narrative finishing details:
+  custom value or empty, roll from official options, or manual selection from
+  official options for `alignment`, `faction`, `personality traits`,
+  `ideals`, `bonds`, and `flaws`, while `portrait` and `appearance` remain
+  free optional fields.
+- The local assets area now also includes
+  `local-assets/local-rule-bases/README.md`, an inventory of local rules
+  sources that records what is already usable and what still needs extraction
+  or normalization.
 - Project terminology now treats the imported rules dataset as the
   `Compendio`, and the XML ingestion subsystem as the
   `Compendium Import System`.
@@ -211,8 +228,12 @@ top of the normalized read/write model, with shared rules and regression
 coverage protecting both create and update paths. `characters` is now closer
 to an identity/resume row, with HP and finishing details moved into dedicated
 normalized tables, and equipment loadout metadata now also lives in its own
-normalized table. The next major improvement is extending the edit flow
-beyond the current guided MVP fields.
+normalized table. The latest documentation pass also leaves the repo with a
+clearer product briefing, a better separation between automatic calculations
+and player input, and an explicit local-source inventory for future rules
+extraction. The next major improvement is extending the edit flow beyond the
+current guided MVP fields while starting to extract official narrative option
+bases from the local Wizards XML sources.
 
 ## Current Phase
 
@@ -387,6 +408,16 @@ Completed since the previous handoff:
   tree.
 - `srd_55e_source_from_markdown/` keeps the top-level SRD block structure and
   additionally splits `Rules Glossary` into individual rule-definition files.
+- Project docs now include a compact app-discovery snapshot and a dedicated
+  automatic-calculations vs player-input reference for AI-guided sessions.
+- The create-character and initial domain-model specs now capture the planned
+  three-path narrative finishing-detail rule:
+  custom or empty, roll from official options, or manual selection from
+  official options.
+- `local-assets/local-rule-bases/README.md` now identifies the current rule
+  source hierarchy and confirms that the best local official sources for
+  `traits`, `ideals`, `bonds`, `flaws`, and many `faction` options live in
+  `local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/.../backgrounds-*.xml`.
 
 Next-session starting point:
 
@@ -411,6 +442,16 @@ Next-session starting point:
   `local-assets/por ordenar/srd_55e_source_from_markdown/`; that split corpus
   is derived from `local-assets/dnd-5e-srd-markdown-master/` and currently
   serves as the cleaner section-level SRD reference tree.
+- Use `local-assets/local-rule-bases/README.md` as the source of truth for the
+  current local rule-source inventory before extracting new option catalogs.
+- Use `local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/01_Core/01_Players_Handbook/backgrounds-phb.xml`
+  as the first extraction target for `personality traits`, `ideals`, `bonds`,
+  and `flaws`.
+- Use `local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Sword_Coast_Adventurers_Guide/backgrounds-scag.xml`,
+  `.../Planescape_Adventures_in_the_Multiverse/backgrounds-pam.xml`,
+  `.../Guildmasters_Guide_to_Ravnica/backgrounds-ggr.xml`, and
+  `.../Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml` as the first
+  faction-oriented extraction sources.
 - Treat `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`
   as the canonical structured source for app logic and compendium ingestion,
   and use the markdown corpora as supporting semantic references.
@@ -420,6 +461,11 @@ Next-session starting point:
   inventory, and currency.
 - Use the accepted flow specs and proposed domain-model docs as the source of
   truth unless a new decision replaces them.
+- Treat `docs/specs/create-character-screen.md`,
+  `docs/specs/initial-character-domain-model.md`,
+  `docs/project/USER_INPUTS_AND_AUTOMATIC_CALCULATIONS.md`, and
+  `local-assets/local-rule-bases/README.md` as the source of truth for the
+  newly documented narrative finishing-detail direction until code catches up.
 
 ## If You Need More Detail
 

@@ -19,6 +19,8 @@ authoring work.
   reference.
 - `reference/removed_assets/`: manifests of deleted local assets kept only for
   traceability and future recovery work.
+- `local-rule-bases/`: working inventory of local rules sources, what is
+  already usable, and what still needs extraction or normalization.
 - `templates/`: reusable templates for authoring safe or custom compendium
   inputs.
 

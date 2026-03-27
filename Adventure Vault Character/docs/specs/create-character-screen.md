@@ -48,6 +48,8 @@ the imported rules set should be referred to as the `Compendio`.
 - Quantity and cost confirmation for equipment purchase
 - Class progression display
 - Final narrative and appearance details capture
+- Guided narrative-detail selection modes for `alignment`, `faction`,
+  `personality traits`, `ideals`, `bonds`, and `flaws`
 - Load-character entry action from XML file
 - Validation for required data
 - Save and cancel actions
@@ -106,6 +108,7 @@ the imported rules set should be referred to as the `Compendio`.
 - Optional portrait reference
 - Optional appearance details
 - Optional finishing narrative details
+- Optional narrative-detail selection mode and selected option provenance
 - Background bonuses and social perks summary
 - Class progression data
 - Experience thresholds by level
@@ -174,17 +177,28 @@ the imported rules set should be referred to as the `Compendio`.
     narrative-character fields before save.
 32. The user can add or skip fields such as age, height, weight, eyes, skin,
     hair, alignment, faction, personality traits, ideals, bonds, and flaws.
-33. The finishing-details screen exposes a visible finalize action based on
+33. For `alignment`, `faction`, `personality traits`, `ideals`, `bonds`, and
+    `flaws`, the app offers exactly three modes per field:
+    write a custom value or leave the field empty, roll a die using official
+    options for that field, or manually choose from official options for that
+    field.
+34. If the user chooses roll mode, the app resolves the final value from the
+    official options available for that field.
+35. If the user chooses manual mode, the app lets the user pick one value from
+    the official options available for that field.
+36. `Portrait` and `appearance` remain optional free-entry fields and do not
+    use the three-mode guided selection rule.
+37. The finishing-details screen exposes a visible finalize action based on
     the builder reference.
-34. When the user taps finalize, the app validates these required builder
+38. When the user taps finalize, the app validates these required builder
     sections: `Race + name`, `Background`, `Ability scores`, and
     `Class / level / experience`.
-35. If any required section is incomplete, the app blocks finalization and
+39. If any required section is incomplete, the app blocks finalization and
     shows a message explaining exactly which sections are still missing.
-36. Only when the required points pass validation does the app persist the
+40. Only when the required points pass validation does the app persist the
     character locally.
-37. The saved character appears in the main-menu character cards.
-38. App navigates to the created character sheet.
+41. The saved character appears in the main-menu character cards.
+42. App navigates to the created character sheet.
 
 ### Cancel Flow
 
@@ -229,6 +243,12 @@ the imported rules set should be referred to as the `Compendio`.
   minimum MVP character record.
 - `Alignment` is captured in finishing details rather than in a separate
   standalone MVP step.
+- `Portrait` and `appearance` remain optional free-entry fields in finishing
+  details.
+- `Alignment`, `faction`, `personality traits`, `ideals`, `bonds`, and
+  `flaws` each support exactly three user-facing modes: write a custom value
+  or leave the field empty, roll from official options, or manually select
+  from official options.
 - If entered, finishing details are persisted with the created character.
 - The finalize action validates `Race + name`, `Background`,
   `Ability scores`, and `Class / level / experience` before save.
@@ -278,6 +298,10 @@ the imported rules set should be referred to as the `Compendio`.
   `local-ui-assets/character-builder/14_builder_finishing_details.jpg` as a
   flow reference for the final optional character-enrichment screen and its
   finalize action.
+- The guided narrative fields in finishing details should be modeled as a
+  small rules-aware selection flow owned outside widgets, including free-entry
+  or empty, rolled, and manual selection modes backed by official options
+  where applicable.
 - This flow depends on compendium-backed race, background, and class
   progression data, plus compendium-backed equipment data.
 - This flow becomes the basis for later edit-character behavior.

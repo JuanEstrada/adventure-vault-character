@@ -348,10 +348,43 @@ Minimum optional fields:
 - `bonds`
 - `flaws`
 
+### Narrative Characteristic Selection
+
+For `alignment`, `faction`, `personalityTraits`, `ideals`, `bonds`, and
+`flaws`, the model should preserve not only the final optional value but also
+how that value was chosen.
+
+Minimum fields per narrative characteristic:
+
+- `value`
+- `selectionMode`
+- `officialOptionsRef`
+
+### Narrative Characteristic Selection Mode
+
+Minimum enum values:
+
+- `empty`
+- `rolled`
+- `manual`
+
+Rules:
+
+- `empty` means the user either left the field blank or entered no custom
+  value.
+- `rolled` means the app resolved the final value from the official options
+  available for that field.
+- `manual` means the user picked one value from the official options available
+  for that field.
+- `officialOptionsRef` should preserve a stable reference to the official
+  option source used for roll or manual selection when applicable.
+
 Rules:
 
 - finishing details are optional and should not block character creation
-- these fields should be preserved as entered, without premature rules logic
+- `portraitRef` and `appearance` remain optional free-entry fields
+- the narrative characteristic fields support both free-entry and official-
+  option selection paths through their selection mode
 - the model should support later display on richer character-detail screens
 
 ## Aggregate Invariants
