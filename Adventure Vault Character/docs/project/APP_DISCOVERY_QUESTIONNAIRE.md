@@ -5,7 +5,7 @@ retomar sesiones sin volver a inferir el estado de la app desde cero.
 
 ## Fecha de verificacion
 
-- 2026-03-27
+- 2026-03-27, actualizada tras la normalizacion `v10`
 
 ## Fuentes de verdad
 
@@ -48,6 +48,11 @@ retomar sesiones sin volver a inferir el estado de la app desde cero.
 - Flujo MVP `crear -> guardar -> tarjeta -> abrir hoja -> editar -> guardar`
 - Reglas compartidas para modificadores, proficiency bonus, progreso e hit
   points iniciales
+- Reglas base de compendio normalizadas en Drift para
+  `character advancement` y `standard array by class`
+- Catalogos narrativos oficiales normalizados en Drift para
+  `alignment`, `personality traits`, `ideals`, `bonds`, `flaws` y una base
+  inicial de `faction`
 - Cobertura base de migraciones y de flujos principales
 
 ## Que quiere tener la app final
@@ -131,6 +136,8 @@ retomar sesiones sin volver a inferir el estado de la app desde cero.
 - Profundizar la fidelidad del compendio cargado desde XML
 - Formalizar mas reglas de personaje a traves de contratos de dominio y
   servicios deterministas
+- Conectar los catalogos narrativos ya normalizados con el flujo real de
+  `finishing details` para soportar modos `empty / rolled / manual`
 - Poblar con mas contenido real las areas de sheet que hoy siguen en estado
   MVP o parcial
 

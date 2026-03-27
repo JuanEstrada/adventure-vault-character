@@ -5,7 +5,7 @@ ingresar, elegir o confirmar el usuario.
 
 ## Fecha de verificacion
 
-- 2026-03-27
+- 2026-03-27, actualizada tras la normalizacion `v10`
 
 ## Fuentes de verdad
 
@@ -37,6 +37,12 @@ ingresar, elegir o confirmar el usuario.
 - Hit points maximos al editar si cambian clase, nivel o Constitution
 - Recomendacion de `Standard Array by Class` cuando la clase cambia y el
   metodo activo es `generated set assignment`
+- Carga y persistencia local de bases oficiales normalizadas para
+  `character advancement` y `standard array by class`
+- Carga y persistencia local de catalogos oficiales normalizados para
+  `alignment`, `personality traits`, `ideals`, `bonds`, `flaws` y una base
+  inicial de `faction`, aunque el flujo visible todavia no resuelve esos
+  campos con modos `rolled / manual`
 - Validacion de secciones obligatorias antes de guardar:
   `Race + name`, `Background`, `Ability scores`,
   `Class / level / experience`
@@ -75,11 +81,9 @@ ingresar, elegir o confirmar el usuario.
 - Confirmacion de costo total frente al dinero disponible al comprar equipo
 - `portrait` opcional como campo libre
 - `appearance` opcional como campo libre
-- Para `alignment`, `faction`, `personality traits`, `ideals`, `bonds` y
-  `flaws`, eleccion del modo por campo:
-  escribir o dejar vacio, tirar dado, o seleccionar manualmente
-- Si el usuario usa tirada o seleccion manual en uno de esos campos
-  narrativos, la app trabaja sobre opciones oficiales para ese campo
+- `alignment` visible como seleccion cerrada en el flujo actual
+- `narrative details` como campo libre donde hoy pueden quedar resumidos
+  traits, ideals, bonds, flaws u otras notas
 
 ### Futuro esperado
 
@@ -100,9 +104,9 @@ ingresar, elegir o confirmar el usuario.
   cambia la recomendacion visible del array
 - Si cambian clase, nivel o Constitution durante edicion, la app recomputa
   HP maximo y conserva HP actual cuando es posible
-- En el comportamiento documentado para futuro cercano, la app tambien
-  podra resolver por tirada los campos narrativos de `finishing details`
-  usando opciones oficiales cuando el usuario elija ese modo
+- En el comportamiento documentado para futuro cercano, la app podra
+  resolver por tirada o seleccion manual los campos narrativos de
+  `finishing details` usando los catalogos oficiales ya normalizados
 - La hoja de personaje reutiliza valores derivados del dominio en lugar de
   recalcularlos dentro de widgets
 
@@ -125,6 +129,7 @@ ingresar, elegir o confirmar el usuario.
 - Sincronizacion `level <-> experience`
 - HP inicial y HP maximo recomputado en edicion
 - Recomendacion de standard array por clase
+- Carga local de catalogos oficiales narrativos y de progresion
 - Validacion de secciones obligatorias
 
 ### Ingresado o confirmado por el usuario
@@ -136,7 +141,17 @@ ingresar, elegir o confirmar el usuario.
 - Valores finales de abilities
 - Equipo inicial y compras
 - `portrait` y `appearance` como detalles opcionales libres
-- Modo de captura y posible seleccion final de cada detalle narrativo guiado
+- `alignment` actual
+- Notas narrativas libres en `narrative details`
+
+## Aclaracion sobre finishing details
+
+- El repositorio ya tiene bases oficiales normalizadas para
+  `alignment`, `faction`, `personality traits`, `ideals`, `bonds` y `flaws`
+- El flujo visible actual todavia no expone la seleccion completa
+  `empty / rolled / manual` por campo
+- Esa conexion UI + dominio queda como siguiente paso, no como comportamiento
+  ya entregado
 
 ## Limites de este documento
 
