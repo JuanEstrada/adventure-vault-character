@@ -1,6 +1,8 @@
-import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
+import 'package:adventure_vault_character/src/features/characters/application/finishing_details_service.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
+import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:flutter/material.dart';
 
 class CreateCharacterScreen extends StatefulWidget {
@@ -33,7 +35,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _appearanceController = TextEditingController();
-  final _narrativeController = TextEditingController();
+  final _narrativeNotesController = TextEditingController();
+  final _finishingDetailsService = const FinishingDetailsService();
   final Map<String, int> _generatedAssignments = <String, int>{
     'Strength': 15,
     'Dexterity': 14,
@@ -50,6 +53,10 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     'Wisdom': 10,
     'Charisma': 10,
   };
+  final Map<NarrativeFieldKey, NarrativeSelection> _narrativeSelections =
+      <NarrativeFieldKey, NarrativeSelection>{};
+  final Map<NarrativeFieldKey, String?> _selectedGroupIds =
+      <NarrativeFieldKey, String?>{};
 
   late String _selectedRace;
   late CompendiumBackground _selectedBackground;
@@ -57,7 +64,6 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   late String _selectedClass;
   int _selectedLevel = 1;
   int _selectedExperience = 0;
-  String _selectedAlignment = 'Neutral';
   late CompendiumEquipmentLoadout _selectedEquipmentLoadout;
   int _currentHitPoints = 10;
   int _maximumHitPoints = 10;
@@ -71,18 +77,6 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     'Intelligence',
     'Wisdom',
     'Charisma',
-  ];
-
-  static const List<String> _alignments = <String>[
-    'Lawful Good',
-    'Neutral Good',
-    'Chaotic Good',
-    'Lawful Neutral',
-    'Neutral',
-    'Chaotic Neutral',
-    'Lawful Evil',
-    'Neutral Evil',
-    'Chaotic Evil',
   ];
 
   bool get _hasRequiredCatalogData => _missingCatalogSections.isEmpty;
@@ -108,14 +102,6 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   }
 
   @override
-  void dispose() {
-    _nameController.dispose();
-    _appearanceController.dispose();
-    _narrativeController.dispose();
-    super.dispose();
-  }
-
-  @override
   void initState() {
     super.initState();
     if (!_hasRequiredCatalogData) {
@@ -123,16 +109,14 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     }
     final initialDraft = widget.initialDraft;
     _selectedRace =
-        initialDraft != null &&
-            widget.catalog.races.contains(initialDraft.raceName)
+        initialDraft != null && widget.catalog.races.contains(initialDraft.raceName)
         ? initialDraft.raceName
         : widget.catalog.races.first;
     _selectedBackground =
         widget.catalog.backgroundById(initialDraft?.backgroundId) ??
         widget.catalog.backgrounds.first;
     _selectedClass =
-        initialDraft != null &&
-            widget.catalog.classes.contains(initialDraft.className)
+        initialDraft != null && widget.catalog.classes.contains(initialDraft.className)
         ? initialDraft.className
         : widget.catalog.classes.first;
     _selectedAbilityMethod =
@@ -141,14 +125,13 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     _selectedExperience =
         initialDraft?.experience ??
         CharacterRules.experienceFloorForLevel(_selectedLevel);
-    _selectedAlignment = initialDraft?.alignment ?? 'Neutral';
     _currentHitPoints = initialDraft?.currentHitPoints ?? 10;
     _maximumHitPoints = initialDraft?.maximumHitPoints ?? 10;
     _temporaryHitPoints = initialDraft?.temporaryHitPoints ?? 0;
     _portraitAssetPath = initialDraft?.portraitAssetPath;
     _nameController.text = initialDraft?.name ?? '';
     _appearanceController.text = initialDraft?.appearanceDetails ?? '';
-    _narrativeController.text = initialDraft?.narrativeDetails ?? '';
+    _narrativeNotesController.text = initialDraft?.narrativeDetails ?? '';
 
     _applyGeneratedAssignmentsForClass(_selectedClass);
     if (initialDraft != null) {
@@ -168,15 +151,34 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
         ..['Charisma'] = initialDraft.charisma;
     }
 
-    final equipmentOptions = widget.catalog.equipmentLoadoutsForClass(
-      _selectedClass,
-    );
+    final equipmentOptions = widget.catalog.equipmentLoadoutsForClass(_selectedClass);
     _selectedEquipmentLoadout = initialDraft == null
         ? equipmentOptions.first
         : equipmentOptions.firstWhere(
             (option) => option.id == initialDraft.equipmentLoadoutId,
             orElse: () => equipmentOptions.first,
           );
+
+    final initialSelections =
+        initialDraft?.finishingDetails.narrativeSelections ??
+        CharacterFinishingDetailsInput.empty().narrativeSelections;
+    for (final fieldKey in NarrativeFieldKey.values) {
+      final selection = initialSelections.firstWhere(
+        (item) => item.fieldKey == fieldKey,
+        orElse: () => NarrativeSelection.empty(fieldKey),
+      );
+      _narrativeSelections[fieldKey] = selection;
+      _selectedGroupIds[fieldKey] = selection.groupId;
+    }
+    _syncNarrativeStateForBackground(forceResetInvalidSelections: false);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _appearanceController.dispose();
+    _narrativeNotesController.dispose();
+    super.dispose();
   }
 
   void _applyGeneratedAssignmentsForClass(String className) {
@@ -190,7 +192,6 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     if (classArray == null) {
       return;
     }
-
     _generatedAssignments
       ..['Strength'] = classArray.strength
       ..['Dexterity'] = classArray.dexterity
@@ -198,6 +199,80 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
       ..['Intelligence'] = classArray.intelligence
       ..['Wisdom'] = classArray.wisdom
       ..['Charisma'] = classArray.charisma;
+  }
+
+  void _syncNarrativeStateForBackground({
+    required bool forceResetInvalidSelections,
+  }) {
+    for (final fieldKey in NarrativeFieldKey.values) {
+      final groups = _groupsFor(fieldKey);
+      final current =
+          _narrativeSelections[fieldKey] ?? NarrativeSelection.empty(fieldKey);
+      final selectedGroupId = _selectedGroupIds[fieldKey];
+
+      if (groups.isEmpty) {
+        _selectedGroupIds[fieldKey] = null;
+        if (forceResetInvalidSelections || current.groupId != null) {
+          _narrativeSelections[fieldKey] = NarrativeSelection.empty(fieldKey);
+        }
+        continue;
+      }
+
+      final resolvedGroupId = groups.any((group) => group.id == selectedGroupId)
+          ? selectedGroupId
+          : groups.first.id;
+      _selectedGroupIds[fieldKey] = resolvedGroupId;
+
+      final group = groups.firstWhere((item) => item.id == resolvedGroupId);
+      final optionStillValid =
+          current.optionId != null &&
+          group.options.any((option) => option.id == current.optionId);
+
+      if (current.mode == NarrativeSelectionMode.rolled) {
+        _narrativeSelections[fieldKey] = _finishingDetailsService.rolledSelection(
+          fieldKey: fieldKey,
+          group: group,
+          seed: _rollSeed(fieldKey, group.id),
+        );
+      } else if (current.mode == NarrativeSelectionMode.manual &&
+          !optionStillValid &&
+          forceResetInvalidSelections) {
+        _narrativeSelections[fieldKey] = NarrativeSelection(
+          fieldKey: fieldKey,
+          mode: NarrativeSelectionMode.manual,
+          valueText: null,
+          groupId: resolvedGroupId,
+          optionId: null,
+          rollValue: null,
+        );
+      }
+    }
+  }
+
+  List<CompendiumNarrativeOptionGroup> _groupsFor(NarrativeFieldKey fieldKey) {
+    return _finishingDetailsService.availableGroups(
+      catalog: widget.catalog,
+      fieldKey: fieldKey,
+      backgroundId: _selectedBackground.id,
+    );
+  }
+
+  String _rollSeed(NarrativeFieldKey fieldKey, String groupId) {
+    return [
+      _nameController.text.trim(),
+      _selectedBackground.id,
+      _selectedClass,
+      _selectedLevel.toString(),
+      fieldKey.storageKey,
+      groupId,
+    ].join('|');
+  }
+
+  String _buildAbilityProvenance(Map<String, int> assignments) {
+    final values = _abilityOrder
+        .map((ability) => '$ability=${assignments[ability]}')
+        .join(';');
+    return 'method=$_selectedAbilityMethod;$values';
   }
 
   void _submit() {
@@ -234,19 +309,20 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
         currentHitPoints: _currentHitPoints,
         maximumHitPoints: _maximumHitPoints,
         temporaryHitPoints: _temporaryHitPoints,
-        alignment: _selectedAlignment,
-        appearanceDetails: _appearanceController.text.trim(),
-        narrativeDetails: _narrativeController.text.trim(),
-        portraitAssetPath: _portraitAssetPath,
+        finishingDetails: CharacterFinishingDetailsInput(
+          portraitAssetPath: _portraitAssetPath,
+          appearanceDetails: _appearanceController.text.trim(),
+          narrativeNotes: _narrativeNotesController.text.trim(),
+          narrativeSelections: NarrativeFieldKey.values
+              .map(
+                (fieldKey) =>
+                    _narrativeSelections[fieldKey] ??
+                    NarrativeSelection.empty(fieldKey),
+              )
+              .toList(growable: false),
+        ),
       ),
     );
-  }
-
-  String _buildAbilityProvenance(Map<String, int> assignments) {
-    final values = _abilityOrder
-        .map((ability) => '$ability=${assignments[ability]}')
-        .join(';');
-    return 'method=$_selectedAbilityMethod;$values';
   }
 
   @override
@@ -300,10 +376,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
         ),
       );
     }
-    final equipmentOptions = widget.catalog.equipmentLoadoutsForClass(
-      _selectedClass,
-    );
 
+    final equipmentOptions = widget.catalog.equipmentLoadoutsForClass(_selectedClass);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -335,332 +409,17 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    _SectionCard(
-                      title: 'Race + Name',
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TextFormField(
-                            controller: _nameController,
-                            enabled: !widget.isSaving,
-                            decoration: const InputDecoration(
-                              labelText: 'Nombre del personaje',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Ingresa un nombre.';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          DropdownButtonFormField<String>(
-                            initialValue: _selectedRace,
-                            decoration: const InputDecoration(
-                              labelText: 'Raza',
-                              border: OutlineInputBorder(),
-                            ),
-                            items: widget.catalog.races
-                                .map(
-                                  (race) => DropdownMenuItem<String>(
-                                    value: race,
-                                    child: Text(race),
-                                  ),
-                                )
-                                .toList(growable: false),
-                            onChanged: widget.isSaving
-                                ? null
-                                : (value) {
-                                    if (value == null) return;
-                                    setState(() {
-                                      _selectedRace = value;
-                                    });
-                                  },
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildIdentitySection(),
                     const SizedBox(height: 16),
-                    _SectionCard(
-                      title: 'Background',
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          DropdownButtonFormField<CompendiumBackground>(
-                            initialValue: _selectedBackground,
-                            decoration: const InputDecoration(
-                              labelText: 'Background',
-                              border: OutlineInputBorder(),
-                            ),
-                            items: widget.catalog.backgrounds
-                                .map(
-                                  (background) =>
-                                      DropdownMenuItem<CompendiumBackground>(
-                                        value: background,
-                                        child: Text(background.name),
-                                      ),
-                                )
-                                .toList(growable: false),
-                            onChanged: widget.isSaving
-                                ? null
-                                : (value) {
-                                    if (value == null) return;
-                                    setState(() {
-                                      _selectedBackground = value;
-                                    });
-                                  },
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            _selectedBackground.summary,
-                            style: theme.textTheme.bodyLarge,
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildBackgroundSection(theme),
                     const SizedBox(height: 16),
-                    _SectionCard(
-                      title: 'Class / Level / Experience',
-                      child: Column(
-                        children: [
-                          DropdownButtonFormField<String>(
-                            initialValue: _selectedClass,
-                            decoration: const InputDecoration(
-                              labelText: 'Clase',
-                              border: OutlineInputBorder(),
-                            ),
-                            items: widget.catalog.classes
-                                .map(
-                                  (characterClass) => DropdownMenuItem<String>(
-                                    value: characterClass,
-                                    child: Text(characterClass),
-                                  ),
-                                )
-                                .toList(growable: false),
-                            onChanged: widget.isSaving
-                                ? null
-                                : (value) {
-                                    if (value == null) return;
-                                    setState(() {
-                                      _selectedClass = value;
-                                      _applyGeneratedAssignmentsForClass(value);
-                                      _selectedEquipmentLoadout = widget.catalog
-                                          .equipmentLoadoutsForClass(value)
-                                          .first;
-                                    });
-                                  },
-                          ),
-                          const SizedBox(height: 16),
-                          DropdownButtonFormField<int>(
-                            initialValue: _selectedLevel,
-                            decoration: const InputDecoration(
-                              labelText: 'Nivel',
-                              border: OutlineInputBorder(),
-                            ),
-                            items: List<int>.generate(5, (index) => index + 1)
-                                .map(
-                                  (level) => DropdownMenuItem<int>(
-                                    value: level,
-                                    child: Text('Nivel $level'),
-                                  ),
-                                )
-                                .toList(growable: false),
-                            onChanged: widget.isSaving
-                                ? null
-                                : (value) {
-                                    if (value == null) return;
-                                    setState(() {
-                                      _selectedLevel = value;
-                                      _selectedExperience =
-                                          CharacterRules.experienceFloorForLevel(
-                                            value,
-                                          );
-                                    });
-                                  },
-                          ),
-                          const SizedBox(height: 16),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Experience inicial: $_selectedExperience',
-                              style: theme.textTheme.bodyLarge,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildClassSection(theme),
                     const SizedBox(height: 16),
-                    _SectionCard(
-                      title: 'Ability Scores',
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SegmentedButton<String>(
-                            segments: const [
-                              ButtonSegment<String>(
-                                value: 'generatedSetAssignment',
-                                label: Text('Generated set'),
-                              ),
-                              ButtonSegment<String>(
-                                value: 'manualPointAllocation',
-                                label: Text('Manual'),
-                              ),
-                            ],
-                            selected: <String>{_selectedAbilityMethod},
-                            onSelectionChanged: widget.isSaving
-                                ? null
-                                : (selection) {
-                                    setState(() {
-                                      _selectedAbilityMethod = selection.first;
-                                    });
-                                  },
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            _selectedAbilityMethod == 'generatedSetAssignment'
-                                ? 'Asignacion visible del set 15, 14, 13, 12, 10, 8.'
-                                : 'Asignacion manual inicial con valores editables por habilidad.',
-                            style: theme.textTheme.bodyMedium,
-                          ),
-                          const SizedBox(height: 16),
-                          _AbilityGrid(
-                            abilities: _abilityOrder,
-                            options:
-                                _selectedAbilityMethod ==
-                                    'generatedSetAssignment'
-                                ? widget.catalog.generatedAbilityScoreSet
-                                : widget.catalog.manualAbilityScoreOptions,
-                            values:
-                                _selectedAbilityMethod ==
-                                    'generatedSetAssignment'
-                                ? _generatedAssignments
-                                : _manualAssignments,
-                            enabled: !widget.isSaving,
-                            onChanged: (ability, score) {
-                              setState(() {
-                                final target =
-                                    _selectedAbilityMethod ==
-                                        'generatedSetAssignment'
-                                    ? _generatedAssignments
-                                    : _manualAssignments;
-                                target[ability] = score;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildAbilitySection(theme),
                     const SizedBox(height: 16),
-                    _SectionCard(
-                      title: 'Equipment',
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Selecciona un loadout inicial basado en la clase actual.',
-                            style: theme.textTheme.bodyLarge,
-                          ),
-                          const SizedBox(height: 12),
-                          IgnorePointer(
-                            ignoring: widget.isSaving,
-                            child: RadioGroup<String>(
-                              groupValue: _selectedEquipmentLoadout.id,
-                              onChanged: (value) {
-                                if (value == null) {
-                                  return;
-                                }
-                                setState(() {
-                                  _selectedEquipmentLoadout = equipmentOptions
-                                      .firstWhere(
-                                        (option) => option.id == value,
-                                      );
-                                });
-                              },
-                              child: Column(
-                                children: equipmentOptions
-                                    .map(
-                                      (loadout) => RadioListTile<String>(
-                                        value: loadout.id,
-                                        contentPadding: EdgeInsets.zero,
-                                        title: Text(loadout.label),
-                                        subtitle: Text(
-                                          '${loadout.startingMoneySummary}\n${loadout.selectedItems.join(', ')}',
-                                        ),
-                                      ),
-                                    )
-                                    .toList(growable: false),
-                              ),
-                            ),
-                          ),
-                          if (!_hasSupportedEquipmentSelection) ...[
-                            const SizedBox(height: 12),
-                            Text(
-                              'Esta clase todavia no tiene un loadout de equipo persistible. Selecciona una clase con equipo real.',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.error,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
+                    _buildEquipmentSection(theme, equipmentOptions),
                     const SizedBox(height: 16),
-                    _SectionCard(
-                      title: 'Finishing details',
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          DropdownButtonFormField<String>(
-                            initialValue: _selectedAlignment,
-                            decoration: const InputDecoration(
-                              labelText: 'Alignment',
-                              border: OutlineInputBorder(),
-                            ),
-                            items: _alignments
-                                .map(
-                                  (alignment) => DropdownMenuItem<String>(
-                                    value: alignment,
-                                    child: Text(alignment),
-                                  ),
-                                )
-                                .toList(growable: false),
-                            onChanged: widget.isSaving
-                                ? null
-                                : (value) {
-                                    if (value == null) return;
-                                    setState(() {
-                                      _selectedAlignment = value;
-                                    });
-                                  },
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _appearanceController,
-                            enabled: !widget.isSaving,
-                            maxLines: 2,
-                            decoration: const InputDecoration(
-                              labelText: 'Appearance details',
-                              border: OutlineInputBorder(),
-                              hintText: 'Edad, altura, rasgos visibles, etc.',
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _narrativeController,
-                            enabled: !widget.isSaving,
-                            maxLines: 3,
-                            decoration: const InputDecoration(
-                              labelText: 'Narrative details',
-                              border: OutlineInputBorder(),
-                              hintText:
-                                  'Traits, ideals, bonds, flaws o notas breves.',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildFinishingDetailsSection(theme),
                     if (widget.errorMessage != null) ...[
                       const SizedBox(height: 16),
                       Text(
@@ -678,8 +437,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                       children: [
                         FilledButton(
                           onPressed:
-                              widget.isSaving ||
-                                  !_hasSupportedEquipmentSelection
+                              widget.isSaving || !_hasSupportedEquipmentSelection
                               ? null
                               : _submit,
                           child: Text(
@@ -701,6 +459,460 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
       ),
     );
   }
+
+  Widget _buildIdentitySection() {
+    return _SectionCard(
+      title: 'Race + Name',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextFormField(
+            controller: _nameController,
+            enabled: !widget.isSaving,
+            decoration: const InputDecoration(
+              labelText: 'Nombre del personaje',
+              border: OutlineInputBorder(),
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Ingresa un nombre.';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            initialValue: _selectedRace,
+            decoration: const InputDecoration(
+              labelText: 'Raza',
+              border: OutlineInputBorder(),
+            ),
+            items: widget.catalog.races
+                .map(
+                  (race) => DropdownMenuItem<String>(
+                    value: race,
+                    child: Text(race),
+                  ),
+                )
+                .toList(growable: false),
+            onChanged: widget.isSaving
+                ? null
+                : (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    setState(() {
+                      _selectedRace = value;
+                    });
+                  },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackgroundSection(ThemeData theme) {
+    return _SectionCard(
+      title: 'Background',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DropdownButtonFormField<CompendiumBackground>(
+            initialValue: _selectedBackground,
+            decoration: const InputDecoration(
+              labelText: 'Background',
+              border: OutlineInputBorder(),
+            ),
+            items: widget.catalog.backgrounds
+                .map(
+                  (background) => DropdownMenuItem<CompendiumBackground>(
+                    value: background,
+                    child: Text(background.name),
+                  ),
+                )
+                .toList(growable: false),
+            onChanged: widget.isSaving
+                ? null
+                : (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    setState(() {
+                      _selectedBackground = value;
+                      _syncNarrativeStateForBackground(
+                        forceResetInvalidSelections: true,
+                      );
+                    });
+                  },
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _selectedBackground.summary,
+            style: theme.textTheme.bodyLarge,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClassSection(ThemeData theme) {
+    return _SectionCard(
+      title: 'Class / Level / Experience',
+      child: Column(
+        children: [
+          DropdownButtonFormField<String>(
+            initialValue: _selectedClass,
+            decoration: const InputDecoration(
+              labelText: 'Clase',
+              border: OutlineInputBorder(),
+            ),
+            items: widget.catalog.classes
+                .map(
+                  (characterClass) => DropdownMenuItem<String>(
+                    value: characterClass,
+                    child: Text(characterClass),
+                  ),
+                )
+                .toList(growable: false),
+            onChanged: widget.isSaving
+                ? null
+                : (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    setState(() {
+                      _selectedClass = value;
+                      _applyGeneratedAssignmentsForClass(value);
+                      _selectedEquipmentLoadout = widget.catalog
+                          .equipmentLoadoutsForClass(value)
+                          .first;
+                    });
+                  },
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<int>(
+            initialValue: _selectedLevel,
+            decoration: const InputDecoration(
+              labelText: 'Nivel',
+              border: OutlineInputBorder(),
+            ),
+            items: List<int>.generate(5, (index) => index + 1)
+                .map(
+                  (level) => DropdownMenuItem<int>(
+                    value: level,
+                    child: Text('Nivel $level'),
+                  ),
+                )
+                .toList(growable: false),
+            onChanged: widget.isSaving
+                ? null
+                : (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    setState(() {
+                      _selectedLevel = value;
+                      _selectedExperience =
+                          CharacterRules.experienceFloorForLevel(value);
+                    });
+                  },
+          ),
+          const SizedBox(height: 16),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Experience inicial: $_selectedExperience',
+              style: theme.textTheme.bodyLarge,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAbilitySection(ThemeData theme) {
+    return _SectionCard(
+      title: 'Ability Scores',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SegmentedButton<String>(
+            segments: const [
+              ButtonSegment<String>(
+                value: 'generatedSetAssignment',
+                label: Text('Generated set'),
+              ),
+              ButtonSegment<String>(
+                value: 'manualPointAllocation',
+                label: Text('Manual'),
+              ),
+            ],
+            selected: <String>{_selectedAbilityMethod},
+            onSelectionChanged: widget.isSaving
+                ? null
+                : (selection) {
+                    setState(() {
+                      _selectedAbilityMethod = selection.first;
+                    });
+                  },
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _selectedAbilityMethod == 'generatedSetAssignment'
+                ? 'Asignacion visible del set 15, 14, 13, 12, 10, 8.'
+                : 'Asignacion manual inicial con valores editables por habilidad.',
+            style: theme.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 16),
+          _AbilityGrid(
+            abilities: _abilityOrder,
+            options: _selectedAbilityMethod == 'generatedSetAssignment'
+                ? widget.catalog.generatedAbilityScoreSet
+                : widget.catalog.manualAbilityScoreOptions,
+            values: _selectedAbilityMethod == 'generatedSetAssignment'
+                ? _generatedAssignments
+                : _manualAssignments,
+            enabled: !widget.isSaving,
+            onChanged: (ability, score) {
+              setState(() {
+                final target = _selectedAbilityMethod == 'generatedSetAssignment'
+                    ? _generatedAssignments
+                    : _manualAssignments;
+                target[ability] = score;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEquipmentSection(
+    ThemeData theme,
+    List<CompendiumEquipmentLoadout> equipmentOptions,
+  ) {
+    return _SectionCard(
+      title: 'Equipment',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Selecciona un loadout inicial basado en la clase actual.',
+            style: theme.textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 12),
+          IgnorePointer(
+            ignoring: widget.isSaving,
+            child: RadioGroup<String>(
+              groupValue: _selectedEquipmentLoadout.id,
+              onChanged: (value) {
+                if (value == null) {
+                  return;
+                }
+                setState(() {
+                  _selectedEquipmentLoadout = equipmentOptions.firstWhere(
+                    (option) => option.id == value,
+                  );
+                });
+              },
+              child: Column(
+                children: equipmentOptions
+                    .map(
+                      (loadout) => RadioListTile<String>(
+                        value: loadout.id,
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(loadout.label),
+                        subtitle: Text(
+                          '${loadout.startingMoneySummary}\n${loadout.selectedItems.join(', ')}',
+                        ),
+                      ),
+                    )
+                    .toList(growable: false),
+              ),
+            ),
+          ),
+          if (!_hasSupportedEquipmentSelection) ...[
+            const SizedBox(height: 12),
+            Text(
+              'Esta clase todavia no tiene un loadout de equipo persistible. Selecciona una clase con equipo real.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.error,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFinishingDetailsSection(ThemeData theme) {
+    return _SectionCard(
+      title: 'Finishing details',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextFormField(
+            controller: _appearanceController,
+            enabled: !widget.isSaving,
+            maxLines: 2,
+            decoration: const InputDecoration(
+              labelText: 'Appearance details',
+              border: OutlineInputBorder(),
+              hintText: 'Edad, altura, rasgos visibles, etc.',
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...NarrativeFieldKey.values.map(
+            (fieldKey) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _NarrativeFieldEditor(
+                fieldKey: fieldKey,
+                selection: _narrativeSelections[fieldKey] ??
+                    NarrativeSelection.empty(fieldKey),
+                groups: _groupsFor(fieldKey),
+                selectedGroupId: _selectedGroupIds[fieldKey],
+                enabled: !widget.isSaving,
+                onModeChanged: (mode) => _onNarrativeModeChanged(fieldKey, mode),
+                onGroupChanged: (groupId) => _onNarrativeGroupChanged(
+                  fieldKey,
+                  groupId,
+                ),
+                onRollPressed: () => _onNarrativeRollPressed(fieldKey),
+                onManualOptionChanged: (optionId) =>
+                    _onNarrativeOptionChanged(fieldKey, optionId),
+              ),
+            ),
+          ),
+          TextFormField(
+            controller: _narrativeNotesController,
+            enabled: !widget.isSaving,
+            maxLines: 3,
+            decoration: const InputDecoration(
+              labelText: 'Notes',
+              border: OutlineInputBorder(),
+              hintText: 'Notas libres de compatibilidad para la hoja actual.',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _onNarrativeModeChanged(
+    NarrativeFieldKey fieldKey,
+    NarrativeSelectionMode mode,
+  ) {
+    setState(() {
+      final groups = _groupsFor(fieldKey);
+      final selectedGroupId = _selectedGroupIds[fieldKey] ??
+          (groups.isNotEmpty ? groups.first.id : null);
+      _selectedGroupIds[fieldKey] = selectedGroupId;
+
+      if (mode == NarrativeSelectionMode.empty ||
+          groups.isEmpty ||
+          selectedGroupId == null) {
+        _narrativeSelections[fieldKey] = NarrativeSelection.empty(fieldKey);
+        return;
+      }
+
+      final group = groups.firstWhere((item) => item.id == selectedGroupId);
+      if (mode == NarrativeSelectionMode.rolled) {
+        _narrativeSelections[fieldKey] = _finishingDetailsService.rolledSelection(
+          fieldKey: fieldKey,
+          group: group,
+          seed: _rollSeed(fieldKey, selectedGroupId),
+        );
+        return;
+      }
+
+      _narrativeSelections[fieldKey] = NarrativeSelection(
+        fieldKey: fieldKey,
+        mode: NarrativeSelectionMode.manual,
+        valueText: null,
+        groupId: selectedGroupId,
+        optionId: null,
+        rollValue: null,
+      );
+    });
+  }
+
+  void _onNarrativeGroupChanged(NarrativeFieldKey fieldKey, String groupId) {
+    setState(() {
+      _selectedGroupIds[fieldKey] = groupId;
+      final selection =
+          _narrativeSelections[fieldKey] ?? NarrativeSelection.empty(fieldKey);
+      final group = _groupsFor(fieldKey).firstWhere((item) => item.id == groupId);
+
+      if (selection.mode == NarrativeSelectionMode.rolled) {
+        _narrativeSelections[fieldKey] = _finishingDetailsService.rolledSelection(
+          fieldKey: fieldKey,
+          group: group,
+          seed: _rollSeed(fieldKey, group.id),
+        );
+        return;
+      }
+
+      if (selection.mode == NarrativeSelectionMode.manual) {
+        _narrativeSelections[fieldKey] = NarrativeSelection(
+          fieldKey: fieldKey,
+          mode: NarrativeSelectionMode.manual,
+          valueText: null,
+          groupId: groupId,
+          optionId: null,
+          rollValue: null,
+        );
+      }
+    });
+  }
+
+  void _onNarrativeRollPressed(NarrativeFieldKey fieldKey) {
+    final group = _finishingDetailsService.groupById(
+      catalog: widget.catalog,
+      fieldKey: fieldKey,
+      backgroundId: _selectedBackground.id,
+      groupId: _selectedGroupIds[fieldKey],
+    );
+    if (group == null) {
+      return;
+    }
+    setState(() {
+      _narrativeSelections[fieldKey] = _finishingDetailsService.rolledSelection(
+        fieldKey: fieldKey,
+        group: group,
+        seed: _rollSeed(fieldKey, group.id),
+      );
+    });
+  }
+
+  void _onNarrativeOptionChanged(
+    NarrativeFieldKey fieldKey,
+    String? optionId,
+  ) {
+    final group = _finishingDetailsService.groupById(
+      catalog: widget.catalog,
+      fieldKey: fieldKey,
+      backgroundId: _selectedBackground.id,
+      groupId: _selectedGroupIds[fieldKey],
+    );
+    if (group == null || optionId == null) {
+      return;
+    }
+    final option = _finishingDetailsService.optionById(
+      group: group,
+      optionId: optionId,
+    );
+    if (option == null) {
+      return;
+    }
+    setState(() {
+      _narrativeSelections[fieldKey] = _finishingDetailsService.manualSelection(
+        fieldKey: fieldKey,
+        group: group,
+        option: option,
+      );
+    });
+  }
 }
 
 class _SectionCard extends StatelessWidget {
@@ -712,7 +924,6 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -777,7 +988,9 @@ class _AbilityGrid extends StatelessWidget {
                     .toList(growable: false),
                 onChanged: enabled
                     ? (value) {
-                        if (value == null) return;
+                        if (value == null) {
+                          return;
+                        }
                         onChanged(ability, value);
                       }
                     : null,
@@ -785,6 +998,146 @@ class _AbilityGrid extends StatelessWidget {
             ),
           )
           .toList(growable: false),
+    );
+  }
+}
+
+class _NarrativeFieldEditor extends StatelessWidget {
+  const _NarrativeFieldEditor({
+    required this.fieldKey,
+    required this.selection,
+    required this.groups,
+    required this.selectedGroupId,
+    required this.enabled,
+    required this.onModeChanged,
+    required this.onGroupChanged,
+    required this.onRollPressed,
+    required this.onManualOptionChanged,
+  });
+
+  final NarrativeFieldKey fieldKey;
+  final NarrativeSelection selection;
+  final List<CompendiumNarrativeOptionGroup> groups;
+  final String? selectedGroupId;
+  final bool enabled;
+  final ValueChanged<NarrativeSelectionMode> onModeChanged;
+  final ValueChanged<String> onGroupChanged;
+  final VoidCallback onRollPressed;
+  final ValueChanged<String?> onManualOptionChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final selectedGroup = groups.cast<CompendiumNarrativeOptionGroup?>().firstWhere(
+      (group) => group?.id == selectedGroupId,
+      orElse: () => groups.isNotEmpty ? groups.first : null,
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            fieldKey.label,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          SegmentedButton<NarrativeSelectionMode>(
+            segments: NarrativeSelectionMode.values
+                .map(
+                  (mode) => ButtonSegment<NarrativeSelectionMode>(
+                    value: mode,
+                    label: Text(mode.label),
+                  ),
+                )
+                .toList(growable: false),
+            selected: <NarrativeSelectionMode>{selection.mode},
+            onSelectionChanged: enabled
+                ? (selectionSet) => onModeChanged(selectionSet.first)
+                : null,
+          ),
+          if (groups.isEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              'No hay opciones oficiales cargadas para este campo con el background actual.',
+              style: theme.textTheme.bodyMedium,
+            ),
+          ] else ...[
+            const SizedBox(height: 12),
+            if (groups.length > 1) ...[
+              DropdownButtonFormField<String>(
+                initialValue: selectedGroup?.id,
+                decoration: const InputDecoration(
+                  labelText: 'Official source',
+                  border: OutlineInputBorder(),
+                ),
+                items: groups
+                    .map(
+                      (group) => DropdownMenuItem<String>(
+                        value: group.id,
+                        child: Text(group.title),
+                      ),
+                    )
+                    .toList(growable: false),
+                onChanged: enabled
+                    ? (value) {
+                        if (value == null) {
+                          return;
+                        }
+                        onGroupChanged(value);
+                      }
+                    : null,
+              ),
+              const SizedBox(height: 12),
+            ] else
+              Text(
+                'Official source: ${groups.first.title}',
+                style: theme.textTheme.bodyMedium,
+              ),
+            if (selection.mode == NarrativeSelectionMode.rolled) ...[
+              const SizedBox(height: 12),
+              FilledButton.tonal(
+                onPressed: enabled ? onRollPressed : null,
+                child: const Text('Roll from official options'),
+              ),
+              if (selection.hasValue) ...[
+                const SizedBox(height: 8),
+                Text(selection.valueText!, style: theme.textTheme.bodyLarge),
+              ],
+            ],
+            if (selection.mode == NarrativeSelectionMode.manual) ...[
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: selection.optionId,
+                decoration: const InputDecoration(
+                  labelText: 'Official option',
+                  border: OutlineInputBorder(),
+                ),
+                items: (selectedGroup?.options ?? const <CompendiumNarrativeOption>[])
+                    .map(
+                      (option) => DropdownMenuItem<String>(
+                        value: option.id,
+                        child: Text(option.label ?? option.text),
+                      ),
+                    )
+                    .toList(growable: false),
+                onChanged: enabled ? onManualOptionChanged : null,
+              ),
+              if (selection.hasValue) ...[
+                const SizedBox(height: 8),
+                Text(selection.valueText!, style: theme.textTheme.bodyLarge),
+              ],
+            ],
+          ],
+        ],
+      ),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_record.dart';
 
@@ -40,6 +41,7 @@ class CharacterDomainMapper {
         record.abilityScores ?? _emptyAbilityScores(row.id);
     final resolvedHitPoints = record.hitPoints;
     final finishingDetails = record.finishingDetails;
+    final narrativeSelections = _mapNarrativeSelections(record);
 
     return CharacterDomainModel(
       id: row.id,
@@ -136,9 +138,12 @@ class CharacterDomainMapper {
               ),
             )
             .toList(growable: false),
-        alignment: finishingDetails?.alignment ?? 'Unaligned',
-        appearanceDetails: finishingDetails?.appearanceDetails ?? '',
-        narrativeDetails: finishingDetails?.narrativeDetails ?? '',
+        finishingDetails: CharacterFinishingDetailsDomainModel(
+          portraitAssetPath: finishingDetails?.portraitAssetPath,
+          appearanceDetails: finishingDetails?.appearanceDetails ?? '',
+          narrativeNotes: finishingDetails?.narrativeDetails ?? '',
+          narrativeSelections: narrativeSelections,
+        ),
       ),
       equipment: CharacterEquipmentDomainModel(
         equipmentSummary: catalog.equipmentSummaryForClass(row.className),
@@ -218,5 +223,48 @@ class CharacterDomainMapper {
       wisdomModifier: null,
       charismaModifier: null,
     );
+  }
+
+  List<CharacterNarrativeSelectionDomainModel> _mapNarrativeSelections(
+    CharacterRecord record,
+  ) {
+    final selectionsByField = <NarrativeFieldKey, CharacterNarrativeSelectionDomainModel>{};
+
+    for (final row in record.narrativeSelections) {
+      final fieldKey = NarrativeFieldKeyX.fromStorageKey(row.fieldKey);
+      final mode = NarrativeSelectionModeX.fromStorageKey(row.selectionMode);
+      if (fieldKey == null || mode == null) {
+        continue;
+      }
+      selectionsByField[fieldKey] = CharacterNarrativeSelectionDomainModel(
+        fieldKey: fieldKey,
+        mode: mode,
+        valueText: row.valueText,
+      );
+    }
+
+    final legacyAlignment = record.finishingDetails?.alignment?.trim();
+    if (legacyAlignment != null &&
+        legacyAlignment.isNotEmpty &&
+        !selectionsByField.containsKey(NarrativeFieldKey.alignment)) {
+      selectionsByField[NarrativeFieldKey.alignment] =
+          CharacterNarrativeSelectionDomainModel(
+            fieldKey: NarrativeFieldKey.alignment,
+            mode: NarrativeSelectionMode.manual,
+            valueText: legacyAlignment,
+          );
+    }
+
+    return NarrativeFieldKey.values
+        .map(
+          (fieldKey) =>
+              selectionsByField[fieldKey] ??
+              CharacterNarrativeSelectionDomainModel(
+                fieldKey: fieldKey,
+                mode: NarrativeSelectionMode.empty,
+                valueText: null,
+              ),
+        )
+        .toList(growable: false);
   }
 }

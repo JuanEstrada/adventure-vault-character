@@ -70,6 +70,22 @@ class CharacterWriteDao {
         .insertOnConflictUpdate(companion);
   }
 
+  Future<void> insertNarrativeSelections(
+    List<CharacterNarrativeSelectionsCompanion> companions,
+  ) async {
+    if (companions.isEmpty) {
+      return;
+    }
+
+    await _database.batch((Batch batch) {
+      batch.insertAll(
+        _database.characterNarrativeSelections,
+        companions,
+        mode: InsertMode.insertOrReplace,
+      );
+    });
+  }
+
   Future<void> insertEquipmentLoadout(
     CharacterEquipmentLoadoutsCompanion companion,
   ) {
@@ -173,6 +189,12 @@ class CharacterWriteDao {
   Future<void> deleteInventoryByCharacterId(String characterId) {
     return (_database.delete(
       _database.characterInventory,
+    )..where((table) => table.characterId.equals(characterId))).go();
+  }
+
+  Future<void> deleteNarrativeSelectionsByCharacterId(String characterId) {
+    return (_database.delete(
+      _database.characterNarrativeSelections,
     )..where((table) => table.characterId.equals(characterId))).go();
   }
 }

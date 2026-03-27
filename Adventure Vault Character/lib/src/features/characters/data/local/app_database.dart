@@ -125,6 +125,25 @@ class CharacterFinishingDetails extends Table {
   Set<Column<Object>> get primaryKey => {characterId};
 }
 
+class CharacterNarrativeSelections extends Table {
+  TextColumn get characterId => text().references(Characters, #id)();
+
+  TextColumn get fieldKey => text().named('field_key')();
+
+  TextColumn get selectionMode => text().named('selection_mode')();
+
+  TextColumn get groupId => text().named('group_id').nullable()();
+
+  TextColumn get optionId => text().named('option_id').nullable()();
+
+  TextColumn get valueText => text().named('value_text').nullable()();
+
+  IntColumn get rollValue => integer().named('roll_value').nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {characterId, fieldKey};
+}
+
 class CharacterEquipmentLoadouts extends Table {
   TextColumn get characterId => text().references(Characters, #id)();
 
@@ -539,6 +558,7 @@ class TrinketDefinitions extends Table {
     CharacterAbilityScoreProvenances,
     CharacterHitPoints,
     CharacterFinishingDetails,
+    CharacterNarrativeSelections,
     CharacterEquipmentLoadouts,
     SkillDefinitions,
     CharacterSkills,
@@ -573,7 +593,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.executor(super.executor);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -710,6 +730,10 @@ class AppDatabase extends _$AppDatabase {
         await migrator.createTable(narrativeOptionGroups);
         await migrator.createTable(narrativeOptions);
       }
+      if (from < 11) {
+        await migrator.createTable(characterNarrativeSelections);
+        await _backfillCharacterNarrativeSelectionsData();
+      }
 
       await _createIndexes();
     },
@@ -731,6 +755,14 @@ class AppDatabase extends _$AppDatabase {
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_character_finishing_details_character '
       'ON character_finishing_details (character_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_character_narrative_selections_character '
+      'ON character_narrative_selections (character_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_character_narrative_selections_mode '
+      'ON character_narrative_selections (selection_mode)',
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_character_equipment_loadouts_character '
@@ -1017,6 +1049,54 @@ class AppDatabase extends _$AppDatabase {
         equipment_loadout_label
       FROM characters
     ''');
+  }
+
+  Future<void> _backfillCharacterNarrativeSelectionsData() async {
+    final legacyRows = await customSelect('''
+      SELECT
+        character_id,
+        alignment
+      FROM character_finishing_details
+    ''').get();
+
+    for (final row in legacyRows) {
+      final characterId = row.read<String>('character_id');
+      final alignment = row.read<String?>('alignment')?.trim();
+      if (alignment == null || alignment.isEmpty) {
+        continue;
+      }
+
+      await into(characterNarrativeSelections).insertOnConflictUpdate(
+        CharacterNarrativeSelectionsCompanion.insert(
+          characterId: characterId,
+          fieldKey: 'alignment',
+          selectionMode: 'manual',
+          groupId: const Value('narrative-alignment-core'),
+          optionId: Value(_alignmentOptionId(alignment)),
+          valueText: Value(alignment),
+          rollValue: const Value(null),
+        ),
+      );
+    }
+  }
+
+  String _alignmentOptionId(String alignment) {
+    final normalized = alignment.trim().toLowerCase();
+    const idsByValue = <String, String>{
+      'lawful good': 'narrative-alignment-1',
+      'neutral good': 'narrative-alignment-2',
+      'chaotic good': 'narrative-alignment-3',
+      'lawful neutral': 'narrative-alignment-4',
+      'neutral': 'narrative-alignment-5',
+      'chaotic neutral': 'narrative-alignment-6',
+      'lawful evil': 'narrative-alignment-7',
+      'neutral evil': 'narrative-alignment-8',
+      'chaotic evil': 'narrative-alignment-9',
+    };
+    final fallback = normalized
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+        .replaceAll(RegExp(r'^-|-$'), '');
+    return idsByValue[normalized] ?? 'legacy-alignment-$fallback';
   }
 
   Future<void> _migrateCharactersToV6() async {

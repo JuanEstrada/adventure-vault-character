@@ -1,3 +1,4 @@
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:flutter/foundation.dart';
 
 @immutable
@@ -26,10 +27,7 @@ class CreateCharacterInput {
     required this.currentHitPoints,
     required this.maximumHitPoints,
     required this.temporaryHitPoints,
-    required this.alignment,
-    required this.appearanceDetails,
-    required this.narrativeDetails,
-    this.portraitAssetPath,
+    required this.finishingDetails,
   });
 
   final String name;
@@ -55,8 +53,14 @@ class CreateCharacterInput {
   final int currentHitPoints;
   final int maximumHitPoints;
   final int temporaryHitPoints;
-  final String alignment;
-  final String appearanceDetails;
-  final String narrativeDetails;
-  final String? portraitAssetPath;
+  final CharacterFinishingDetailsInput finishingDetails;
+
+  String get alignment =>
+      finishingDetails.valueFor(NarrativeFieldKey.alignment) ?? '';
+
+  String get appearanceDetails => finishingDetails.appearanceDetails;
+
+  String get narrativeDetails => finishingDetails.narrativeNotes;
+
+  String? get portraitAssetPath => finishingDetails.portraitAssetPath;
 }

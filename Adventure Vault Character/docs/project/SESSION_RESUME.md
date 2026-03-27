@@ -168,6 +168,16 @@ Verified on 2026-03-27:
 - `CompendiumCatalog` now exposes normalized `narrativeOptionGroups`, so the
   future finishing-details flow can consume official options without reparsing
   raw XML in widgets.
+- The create/edit flow now consumes those normalized narrative option groups
+  directly through a dedicated `FinishingDetailsService`.
+- Character-side narrative selections are now persisted in a dedicated
+  normalized table, separate from the compendium-side narrative catalogs.
+- Finishing details now support exactly three implemented modes per narrative
+  field: `empty`, `rolled`, and `manual`.
+- `alignment`, `faction`, `personality traits`, `ideals`, `bonds`, and
+  `flaws` now reopen correctly through `create -> save -> open -> edit -> save -> reopen`.
+- The character sheet now renders the resolved narrative fields individually
+  instead of depending only on the old merged `narrativeDetails` note.
 - Draft save now runs through a non-widget validator that reports missing
   sections using builder-facing names before persistence.
 - A dedicated `CompendiumRepository` boundary now sits between the app and
@@ -246,13 +256,13 @@ This means the repository now has an end-to-end offline character edit flow on
 top of the normalized read/write model, with shared rules and regression
 coverage protecting both create and update paths. `characters` is now closer
 to an identity/resume row, with HP and finishing details moved into dedicated
-normalized tables, and equipment loadout metadata now also lives in its own
-normalized table. The latest documentation pass also leaves the repo with a
-clearer product briefing, a better separation between automatic calculations
+normalized tables, equipment loadout metadata in its own normalized table, and
+the narrative-field selections now also stored in their own normalized
+character-side table. The latest documentation pass also leaves the repo with
+a clearer product briefing, a better separation between automatic calculations
 and player input, and an explicit local-source inventory for future rules
-extraction. The next major improvement is extending the edit flow beyond the
-current guided MVP fields while starting to extract official narrative option
-bases from the local Wizards XML sources.
+extraction. The next major improvement is extending the same deterministic
+approach into spells, combat, and richer inventory behavior.
 
 ## Current Phase
 

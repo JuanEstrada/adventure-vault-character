@@ -1,4 +1,5 @@
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:flutter/material.dart';
 
 class CharacterSheetScreen extends StatelessWidget {
@@ -358,11 +359,18 @@ class _FeaturesNotesPanel extends StatelessWidget {
                 (item) => Text('• $item'),
               ),
             ],
-            const SizedBox(height: 12),
-            _FactRow(
-              label: 'Alignment',
-              value: character.featuresNotes.alignment,
-            ),
+            if (character.featuresNotes.finishingDetails.visibleSelections.isNotEmpty)
+              ...[
+                const SizedBox(height: 12),
+                Text('Finishing details', style: theme.textTheme.titleMedium),
+                const SizedBox(height: 8),
+                ...character.featuresNotes.finishingDetails.visibleSelections.map(
+                  (item) => _FactRow(
+                    label: item.fieldKey.label,
+                    value: item.valueText!,
+                  ),
+                ),
+              ],
             if (character.featuresNotes.appearanceDetails.isNotEmpty)
               _FactRow(
                 label: 'Appearance',

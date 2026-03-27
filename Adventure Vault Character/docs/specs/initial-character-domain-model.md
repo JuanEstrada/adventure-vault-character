@@ -370,8 +370,7 @@ Minimum enum values:
 
 Rules:
 
-- `empty` means the user either left the field blank or entered no custom
-  value.
+- `empty` means the user left the field blank and no default was generated.
 - `rolled` means the app resolved the final value from the official options
   available for that field.
 - `manual` means the user picked one value from the official options available

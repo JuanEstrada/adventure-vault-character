@@ -61,6 +61,14 @@ class CharacterReadDao {
     )..where((table) => table.characterId.equals(id))).getSingleOrNull();
   }
 
+  Future<List<CharacterNarrativeSelection>> getNarrativeSelectionsByCharacterId(
+    String id,
+  ) {
+    return (_database.select(
+      _database.characterNarrativeSelections,
+    )..where((table) => table.characterId.equals(id))).get();
+  }
+
   Future<CharacterEquipmentLoadout?> getEquipmentLoadoutByCharacterId(
     String id,
   ) {

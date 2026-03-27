@@ -178,10 +178,9 @@ the imported rules set should be referred to as the `Compendio`.
 32. The user can add or skip fields such as age, height, weight, eyes, skin,
     hair, alignment, faction, personality traits, ideals, bonds, and flaws.
 33. For `alignment`, `faction`, `personality traits`, `ideals`, `bonds`, and
-    `flaws`, the app offers exactly three modes per field:
-    write a custom value or leave the field empty, roll a die using official
-    options for that field, or manually choose from official options for that
-    field.
+    `flaws`, the app offers exactly three implemented modes per field:
+    leave the field empty, roll a die using official options for that field,
+    or manually choose from official options for that field.
 34. If the user chooses roll mode, the app resolves the final value from the
     official options available for that field.
 35. If the user chooses manual mode, the app lets the user pick one value from
@@ -246,9 +245,9 @@ the imported rules set should be referred to as the `Compendio`.
 - `Portrait` and `appearance` remain optional free-entry fields in finishing
   details.
 - `Alignment`, `faction`, `personality traits`, `ideals`, `bonds`, and
-  `flaws` each support exactly three user-facing modes: write a custom value
-  or leave the field empty, roll from official options, or manually select
-  from official options.
+  `flaws` each support exactly three user-facing modes: leave the field
+  empty, roll from official options, or manually select from official
+  options.
 - If entered, finishing details are persisted with the created character.
 - The finalize action validates `Race + name`, `Background`,
   `Ability scores`, and `Class / level / experience` before save.

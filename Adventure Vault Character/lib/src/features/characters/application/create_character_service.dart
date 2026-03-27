@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_reference_dao.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_write_dao.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary_mapper.dart';
@@ -144,6 +145,10 @@ class CreateCharacterService {
         id,
         input,
         replaceExisting: existingRow != null,
+      );
+      await _writeDao.deleteNarrativeSelectionsByCharacterId(id);
+      await _writeDao.insertNarrativeSelections(
+        _buildNarrativeSelectionRows(characterId: id, input: input),
       );
       await _writeEquipmentLoadout(
         id,
@@ -361,6 +366,30 @@ class CreateCharacterService {
         narrativeDetails: Value(input.narrativeDetails),
       ),
     );
+  }
+
+  List<CharacterNarrativeSelectionsCompanion> _buildNarrativeSelectionRows({
+    required String characterId,
+    required CreateCharacterInput input,
+  }) {
+    return input.finishingDetails.narrativeSelections
+        .where(
+          (selection) =>
+              selection.mode != NarrativeSelectionMode.empty ||
+              selection.hasValue,
+        )
+        .map(
+          (selection) => CharacterNarrativeSelectionsCompanion.insert(
+            characterId: characterId,
+            fieldKey: selection.fieldKey.storageKey,
+            selectionMode: selection.mode.storageKey,
+            groupId: Value(selection.groupId),
+            optionId: Value(selection.optionId),
+            valueText: Value(selection.valueText),
+            rollValue: Value(selection.rollValue),
+          ),
+        )
+        .toList(growable: false);
   }
 
   Future<void> _writeEquipmentLoadout(

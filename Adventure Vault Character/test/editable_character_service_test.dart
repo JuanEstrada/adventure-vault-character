@@ -1,5 +1,6 @@
 import 'package:adventure_vault_character/src/features/characters/data/drift_character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/editable_character_mapper.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
@@ -50,9 +51,24 @@ void main() {
           currentHitPoints: 28,
           maximumHitPoints: 28,
           temporaryHitPoints: 0,
-          alignment: 'Neutral',
-          appearanceDetails: 'Tall and quiet',
-          narrativeDetails: 'Keeps careful notes.',
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: 'Tall and quiet',
+            narrativeNotes: 'Keeps careful notes.',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection(
+                fieldKey: NarrativeFieldKey.alignment,
+                mode: NarrativeSelectionMode.manual,
+                valueText: 'Neutral',
+                groupId: 'narrative-alignment-core',
+                optionId: 'narrative-alignment-5',
+              ),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
         ),
       );
 
@@ -72,7 +88,10 @@ void main() {
       expect(editable.equipment.loadoutId, 'wizard-focus');
       expect(editable.equipment.items[1].name, 'Torch');
       expect(editable.equipment.items[1].quantity, 2);
-      expect(editable.finishingDetails.alignment, 'Neutral');
+      expect(
+        editable.finishingDetails.valueFor(NarrativeFieldKey.alignment),
+        'Neutral',
+      );
     },
   );
 
@@ -113,9 +132,24 @@ void main() {
           currentHitPoints: 12,
           maximumHitPoints: 12,
           temporaryHitPoints: 0,
-          alignment: 'Neutral',
-          appearanceDetails: 'Short hair',
-          narrativeDetails: 'Ready for patrol.',
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: 'Short hair',
+            narrativeNotes: 'Ready for patrol.',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection(
+                fieldKey: NarrativeFieldKey.alignment,
+                mode: NarrativeSelectionMode.manual,
+                valueText: 'Neutral',
+                groupId: 'narrative-alignment-core',
+                optionId: 'narrative-alignment-5',
+              ),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
         ),
       );
 

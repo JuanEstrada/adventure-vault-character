@@ -1,4 +1,5 @@
 import 'package:adventure_vault_character/src/features/characters/domain/character_draft_validator.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -87,8 +88,21 @@ CreateCharacterInput _validInput({
     currentHitPoints: currentHitPoints,
     maximumHitPoints: maximumHitPoints,
     temporaryHitPoints: temporaryHitPoints,
-    alignment: alignment,
-    appearanceDetails: appearanceDetails,
-    narrativeDetails: narrativeDetails,
+    finishingDetails: CharacterFinishingDetailsInput(
+      appearanceDetails: appearanceDetails,
+      narrativeNotes: narrativeDetails,
+      narrativeSelections: <NarrativeSelection>[
+        NarrativeSelection(
+          fieldKey: NarrativeFieldKey.alignment,
+          mode: NarrativeSelectionMode.manual,
+          valueText: alignment,
+          groupId: 'narrative-alignment-core',
+          optionId: 'narrative-alignment-5',
+        ),
+        ...NarrativeFieldKey.values
+            .where((fieldKey) => fieldKey != NarrativeFieldKey.alignment)
+            .map(NarrativeSelection.empty),
+      ],
+    ),
   );
 }

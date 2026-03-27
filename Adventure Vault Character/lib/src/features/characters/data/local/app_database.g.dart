@@ -2873,6 +2873,503 @@ class CharacterFinishingDetailsCompanion
   }
 }
 
+class $CharacterNarrativeSelectionsTable extends CharacterNarrativeSelections
+    with
+        TableInfo<
+          $CharacterNarrativeSelectionsTable,
+          CharacterNarrativeSelection
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CharacterNarrativeSelectionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _characterIdMeta = const VerificationMeta(
+    'characterId',
+  );
+  @override
+  late final GeneratedColumn<String> characterId = GeneratedColumn<String>(
+    'character_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES characters (id)',
+    ),
+  );
+  static const VerificationMeta _fieldKeyMeta = const VerificationMeta(
+    'fieldKey',
+  );
+  @override
+  late final GeneratedColumn<String> fieldKey = GeneratedColumn<String>(
+    'field_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _selectionModeMeta = const VerificationMeta(
+    'selectionMode',
+  );
+  @override
+  late final GeneratedColumn<String> selectionMode = GeneratedColumn<String>(
+    'selection_mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _groupIdMeta = const VerificationMeta(
+    'groupId',
+  );
+  @override
+  late final GeneratedColumn<String> groupId = GeneratedColumn<String>(
+    'group_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _optionIdMeta = const VerificationMeta(
+    'optionId',
+  );
+  @override
+  late final GeneratedColumn<String> optionId = GeneratedColumn<String>(
+    'option_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _valueTextMeta = const VerificationMeta(
+    'valueText',
+  );
+  @override
+  late final GeneratedColumn<String> valueText = GeneratedColumn<String>(
+    'value_text',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _rollValueMeta = const VerificationMeta(
+    'rollValue',
+  );
+  @override
+  late final GeneratedColumn<int> rollValue = GeneratedColumn<int>(
+    'roll_value',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    characterId,
+    fieldKey,
+    selectionMode,
+    groupId,
+    optionId,
+    valueText,
+    rollValue,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'character_narrative_selections';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CharacterNarrativeSelection> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('character_id')) {
+      context.handle(
+        _characterIdMeta,
+        characterId.isAcceptableOrUnknown(
+          data['character_id']!,
+          _characterIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_characterIdMeta);
+    }
+    if (data.containsKey('field_key')) {
+      context.handle(
+        _fieldKeyMeta,
+        fieldKey.isAcceptableOrUnknown(data['field_key']!, _fieldKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fieldKeyMeta);
+    }
+    if (data.containsKey('selection_mode')) {
+      context.handle(
+        _selectionModeMeta,
+        selectionMode.isAcceptableOrUnknown(
+          data['selection_mode']!,
+          _selectionModeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_selectionModeMeta);
+    }
+    if (data.containsKey('group_id')) {
+      context.handle(
+        _groupIdMeta,
+        groupId.isAcceptableOrUnknown(data['group_id']!, _groupIdMeta),
+      );
+    }
+    if (data.containsKey('option_id')) {
+      context.handle(
+        _optionIdMeta,
+        optionId.isAcceptableOrUnknown(data['option_id']!, _optionIdMeta),
+      );
+    }
+    if (data.containsKey('value_text')) {
+      context.handle(
+        _valueTextMeta,
+        valueText.isAcceptableOrUnknown(data['value_text']!, _valueTextMeta),
+      );
+    }
+    if (data.containsKey('roll_value')) {
+      context.handle(
+        _rollValueMeta,
+        rollValue.isAcceptableOrUnknown(data['roll_value']!, _rollValueMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {characterId, fieldKey};
+  @override
+  CharacterNarrativeSelection map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CharacterNarrativeSelection(
+      characterId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}character_id'],
+      )!,
+      fieldKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}field_key'],
+      )!,
+      selectionMode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}selection_mode'],
+      )!,
+      groupId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}group_id'],
+      ),
+      optionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}option_id'],
+      ),
+      valueText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value_text'],
+      ),
+      rollValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}roll_value'],
+      ),
+    );
+  }
+
+  @override
+  $CharacterNarrativeSelectionsTable createAlias(String alias) {
+    return $CharacterNarrativeSelectionsTable(attachedDatabase, alias);
+  }
+}
+
+class CharacterNarrativeSelection extends DataClass
+    implements Insertable<CharacterNarrativeSelection> {
+  final String characterId;
+  final String fieldKey;
+  final String selectionMode;
+  final String? groupId;
+  final String? optionId;
+  final String? valueText;
+  final int? rollValue;
+  const CharacterNarrativeSelection({
+    required this.characterId,
+    required this.fieldKey,
+    required this.selectionMode,
+    this.groupId,
+    this.optionId,
+    this.valueText,
+    this.rollValue,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['character_id'] = Variable<String>(characterId);
+    map['field_key'] = Variable<String>(fieldKey);
+    map['selection_mode'] = Variable<String>(selectionMode);
+    if (!nullToAbsent || groupId != null) {
+      map['group_id'] = Variable<String>(groupId);
+    }
+    if (!nullToAbsent || optionId != null) {
+      map['option_id'] = Variable<String>(optionId);
+    }
+    if (!nullToAbsent || valueText != null) {
+      map['value_text'] = Variable<String>(valueText);
+    }
+    if (!nullToAbsent || rollValue != null) {
+      map['roll_value'] = Variable<int>(rollValue);
+    }
+    return map;
+  }
+
+  CharacterNarrativeSelectionsCompanion toCompanion(bool nullToAbsent) {
+    return CharacterNarrativeSelectionsCompanion(
+      characterId: Value(characterId),
+      fieldKey: Value(fieldKey),
+      selectionMode: Value(selectionMode),
+      groupId: groupId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(groupId),
+      optionId: optionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(optionId),
+      valueText: valueText == null && nullToAbsent
+          ? const Value.absent()
+          : Value(valueText),
+      rollValue: rollValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rollValue),
+    );
+  }
+
+  factory CharacterNarrativeSelection.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CharacterNarrativeSelection(
+      characterId: serializer.fromJson<String>(json['characterId']),
+      fieldKey: serializer.fromJson<String>(json['fieldKey']),
+      selectionMode: serializer.fromJson<String>(json['selectionMode']),
+      groupId: serializer.fromJson<String?>(json['groupId']),
+      optionId: serializer.fromJson<String?>(json['optionId']),
+      valueText: serializer.fromJson<String?>(json['valueText']),
+      rollValue: serializer.fromJson<int?>(json['rollValue']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'characterId': serializer.toJson<String>(characterId),
+      'fieldKey': serializer.toJson<String>(fieldKey),
+      'selectionMode': serializer.toJson<String>(selectionMode),
+      'groupId': serializer.toJson<String?>(groupId),
+      'optionId': serializer.toJson<String?>(optionId),
+      'valueText': serializer.toJson<String?>(valueText),
+      'rollValue': serializer.toJson<int?>(rollValue),
+    };
+  }
+
+  CharacterNarrativeSelection copyWith({
+    String? characterId,
+    String? fieldKey,
+    String? selectionMode,
+    Value<String?> groupId = const Value.absent(),
+    Value<String?> optionId = const Value.absent(),
+    Value<String?> valueText = const Value.absent(),
+    Value<int?> rollValue = const Value.absent(),
+  }) => CharacterNarrativeSelection(
+    characterId: characterId ?? this.characterId,
+    fieldKey: fieldKey ?? this.fieldKey,
+    selectionMode: selectionMode ?? this.selectionMode,
+    groupId: groupId.present ? groupId.value : this.groupId,
+    optionId: optionId.present ? optionId.value : this.optionId,
+    valueText: valueText.present ? valueText.value : this.valueText,
+    rollValue: rollValue.present ? rollValue.value : this.rollValue,
+  );
+  CharacterNarrativeSelection copyWithCompanion(
+    CharacterNarrativeSelectionsCompanion data,
+  ) {
+    return CharacterNarrativeSelection(
+      characterId: data.characterId.present
+          ? data.characterId.value
+          : this.characterId,
+      fieldKey: data.fieldKey.present ? data.fieldKey.value : this.fieldKey,
+      selectionMode: data.selectionMode.present
+          ? data.selectionMode.value
+          : this.selectionMode,
+      groupId: data.groupId.present ? data.groupId.value : this.groupId,
+      optionId: data.optionId.present ? data.optionId.value : this.optionId,
+      valueText: data.valueText.present ? data.valueText.value : this.valueText,
+      rollValue: data.rollValue.present ? data.rollValue.value : this.rollValue,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterNarrativeSelection(')
+          ..write('characterId: $characterId, ')
+          ..write('fieldKey: $fieldKey, ')
+          ..write('selectionMode: $selectionMode, ')
+          ..write('groupId: $groupId, ')
+          ..write('optionId: $optionId, ')
+          ..write('valueText: $valueText, ')
+          ..write('rollValue: $rollValue')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    characterId,
+    fieldKey,
+    selectionMode,
+    groupId,
+    optionId,
+    valueText,
+    rollValue,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CharacterNarrativeSelection &&
+          other.characterId == this.characterId &&
+          other.fieldKey == this.fieldKey &&
+          other.selectionMode == this.selectionMode &&
+          other.groupId == this.groupId &&
+          other.optionId == this.optionId &&
+          other.valueText == this.valueText &&
+          other.rollValue == this.rollValue);
+}
+
+class CharacterNarrativeSelectionsCompanion
+    extends UpdateCompanion<CharacterNarrativeSelection> {
+  final Value<String> characterId;
+  final Value<String> fieldKey;
+  final Value<String> selectionMode;
+  final Value<String?> groupId;
+  final Value<String?> optionId;
+  final Value<String?> valueText;
+  final Value<int?> rollValue;
+  final Value<int> rowid;
+  const CharacterNarrativeSelectionsCompanion({
+    this.characterId = const Value.absent(),
+    this.fieldKey = const Value.absent(),
+    this.selectionMode = const Value.absent(),
+    this.groupId = const Value.absent(),
+    this.optionId = const Value.absent(),
+    this.valueText = const Value.absent(),
+    this.rollValue = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CharacterNarrativeSelectionsCompanion.insert({
+    required String characterId,
+    required String fieldKey,
+    required String selectionMode,
+    this.groupId = const Value.absent(),
+    this.optionId = const Value.absent(),
+    this.valueText = const Value.absent(),
+    this.rollValue = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : characterId = Value(characterId),
+       fieldKey = Value(fieldKey),
+       selectionMode = Value(selectionMode);
+  static Insertable<CharacterNarrativeSelection> custom({
+    Expression<String>? characterId,
+    Expression<String>? fieldKey,
+    Expression<String>? selectionMode,
+    Expression<String>? groupId,
+    Expression<String>? optionId,
+    Expression<String>? valueText,
+    Expression<int>? rollValue,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (characterId != null) 'character_id': characterId,
+      if (fieldKey != null) 'field_key': fieldKey,
+      if (selectionMode != null) 'selection_mode': selectionMode,
+      if (groupId != null) 'group_id': groupId,
+      if (optionId != null) 'option_id': optionId,
+      if (valueText != null) 'value_text': valueText,
+      if (rollValue != null) 'roll_value': rollValue,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CharacterNarrativeSelectionsCompanion copyWith({
+    Value<String>? characterId,
+    Value<String>? fieldKey,
+    Value<String>? selectionMode,
+    Value<String?>? groupId,
+    Value<String?>? optionId,
+    Value<String?>? valueText,
+    Value<int?>? rollValue,
+    Value<int>? rowid,
+  }) {
+    return CharacterNarrativeSelectionsCompanion(
+      characterId: characterId ?? this.characterId,
+      fieldKey: fieldKey ?? this.fieldKey,
+      selectionMode: selectionMode ?? this.selectionMode,
+      groupId: groupId ?? this.groupId,
+      optionId: optionId ?? this.optionId,
+      valueText: valueText ?? this.valueText,
+      rollValue: rollValue ?? this.rollValue,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (characterId.present) {
+      map['character_id'] = Variable<String>(characterId.value);
+    }
+    if (fieldKey.present) {
+      map['field_key'] = Variable<String>(fieldKey.value);
+    }
+    if (selectionMode.present) {
+      map['selection_mode'] = Variable<String>(selectionMode.value);
+    }
+    if (groupId.present) {
+      map['group_id'] = Variable<String>(groupId.value);
+    }
+    if (optionId.present) {
+      map['option_id'] = Variable<String>(optionId.value);
+    }
+    if (valueText.present) {
+      map['value_text'] = Variable<String>(valueText.value);
+    }
+    if (rollValue.present) {
+      map['roll_value'] = Variable<int>(rollValue.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterNarrativeSelectionsCompanion(')
+          ..write('characterId: $characterId, ')
+          ..write('fieldKey: $fieldKey, ')
+          ..write('selectionMode: $selectionMode, ')
+          ..write('groupId: $groupId, ')
+          ..write('optionId: $optionId, ')
+          ..write('valueText: $valueText, ')
+          ..write('rollValue: $rollValue, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $CharacterEquipmentLoadoutsTable extends CharacterEquipmentLoadouts
     with
         TableInfo<$CharacterEquipmentLoadoutsTable, CharacterEquipmentLoadout> {
@@ -11274,6 +11771,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $CharacterHitPointsTable(this);
   late final $CharacterFinishingDetailsTable characterFinishingDetails =
       $CharacterFinishingDetailsTable(this);
+  late final $CharacterNarrativeSelectionsTable characterNarrativeSelections =
+      $CharacterNarrativeSelectionsTable(this);
   late final $CharacterEquipmentLoadoutsTable characterEquipmentLoadouts =
       $CharacterEquipmentLoadoutsTable(this);
   late final $SkillDefinitionsTable skillDefinitions = $SkillDefinitionsTable(
@@ -11323,6 +11822,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     characterAbilityScoreProvenances,
     characterHitPoints,
     characterFinishingDetails,
+    characterNarrativeSelections,
     characterEquipmentLoadouts,
     skillDefinitions,
     characterSkills,
@@ -11477,6 +11977,34 @@ final class $$CharactersTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _characterFinishingDetailsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $CharacterNarrativeSelectionsTable,
+    List<CharacterNarrativeSelection>
+  >
+  _characterNarrativeSelectionsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.characterNarrativeSelections,
+        aliasName: $_aliasNameGenerator(
+          db.characters.id,
+          db.characterNarrativeSelections.characterId,
+        ),
+      );
+
+  $$CharacterNarrativeSelectionsTableProcessedTableManager
+  get characterNarrativeSelectionsRefs {
+    final manager = $$CharacterNarrativeSelectionsTableTableManager(
+      $_db,
+      $_db.characterNarrativeSelections,
+    ).filter((f) => f.characterId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _characterNarrativeSelectionsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -11802,6 +12330,35 @@ class $$CharactersTableFilterComposer
               }) => $$CharacterFinishingDetailsTableFilterComposer(
                 $db: $db,
                 $table: $db.characterFinishingDetails,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> characterNarrativeSelectionsRefs(
+    Expression<bool> Function(
+      $$CharacterNarrativeSelectionsTableFilterComposer f,
+    )
+    f,
+  ) {
+    final $$CharacterNarrativeSelectionsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.characterNarrativeSelections,
+          getReferencedColumn: (t) => t.characterId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$CharacterNarrativeSelectionsTableFilterComposer(
+                $db: $db,
+                $table: $db.characterNarrativeSelections,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -12179,6 +12736,35 @@ class $$CharactersTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> characterNarrativeSelectionsRefs<T extends Object>(
+    Expression<T> Function(
+      $$CharacterNarrativeSelectionsTableAnnotationComposer a,
+    )
+    f,
+  ) {
+    final $$CharacterNarrativeSelectionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.characterNarrativeSelections,
+          getReferencedColumn: (t) => t.characterId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$CharacterNarrativeSelectionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.characterNarrativeSelections,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
   Expression<T> characterEquipmentLoadoutsRefs<T extends Object>(
     Expression<T> Function(
       $$CharacterEquipmentLoadoutsTableAnnotationComposer a,
@@ -12356,6 +12942,7 @@ class $$CharactersTableTableManager
             bool characterAbilityScoreProvenancesRefs,
             bool characterHitPointsRefs,
             bool characterFinishingDetailsRefs,
+            bool characterNarrativeSelectionsRefs,
             bool characterEquipmentLoadoutsRefs,
             bool characterSkillsRefs,
             bool characterSavingThrowsRefs,
@@ -12441,6 +13028,7 @@ class $$CharactersTableTableManager
                 characterAbilityScoreProvenancesRefs = false,
                 characterHitPointsRefs = false,
                 characterFinishingDetailsRefs = false,
+                characterNarrativeSelectionsRefs = false,
                 characterEquipmentLoadoutsRefs = false,
                 characterSkillsRefs = false,
                 characterSavingThrowsRefs = false,
@@ -12457,6 +13045,8 @@ class $$CharactersTableTableManager
                     if (characterHitPointsRefs) db.characterHitPoints,
                     if (characterFinishingDetailsRefs)
                       db.characterFinishingDetails,
+                    if (characterNarrativeSelectionsRefs)
+                      db.characterNarrativeSelections,
                     if (characterEquipmentLoadoutsRefs)
                       db.characterEquipmentLoadouts,
                     if (characterSkillsRefs) db.characterSkills,
@@ -12546,6 +13136,27 @@ class $$CharactersTableTableManager
                                 table,
                                 p0,
                               ).characterFinishingDetailsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.characterId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (characterNarrativeSelectionsRefs)
+                        await $_getPrefetchedData<
+                          Character,
+                          $CharactersTable,
+                          CharacterNarrativeSelection
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CharactersTableReferences
+                              ._characterNarrativeSelectionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CharactersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).characterNarrativeSelectionsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.characterId == item.id,
@@ -12703,6 +13314,7 @@ typedef $$CharactersTableProcessedTableManager =
         bool characterAbilityScoreProvenancesRefs,
         bool characterHitPointsRefs,
         bool characterFinishingDetailsRefs,
+        bool characterNarrativeSelectionsRefs,
         bool characterEquipmentLoadoutsRefs,
         bool characterSkillsRefs,
         bool characterSavingThrowsRefs,
@@ -14324,6 +14936,396 @@ typedef $$CharacterFinishingDetailsTableProcessedTableManager =
       $$CharacterFinishingDetailsTableUpdateCompanionBuilder,
       (CharacterFinishingDetail, $$CharacterFinishingDetailsTableReferences),
       CharacterFinishingDetail,
+      PrefetchHooks Function({bool characterId})
+    >;
+typedef $$CharacterNarrativeSelectionsTableCreateCompanionBuilder =
+    CharacterNarrativeSelectionsCompanion Function({
+      required String characterId,
+      required String fieldKey,
+      required String selectionMode,
+      Value<String?> groupId,
+      Value<String?> optionId,
+      Value<String?> valueText,
+      Value<int?> rollValue,
+      Value<int> rowid,
+    });
+typedef $$CharacterNarrativeSelectionsTableUpdateCompanionBuilder =
+    CharacterNarrativeSelectionsCompanion Function({
+      Value<String> characterId,
+      Value<String> fieldKey,
+      Value<String> selectionMode,
+      Value<String?> groupId,
+      Value<String?> optionId,
+      Value<String?> valueText,
+      Value<int?> rollValue,
+      Value<int> rowid,
+    });
+
+final class $$CharacterNarrativeSelectionsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $CharacterNarrativeSelectionsTable,
+          CharacterNarrativeSelection
+        > {
+  $$CharacterNarrativeSelectionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CharactersTable _characterIdTable(_$AppDatabase db) =>
+      db.characters.createAlias(
+        $_aliasNameGenerator(
+          db.characterNarrativeSelections.characterId,
+          db.characters.id,
+        ),
+      );
+
+  $$CharactersTableProcessedTableManager get characterId {
+    final $_column = $_itemColumn<String>('character_id')!;
+
+    final manager = $$CharactersTableTableManager(
+      $_db,
+      $_db.characters,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_characterIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CharacterNarrativeSelectionsTableFilterComposer
+    extends Composer<_$AppDatabase, $CharacterNarrativeSelectionsTable> {
+  $$CharacterNarrativeSelectionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get fieldKey => $composableBuilder(
+    column: $table.fieldKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get selectionMode => $composableBuilder(
+    column: $table.selectionMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get groupId => $composableBuilder(
+    column: $table.groupId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get optionId => $composableBuilder(
+    column: $table.optionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get valueText => $composableBuilder(
+    column: $table.valueText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get rollValue => $composableBuilder(
+    column: $table.rollValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CharactersTableFilterComposer get characterId {
+    final $$CharactersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableFilterComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterNarrativeSelectionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CharacterNarrativeSelectionsTable> {
+  $$CharacterNarrativeSelectionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get fieldKey => $composableBuilder(
+    column: $table.fieldKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get selectionMode => $composableBuilder(
+    column: $table.selectionMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get groupId => $composableBuilder(
+    column: $table.groupId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get optionId => $composableBuilder(
+    column: $table.optionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get valueText => $composableBuilder(
+    column: $table.valueText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get rollValue => $composableBuilder(
+    column: $table.rollValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CharactersTableOrderingComposer get characterId {
+    final $$CharactersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableOrderingComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterNarrativeSelectionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CharacterNarrativeSelectionsTable> {
+  $$CharacterNarrativeSelectionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get fieldKey =>
+      $composableBuilder(column: $table.fieldKey, builder: (column) => column);
+
+  GeneratedColumn<String> get selectionMode => $composableBuilder(
+    column: $table.selectionMode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get groupId =>
+      $composableBuilder(column: $table.groupId, builder: (column) => column);
+
+  GeneratedColumn<String> get optionId =>
+      $composableBuilder(column: $table.optionId, builder: (column) => column);
+
+  GeneratedColumn<String> get valueText =>
+      $composableBuilder(column: $table.valueText, builder: (column) => column);
+
+  GeneratedColumn<int> get rollValue =>
+      $composableBuilder(column: $table.rollValue, builder: (column) => column);
+
+  $$CharactersTableAnnotationComposer get characterId {
+    final $$CharactersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterNarrativeSelectionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CharacterNarrativeSelectionsTable,
+          CharacterNarrativeSelection,
+          $$CharacterNarrativeSelectionsTableFilterComposer,
+          $$CharacterNarrativeSelectionsTableOrderingComposer,
+          $$CharacterNarrativeSelectionsTableAnnotationComposer,
+          $$CharacterNarrativeSelectionsTableCreateCompanionBuilder,
+          $$CharacterNarrativeSelectionsTableUpdateCompanionBuilder,
+          (
+            CharacterNarrativeSelection,
+            $$CharacterNarrativeSelectionsTableReferences,
+          ),
+          CharacterNarrativeSelection,
+          PrefetchHooks Function({bool characterId})
+        > {
+  $$CharacterNarrativeSelectionsTableTableManager(
+    _$AppDatabase db,
+    $CharacterNarrativeSelectionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CharacterNarrativeSelectionsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$CharacterNarrativeSelectionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$CharacterNarrativeSelectionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> characterId = const Value.absent(),
+                Value<String> fieldKey = const Value.absent(),
+                Value<String> selectionMode = const Value.absent(),
+                Value<String?> groupId = const Value.absent(),
+                Value<String?> optionId = const Value.absent(),
+                Value<String?> valueText = const Value.absent(),
+                Value<int?> rollValue = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterNarrativeSelectionsCompanion(
+                characterId: characterId,
+                fieldKey: fieldKey,
+                selectionMode: selectionMode,
+                groupId: groupId,
+                optionId: optionId,
+                valueText: valueText,
+                rollValue: rollValue,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String characterId,
+                required String fieldKey,
+                required String selectionMode,
+                Value<String?> groupId = const Value.absent(),
+                Value<String?> optionId = const Value.absent(),
+                Value<String?> valueText = const Value.absent(),
+                Value<int?> rollValue = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterNarrativeSelectionsCompanion.insert(
+                characterId: characterId,
+                fieldKey: fieldKey,
+                selectionMode: selectionMode,
+                groupId: groupId,
+                optionId: optionId,
+                valueText: valueText,
+                rollValue: rollValue,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CharacterNarrativeSelectionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({characterId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (characterId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.characterId,
+                                referencedTable:
+                                    $$CharacterNarrativeSelectionsTableReferences
+                                        ._characterIdTable(db),
+                                referencedColumn:
+                                    $$CharacterNarrativeSelectionsTableReferences
+                                        ._characterIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CharacterNarrativeSelectionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CharacterNarrativeSelectionsTable,
+      CharacterNarrativeSelection,
+      $$CharacterNarrativeSelectionsTableFilterComposer,
+      $$CharacterNarrativeSelectionsTableOrderingComposer,
+      $$CharacterNarrativeSelectionsTableAnnotationComposer,
+      $$CharacterNarrativeSelectionsTableCreateCompanionBuilder,
+      $$CharacterNarrativeSelectionsTableUpdateCompanionBuilder,
+      (
+        CharacterNarrativeSelection,
+        $$CharacterNarrativeSelectionsTableReferences,
+      ),
+      CharacterNarrativeSelection,
       PrefetchHooks Function({bool characterId})
     >;
 typedef $$CharacterEquipmentLoadoutsTableCreateCompanionBuilder =
@@ -20304,6 +21306,12 @@ class $AppDatabaseManager {
       $$CharacterFinishingDetailsTableTableManager(
         _db,
         _db.characterFinishingDetails,
+      );
+  $$CharacterNarrativeSelectionsTableTableManager
+  get characterNarrativeSelections =>
+      $$CharacterNarrativeSelectionsTableTableManager(
+        _db,
+        _db.characterNarrativeSelections,
       );
   $$CharacterEquipmentLoadoutsTableTableManager
   get characterEquipmentLoadouts =>

@@ -1,4 +1,5 @@
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -81,9 +82,18 @@ void main() {
               referenceKey: 'simple-weapons',
             ),
           ],
-          alignment: 'Neutral',
-          appearanceDetails: 'Tall and quiet',
-          narrativeDetails: 'Keeps careful notes.',
+          finishingDetails: CharacterFinishingDetailsDomainModel(
+            portraitAssetPath: null,
+            appearanceDetails: 'Tall and quiet',
+            narrativeNotes: 'Keeps careful notes.',
+            narrativeSelections: <CharacterNarrativeSelectionDomainModel>[
+              CharacterNarrativeSelectionDomainModel(
+                fieldKey: NarrativeFieldKey.alignment,
+                mode: NarrativeSelectionMode.manual,
+                valueText: 'Neutral',
+              ),
+            ],
+          ),
         ),
         equipment: CharacterEquipmentDomainModel(
           equipmentSummary: EquipmentSummaryViewData(

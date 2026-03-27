@@ -1,4 +1,5 @@
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:flutter/foundation.dart';
 
 @immutable
@@ -119,12 +120,23 @@ class EditableCharacterEquipmentItem {
 @immutable
 class EditableCharacterFinishingDetails {
   const EditableCharacterFinishingDetails({
-    required this.alignment,
     required this.appearanceDetails,
-    required this.narrativeDetails,
+    required this.narrativeNotes,
+    required this.narrativeSelections,
+    this.portraitAssetPath,
   });
 
-  final String alignment;
   final String appearanceDetails;
-  final String narrativeDetails;
+  final String narrativeNotes;
+  final List<NarrativeSelection> narrativeSelections;
+  final String? portraitAssetPath;
+
+  String? valueFor(NarrativeFieldKey fieldKey) {
+    for (final selection in narrativeSelections) {
+      if (selection.fieldKey == fieldKey) {
+        return selection.valueText;
+      }
+    }
+    return null;
+  }
 }

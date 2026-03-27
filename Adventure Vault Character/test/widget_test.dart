@@ -43,7 +43,7 @@ void main() {
     final repository = InMemoryCharacterRepository.empty(
       compendiumRepository: compendiumRepository,
     );
-    await tester.binding.setSurfaceSize(const Size(1200, 2400));
+    await tester.binding.setSurfaceSize(const Size(1200, 4200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
@@ -68,6 +68,11 @@ void main() {
     expect(find.text('Finishing details'), findsOneWidget);
 
     await tester.enterText(find.byType(TextFormField).first, 'Aelar');
+    await tester.scrollUntilVisible(
+      find.widgetWithText(FilledButton, 'Guardar draft').first,
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Guardar draft'));
     await tester.pumpAndSettle();
 
@@ -82,7 +87,6 @@ void main() {
     expect(find.text('Equipment'), findsWidgets);
     expect(find.text('Chain mail starter kit'), findsOneWidget);
     expect(find.text('Starting money'), findsOneWidget);
-    expect(find.text('Alignment'), findsOneWidget);
     expect(find.text('Strength'), findsWidgets);
 
     await tester.tap(find.byIcon(Icons.arrow_back));
@@ -99,7 +103,7 @@ void main() {
     final repository = InMemoryCharacterRepository.empty(
       compendiumRepository: compendiumRepository,
     );
-    await tester.binding.setSurfaceSize(const Size(1200, 2400));
+    await tester.binding.setSurfaceSize(const Size(1200, 4200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
@@ -130,6 +134,11 @@ void main() {
     await tester.tap(find.text('Wizard').last);
     await tester.pumpAndSettle();
 
+    await tester.scrollUntilVisible(
+      find.widgetWithText(FilledButton, 'Guardar draft').first,
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Guardar draft'));
     await tester.pumpAndSettle();
 
@@ -163,7 +172,7 @@ void main() {
     final repository = InMemoryCharacterRepository.empty(
       compendiumRepository: compendiumRepository,
     );
-    await tester.binding.setSurfaceSize(const Size(1200, 2400));
+    await tester.binding.setSurfaceSize(const Size(1200, 4200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
@@ -183,6 +192,11 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField).first, 'Aelar');
+    await tester.scrollUntilVisible(
+      find.widgetWithText(FilledButton, 'Guardar draft').first,
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Guardar draft'));
     await tester.pumpAndSettle();
 
@@ -193,6 +207,11 @@ void main() {
 
     expect(find.widgetWithText(FilledButton, 'Save changes'), findsOneWidget);
     await tester.enterText(find.byType(TextFormField).first, 'Meris');
+    await tester.scrollUntilVisible(
+      find.widgetWithText(FilledButton, 'Save changes').first,
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Save changes'));
     await tester.pumpAndSettle();
 

@@ -12,6 +12,7 @@ class CharacterRecord {
     required this.abilityScoreProvenance,
     required this.hitPoints,
     required this.finishingDetails,
+    required this.narrativeSelections,
     required this.equipmentLoadout,
     required this.currency,
     required this.inventory,
@@ -28,6 +29,7 @@ class CharacterRecord {
   final CharacterAbilityScoreProvenance? abilityScoreProvenance;
   final CharacterHitPoint? hitPoints;
   final CharacterFinishingDetail? finishingDetails;
+  final List<CharacterNarrativeSelection> narrativeSelections;
   final CharacterEquipmentLoadout? equipmentLoadout;
   final CharacterCurrencyData? currency;
   final List<CharacterInventoryData> inventory;

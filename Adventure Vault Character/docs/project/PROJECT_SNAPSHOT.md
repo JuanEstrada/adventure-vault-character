@@ -13,18 +13,17 @@ and delivery risks.
 
 ## Project Phase
 
-Implementation shell established, with SRD source extraction materialized
+Implementation shell established, with SRD source extraction materialized and
+the first official finishing-details integration now implemented
 
 ## Current Focus
 
-Stabilizing the normalized Drift model now that the `characters` row has been
-trimmed back further in Drift `v10`, while keeping the guided draft, sheet
-flow, and edit/reopen path stable on top of normalized reads, and aligning the
-local SRD reference material around the cleaner markdown-derived source tree.
-In parallel, the project now also needs a product-ready local rules-source
-inventory so narrative finishing-detail options and future deterministic rules
-can be extracted from the right official files instead of being rediscovered
-ad hoc.
+Stabilizing and extending the normalized Drift model now that the guided
+draft, sheet flow, and edit/reopen path now also consume the official
+narrative option catalogs through a real finishing-details integration. In
+parallel, the project now also needs to keep translating the local SRD and
+Wizards XML sources into deterministic character systems for spells, combat,
+and richer inventory behavior.
 
 ## Repository State
 
@@ -35,10 +34,10 @@ ad hoc.
   state.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- The Drift schema is now at `v10` and includes normalized character-side
+- The Drift schema is now at `v11` and includes normalized character-side
   tables for `ability scores`, `ability score provenance`, `hit points`,
-  `finishing details`, `equipment loadout`, `skills`, `saving throws`, `inventory`,
-  `proficiencies`, and `currency`.
+  `finishing details`, `narrative selections`, `equipment loadout`,
+  `skills`, `saving throws`, `inventory`, `proficiencies`, and `currency`.
 - The local database now also includes compendium definition tables for
   `skills`, `equipment`, `classes`, `character advancement`,
   `class standard array recommendations`, `narrative option groups`,
@@ -87,6 +86,9 @@ ad hoc.
   finishing-detail catalogs, including official `alignment`,
   `personality traits`, `ideals`, `bonds`, `flaws`, and an initial
   setting-backed `faction` base.
+- Drift `v11` now also adds a dedicated normalized character-side table for
+  persisted narrative selections, so `empty / rolled / manual` state survives
+  `save -> reopen` independently of the compendium tables.
 - The characters feature now uses explicit application services for
   `create character` and `character sheet` loading, with shared summary
   mapping extracted from the repository implementation.
@@ -98,6 +100,11 @@ ad hoc.
   the character sheet. The app uses a dedicated
   `CharacterEditorController`, reuses the existing builder sections for edit,
   and persists updates back into normalized Drift rows.
+- The create/edit finishing-details step now consumes normalized official
+  narrative option groups through a dedicated `FinishingDetailsService`.
+- The guided form now exposes `empty`, `rolled`, and `manual` modes for
+  `alignment`, `faction`, `personality traits`, `ideals`, `bonds`, and
+  `flaws`.
 - Character-sheet reads now flow through a dedicated read-side domain layer:
   `CharacterRecord` gathers the read inputs and `CharacterDomainMapper`
   translates them into `CharacterDomainModel`.
@@ -127,12 +134,16 @@ ad hoc.
 - The character sheet now renders mapped MVP data for identity, background,
   abilities, progression, hit points, structured equipment data, normalized
   saving throws, proficiencies, and finishing details.
+- The character sheet now also renders the resolved narrative fields
+  individually instead of depending only on the old merged narrative note.
 - Regression tests now cover Drift migrations from legacy schemas into `v4`.
 - Regression tests now also cover loading an editable aggregate from
   normalized persistence and mapping it back into the current
   `CreateCharacterInput` contract.
 - Regression tests now also cover `open -> edit -> save -> reopen` through
   both repository and widget-level flows.
+- Regression tests now also cover deterministic narrative-option source
+  resolution and normalized persistence of narrative selections.
 - A dedicated `CompendiumRepository` now loads active XML assets directly from
   `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`,
   with JSON fallback preserved.
@@ -242,10 +253,6 @@ ad hoc.
 - Expand the edit flow beyond the current guided MVP fields and decide how
   later post-creation inventory or combat editing should interact with the
   same aggregate.
-- Wire the normalized narrative option groups into the real
-  finishing-details create/edit flow so the documented
-  `empty / rolled / manual` selection modes can move from spec into app
-  behavior.
 - Decide the source-of-truth policy between runtime SRD 5.5e XML and the
   broader official `DND_5e/WizardsOfTheCoast` background corpus for narrative
   option catalogs.
@@ -298,16 +305,13 @@ ad hoc.
 
 ## Next Recommended Steps
 
-1. Extract a first normalized official base for
-   `personality traits`, `ideals`, `bonds`, and `flaws` from
-   `backgrounds-phb.xml`.
-2. Extract an initial official `faction` base from
-   `backgrounds-scag.xml`, `backgrounds-pam.xml`, `backgrounds-ggr.xml`, and
-   `backgrounds-erlw.xml`.
-3. Build the source-of-truth policy for narrative option catalogs across SRD
+1. Build the source-of-truth policy for narrative option catalogs across SRD
    and broader official Wizards XML.
-4. Continue translating the available rules sources into explicit
+2. Continue translating the available rules sources into explicit
    deterministic application/domain services.
+3. Start the spell-system foundation using the existing class and spell
+   definitions already normalized into Drift.
+4. Expand the inventory/equipment model beyond starter loadouts.
 5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
 ## Next Session Guardrail

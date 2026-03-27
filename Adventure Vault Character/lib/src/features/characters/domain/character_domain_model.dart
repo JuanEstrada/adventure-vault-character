@@ -1,4 +1,5 @@
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 import 'package:flutter/foundation.dart';
 
@@ -138,17 +139,13 @@ class CharacterFeaturesNotesDomainModel {
     required this.background,
     required this.proficientSkills,
     required this.otherProficiencies,
-    required this.alignment,
-    required this.appearanceDetails,
-    required this.narrativeDetails,
+    required this.finishingDetails,
   });
 
   final CharacterBackgroundDomainModel background;
   final List<CharacterSkillDomainModel> proficientSkills;
   final List<CharacterProficiencyDomainModel> otherProficiencies;
-  final String alignment;
-  final String appearanceDetails;
-  final String narrativeDetails;
+  final CharacterFinishingDetailsDomainModel finishingDetails;
 
   List<String> get proficientSkillLabels =>
       proficientSkills.map((item) => item.displayLabel).toList(growable: false);
@@ -157,6 +154,57 @@ class CharacterFeaturesNotesDomainModel {
       .map((item) => item.displayLabel)
       .toSet()
       .toList(growable: false);
+
+  String get alignment =>
+      finishingDetails.valueFor(NarrativeFieldKey.alignment) ?? 'Unaligned';
+
+  String get appearanceDetails => finishingDetails.appearanceDetails;
+
+  String get narrativeDetails => finishingDetails.narrativeNotes;
+}
+
+@immutable
+class CharacterFinishingDetailsDomainModel {
+  const CharacterFinishingDetailsDomainModel({
+    required this.appearanceDetails,
+    required this.narrativeNotes,
+    required this.narrativeSelections,
+    this.portraitAssetPath,
+  });
+
+  final String appearanceDetails;
+  final String narrativeNotes;
+  final List<CharacterNarrativeSelectionDomainModel> narrativeSelections;
+  final String? portraitAssetPath;
+
+  String? valueFor(NarrativeFieldKey fieldKey) {
+    for (final selection in narrativeSelections) {
+      if (selection.fieldKey == fieldKey && selection.hasValue) {
+        return selection.valueText;
+      }
+    }
+    return null;
+  }
+
+  List<CharacterNarrativeSelectionDomainModel> get visibleSelections =>
+      narrativeSelections.where((selection) => selection.hasValue).toList(
+        growable: false,
+      );
+}
+
+@immutable
+class CharacterNarrativeSelectionDomainModel {
+  const CharacterNarrativeSelectionDomainModel({
+    required this.fieldKey,
+    required this.mode,
+    required this.valueText,
+  });
+
+  final NarrativeFieldKey fieldKey;
+  final NarrativeSelectionMode mode;
+  final String? valueText;
+
+  bool get hasValue => valueText != null && valueText!.trim().isNotEmpty;
 }
 
 @immutable

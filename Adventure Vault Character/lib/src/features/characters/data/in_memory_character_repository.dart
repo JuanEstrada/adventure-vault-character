@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
@@ -181,9 +182,23 @@ class InMemoryCharacterRepository implements CharacterRepository {
             ),
           ),
         ],
-        alignment: createdInput?.alignment ?? 'Neutral',
-        appearanceDetails: createdInput?.appearanceDetails ?? '',
-        narrativeDetails: createdInput?.narrativeDetails ?? '',
+        finishingDetails: CharacterFinishingDetailsDomainModel(
+          portraitAssetPath: createdInput?.portraitAssetPath,
+          appearanceDetails: createdInput?.appearanceDetails ?? '',
+          narrativeNotes: createdInput?.narrativeDetails ?? '',
+          narrativeSelections: NarrativeFieldKey.values
+              .map(
+                (fieldKey) => CharacterNarrativeSelectionDomainModel(
+                  fieldKey: fieldKey,
+                  mode: createdInput?.finishingDetails
+                          .selectionFor(fieldKey)
+                          .mode ??
+                      NarrativeSelectionMode.empty,
+                  valueText: createdInput?.finishingDetails.valueFor(fieldKey),
+                ),
+              )
+              .toList(growable: false),
+        ),
       ),
       equipment: CharacterEquipmentDomainModel(
         equipmentSummary: catalog.equipmentSummaryForClass(className),
@@ -278,9 +293,12 @@ class InMemoryCharacterRepository implements CharacterRepository {
             .toList(growable: false),
       ),
       finishingDetails: EditableCharacterFinishingDetails(
-        alignment: sheet.featuresNotes.alignment,
         appearanceDetails: sheet.featuresNotes.appearanceDetails,
-        narrativeDetails: sheet.featuresNotes.narrativeDetails,
+        narrativeNotes: sheet.featuresNotes.narrativeDetails,
+        portraitAssetPath: createdInput?.portraitAssetPath,
+        narrativeSelections:
+            createdInput?.finishingDetails.narrativeSelections ??
+            CharacterFinishingDetailsInput.empty().narrativeSelections,
       ),
       createdAt: DateTime.fromMicrosecondsSinceEpoch(int.tryParse(id) ?? 0),
       updatedAt: DateTime.fromMicrosecondsSinceEpoch(int.tryParse(id) ?? 0),

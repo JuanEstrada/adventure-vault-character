@@ -1,4 +1,6 @@
+import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_mapper.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_record.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/editable_character.dart';
@@ -53,9 +55,12 @@ class EditableCharacterMapper {
             .toList(growable: false),
       ),
       finishingDetails: EditableCharacterFinishingDetails(
-        alignment: character.featuresNotes.alignment,
         appearanceDetails: character.featuresNotes.appearanceDetails,
-        narrativeDetails: character.featuresNotes.narrativeDetails,
+        narrativeNotes: character.featuresNotes.narrativeDetails,
+        portraitAssetPath: record.finishingDetails?.portraitAssetPath,
+        narrativeSelections: record.narrativeSelections
+            .map(_mapNarrativeSelection)
+            .toList(growable: false),
       ),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
@@ -99,10 +104,12 @@ class EditableCharacterMapper {
       currentHitPoints: character.hitPoints.current,
       maximumHitPoints: character.hitPoints.maximum,
       temporaryHitPoints: character.hitPoints.temporary,
-      alignment: character.finishingDetails.alignment,
-      appearanceDetails: character.finishingDetails.appearanceDetails,
-      narrativeDetails: character.finishingDetails.narrativeDetails,
-      portraitAssetPath: character.identity.portraitAssetPath,
+      finishingDetails: CharacterFinishingDetailsInput(
+        portraitAssetPath: character.finishingDetails.portraitAssetPath,
+        appearanceDetails: character.finishingDetails.appearanceDetails,
+        narrativeNotes: character.finishingDetails.narrativeNotes,
+        narrativeSelections: _resolvedNarrativeSelections(character),
+      ),
     );
   }
 
@@ -141,5 +148,38 @@ class EditableCharacterMapper {
       methodKey: persisted.methodKey,
       assignedScoresByAbility: assignedScoresByAbility,
     );
+  }
+
+  NarrativeSelection _mapNarrativeSelection(CharacterNarrativeSelection row) {
+    final fieldKey = NarrativeFieldKeyX.fromStorageKey(row.fieldKey);
+    final mode = NarrativeSelectionModeX.fromStorageKey(row.selectionMode);
+    if (fieldKey == null || mode == null) {
+      return const NarrativeSelection.empty(NarrativeFieldKey.alignment);
+    }
+
+    return NarrativeSelection(
+      fieldKey: fieldKey,
+      mode: mode,
+      valueText: row.valueText,
+      groupId: row.groupId,
+      optionId: row.optionId,
+      rollValue: row.rollValue,
+    );
+  }
+
+  List<NarrativeSelection> _resolvedNarrativeSelections(
+    EditableCharacter character,
+  ) {
+    final selectionsByField = <NarrativeFieldKey, NarrativeSelection>{
+      for (final selection in character.finishingDetails.narrativeSelections)
+        selection.fieldKey: selection,
+    };
+
+    return NarrativeFieldKey.values
+        .map(
+          (fieldKey) =>
+              selectionsByField[fieldKey] ?? NarrativeSelection.empty(fieldKey),
+        )
+        .toList(growable: false);
   }
 }

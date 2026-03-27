@@ -1,5 +1,6 @@
 import 'package:adventure_vault_character/src/features/characters/data/drift_character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/in_memory_compendium_repository.dart';
@@ -49,9 +50,24 @@ void main() {
           currentHitPoints: 28,
           maximumHitPoints: 28,
           temporaryHitPoints: 0,
-          alignment: 'Neutral',
-          appearanceDetails: 'Tall and quiet',
-          narrativeDetails: 'Keeps careful notes.',
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: 'Tall and quiet',
+            narrativeNotes: 'Keeps careful notes.',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection(
+                fieldKey: NarrativeFieldKey.alignment,
+                mode: NarrativeSelectionMode.manual,
+                valueText: 'Neutral',
+                groupId: 'narrative-alignment-core',
+                optionId: 'narrative-alignment-5',
+              ),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
         ),
       );
 
@@ -78,6 +94,9 @@ void main() {
       final finishingDetails = await (database.select(
         database.characterFinishingDetails,
       )..where((table) => table.characterId.equals(summary.id))).getSingle();
+      final narrativeSelections = await (database.select(
+        database.characterNarrativeSelections,
+      )..where((table) => table.characterId.equals(summary.id))).get();
       final sheet = await repository.getCharacterSheetById(summary.id);
 
       expect(row.backgroundDefinitionRefId, 'acolyte');
@@ -97,6 +116,10 @@ void main() {
       expect(hitPoints.maximum, 27);
       expect(finishingDetails.alignment, 'Neutral');
       expect(finishingDetails.appearanceDetails, 'Tall and quiet');
+      expect(narrativeSelections, hasLength(1));
+      expect(narrativeSelections.single.fieldKey, 'alignment');
+      expect(narrativeSelections.single.selectionMode, 'manual');
+      expect(narrativeSelections.single.valueText, 'Neutral');
 
       expect(sheet, isNotNull);
       expect(sheet!.featuresNotes.background.name, 'Acolyte');
@@ -162,9 +185,24 @@ void main() {
           currentHitPoints: 28,
           maximumHitPoints: 28,
           temporaryHitPoints: 0,
-          alignment: 'Neutral',
-          appearanceDetails: 'Tall and quiet',
-          narrativeDetails: 'Keeps careful notes.',
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: 'Tall and quiet',
+            narrativeNotes: 'Keeps careful notes.',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection(
+                fieldKey: NarrativeFieldKey.alignment,
+                mode: NarrativeSelectionMode.manual,
+                valueText: 'Neutral',
+                groupId: 'narrative-alignment-core',
+                optionId: 'narrative-alignment-5',
+              ),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
         ),
       );
 
@@ -195,9 +233,24 @@ void main() {
           currentHitPoints: 28,
           maximumHitPoints: 28,
           temporaryHitPoints: 0,
-          alignment: 'Lawful Good',
-          appearanceDetails: 'Short hair',
-          narrativeDetails: 'Updated after review.',
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: 'Short hair',
+            narrativeNotes: 'Updated after review.',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection(
+                fieldKey: NarrativeFieldKey.alignment,
+                mode: NarrativeSelectionMode.manual,
+                valueText: 'Lawful Good',
+                groupId: 'narrative-alignment-core',
+                optionId: 'narrative-alignment-1',
+              ),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
         ),
       );
 
