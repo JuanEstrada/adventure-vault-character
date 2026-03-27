@@ -348,6 +348,97 @@ class ClassDefinitions extends Table {
   ];
 }
 
+class CharacterAdvancementDefinitions extends Table {
+  IntColumn get level => integer()();
+
+  IntColumn get experience => integer()();
+
+  IntColumn get proficiencyBonus =>
+      integer().named('proficiency_bonus')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {level};
+}
+
+class ClassStandardArrayRecommendations extends Table {
+  TextColumn get classId => text().named('class_id')();
+
+  TextColumn get className => text().named('class_name')();
+
+  IntColumn get strength => integer()();
+
+  IntColumn get dexterity => integer()();
+
+  IntColumn get constitution => integer()();
+
+  IntColumn get intelligence => integer()();
+
+  IntColumn get wisdom => integer()();
+
+  IntColumn get charisma => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {classId};
+
+  @override
+  List<Set<Column<Object>>> get uniqueKeys => <Set<Column<Object>>>[
+    {className},
+  ];
+}
+
+class NarrativeOptionGroups extends Table {
+  TextColumn get id => text()();
+
+  TextColumn get fieldKey => text().named('field_key')();
+
+  TextColumn get sourceType => text().named('source_type')();
+
+  TextColumn get sourceId => text().named('source_id').nullable()();
+
+  TextColumn get sourceName => text().named('source_name').nullable()();
+
+  TextColumn get backgroundId => text().named('background_id').nullable()();
+
+  TextColumn get backgroundName => text().named('background_name').nullable()();
+
+  TextColumn get title => text()();
+
+  TextColumn get diceFormula => text().named('dice_formula').nullable()();
+
+  IntColumn get optionCount =>
+      integer().named('option_count').withDefault(const Constant(0))();
+
+  TextColumn get sourceBook => text().named('source_book').nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class NarrativeOptions extends Table {
+  TextColumn get id => text()();
+
+  TextColumn get groupId =>
+      text().named('group_id').references(NarrativeOptionGroups, #id)();
+
+  IntColumn get optionIndex => integer().named('option_index')();
+
+  IntColumn get rollMin => integer().named('roll_min').nullable()();
+
+  IntColumn get rollMax => integer().named('roll_max').nullable()();
+
+  TextColumn get label => text().nullable()();
+
+  TextColumn get content => text().named('content')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<Set<Column<Object>>> get uniqueKeys => <Set<Column<Object>>>[
+    {groupId, optionIndex},
+  ];
+}
+
 class BackgroundDefinitions extends Table {
   TextColumn get id => text()();
 
@@ -457,6 +548,10 @@ class TrinketDefinitions extends Table {
     CharacterProficiencies,
     CharacterCurrency,
     ClassDefinitions,
+    CharacterAdvancementDefinitions,
+    ClassStandardArrayRecommendations,
+    NarrativeOptionGroups,
+    NarrativeOptions,
     BackgroundDefinitions,
     SpellDefinitions,
     TrinketDefinitions,
@@ -478,7 +573,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.executor(super.executor);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -607,6 +702,14 @@ class AppDatabase extends _$AppDatabase {
         await _backfillCharacterEquipmentLoadoutData();
         await _migrateCharactersToV8();
       }
+      if (from < 9) {
+        await migrator.createTable(characterAdvancementDefinitions);
+        await migrator.createTable(classStandardArrayRecommendations);
+      }
+      if (from < 10) {
+        await migrator.createTable(narrativeOptionGroups);
+        await migrator.createTable(narrativeOptions);
+      }
 
       await _createIndexes();
     },
@@ -652,6 +755,26 @@ class AppDatabase extends _$AppDatabase {
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_character_proficiencies_character '
       'ON character_proficiencies (character_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_character_advancement_definitions_experience '
+      'ON character_advancement_definitions (experience)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_class_standard_array_recommendations_name '
+      'ON class_standard_array_recommendations (class_name)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_narrative_option_groups_field '
+      'ON narrative_option_groups (field_key)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_narrative_option_groups_background '
+      'ON narrative_option_groups (background_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_narrative_options_group '
+      'ON narrative_options (group_id, option_index)',
     );
   }
 

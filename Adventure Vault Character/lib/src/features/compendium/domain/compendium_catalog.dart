@@ -7,6 +7,7 @@ class CompendiumCatalog {
     required this.races,
     required this.classes,
     required this.backgrounds,
+    required this.narrativeOptionGroups,
     required this.generatedAbilityScoreSet,
     required this.manualAbilityScoreOptions,
     required this.characterAdvancement,
@@ -21,6 +22,7 @@ class CompendiumCatalog {
   final List<String> races;
   final List<String> classes;
   final List<CompendiumBackground> backgrounds;
+  final List<CompendiumNarrativeOptionGroup> narrativeOptionGroups;
   final List<int> generatedAbilityScoreSet;
   final List<int> manualAbilityScoreOptions;
   final List<CharacterAdvancementEntry> characterAdvancement;
@@ -30,6 +32,43 @@ class CompendiumCatalog {
   final List<CompendiumMonster> monsters;
   final Map<String, EquipmentSummaryViewData> equipmentSummariesByClass;
   final Map<String, List<CompendiumEquipmentLoadout>> equipmentLoadoutsByClass;
+
+  CompendiumCatalog copyWith({
+    List<String>? races,
+    List<String>? classes,
+    List<CompendiumBackground>? backgrounds,
+    List<CompendiumNarrativeOptionGroup>? narrativeOptionGroups,
+    List<int>? generatedAbilityScoreSet,
+    List<int>? manualAbilityScoreOptions,
+    List<CharacterAdvancementEntry>? characterAdvancement,
+    List<StandardArrayByClassEntry>? standardArrayByClass,
+    List<CompendiumSpell>? spells,
+    List<CompendiumFeat>? feats,
+    List<CompendiumMonster>? monsters,
+    Map<String, EquipmentSummaryViewData>? equipmentSummariesByClass,
+    Map<String, List<CompendiumEquipmentLoadout>>? equipmentLoadoutsByClass,
+  }) {
+    return CompendiumCatalog(
+      races: races ?? this.races,
+      classes: classes ?? this.classes,
+      backgrounds: backgrounds ?? this.backgrounds,
+      narrativeOptionGroups:
+          narrativeOptionGroups ?? this.narrativeOptionGroups,
+      generatedAbilityScoreSet:
+          generatedAbilityScoreSet ?? this.generatedAbilityScoreSet,
+      manualAbilityScoreOptions:
+          manualAbilityScoreOptions ?? this.manualAbilityScoreOptions,
+      characterAdvancement: characterAdvancement ?? this.characterAdvancement,
+      standardArrayByClass: standardArrayByClass ?? this.standardArrayByClass,
+      spells: spells ?? this.spells,
+      feats: feats ?? this.feats,
+      monsters: monsters ?? this.monsters,
+      equipmentSummariesByClass:
+          equipmentSummariesByClass ?? this.equipmentSummariesByClass,
+      equipmentLoadoutsByClass:
+          equipmentLoadoutsByClass ?? this.equipmentLoadoutsByClass,
+    );
+  }
 
   CompendiumBackground? backgroundById(String? id) {
     for (final background in backgrounds) {
@@ -65,6 +104,24 @@ class CompendiumCatalog {
         selectedItems: fallbackSummary.highlightItems,
       ),
     ];
+  }
+
+  List<CompendiumNarrativeOptionGroup> narrativeGroupsForField(String fieldKey) {
+    return narrativeOptionGroups
+        .where((group) => group.fieldKey == fieldKey)
+        .toList(growable: false);
+  }
+
+  List<CompendiumNarrativeOptionGroup> narrativeGroupsForBackground(
+    String backgroundId,
+    String fieldKey,
+  ) {
+    return narrativeOptionGroups
+        .where(
+          (group) =>
+              group.fieldKey == fieldKey && group.backgroundId == backgroundId,
+        )
+        .toList(growable: false);
   }
 }
 
@@ -119,6 +176,54 @@ class CompendiumBackground {
   final String summary;
   final List<String> bonuses;
   final List<String> socialPerks;
+}
+
+@immutable
+class CompendiumNarrativeOptionGroup {
+  const CompendiumNarrativeOptionGroup({
+    required this.id,
+    required this.fieldKey,
+    required this.sourceType,
+    required this.title,
+    required this.options,
+    this.sourceId,
+    this.sourceName,
+    this.backgroundId,
+    this.backgroundName,
+    this.diceFormula,
+    this.sourceBook,
+  });
+
+  final String id;
+  final String fieldKey;
+  final String sourceType;
+  final String? sourceId;
+  final String? sourceName;
+  final String? backgroundId;
+  final String? backgroundName;
+  final String title;
+  final String? diceFormula;
+  final String? sourceBook;
+  final List<CompendiumNarrativeOption> options;
+}
+
+@immutable
+class CompendiumNarrativeOption {
+  const CompendiumNarrativeOption({
+    required this.id,
+    required this.optionIndex,
+    required this.text,
+    this.rollMin,
+    this.rollMax,
+    this.label,
+  });
+
+  final String id;
+  final int optionIndex;
+  final int? rollMin;
+  final int? rollMax;
+  final String? label;
+  final String text;
 }
 
 @immutable

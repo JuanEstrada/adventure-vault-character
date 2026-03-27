@@ -18,7 +18,7 @@ Implementation shell established, with SRD source extraction materialized
 ## Current Focus
 
 Stabilizing the normalized Drift model now that the `characters` row has been
-trimmed back further in Drift `v8`, while keeping the guided draft, sheet
+trimmed back further in Drift `v10`, while keeping the guided draft, sheet
 flow, and edit/reopen path stable on top of normalized reads, and aligning the
 local SRD reference material around the cleaner markdown-derived source tree.
 In parallel, the project now also needs a product-ready local rules-source
@@ -35,12 +35,14 @@ ad hoc.
   state.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- The Drift schema is now at `v8` and includes normalized character-side
+- The Drift schema is now at `v10` and includes normalized character-side
   tables for `ability scores`, `ability score provenance`, `hit points`,
   `finishing details`, `equipment loadout`, `skills`, `saving throws`, `inventory`,
   `proficiencies`, and `currency`.
 - The local database now also includes compendium definition tables for
-  `skills`, `equipment`, `classes`, `backgrounds`, `spells`, and `trinkets`.
+  `skills`, `equipment`, `classes`, `character advancement`,
+  `class standard array recommendations`, `narrative option groups`,
+  `narrative options`, `backgrounds`, `spells`, and `trinkets`.
 - The create-character screen now uses a first guided draft covering
   `Race + name`, `Background`, `Class / level / experience`, and
   `Ability scores`.
@@ -78,6 +80,13 @@ ad hoc.
   `equipment_loadout_label` from `characters`, migrates them into a dedicated
   normalized loadout table, and keeps edit/draft reopening on an explicit
   persisted loadout reference instead of inventory inference.
+- Drift `v9` now also adds normalized reference tables for
+  `character advancement` and `class standard array recommendations`, so
+  those rules no longer need to live only as runtime hardcoded lists.
+- Drift `v10` now also adds normalized reference tables for narrative
+  finishing-detail catalogs, including official `alignment`,
+  `personality traits`, `ideals`, `bonds`, `flaws`, and an initial
+  setting-backed `faction` base.
 - The characters feature now uses explicit application services for
   `create character` and `character sheet` loading, with shared summary
   mapping extracted from the repository implementation.
@@ -127,6 +136,12 @@ ad hoc.
 - A dedicated `CompendiumRepository` now loads active XML assets directly from
   `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`,
   with JSON fallback preserved.
+- The default app wiring now shares the same `AppDatabase` between
+  `DriftCharacterRepository` and `AssetCompendiumRepository`, allowing
+  compendium startup loads to seed normalized rules-reference data locally.
+- `AssetCompendiumRepository` now parses and seeds normalized narrative option
+  groups from local Wizards XML sources instead of leaving those official
+  finishing-detail bases only in source documents.
 - The compendium parser now reads FightClub SRD 5.5e `background`,
   `race`, `class`, `spell`, `feat`, and `monster` entries directly rather than
   depending on the previous curated runtime compendium XML set.
@@ -227,12 +242,10 @@ ad hoc.
 - Expand the edit flow beyond the current guided MVP fields and decide how
   later post-creation inventory or combat editing should interact with the
   same aggregate.
-- Extract a normalized official option base for
-  `personality traits`, `ideals`, `bonds`, and `flaws` from local Wizards
-  background XML instead of leaving those future finishing-detail options
-  only in source documents.
-- Extract and normalize an initial official `faction` base from local Wizards
-  setting backgrounds.
+- Wire the normalized narrative option groups into the real
+  finishing-details create/edit flow so the documented
+  `empty / rolled / manual` selection modes can move from spec into app
+  behavior.
 - Decide the source-of-truth policy between runtime SRD 5.5e XML and the
   broader official `DND_5e/WizardsOfTheCoast` background corpus for narrative
   option catalogs.

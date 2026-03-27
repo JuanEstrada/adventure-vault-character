@@ -36,11 +36,14 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
   @override
   void initState() {
     super.initState();
+    final database = widget.characterRepository == null ? AppDatabase() : null;
+    _ownedDatabase = database;
     final compendiumRepository =
-        widget.compendiumRepository ?? AssetCompendiumRepository();
+        widget.compendiumRepository ??
+        AssetCompendiumRepository(database: database);
     final repository =
         widget.characterRepository ??
-        _createDefaultRepository(compendiumRepository);
+        _createDefaultRepository(database!, compendiumRepository);
     _controller = AppController(
       characterRepository: repository,
       compendiumRepository: compendiumRepository,
@@ -49,10 +52,9 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
   }
 
   CharacterRepository _createDefaultRepository(
+    AppDatabase database,
     CompendiumRepository compendiumRepository,
   ) {
-    final database = AppDatabase();
-    _ownedDatabase = database;
     return DriftCharacterRepository(
       database: database,
       compendiumRepository: compendiumRepository,

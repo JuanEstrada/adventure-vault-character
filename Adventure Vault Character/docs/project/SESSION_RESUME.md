@@ -56,11 +56,13 @@ Verified on 2026-03-27:
   SQLite database.
 - The previous single-table character persistence has now been extended into a
   normalized Drift schema.
-- The Drift schema is now at `v8` and includes dedicated character-side tables
+- The Drift schema is now at `v10` and includes dedicated character-side tables
   for `ability scores`, `ability score provenance`, `hit points`,
   `finishing details`, `equipment loadout`, `skills`, `saving throws`, `inventory`,
   `proficiencies`, and `currency`, plus
   compendium-side definition tables for `skills`, `equipment`, `classes`,
+  `character advancement`, `class standard array recommendations`,
+  `narrative option groups`, `narrative options`,
   `backgrounds`, `spells`, and `trinkets`.
 - A first vertical slice now supports `create -> save -> card -> open sheet`
   with a minimal character record: `name`, `race`, `class`, and `level`.
@@ -148,9 +150,24 @@ Verified on 2026-03-27:
   now been removed from the active code path, with the remaining
   `EquipmentSummaryViewData` extracted into its own small shared type.
 - Drift migration regression coverage now exists for legacy schemas through
-  `v8`, including verification of backfilled normalized tables, migrated
+  `v10`, including verification of backfilled normalized tables, migrated
   ability-score provenance, and preserved hit-point / finishing-detail /
   equipment-loadout data.
+- The app startup path now shares one `AppDatabase` instance between the
+  Drift character repository and the asset compendium repository, so local
+  compendium loads can also seed normalized rule-reference tables.
+- `AssetCompendiumRepository` no longer treats
+  `character advancement` and `standard array by class` as runtime-only
+  lists. Those rules are now seeded into normalized Drift tables and read
+  back through the compendium catalog load path.
+- The app now also normalizes official narrative option catalogs into Drift:
+  `alignment` as a core reference group, `personality traits / ideals / bonds / flaws`
+  from `backgrounds-phb.xml`, and an initial `faction` base from
+  `backgrounds-scag.xml`, `backgrounds-pam.xml`, `backgrounds-ggr.xml`, and
+  `backgrounds-erlw.xml`.
+- `CompendiumCatalog` now exposes normalized `narrativeOptionGroups`, so the
+  future finishing-details flow can consume official options without reparsing
+  raw XML in widgets.
 - Draft save now runs through a non-widget validator that reports missing
   sections using builder-facing names before persistence.
 - A dedicated `CompendiumRepository` boundary now sits between the app and
@@ -222,6 +239,8 @@ Verified on 2026-03-27:
   active while the bundled base compendium remains always enabled.
 - `test/widget_test.dart` covers the offline path into the main menu.
 - `flutter test` passed after the schema and repository changes.
+- `flutter analyze` and `flutter test` passed after the `v10` narrative-rules
+  normalization work.
 
 This means the repository now has an end-to-end offline character edit flow on
 top of the normalized read/write model, with shared rules and regression

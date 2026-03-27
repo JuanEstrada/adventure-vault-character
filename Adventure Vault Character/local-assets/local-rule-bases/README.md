@@ -82,10 +82,12 @@ Archivos especialmente útiles:
 - `local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Guildmasters_Guide_to_Ravnica/backgrounds-ggr.xml`
 - `local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml`
 
-Limitación actual:
+Estado actual:
 
-- el contenido existe, pero todavía no está extraído ni normalizado en una
-  estructura de app lista para consulta.
+- el contenido ya empezó a extraerse y normalizarse hacia tablas internas de
+  la app para `traits`, `ideals`, `bonds`, `flaws` y una base inicial de
+  `faction`.
+- la política final de precedencia y filtrado por contexto sigue pendiente.
 
 ## 3. Corpus markdown SRD limpio
 
@@ -182,7 +184,7 @@ Sirven hoy para:
 
 ## 1. Catálogo oficial de finishing details narrativos
 
-Falta crear una base interna clara para:
+Base inicial ya normalizada en la app para:
 
 - `personality traits`
 - `ideals`
@@ -211,16 +213,17 @@ Problema:
 
 ## 3. Parser o extractor reutilizable para tablas narrativas
 
-Falta una extracción consistente para:
+Ya existe una primera extracción consistente para:
 
 - filas numeradas de traits, ideals, bonds y flaws;
 - listas de factions;
 - referencias por background o setting.
 
-Hoy:
+Pendiente:
 
-- el material existe en XML;
-- no existe todavía una salida normalizada lista para la app.
+- ampliar cobertura a más fuentes y variantes;
+- decidir filtrado final por background o por setting;
+- conectar la salida normalizada con el flujo real de finishing details.
 
 ## 4. Reglas futuras no cerradas como catálogo local
 

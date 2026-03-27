@@ -1,12 +1,18 @@
 import 'dart:convert';
 
+import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/asset_compendium_repository.dart';
+import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('loads catalog from FightClub SRD 5.5e assets', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    addTearDown(database.close);
+
     final repository = AssetCompendiumRepository(
+      database: database,
       bundle: _FakeAssetBundle({
         'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_backgrounds_5.5e.xml':
             _backgroundsFixture,
@@ -20,6 +26,16 @@ void main() {
             _featsFixture,
         'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_bestiary_5.5e.xml':
             _monstersFixture,
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/01_Core/01_Players_Handbook/backgrounds-phb.xml':
+            _phbNarrativeFixture,
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Sword_Coast_Adventurers_Guide/backgrounds-scag.xml':
+            _scagNarrativeFixture,
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Planescape_Adventures_in_the_Multiverse/backgrounds-pam.xml':
+            _pamNarrativeFixture,
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Guildmasters_Guide_to_Ravnica/backgrounds-ggr.xml':
+            _ggrNarrativeFixture,
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml':
+            _erlwNarrativeFixture,
         'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{}),
       }),
     );
@@ -34,6 +50,23 @@ void main() {
     expect(catalog.backgrounds.map((item) => item.name), contains('Acolyte'));
     expect(catalog.generatedAbilityScoreSet, <int>[15, 14, 13, 12, 10, 8]);
     expect(catalog.manualAbilityScoreOptions, containsAll(<int>[8, 15]));
+    expect(
+      catalog.narrativeGroupsForField('alignment').single.options,
+      hasLength(9),
+    );
+    expect(
+      catalog.narrativeGroupsForBackground('acolyte', 'ideals').single.options,
+      hasLength(2),
+    );
+    expect(
+      catalog.narrativeGroupsForField('faction').map((item) => item.title),
+      containsAll(<String>[
+        'Factions of the Sword Coast',
+        'Factions of Sigil',
+        'Guilds of Ravnica',
+        'Dragonmarked Houses',
+      ]),
+    );
     expect(catalog.characterAdvancement.first.level, 1);
     expect(catalog.standardArrayByClass.first.classId, 'barbarian');
     expect(catalog.spells.map((item) => item.level), containsAll(<int>[0, 1]));
@@ -49,6 +82,31 @@ void main() {
       catalog.equipmentLoadoutsForClass('Fighter').map((item) => item.id),
       containsAll(<String>['fighter-a', 'fighter-b']),
     );
+
+    final advancementRows = await database
+        .select(database.characterAdvancementDefinitions)
+        .get();
+    final standardArrayRows = await database
+        .select(database.classStandardArrayRecommendations)
+        .get();
+    final narrativeGroupRows = await database
+        .select(database.narrativeOptionGroups)
+        .get();
+    final narrativeOptionRows = await database
+        .select(database.narrativeOptions)
+        .get();
+    expect(advancementRows, hasLength(20));
+    expect(
+      advancementRows.firstWhere((row) => row.level == 1).proficiencyBonus,
+      2,
+    );
+    expect(standardArrayRows, isNotEmpty);
+    expect(
+      standardArrayRows.firstWhere((row) => row.classId == 'wizard').intelligence,
+      15,
+    );
+    expect(narrativeGroupRows, isNotEmpty);
+    expect(narrativeOptionRows, isNotEmpty);
   });
 }
 
@@ -278,5 +336,90 @@ const _monstersFixture = '''
       <text>Area damage.</text>
     </action>
   </monster>
+</compendium>
+''';
+
+const _phbNarrativeFixture = '''
+<compendium version="5">
+  <background>
+    <name>Acolyte</name>
+    <trait>
+      <name>Description</name>
+      <text>Source: Player's Handbook (2014)</text>
+    </trait>
+    <trait>
+      <name>Suggested Characteristics</name>
+      <text>d8 | Personality Trait
+1 | I quote sacred texts.
+2 | I seek peace.
+
+d6 | Ideal
+1 | Tradition. Preserve the rites. (Lawful)
+2 | Charity. Help the poor. (Good)
+
+d6 | Bond
+1 | I defend a sacred relic.
+2 | I owe everything to my mentor.
+
+d6 | Flaw
+1 | I judge others harshly.
+2 | I trust the hierarchy too much.</text>
+      <roll description="Personality Trait">1d8</roll>
+      <roll description="Ideal">1d6</roll>
+      <roll description="Bond">1d6</roll>
+      <roll description="Flaw">1d6</roll>
+    </trait>
+  </background>
+</compendium>
+''';
+
+const _scagNarrativeFixture = '''
+<compendium version="5">
+  <background>
+    <name>Faction Agent</name>
+    <trait>
+      <name>Factions of the Sword Coast</name>
+      <text>The Harpers. Agents of freedom and subtle action.
+The Order of the Gauntlet. Holy warriors who crush evil.
+The Emerald Enclave. Protectors of the natural order.
+The Lords' Alliance. Representatives of cities and rulers.
+The Zhentarim. Operatives of the Black Network.</text>
+    </trait>
+  </background>
+</compendium>
+''';
+
+const _pamNarrativeFixture = '''
+<compendium version="5">
+  <background>
+    <name>Planar Philosopher</name>
+    <trait>
+      <name>Factions of Sigil</name>
+      <text>• Athar: Deities are frauds.
+• Bleak Cabal: Each being must find their own meaning.</text>
+    </trait>
+  </background>
+</compendium>
+''';
+
+const _ggrNarrativeFixture = '''
+<compendium version="5">
+  <background><name>Azorius Functionary</name></background>
+  <background><name>Boros Legionnaire</name></background>
+</compendium>
+''';
+
+const _erlwNarrativeFixture = '''
+<compendium version="5">
+  <background>
+    <name>House Agent</name>
+    <trait>
+      <name>Description</name>
+      <text>House Tool Proficiencies:
+Your House | Proficiencies
+Cannith | Alchemist's supplies and tinker's tools
+Deneith | One gaming set and vehicles (land)</text>
+    </trait>
+  </background>
 </compendium>
 ''';

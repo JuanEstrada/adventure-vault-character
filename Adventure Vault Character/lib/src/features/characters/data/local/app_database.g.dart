@@ -7796,6 +7796,1977 @@ class ClassDefinitionsCompanion extends UpdateCompanion<ClassDefinition> {
   }
 }
 
+class $CharacterAdvancementDefinitionsTable
+    extends CharacterAdvancementDefinitions
+    with
+        TableInfo<
+          $CharacterAdvancementDefinitionsTable,
+          CharacterAdvancementDefinition
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CharacterAdvancementDefinitionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _levelMeta = const VerificationMeta('level');
+  @override
+  late final GeneratedColumn<int> level = GeneratedColumn<int>(
+    'level',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _experienceMeta = const VerificationMeta(
+    'experience',
+  );
+  @override
+  late final GeneratedColumn<int> experience = GeneratedColumn<int>(
+    'experience',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _proficiencyBonusMeta = const VerificationMeta(
+    'proficiencyBonus',
+  );
+  @override
+  late final GeneratedColumn<int> proficiencyBonus = GeneratedColumn<int>(
+    'proficiency_bonus',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [level, experience, proficiencyBonus];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'character_advancement_definitions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CharacterAdvancementDefinition> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('level')) {
+      context.handle(
+        _levelMeta,
+        level.isAcceptableOrUnknown(data['level']!, _levelMeta),
+      );
+    }
+    if (data.containsKey('experience')) {
+      context.handle(
+        _experienceMeta,
+        experience.isAcceptableOrUnknown(data['experience']!, _experienceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_experienceMeta);
+    }
+    if (data.containsKey('proficiency_bonus')) {
+      context.handle(
+        _proficiencyBonusMeta,
+        proficiencyBonus.isAcceptableOrUnknown(
+          data['proficiency_bonus']!,
+          _proficiencyBonusMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_proficiencyBonusMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {level};
+  @override
+  CharacterAdvancementDefinition map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CharacterAdvancementDefinition(
+      level: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}level'],
+      )!,
+      experience: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}experience'],
+      )!,
+      proficiencyBonus: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}proficiency_bonus'],
+      )!,
+    );
+  }
+
+  @override
+  $CharacterAdvancementDefinitionsTable createAlias(String alias) {
+    return $CharacterAdvancementDefinitionsTable(attachedDatabase, alias);
+  }
+}
+
+class CharacterAdvancementDefinition extends DataClass
+    implements Insertable<CharacterAdvancementDefinition> {
+  final int level;
+  final int experience;
+  final int proficiencyBonus;
+  const CharacterAdvancementDefinition({
+    required this.level,
+    required this.experience,
+    required this.proficiencyBonus,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['level'] = Variable<int>(level);
+    map['experience'] = Variable<int>(experience);
+    map['proficiency_bonus'] = Variable<int>(proficiencyBonus);
+    return map;
+  }
+
+  CharacterAdvancementDefinitionsCompanion toCompanion(bool nullToAbsent) {
+    return CharacterAdvancementDefinitionsCompanion(
+      level: Value(level),
+      experience: Value(experience),
+      proficiencyBonus: Value(proficiencyBonus),
+    );
+  }
+
+  factory CharacterAdvancementDefinition.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CharacterAdvancementDefinition(
+      level: serializer.fromJson<int>(json['level']),
+      experience: serializer.fromJson<int>(json['experience']),
+      proficiencyBonus: serializer.fromJson<int>(json['proficiencyBonus']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'level': serializer.toJson<int>(level),
+      'experience': serializer.toJson<int>(experience),
+      'proficiencyBonus': serializer.toJson<int>(proficiencyBonus),
+    };
+  }
+
+  CharacterAdvancementDefinition copyWith({
+    int? level,
+    int? experience,
+    int? proficiencyBonus,
+  }) => CharacterAdvancementDefinition(
+    level: level ?? this.level,
+    experience: experience ?? this.experience,
+    proficiencyBonus: proficiencyBonus ?? this.proficiencyBonus,
+  );
+  CharacterAdvancementDefinition copyWithCompanion(
+    CharacterAdvancementDefinitionsCompanion data,
+  ) {
+    return CharacterAdvancementDefinition(
+      level: data.level.present ? data.level.value : this.level,
+      experience: data.experience.present
+          ? data.experience.value
+          : this.experience,
+      proficiencyBonus: data.proficiencyBonus.present
+          ? data.proficiencyBonus.value
+          : this.proficiencyBonus,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterAdvancementDefinition(')
+          ..write('level: $level, ')
+          ..write('experience: $experience, ')
+          ..write('proficiencyBonus: $proficiencyBonus')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(level, experience, proficiencyBonus);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CharacterAdvancementDefinition &&
+          other.level == this.level &&
+          other.experience == this.experience &&
+          other.proficiencyBonus == this.proficiencyBonus);
+}
+
+class CharacterAdvancementDefinitionsCompanion
+    extends UpdateCompanion<CharacterAdvancementDefinition> {
+  final Value<int> level;
+  final Value<int> experience;
+  final Value<int> proficiencyBonus;
+  const CharacterAdvancementDefinitionsCompanion({
+    this.level = const Value.absent(),
+    this.experience = const Value.absent(),
+    this.proficiencyBonus = const Value.absent(),
+  });
+  CharacterAdvancementDefinitionsCompanion.insert({
+    this.level = const Value.absent(),
+    required int experience,
+    required int proficiencyBonus,
+  }) : experience = Value(experience),
+       proficiencyBonus = Value(proficiencyBonus);
+  static Insertable<CharacterAdvancementDefinition> custom({
+    Expression<int>? level,
+    Expression<int>? experience,
+    Expression<int>? proficiencyBonus,
+  }) {
+    return RawValuesInsertable({
+      if (level != null) 'level': level,
+      if (experience != null) 'experience': experience,
+      if (proficiencyBonus != null) 'proficiency_bonus': proficiencyBonus,
+    });
+  }
+
+  CharacterAdvancementDefinitionsCompanion copyWith({
+    Value<int>? level,
+    Value<int>? experience,
+    Value<int>? proficiencyBonus,
+  }) {
+    return CharacterAdvancementDefinitionsCompanion(
+      level: level ?? this.level,
+      experience: experience ?? this.experience,
+      proficiencyBonus: proficiencyBonus ?? this.proficiencyBonus,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (level.present) {
+      map['level'] = Variable<int>(level.value);
+    }
+    if (experience.present) {
+      map['experience'] = Variable<int>(experience.value);
+    }
+    if (proficiencyBonus.present) {
+      map['proficiency_bonus'] = Variable<int>(proficiencyBonus.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterAdvancementDefinitionsCompanion(')
+          ..write('level: $level, ')
+          ..write('experience: $experience, ')
+          ..write('proficiencyBonus: $proficiencyBonus')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ClassStandardArrayRecommendationsTable
+    extends ClassStandardArrayRecommendations
+    with
+        TableInfo<
+          $ClassStandardArrayRecommendationsTable,
+          ClassStandardArrayRecommendation
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ClassStandardArrayRecommendationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _classIdMeta = const VerificationMeta(
+    'classId',
+  );
+  @override
+  late final GeneratedColumn<String> classId = GeneratedColumn<String>(
+    'class_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _classNameMeta = const VerificationMeta(
+    'className',
+  );
+  @override
+  late final GeneratedColumn<String> className = GeneratedColumn<String>(
+    'class_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _strengthMeta = const VerificationMeta(
+    'strength',
+  );
+  @override
+  late final GeneratedColumn<int> strength = GeneratedColumn<int>(
+    'strength',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dexterityMeta = const VerificationMeta(
+    'dexterity',
+  );
+  @override
+  late final GeneratedColumn<int> dexterity = GeneratedColumn<int>(
+    'dexterity',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _constitutionMeta = const VerificationMeta(
+    'constitution',
+  );
+  @override
+  late final GeneratedColumn<int> constitution = GeneratedColumn<int>(
+    'constitution',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _intelligenceMeta = const VerificationMeta(
+    'intelligence',
+  );
+  @override
+  late final GeneratedColumn<int> intelligence = GeneratedColumn<int>(
+    'intelligence',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _wisdomMeta = const VerificationMeta('wisdom');
+  @override
+  late final GeneratedColumn<int> wisdom = GeneratedColumn<int>(
+    'wisdom',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _charismaMeta = const VerificationMeta(
+    'charisma',
+  );
+  @override
+  late final GeneratedColumn<int> charisma = GeneratedColumn<int>(
+    'charisma',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    classId,
+    className,
+    strength,
+    dexterity,
+    constitution,
+    intelligence,
+    wisdom,
+    charisma,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'class_standard_array_recommendations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ClassStandardArrayRecommendation> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('class_id')) {
+      context.handle(
+        _classIdMeta,
+        classId.isAcceptableOrUnknown(data['class_id']!, _classIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_classIdMeta);
+    }
+    if (data.containsKey('class_name')) {
+      context.handle(
+        _classNameMeta,
+        className.isAcceptableOrUnknown(data['class_name']!, _classNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_classNameMeta);
+    }
+    if (data.containsKey('strength')) {
+      context.handle(
+        _strengthMeta,
+        strength.isAcceptableOrUnknown(data['strength']!, _strengthMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_strengthMeta);
+    }
+    if (data.containsKey('dexterity')) {
+      context.handle(
+        _dexterityMeta,
+        dexterity.isAcceptableOrUnknown(data['dexterity']!, _dexterityMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dexterityMeta);
+    }
+    if (data.containsKey('constitution')) {
+      context.handle(
+        _constitutionMeta,
+        constitution.isAcceptableOrUnknown(
+          data['constitution']!,
+          _constitutionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_constitutionMeta);
+    }
+    if (data.containsKey('intelligence')) {
+      context.handle(
+        _intelligenceMeta,
+        intelligence.isAcceptableOrUnknown(
+          data['intelligence']!,
+          _intelligenceMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_intelligenceMeta);
+    }
+    if (data.containsKey('wisdom')) {
+      context.handle(
+        _wisdomMeta,
+        wisdom.isAcceptableOrUnknown(data['wisdom']!, _wisdomMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_wisdomMeta);
+    }
+    if (data.containsKey('charisma')) {
+      context.handle(
+        _charismaMeta,
+        charisma.isAcceptableOrUnknown(data['charisma']!, _charismaMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_charismaMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {classId};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {className},
+  ];
+  @override
+  ClassStandardArrayRecommendation map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ClassStandardArrayRecommendation(
+      classId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}class_id'],
+      )!,
+      className: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}class_name'],
+      )!,
+      strength: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}strength'],
+      )!,
+      dexterity: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dexterity'],
+      )!,
+      constitution: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}constitution'],
+      )!,
+      intelligence: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}intelligence'],
+      )!,
+      wisdom: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}wisdom'],
+      )!,
+      charisma: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}charisma'],
+      )!,
+    );
+  }
+
+  @override
+  $ClassStandardArrayRecommendationsTable createAlias(String alias) {
+    return $ClassStandardArrayRecommendationsTable(attachedDatabase, alias);
+  }
+}
+
+class ClassStandardArrayRecommendation extends DataClass
+    implements Insertable<ClassStandardArrayRecommendation> {
+  final String classId;
+  final String className;
+  final int strength;
+  final int dexterity;
+  final int constitution;
+  final int intelligence;
+  final int wisdom;
+  final int charisma;
+  const ClassStandardArrayRecommendation({
+    required this.classId,
+    required this.className,
+    required this.strength,
+    required this.dexterity,
+    required this.constitution,
+    required this.intelligence,
+    required this.wisdom,
+    required this.charisma,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['class_id'] = Variable<String>(classId);
+    map['class_name'] = Variable<String>(className);
+    map['strength'] = Variable<int>(strength);
+    map['dexterity'] = Variable<int>(dexterity);
+    map['constitution'] = Variable<int>(constitution);
+    map['intelligence'] = Variable<int>(intelligence);
+    map['wisdom'] = Variable<int>(wisdom);
+    map['charisma'] = Variable<int>(charisma);
+    return map;
+  }
+
+  ClassStandardArrayRecommendationsCompanion toCompanion(bool nullToAbsent) {
+    return ClassStandardArrayRecommendationsCompanion(
+      classId: Value(classId),
+      className: Value(className),
+      strength: Value(strength),
+      dexterity: Value(dexterity),
+      constitution: Value(constitution),
+      intelligence: Value(intelligence),
+      wisdom: Value(wisdom),
+      charisma: Value(charisma),
+    );
+  }
+
+  factory ClassStandardArrayRecommendation.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ClassStandardArrayRecommendation(
+      classId: serializer.fromJson<String>(json['classId']),
+      className: serializer.fromJson<String>(json['className']),
+      strength: serializer.fromJson<int>(json['strength']),
+      dexterity: serializer.fromJson<int>(json['dexterity']),
+      constitution: serializer.fromJson<int>(json['constitution']),
+      intelligence: serializer.fromJson<int>(json['intelligence']),
+      wisdom: serializer.fromJson<int>(json['wisdom']),
+      charisma: serializer.fromJson<int>(json['charisma']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'classId': serializer.toJson<String>(classId),
+      'className': serializer.toJson<String>(className),
+      'strength': serializer.toJson<int>(strength),
+      'dexterity': serializer.toJson<int>(dexterity),
+      'constitution': serializer.toJson<int>(constitution),
+      'intelligence': serializer.toJson<int>(intelligence),
+      'wisdom': serializer.toJson<int>(wisdom),
+      'charisma': serializer.toJson<int>(charisma),
+    };
+  }
+
+  ClassStandardArrayRecommendation copyWith({
+    String? classId,
+    String? className,
+    int? strength,
+    int? dexterity,
+    int? constitution,
+    int? intelligence,
+    int? wisdom,
+    int? charisma,
+  }) => ClassStandardArrayRecommendation(
+    classId: classId ?? this.classId,
+    className: className ?? this.className,
+    strength: strength ?? this.strength,
+    dexterity: dexterity ?? this.dexterity,
+    constitution: constitution ?? this.constitution,
+    intelligence: intelligence ?? this.intelligence,
+    wisdom: wisdom ?? this.wisdom,
+    charisma: charisma ?? this.charisma,
+  );
+  ClassStandardArrayRecommendation copyWithCompanion(
+    ClassStandardArrayRecommendationsCompanion data,
+  ) {
+    return ClassStandardArrayRecommendation(
+      classId: data.classId.present ? data.classId.value : this.classId,
+      className: data.className.present ? data.className.value : this.className,
+      strength: data.strength.present ? data.strength.value : this.strength,
+      dexterity: data.dexterity.present ? data.dexterity.value : this.dexterity,
+      constitution: data.constitution.present
+          ? data.constitution.value
+          : this.constitution,
+      intelligence: data.intelligence.present
+          ? data.intelligence.value
+          : this.intelligence,
+      wisdom: data.wisdom.present ? data.wisdom.value : this.wisdom,
+      charisma: data.charisma.present ? data.charisma.value : this.charisma,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClassStandardArrayRecommendation(')
+          ..write('classId: $classId, ')
+          ..write('className: $className, ')
+          ..write('strength: $strength, ')
+          ..write('dexterity: $dexterity, ')
+          ..write('constitution: $constitution, ')
+          ..write('intelligence: $intelligence, ')
+          ..write('wisdom: $wisdom, ')
+          ..write('charisma: $charisma')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    classId,
+    className,
+    strength,
+    dexterity,
+    constitution,
+    intelligence,
+    wisdom,
+    charisma,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ClassStandardArrayRecommendation &&
+          other.classId == this.classId &&
+          other.className == this.className &&
+          other.strength == this.strength &&
+          other.dexterity == this.dexterity &&
+          other.constitution == this.constitution &&
+          other.intelligence == this.intelligence &&
+          other.wisdom == this.wisdom &&
+          other.charisma == this.charisma);
+}
+
+class ClassStandardArrayRecommendationsCompanion
+    extends UpdateCompanion<ClassStandardArrayRecommendation> {
+  final Value<String> classId;
+  final Value<String> className;
+  final Value<int> strength;
+  final Value<int> dexterity;
+  final Value<int> constitution;
+  final Value<int> intelligence;
+  final Value<int> wisdom;
+  final Value<int> charisma;
+  final Value<int> rowid;
+  const ClassStandardArrayRecommendationsCompanion({
+    this.classId = const Value.absent(),
+    this.className = const Value.absent(),
+    this.strength = const Value.absent(),
+    this.dexterity = const Value.absent(),
+    this.constitution = const Value.absent(),
+    this.intelligence = const Value.absent(),
+    this.wisdom = const Value.absent(),
+    this.charisma = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ClassStandardArrayRecommendationsCompanion.insert({
+    required String classId,
+    required String className,
+    required int strength,
+    required int dexterity,
+    required int constitution,
+    required int intelligence,
+    required int wisdom,
+    required int charisma,
+    this.rowid = const Value.absent(),
+  }) : classId = Value(classId),
+       className = Value(className),
+       strength = Value(strength),
+       dexterity = Value(dexterity),
+       constitution = Value(constitution),
+       intelligence = Value(intelligence),
+       wisdom = Value(wisdom),
+       charisma = Value(charisma);
+  static Insertable<ClassStandardArrayRecommendation> custom({
+    Expression<String>? classId,
+    Expression<String>? className,
+    Expression<int>? strength,
+    Expression<int>? dexterity,
+    Expression<int>? constitution,
+    Expression<int>? intelligence,
+    Expression<int>? wisdom,
+    Expression<int>? charisma,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (classId != null) 'class_id': classId,
+      if (className != null) 'class_name': className,
+      if (strength != null) 'strength': strength,
+      if (dexterity != null) 'dexterity': dexterity,
+      if (constitution != null) 'constitution': constitution,
+      if (intelligence != null) 'intelligence': intelligence,
+      if (wisdom != null) 'wisdom': wisdom,
+      if (charisma != null) 'charisma': charisma,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ClassStandardArrayRecommendationsCompanion copyWith({
+    Value<String>? classId,
+    Value<String>? className,
+    Value<int>? strength,
+    Value<int>? dexterity,
+    Value<int>? constitution,
+    Value<int>? intelligence,
+    Value<int>? wisdom,
+    Value<int>? charisma,
+    Value<int>? rowid,
+  }) {
+    return ClassStandardArrayRecommendationsCompanion(
+      classId: classId ?? this.classId,
+      className: className ?? this.className,
+      strength: strength ?? this.strength,
+      dexterity: dexterity ?? this.dexterity,
+      constitution: constitution ?? this.constitution,
+      intelligence: intelligence ?? this.intelligence,
+      wisdom: wisdom ?? this.wisdom,
+      charisma: charisma ?? this.charisma,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (classId.present) {
+      map['class_id'] = Variable<String>(classId.value);
+    }
+    if (className.present) {
+      map['class_name'] = Variable<String>(className.value);
+    }
+    if (strength.present) {
+      map['strength'] = Variable<int>(strength.value);
+    }
+    if (dexterity.present) {
+      map['dexterity'] = Variable<int>(dexterity.value);
+    }
+    if (constitution.present) {
+      map['constitution'] = Variable<int>(constitution.value);
+    }
+    if (intelligence.present) {
+      map['intelligence'] = Variable<int>(intelligence.value);
+    }
+    if (wisdom.present) {
+      map['wisdom'] = Variable<int>(wisdom.value);
+    }
+    if (charisma.present) {
+      map['charisma'] = Variable<int>(charisma.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClassStandardArrayRecommendationsCompanion(')
+          ..write('classId: $classId, ')
+          ..write('className: $className, ')
+          ..write('strength: $strength, ')
+          ..write('dexterity: $dexterity, ')
+          ..write('constitution: $constitution, ')
+          ..write('intelligence: $intelligence, ')
+          ..write('wisdom: $wisdom, ')
+          ..write('charisma: $charisma, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $NarrativeOptionGroupsTable extends NarrativeOptionGroups
+    with TableInfo<$NarrativeOptionGroupsTable, NarrativeOptionGroup> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $NarrativeOptionGroupsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fieldKeyMeta = const VerificationMeta(
+    'fieldKey',
+  );
+  @override
+  late final GeneratedColumn<String> fieldKey = GeneratedColumn<String>(
+    'field_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceTypeMeta = const VerificationMeta(
+    'sourceType',
+  );
+  @override
+  late final GeneratedColumn<String> sourceType = GeneratedColumn<String>(
+    'source_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceIdMeta = const VerificationMeta(
+    'sourceId',
+  );
+  @override
+  late final GeneratedColumn<String> sourceId = GeneratedColumn<String>(
+    'source_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceNameMeta = const VerificationMeta(
+    'sourceName',
+  );
+  @override
+  late final GeneratedColumn<String> sourceName = GeneratedColumn<String>(
+    'source_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _backgroundIdMeta = const VerificationMeta(
+    'backgroundId',
+  );
+  @override
+  late final GeneratedColumn<String> backgroundId = GeneratedColumn<String>(
+    'background_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _backgroundNameMeta = const VerificationMeta(
+    'backgroundName',
+  );
+  @override
+  late final GeneratedColumn<String> backgroundName = GeneratedColumn<String>(
+    'background_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _diceFormulaMeta = const VerificationMeta(
+    'diceFormula',
+  );
+  @override
+  late final GeneratedColumn<String> diceFormula = GeneratedColumn<String>(
+    'dice_formula',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _optionCountMeta = const VerificationMeta(
+    'optionCount',
+  );
+  @override
+  late final GeneratedColumn<int> optionCount = GeneratedColumn<int>(
+    'option_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _sourceBookMeta = const VerificationMeta(
+    'sourceBook',
+  );
+  @override
+  late final GeneratedColumn<String> sourceBook = GeneratedColumn<String>(
+    'source_book',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    fieldKey,
+    sourceType,
+    sourceId,
+    sourceName,
+    backgroundId,
+    backgroundName,
+    title,
+    diceFormula,
+    optionCount,
+    sourceBook,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'narrative_option_groups';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<NarrativeOptionGroup> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('field_key')) {
+      context.handle(
+        _fieldKeyMeta,
+        fieldKey.isAcceptableOrUnknown(data['field_key']!, _fieldKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fieldKeyMeta);
+    }
+    if (data.containsKey('source_type')) {
+      context.handle(
+        _sourceTypeMeta,
+        sourceType.isAcceptableOrUnknown(data['source_type']!, _sourceTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceTypeMeta);
+    }
+    if (data.containsKey('source_id')) {
+      context.handle(
+        _sourceIdMeta,
+        sourceId.isAcceptableOrUnknown(data['source_id']!, _sourceIdMeta),
+      );
+    }
+    if (data.containsKey('source_name')) {
+      context.handle(
+        _sourceNameMeta,
+        sourceName.isAcceptableOrUnknown(data['source_name']!, _sourceNameMeta),
+      );
+    }
+    if (data.containsKey('background_id')) {
+      context.handle(
+        _backgroundIdMeta,
+        backgroundId.isAcceptableOrUnknown(
+          data['background_id']!,
+          _backgroundIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('background_name')) {
+      context.handle(
+        _backgroundNameMeta,
+        backgroundName.isAcceptableOrUnknown(
+          data['background_name']!,
+          _backgroundNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('dice_formula')) {
+      context.handle(
+        _diceFormulaMeta,
+        diceFormula.isAcceptableOrUnknown(
+          data['dice_formula']!,
+          _diceFormulaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('option_count')) {
+      context.handle(
+        _optionCountMeta,
+        optionCount.isAcceptableOrUnknown(
+          data['option_count']!,
+          _optionCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('source_book')) {
+      context.handle(
+        _sourceBookMeta,
+        sourceBook.isAcceptableOrUnknown(data['source_book']!, _sourceBookMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  NarrativeOptionGroup map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return NarrativeOptionGroup(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      fieldKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}field_key'],
+      )!,
+      sourceType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_type'],
+      )!,
+      sourceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_id'],
+      ),
+      sourceName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_name'],
+      ),
+      backgroundId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}background_id'],
+      ),
+      backgroundName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}background_name'],
+      ),
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      diceFormula: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dice_formula'],
+      ),
+      optionCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}option_count'],
+      )!,
+      sourceBook: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_book'],
+      ),
+    );
+  }
+
+  @override
+  $NarrativeOptionGroupsTable createAlias(String alias) {
+    return $NarrativeOptionGroupsTable(attachedDatabase, alias);
+  }
+}
+
+class NarrativeOptionGroup extends DataClass
+    implements Insertable<NarrativeOptionGroup> {
+  final String id;
+  final String fieldKey;
+  final String sourceType;
+  final String? sourceId;
+  final String? sourceName;
+  final String? backgroundId;
+  final String? backgroundName;
+  final String title;
+  final String? diceFormula;
+  final int optionCount;
+  final String? sourceBook;
+  const NarrativeOptionGroup({
+    required this.id,
+    required this.fieldKey,
+    required this.sourceType,
+    this.sourceId,
+    this.sourceName,
+    this.backgroundId,
+    this.backgroundName,
+    required this.title,
+    this.diceFormula,
+    required this.optionCount,
+    this.sourceBook,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['field_key'] = Variable<String>(fieldKey);
+    map['source_type'] = Variable<String>(sourceType);
+    if (!nullToAbsent || sourceId != null) {
+      map['source_id'] = Variable<String>(sourceId);
+    }
+    if (!nullToAbsent || sourceName != null) {
+      map['source_name'] = Variable<String>(sourceName);
+    }
+    if (!nullToAbsent || backgroundId != null) {
+      map['background_id'] = Variable<String>(backgroundId);
+    }
+    if (!nullToAbsent || backgroundName != null) {
+      map['background_name'] = Variable<String>(backgroundName);
+    }
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || diceFormula != null) {
+      map['dice_formula'] = Variable<String>(diceFormula);
+    }
+    map['option_count'] = Variable<int>(optionCount);
+    if (!nullToAbsent || sourceBook != null) {
+      map['source_book'] = Variable<String>(sourceBook);
+    }
+    return map;
+  }
+
+  NarrativeOptionGroupsCompanion toCompanion(bool nullToAbsent) {
+    return NarrativeOptionGroupsCompanion(
+      id: Value(id),
+      fieldKey: Value(fieldKey),
+      sourceType: Value(sourceType),
+      sourceId: sourceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceId),
+      sourceName: sourceName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceName),
+      backgroundId: backgroundId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(backgroundId),
+      backgroundName: backgroundName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(backgroundName),
+      title: Value(title),
+      diceFormula: diceFormula == null && nullToAbsent
+          ? const Value.absent()
+          : Value(diceFormula),
+      optionCount: Value(optionCount),
+      sourceBook: sourceBook == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceBook),
+    );
+  }
+
+  factory NarrativeOptionGroup.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return NarrativeOptionGroup(
+      id: serializer.fromJson<String>(json['id']),
+      fieldKey: serializer.fromJson<String>(json['fieldKey']),
+      sourceType: serializer.fromJson<String>(json['sourceType']),
+      sourceId: serializer.fromJson<String?>(json['sourceId']),
+      sourceName: serializer.fromJson<String?>(json['sourceName']),
+      backgroundId: serializer.fromJson<String?>(json['backgroundId']),
+      backgroundName: serializer.fromJson<String?>(json['backgroundName']),
+      title: serializer.fromJson<String>(json['title']),
+      diceFormula: serializer.fromJson<String?>(json['diceFormula']),
+      optionCount: serializer.fromJson<int>(json['optionCount']),
+      sourceBook: serializer.fromJson<String?>(json['sourceBook']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'fieldKey': serializer.toJson<String>(fieldKey),
+      'sourceType': serializer.toJson<String>(sourceType),
+      'sourceId': serializer.toJson<String?>(sourceId),
+      'sourceName': serializer.toJson<String?>(sourceName),
+      'backgroundId': serializer.toJson<String?>(backgroundId),
+      'backgroundName': serializer.toJson<String?>(backgroundName),
+      'title': serializer.toJson<String>(title),
+      'diceFormula': serializer.toJson<String?>(diceFormula),
+      'optionCount': serializer.toJson<int>(optionCount),
+      'sourceBook': serializer.toJson<String?>(sourceBook),
+    };
+  }
+
+  NarrativeOptionGroup copyWith({
+    String? id,
+    String? fieldKey,
+    String? sourceType,
+    Value<String?> sourceId = const Value.absent(),
+    Value<String?> sourceName = const Value.absent(),
+    Value<String?> backgroundId = const Value.absent(),
+    Value<String?> backgroundName = const Value.absent(),
+    String? title,
+    Value<String?> diceFormula = const Value.absent(),
+    int? optionCount,
+    Value<String?> sourceBook = const Value.absent(),
+  }) => NarrativeOptionGroup(
+    id: id ?? this.id,
+    fieldKey: fieldKey ?? this.fieldKey,
+    sourceType: sourceType ?? this.sourceType,
+    sourceId: sourceId.present ? sourceId.value : this.sourceId,
+    sourceName: sourceName.present ? sourceName.value : this.sourceName,
+    backgroundId: backgroundId.present ? backgroundId.value : this.backgroundId,
+    backgroundName: backgroundName.present
+        ? backgroundName.value
+        : this.backgroundName,
+    title: title ?? this.title,
+    diceFormula: diceFormula.present ? diceFormula.value : this.diceFormula,
+    optionCount: optionCount ?? this.optionCount,
+    sourceBook: sourceBook.present ? sourceBook.value : this.sourceBook,
+  );
+  NarrativeOptionGroup copyWithCompanion(NarrativeOptionGroupsCompanion data) {
+    return NarrativeOptionGroup(
+      id: data.id.present ? data.id.value : this.id,
+      fieldKey: data.fieldKey.present ? data.fieldKey.value : this.fieldKey,
+      sourceType: data.sourceType.present
+          ? data.sourceType.value
+          : this.sourceType,
+      sourceId: data.sourceId.present ? data.sourceId.value : this.sourceId,
+      sourceName: data.sourceName.present
+          ? data.sourceName.value
+          : this.sourceName,
+      backgroundId: data.backgroundId.present
+          ? data.backgroundId.value
+          : this.backgroundId,
+      backgroundName: data.backgroundName.present
+          ? data.backgroundName.value
+          : this.backgroundName,
+      title: data.title.present ? data.title.value : this.title,
+      diceFormula: data.diceFormula.present
+          ? data.diceFormula.value
+          : this.diceFormula,
+      optionCount: data.optionCount.present
+          ? data.optionCount.value
+          : this.optionCount,
+      sourceBook: data.sourceBook.present
+          ? data.sourceBook.value
+          : this.sourceBook,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NarrativeOptionGroup(')
+          ..write('id: $id, ')
+          ..write('fieldKey: $fieldKey, ')
+          ..write('sourceType: $sourceType, ')
+          ..write('sourceId: $sourceId, ')
+          ..write('sourceName: $sourceName, ')
+          ..write('backgroundId: $backgroundId, ')
+          ..write('backgroundName: $backgroundName, ')
+          ..write('title: $title, ')
+          ..write('diceFormula: $diceFormula, ')
+          ..write('optionCount: $optionCount, ')
+          ..write('sourceBook: $sourceBook')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    fieldKey,
+    sourceType,
+    sourceId,
+    sourceName,
+    backgroundId,
+    backgroundName,
+    title,
+    diceFormula,
+    optionCount,
+    sourceBook,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NarrativeOptionGroup &&
+          other.id == this.id &&
+          other.fieldKey == this.fieldKey &&
+          other.sourceType == this.sourceType &&
+          other.sourceId == this.sourceId &&
+          other.sourceName == this.sourceName &&
+          other.backgroundId == this.backgroundId &&
+          other.backgroundName == this.backgroundName &&
+          other.title == this.title &&
+          other.diceFormula == this.diceFormula &&
+          other.optionCount == this.optionCount &&
+          other.sourceBook == this.sourceBook);
+}
+
+class NarrativeOptionGroupsCompanion
+    extends UpdateCompanion<NarrativeOptionGroup> {
+  final Value<String> id;
+  final Value<String> fieldKey;
+  final Value<String> sourceType;
+  final Value<String?> sourceId;
+  final Value<String?> sourceName;
+  final Value<String?> backgroundId;
+  final Value<String?> backgroundName;
+  final Value<String> title;
+  final Value<String?> diceFormula;
+  final Value<int> optionCount;
+  final Value<String?> sourceBook;
+  final Value<int> rowid;
+  const NarrativeOptionGroupsCompanion({
+    this.id = const Value.absent(),
+    this.fieldKey = const Value.absent(),
+    this.sourceType = const Value.absent(),
+    this.sourceId = const Value.absent(),
+    this.sourceName = const Value.absent(),
+    this.backgroundId = const Value.absent(),
+    this.backgroundName = const Value.absent(),
+    this.title = const Value.absent(),
+    this.diceFormula = const Value.absent(),
+    this.optionCount = const Value.absent(),
+    this.sourceBook = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  NarrativeOptionGroupsCompanion.insert({
+    required String id,
+    required String fieldKey,
+    required String sourceType,
+    this.sourceId = const Value.absent(),
+    this.sourceName = const Value.absent(),
+    this.backgroundId = const Value.absent(),
+    this.backgroundName = const Value.absent(),
+    required String title,
+    this.diceFormula = const Value.absent(),
+    this.optionCount = const Value.absent(),
+    this.sourceBook = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       fieldKey = Value(fieldKey),
+       sourceType = Value(sourceType),
+       title = Value(title);
+  static Insertable<NarrativeOptionGroup> custom({
+    Expression<String>? id,
+    Expression<String>? fieldKey,
+    Expression<String>? sourceType,
+    Expression<String>? sourceId,
+    Expression<String>? sourceName,
+    Expression<String>? backgroundId,
+    Expression<String>? backgroundName,
+    Expression<String>? title,
+    Expression<String>? diceFormula,
+    Expression<int>? optionCount,
+    Expression<String>? sourceBook,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (fieldKey != null) 'field_key': fieldKey,
+      if (sourceType != null) 'source_type': sourceType,
+      if (sourceId != null) 'source_id': sourceId,
+      if (sourceName != null) 'source_name': sourceName,
+      if (backgroundId != null) 'background_id': backgroundId,
+      if (backgroundName != null) 'background_name': backgroundName,
+      if (title != null) 'title': title,
+      if (diceFormula != null) 'dice_formula': diceFormula,
+      if (optionCount != null) 'option_count': optionCount,
+      if (sourceBook != null) 'source_book': sourceBook,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  NarrativeOptionGroupsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? fieldKey,
+    Value<String>? sourceType,
+    Value<String?>? sourceId,
+    Value<String?>? sourceName,
+    Value<String?>? backgroundId,
+    Value<String?>? backgroundName,
+    Value<String>? title,
+    Value<String?>? diceFormula,
+    Value<int>? optionCount,
+    Value<String?>? sourceBook,
+    Value<int>? rowid,
+  }) {
+    return NarrativeOptionGroupsCompanion(
+      id: id ?? this.id,
+      fieldKey: fieldKey ?? this.fieldKey,
+      sourceType: sourceType ?? this.sourceType,
+      sourceId: sourceId ?? this.sourceId,
+      sourceName: sourceName ?? this.sourceName,
+      backgroundId: backgroundId ?? this.backgroundId,
+      backgroundName: backgroundName ?? this.backgroundName,
+      title: title ?? this.title,
+      diceFormula: diceFormula ?? this.diceFormula,
+      optionCount: optionCount ?? this.optionCount,
+      sourceBook: sourceBook ?? this.sourceBook,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (fieldKey.present) {
+      map['field_key'] = Variable<String>(fieldKey.value);
+    }
+    if (sourceType.present) {
+      map['source_type'] = Variable<String>(sourceType.value);
+    }
+    if (sourceId.present) {
+      map['source_id'] = Variable<String>(sourceId.value);
+    }
+    if (sourceName.present) {
+      map['source_name'] = Variable<String>(sourceName.value);
+    }
+    if (backgroundId.present) {
+      map['background_id'] = Variable<String>(backgroundId.value);
+    }
+    if (backgroundName.present) {
+      map['background_name'] = Variable<String>(backgroundName.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (diceFormula.present) {
+      map['dice_formula'] = Variable<String>(diceFormula.value);
+    }
+    if (optionCount.present) {
+      map['option_count'] = Variable<int>(optionCount.value);
+    }
+    if (sourceBook.present) {
+      map['source_book'] = Variable<String>(sourceBook.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NarrativeOptionGroupsCompanion(')
+          ..write('id: $id, ')
+          ..write('fieldKey: $fieldKey, ')
+          ..write('sourceType: $sourceType, ')
+          ..write('sourceId: $sourceId, ')
+          ..write('sourceName: $sourceName, ')
+          ..write('backgroundId: $backgroundId, ')
+          ..write('backgroundName: $backgroundName, ')
+          ..write('title: $title, ')
+          ..write('diceFormula: $diceFormula, ')
+          ..write('optionCount: $optionCount, ')
+          ..write('sourceBook: $sourceBook, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $NarrativeOptionsTable extends NarrativeOptions
+    with TableInfo<$NarrativeOptionsTable, NarrativeOption> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $NarrativeOptionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _groupIdMeta = const VerificationMeta(
+    'groupId',
+  );
+  @override
+  late final GeneratedColumn<String> groupId = GeneratedColumn<String>(
+    'group_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES narrative_option_groups (id)',
+    ),
+  );
+  static const VerificationMeta _optionIndexMeta = const VerificationMeta(
+    'optionIndex',
+  );
+  @override
+  late final GeneratedColumn<int> optionIndex = GeneratedColumn<int>(
+    'option_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rollMinMeta = const VerificationMeta(
+    'rollMin',
+  );
+  @override
+  late final GeneratedColumn<int> rollMin = GeneratedColumn<int>(
+    'roll_min',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _rollMaxMeta = const VerificationMeta(
+    'rollMax',
+  );
+  @override
+  late final GeneratedColumn<int> rollMax = GeneratedColumn<int>(
+    'roll_max',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _labelMeta = const VerificationMeta('label');
+  @override
+  late final GeneratedColumn<String> label = GeneratedColumn<String>(
+    'label',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    groupId,
+    optionIndex,
+    rollMin,
+    rollMax,
+    label,
+    content,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'narrative_options';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<NarrativeOption> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('group_id')) {
+      context.handle(
+        _groupIdMeta,
+        groupId.isAcceptableOrUnknown(data['group_id']!, _groupIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_groupIdMeta);
+    }
+    if (data.containsKey('option_index')) {
+      context.handle(
+        _optionIndexMeta,
+        optionIndex.isAcceptableOrUnknown(
+          data['option_index']!,
+          _optionIndexMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_optionIndexMeta);
+    }
+    if (data.containsKey('roll_min')) {
+      context.handle(
+        _rollMinMeta,
+        rollMin.isAcceptableOrUnknown(data['roll_min']!, _rollMinMeta),
+      );
+    }
+    if (data.containsKey('roll_max')) {
+      context.handle(
+        _rollMaxMeta,
+        rollMax.isAcceptableOrUnknown(data['roll_max']!, _rollMaxMeta),
+      );
+    }
+    if (data.containsKey('label')) {
+      context.handle(
+        _labelMeta,
+        label.isAcceptableOrUnknown(data['label']!, _labelMeta),
+      );
+    }
+    if (data.containsKey('content')) {
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {groupId, optionIndex},
+  ];
+  @override
+  NarrativeOption map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return NarrativeOption(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      groupId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}group_id'],
+      )!,
+      optionIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}option_index'],
+      )!,
+      rollMin: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}roll_min'],
+      ),
+      rollMax: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}roll_max'],
+      ),
+      label: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}label'],
+      ),
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
+    );
+  }
+
+  @override
+  $NarrativeOptionsTable createAlias(String alias) {
+    return $NarrativeOptionsTable(attachedDatabase, alias);
+  }
+}
+
+class NarrativeOption extends DataClass implements Insertable<NarrativeOption> {
+  final String id;
+  final String groupId;
+  final int optionIndex;
+  final int? rollMin;
+  final int? rollMax;
+  final String? label;
+  final String content;
+  const NarrativeOption({
+    required this.id,
+    required this.groupId,
+    required this.optionIndex,
+    this.rollMin,
+    this.rollMax,
+    this.label,
+    required this.content,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['group_id'] = Variable<String>(groupId);
+    map['option_index'] = Variable<int>(optionIndex);
+    if (!nullToAbsent || rollMin != null) {
+      map['roll_min'] = Variable<int>(rollMin);
+    }
+    if (!nullToAbsent || rollMax != null) {
+      map['roll_max'] = Variable<int>(rollMax);
+    }
+    if (!nullToAbsent || label != null) {
+      map['label'] = Variable<String>(label);
+    }
+    map['content'] = Variable<String>(content);
+    return map;
+  }
+
+  NarrativeOptionsCompanion toCompanion(bool nullToAbsent) {
+    return NarrativeOptionsCompanion(
+      id: Value(id),
+      groupId: Value(groupId),
+      optionIndex: Value(optionIndex),
+      rollMin: rollMin == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rollMin),
+      rollMax: rollMax == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rollMax),
+      label: label == null && nullToAbsent
+          ? const Value.absent()
+          : Value(label),
+      content: Value(content),
+    );
+  }
+
+  factory NarrativeOption.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return NarrativeOption(
+      id: serializer.fromJson<String>(json['id']),
+      groupId: serializer.fromJson<String>(json['groupId']),
+      optionIndex: serializer.fromJson<int>(json['optionIndex']),
+      rollMin: serializer.fromJson<int?>(json['rollMin']),
+      rollMax: serializer.fromJson<int?>(json['rollMax']),
+      label: serializer.fromJson<String?>(json['label']),
+      content: serializer.fromJson<String>(json['content']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'groupId': serializer.toJson<String>(groupId),
+      'optionIndex': serializer.toJson<int>(optionIndex),
+      'rollMin': serializer.toJson<int?>(rollMin),
+      'rollMax': serializer.toJson<int?>(rollMax),
+      'label': serializer.toJson<String?>(label),
+      'content': serializer.toJson<String>(content),
+    };
+  }
+
+  NarrativeOption copyWith({
+    String? id,
+    String? groupId,
+    int? optionIndex,
+    Value<int?> rollMin = const Value.absent(),
+    Value<int?> rollMax = const Value.absent(),
+    Value<String?> label = const Value.absent(),
+    String? content,
+  }) => NarrativeOption(
+    id: id ?? this.id,
+    groupId: groupId ?? this.groupId,
+    optionIndex: optionIndex ?? this.optionIndex,
+    rollMin: rollMin.present ? rollMin.value : this.rollMin,
+    rollMax: rollMax.present ? rollMax.value : this.rollMax,
+    label: label.present ? label.value : this.label,
+    content: content ?? this.content,
+  );
+  NarrativeOption copyWithCompanion(NarrativeOptionsCompanion data) {
+    return NarrativeOption(
+      id: data.id.present ? data.id.value : this.id,
+      groupId: data.groupId.present ? data.groupId.value : this.groupId,
+      optionIndex: data.optionIndex.present
+          ? data.optionIndex.value
+          : this.optionIndex,
+      rollMin: data.rollMin.present ? data.rollMin.value : this.rollMin,
+      rollMax: data.rollMax.present ? data.rollMax.value : this.rollMax,
+      label: data.label.present ? data.label.value : this.label,
+      content: data.content.present ? data.content.value : this.content,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NarrativeOption(')
+          ..write('id: $id, ')
+          ..write('groupId: $groupId, ')
+          ..write('optionIndex: $optionIndex, ')
+          ..write('rollMin: $rollMin, ')
+          ..write('rollMax: $rollMax, ')
+          ..write('label: $label, ')
+          ..write('content: $content')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, groupId, optionIndex, rollMin, rollMax, label, content);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NarrativeOption &&
+          other.id == this.id &&
+          other.groupId == this.groupId &&
+          other.optionIndex == this.optionIndex &&
+          other.rollMin == this.rollMin &&
+          other.rollMax == this.rollMax &&
+          other.label == this.label &&
+          other.content == this.content);
+}
+
+class NarrativeOptionsCompanion extends UpdateCompanion<NarrativeOption> {
+  final Value<String> id;
+  final Value<String> groupId;
+  final Value<int> optionIndex;
+  final Value<int?> rollMin;
+  final Value<int?> rollMax;
+  final Value<String?> label;
+  final Value<String> content;
+  final Value<int> rowid;
+  const NarrativeOptionsCompanion({
+    this.id = const Value.absent(),
+    this.groupId = const Value.absent(),
+    this.optionIndex = const Value.absent(),
+    this.rollMin = const Value.absent(),
+    this.rollMax = const Value.absent(),
+    this.label = const Value.absent(),
+    this.content = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  NarrativeOptionsCompanion.insert({
+    required String id,
+    required String groupId,
+    required int optionIndex,
+    this.rollMin = const Value.absent(),
+    this.rollMax = const Value.absent(),
+    this.label = const Value.absent(),
+    required String content,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       groupId = Value(groupId),
+       optionIndex = Value(optionIndex),
+       content = Value(content);
+  static Insertable<NarrativeOption> custom({
+    Expression<String>? id,
+    Expression<String>? groupId,
+    Expression<int>? optionIndex,
+    Expression<int>? rollMin,
+    Expression<int>? rollMax,
+    Expression<String>? label,
+    Expression<String>? content,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (groupId != null) 'group_id': groupId,
+      if (optionIndex != null) 'option_index': optionIndex,
+      if (rollMin != null) 'roll_min': rollMin,
+      if (rollMax != null) 'roll_max': rollMax,
+      if (label != null) 'label': label,
+      if (content != null) 'content': content,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  NarrativeOptionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? groupId,
+    Value<int>? optionIndex,
+    Value<int?>? rollMin,
+    Value<int?>? rollMax,
+    Value<String?>? label,
+    Value<String>? content,
+    Value<int>? rowid,
+  }) {
+    return NarrativeOptionsCompanion(
+      id: id ?? this.id,
+      groupId: groupId ?? this.groupId,
+      optionIndex: optionIndex ?? this.optionIndex,
+      rollMin: rollMin ?? this.rollMin,
+      rollMax: rollMax ?? this.rollMax,
+      label: label ?? this.label,
+      content: content ?? this.content,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (groupId.present) {
+      map['group_id'] = Variable<String>(groupId.value);
+    }
+    if (optionIndex.present) {
+      map['option_index'] = Variable<int>(optionIndex.value);
+    }
+    if (rollMin.present) {
+      map['roll_min'] = Variable<int>(rollMin.value);
+    }
+    if (rollMax.present) {
+      map['roll_max'] = Variable<int>(rollMax.value);
+    }
+    if (label.present) {
+      map['label'] = Variable<String>(label.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NarrativeOptionsCompanion(')
+          ..write('id: $id, ')
+          ..write('groupId: $groupId, ')
+          ..write('optionIndex: $optionIndex, ')
+          ..write('rollMin: $rollMin, ')
+          ..write('rollMax: $rollMax, ')
+          ..write('label: $label, ')
+          ..write('content: $content, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $BackgroundDefinitionsTable extends BackgroundDefinitions
     with TableInfo<$BackgroundDefinitionsTable, BackgroundDefinition> {
   @override
@@ -9326,6 +11297,17 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ClassDefinitionsTable classDefinitions = $ClassDefinitionsTable(
     this,
   );
+  late final $CharacterAdvancementDefinitionsTable
+  characterAdvancementDefinitions = $CharacterAdvancementDefinitionsTable(this);
+  late final $ClassStandardArrayRecommendationsTable
+  classStandardArrayRecommendations = $ClassStandardArrayRecommendationsTable(
+    this,
+  );
+  late final $NarrativeOptionGroupsTable narrativeOptionGroups =
+      $NarrativeOptionGroupsTable(this);
+  late final $NarrativeOptionsTable narrativeOptions = $NarrativeOptionsTable(
+    this,
+  );
   late final $BackgroundDefinitionsTable backgroundDefinitions =
       $BackgroundDefinitionsTable(this);
   late final $SpellDefinitionsTable spellDefinitions = $SpellDefinitionsTable(
@@ -9351,6 +11333,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     characterProficiencies,
     characterCurrency,
     classDefinitions,
+    characterAdvancementDefinitions,
+    classStandardArrayRecommendations,
+    narrativeOptionGroups,
+    narrativeOptions,
     backgroundDefinitions,
     spellDefinitions,
   ];
@@ -16310,6 +18296,1295 @@ typedef $$ClassDefinitionsTableProcessedTableManager =
       ClassDefinition,
       PrefetchHooks Function()
     >;
+typedef $$CharacterAdvancementDefinitionsTableCreateCompanionBuilder =
+    CharacterAdvancementDefinitionsCompanion Function({
+      Value<int> level,
+      required int experience,
+      required int proficiencyBonus,
+    });
+typedef $$CharacterAdvancementDefinitionsTableUpdateCompanionBuilder =
+    CharacterAdvancementDefinitionsCompanion Function({
+      Value<int> level,
+      Value<int> experience,
+      Value<int> proficiencyBonus,
+    });
+
+class $$CharacterAdvancementDefinitionsTableFilterComposer
+    extends Composer<_$AppDatabase, $CharacterAdvancementDefinitionsTable> {
+  $$CharacterAdvancementDefinitionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get level => $composableBuilder(
+    column: $table.level,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get experience => $composableBuilder(
+    column: $table.experience,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get proficiencyBonus => $composableBuilder(
+    column: $table.proficiencyBonus,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CharacterAdvancementDefinitionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CharacterAdvancementDefinitionsTable> {
+  $$CharacterAdvancementDefinitionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get level => $composableBuilder(
+    column: $table.level,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get experience => $composableBuilder(
+    column: $table.experience,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get proficiencyBonus => $composableBuilder(
+    column: $table.proficiencyBonus,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CharacterAdvancementDefinitionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CharacterAdvancementDefinitionsTable> {
+  $$CharacterAdvancementDefinitionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get level =>
+      $composableBuilder(column: $table.level, builder: (column) => column);
+
+  GeneratedColumn<int> get experience => $composableBuilder(
+    column: $table.experience,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get proficiencyBonus => $composableBuilder(
+    column: $table.proficiencyBonus,
+    builder: (column) => column,
+  );
+}
+
+class $$CharacterAdvancementDefinitionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CharacterAdvancementDefinitionsTable,
+          CharacterAdvancementDefinition,
+          $$CharacterAdvancementDefinitionsTableFilterComposer,
+          $$CharacterAdvancementDefinitionsTableOrderingComposer,
+          $$CharacterAdvancementDefinitionsTableAnnotationComposer,
+          $$CharacterAdvancementDefinitionsTableCreateCompanionBuilder,
+          $$CharacterAdvancementDefinitionsTableUpdateCompanionBuilder,
+          (
+            CharacterAdvancementDefinition,
+            BaseReferences<
+              _$AppDatabase,
+              $CharacterAdvancementDefinitionsTable,
+              CharacterAdvancementDefinition
+            >,
+          ),
+          CharacterAdvancementDefinition,
+          PrefetchHooks Function()
+        > {
+  $$CharacterAdvancementDefinitionsTableTableManager(
+    _$AppDatabase db,
+    $CharacterAdvancementDefinitionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CharacterAdvancementDefinitionsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$CharacterAdvancementDefinitionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$CharacterAdvancementDefinitionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> level = const Value.absent(),
+                Value<int> experience = const Value.absent(),
+                Value<int> proficiencyBonus = const Value.absent(),
+              }) => CharacterAdvancementDefinitionsCompanion(
+                level: level,
+                experience: experience,
+                proficiencyBonus: proficiencyBonus,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> level = const Value.absent(),
+                required int experience,
+                required int proficiencyBonus,
+              }) => CharacterAdvancementDefinitionsCompanion.insert(
+                level: level,
+                experience: experience,
+                proficiencyBonus: proficiencyBonus,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CharacterAdvancementDefinitionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CharacterAdvancementDefinitionsTable,
+      CharacterAdvancementDefinition,
+      $$CharacterAdvancementDefinitionsTableFilterComposer,
+      $$CharacterAdvancementDefinitionsTableOrderingComposer,
+      $$CharacterAdvancementDefinitionsTableAnnotationComposer,
+      $$CharacterAdvancementDefinitionsTableCreateCompanionBuilder,
+      $$CharacterAdvancementDefinitionsTableUpdateCompanionBuilder,
+      (
+        CharacterAdvancementDefinition,
+        BaseReferences<
+          _$AppDatabase,
+          $CharacterAdvancementDefinitionsTable,
+          CharacterAdvancementDefinition
+        >,
+      ),
+      CharacterAdvancementDefinition,
+      PrefetchHooks Function()
+    >;
+typedef $$ClassStandardArrayRecommendationsTableCreateCompanionBuilder =
+    ClassStandardArrayRecommendationsCompanion Function({
+      required String classId,
+      required String className,
+      required int strength,
+      required int dexterity,
+      required int constitution,
+      required int intelligence,
+      required int wisdom,
+      required int charisma,
+      Value<int> rowid,
+    });
+typedef $$ClassStandardArrayRecommendationsTableUpdateCompanionBuilder =
+    ClassStandardArrayRecommendationsCompanion Function({
+      Value<String> classId,
+      Value<String> className,
+      Value<int> strength,
+      Value<int> dexterity,
+      Value<int> constitution,
+      Value<int> intelligence,
+      Value<int> wisdom,
+      Value<int> charisma,
+      Value<int> rowid,
+    });
+
+class $$ClassStandardArrayRecommendationsTableFilterComposer
+    extends Composer<_$AppDatabase, $ClassStandardArrayRecommendationsTable> {
+  $$ClassStandardArrayRecommendationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get classId => $composableBuilder(
+    column: $table.classId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get className => $composableBuilder(
+    column: $table.className,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get strength => $composableBuilder(
+    column: $table.strength,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dexterity => $composableBuilder(
+    column: $table.dexterity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get constitution => $composableBuilder(
+    column: $table.constitution,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get intelligence => $composableBuilder(
+    column: $table.intelligence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get wisdom => $composableBuilder(
+    column: $table.wisdom,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get charisma => $composableBuilder(
+    column: $table.charisma,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ClassStandardArrayRecommendationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ClassStandardArrayRecommendationsTable> {
+  $$ClassStandardArrayRecommendationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get classId => $composableBuilder(
+    column: $table.classId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get className => $composableBuilder(
+    column: $table.className,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get strength => $composableBuilder(
+    column: $table.strength,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dexterity => $composableBuilder(
+    column: $table.dexterity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get constitution => $composableBuilder(
+    column: $table.constitution,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get intelligence => $composableBuilder(
+    column: $table.intelligence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get wisdom => $composableBuilder(
+    column: $table.wisdom,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get charisma => $composableBuilder(
+    column: $table.charisma,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ClassStandardArrayRecommendationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ClassStandardArrayRecommendationsTable> {
+  $$ClassStandardArrayRecommendationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get classId =>
+      $composableBuilder(column: $table.classId, builder: (column) => column);
+
+  GeneratedColumn<String> get className =>
+      $composableBuilder(column: $table.className, builder: (column) => column);
+
+  GeneratedColumn<int> get strength =>
+      $composableBuilder(column: $table.strength, builder: (column) => column);
+
+  GeneratedColumn<int> get dexterity =>
+      $composableBuilder(column: $table.dexterity, builder: (column) => column);
+
+  GeneratedColumn<int> get constitution => $composableBuilder(
+    column: $table.constitution,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get intelligence => $composableBuilder(
+    column: $table.intelligence,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get wisdom =>
+      $composableBuilder(column: $table.wisdom, builder: (column) => column);
+
+  GeneratedColumn<int> get charisma =>
+      $composableBuilder(column: $table.charisma, builder: (column) => column);
+}
+
+class $$ClassStandardArrayRecommendationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ClassStandardArrayRecommendationsTable,
+          ClassStandardArrayRecommendation,
+          $$ClassStandardArrayRecommendationsTableFilterComposer,
+          $$ClassStandardArrayRecommendationsTableOrderingComposer,
+          $$ClassStandardArrayRecommendationsTableAnnotationComposer,
+          $$ClassStandardArrayRecommendationsTableCreateCompanionBuilder,
+          $$ClassStandardArrayRecommendationsTableUpdateCompanionBuilder,
+          (
+            ClassStandardArrayRecommendation,
+            BaseReferences<
+              _$AppDatabase,
+              $ClassStandardArrayRecommendationsTable,
+              ClassStandardArrayRecommendation
+            >,
+          ),
+          ClassStandardArrayRecommendation,
+          PrefetchHooks Function()
+        > {
+  $$ClassStandardArrayRecommendationsTableTableManager(
+    _$AppDatabase db,
+    $ClassStandardArrayRecommendationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ClassStandardArrayRecommendationsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$ClassStandardArrayRecommendationsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ClassStandardArrayRecommendationsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> classId = const Value.absent(),
+                Value<String> className = const Value.absent(),
+                Value<int> strength = const Value.absent(),
+                Value<int> dexterity = const Value.absent(),
+                Value<int> constitution = const Value.absent(),
+                Value<int> intelligence = const Value.absent(),
+                Value<int> wisdom = const Value.absent(),
+                Value<int> charisma = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ClassStandardArrayRecommendationsCompanion(
+                classId: classId,
+                className: className,
+                strength: strength,
+                dexterity: dexterity,
+                constitution: constitution,
+                intelligence: intelligence,
+                wisdom: wisdom,
+                charisma: charisma,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String classId,
+                required String className,
+                required int strength,
+                required int dexterity,
+                required int constitution,
+                required int intelligence,
+                required int wisdom,
+                required int charisma,
+                Value<int> rowid = const Value.absent(),
+              }) => ClassStandardArrayRecommendationsCompanion.insert(
+                classId: classId,
+                className: className,
+                strength: strength,
+                dexterity: dexterity,
+                constitution: constitution,
+                intelligence: intelligence,
+                wisdom: wisdom,
+                charisma: charisma,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ClassStandardArrayRecommendationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ClassStandardArrayRecommendationsTable,
+      ClassStandardArrayRecommendation,
+      $$ClassStandardArrayRecommendationsTableFilterComposer,
+      $$ClassStandardArrayRecommendationsTableOrderingComposer,
+      $$ClassStandardArrayRecommendationsTableAnnotationComposer,
+      $$ClassStandardArrayRecommendationsTableCreateCompanionBuilder,
+      $$ClassStandardArrayRecommendationsTableUpdateCompanionBuilder,
+      (
+        ClassStandardArrayRecommendation,
+        BaseReferences<
+          _$AppDatabase,
+          $ClassStandardArrayRecommendationsTable,
+          ClassStandardArrayRecommendation
+        >,
+      ),
+      ClassStandardArrayRecommendation,
+      PrefetchHooks Function()
+    >;
+typedef $$NarrativeOptionGroupsTableCreateCompanionBuilder =
+    NarrativeOptionGroupsCompanion Function({
+      required String id,
+      required String fieldKey,
+      required String sourceType,
+      Value<String?> sourceId,
+      Value<String?> sourceName,
+      Value<String?> backgroundId,
+      Value<String?> backgroundName,
+      required String title,
+      Value<String?> diceFormula,
+      Value<int> optionCount,
+      Value<String?> sourceBook,
+      Value<int> rowid,
+    });
+typedef $$NarrativeOptionGroupsTableUpdateCompanionBuilder =
+    NarrativeOptionGroupsCompanion Function({
+      Value<String> id,
+      Value<String> fieldKey,
+      Value<String> sourceType,
+      Value<String?> sourceId,
+      Value<String?> sourceName,
+      Value<String?> backgroundId,
+      Value<String?> backgroundName,
+      Value<String> title,
+      Value<String?> diceFormula,
+      Value<int> optionCount,
+      Value<String?> sourceBook,
+      Value<int> rowid,
+    });
+
+final class $$NarrativeOptionGroupsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $NarrativeOptionGroupsTable,
+          NarrativeOptionGroup
+        > {
+  $$NarrativeOptionGroupsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<$NarrativeOptionsTable, List<NarrativeOption>>
+  _narrativeOptionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.narrativeOptions,
+    aliasName: $_aliasNameGenerator(
+      db.narrativeOptionGroups.id,
+      db.narrativeOptions.groupId,
+    ),
+  );
+
+  $$NarrativeOptionsTableProcessedTableManager get narrativeOptionsRefs {
+    final manager = $$NarrativeOptionsTableTableManager(
+      $_db,
+      $_db.narrativeOptions,
+    ).filter((f) => f.groupId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _narrativeOptionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$NarrativeOptionGroupsTableFilterComposer
+    extends Composer<_$AppDatabase, $NarrativeOptionGroupsTable> {
+  $$NarrativeOptionGroupsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fieldKey => $composableBuilder(
+    column: $table.fieldKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceId => $composableBuilder(
+    column: $table.sourceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceName => $composableBuilder(
+    column: $table.sourceName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get backgroundId => $composableBuilder(
+    column: $table.backgroundId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get backgroundName => $composableBuilder(
+    column: $table.backgroundName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get diceFormula => $composableBuilder(
+    column: $table.diceFormula,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get optionCount => $composableBuilder(
+    column: $table.optionCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceBook => $composableBuilder(
+    column: $table.sourceBook,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> narrativeOptionsRefs(
+    Expression<bool> Function($$NarrativeOptionsTableFilterComposer f) f,
+  ) {
+    final $$NarrativeOptionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.narrativeOptions,
+      getReferencedColumn: (t) => t.groupId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$NarrativeOptionsTableFilterComposer(
+            $db: $db,
+            $table: $db.narrativeOptions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$NarrativeOptionGroupsTableOrderingComposer
+    extends Composer<_$AppDatabase, $NarrativeOptionGroupsTable> {
+  $$NarrativeOptionGroupsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fieldKey => $composableBuilder(
+    column: $table.fieldKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceId => $composableBuilder(
+    column: $table.sourceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceName => $composableBuilder(
+    column: $table.sourceName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get backgroundId => $composableBuilder(
+    column: $table.backgroundId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get backgroundName => $composableBuilder(
+    column: $table.backgroundName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get diceFormula => $composableBuilder(
+    column: $table.diceFormula,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get optionCount => $composableBuilder(
+    column: $table.optionCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceBook => $composableBuilder(
+    column: $table.sourceBook,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$NarrativeOptionGroupsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $NarrativeOptionGroupsTable> {
+  $$NarrativeOptionGroupsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get fieldKey =>
+      $composableBuilder(column: $table.fieldKey, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceId =>
+      $composableBuilder(column: $table.sourceId, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceName => $composableBuilder(
+    column: $table.sourceName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get backgroundId => $composableBuilder(
+    column: $table.backgroundId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get backgroundName => $composableBuilder(
+    column: $table.backgroundName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get diceFormula => $composableBuilder(
+    column: $table.diceFormula,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get optionCount => $composableBuilder(
+    column: $table.optionCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceBook => $composableBuilder(
+    column: $table.sourceBook,
+    builder: (column) => column,
+  );
+
+  Expression<T> narrativeOptionsRefs<T extends Object>(
+    Expression<T> Function($$NarrativeOptionsTableAnnotationComposer a) f,
+  ) {
+    final $$NarrativeOptionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.narrativeOptions,
+      getReferencedColumn: (t) => t.groupId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$NarrativeOptionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.narrativeOptions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$NarrativeOptionGroupsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $NarrativeOptionGroupsTable,
+          NarrativeOptionGroup,
+          $$NarrativeOptionGroupsTableFilterComposer,
+          $$NarrativeOptionGroupsTableOrderingComposer,
+          $$NarrativeOptionGroupsTableAnnotationComposer,
+          $$NarrativeOptionGroupsTableCreateCompanionBuilder,
+          $$NarrativeOptionGroupsTableUpdateCompanionBuilder,
+          (NarrativeOptionGroup, $$NarrativeOptionGroupsTableReferences),
+          NarrativeOptionGroup,
+          PrefetchHooks Function({bool narrativeOptionsRefs})
+        > {
+  $$NarrativeOptionGroupsTableTableManager(
+    _$AppDatabase db,
+    $NarrativeOptionGroupsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$NarrativeOptionGroupsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$NarrativeOptionGroupsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$NarrativeOptionGroupsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> fieldKey = const Value.absent(),
+                Value<String> sourceType = const Value.absent(),
+                Value<String?> sourceId = const Value.absent(),
+                Value<String?> sourceName = const Value.absent(),
+                Value<String?> backgroundId = const Value.absent(),
+                Value<String?> backgroundName = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> diceFormula = const Value.absent(),
+                Value<int> optionCount = const Value.absent(),
+                Value<String?> sourceBook = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => NarrativeOptionGroupsCompanion(
+                id: id,
+                fieldKey: fieldKey,
+                sourceType: sourceType,
+                sourceId: sourceId,
+                sourceName: sourceName,
+                backgroundId: backgroundId,
+                backgroundName: backgroundName,
+                title: title,
+                diceFormula: diceFormula,
+                optionCount: optionCount,
+                sourceBook: sourceBook,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String fieldKey,
+                required String sourceType,
+                Value<String?> sourceId = const Value.absent(),
+                Value<String?> sourceName = const Value.absent(),
+                Value<String?> backgroundId = const Value.absent(),
+                Value<String?> backgroundName = const Value.absent(),
+                required String title,
+                Value<String?> diceFormula = const Value.absent(),
+                Value<int> optionCount = const Value.absent(),
+                Value<String?> sourceBook = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => NarrativeOptionGroupsCompanion.insert(
+                id: id,
+                fieldKey: fieldKey,
+                sourceType: sourceType,
+                sourceId: sourceId,
+                sourceName: sourceName,
+                backgroundId: backgroundId,
+                backgroundName: backgroundName,
+                title: title,
+                diceFormula: diceFormula,
+                optionCount: optionCount,
+                sourceBook: sourceBook,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$NarrativeOptionGroupsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({narrativeOptionsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (narrativeOptionsRefs) db.narrativeOptions,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (narrativeOptionsRefs)
+                    await $_getPrefetchedData<
+                      NarrativeOptionGroup,
+                      $NarrativeOptionGroupsTable,
+                      NarrativeOption
+                    >(
+                      currentTable: table,
+                      referencedTable: $$NarrativeOptionGroupsTableReferences
+                          ._narrativeOptionsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$NarrativeOptionGroupsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).narrativeOptionsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.groupId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$NarrativeOptionGroupsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $NarrativeOptionGroupsTable,
+      NarrativeOptionGroup,
+      $$NarrativeOptionGroupsTableFilterComposer,
+      $$NarrativeOptionGroupsTableOrderingComposer,
+      $$NarrativeOptionGroupsTableAnnotationComposer,
+      $$NarrativeOptionGroupsTableCreateCompanionBuilder,
+      $$NarrativeOptionGroupsTableUpdateCompanionBuilder,
+      (NarrativeOptionGroup, $$NarrativeOptionGroupsTableReferences),
+      NarrativeOptionGroup,
+      PrefetchHooks Function({bool narrativeOptionsRefs})
+    >;
+typedef $$NarrativeOptionsTableCreateCompanionBuilder =
+    NarrativeOptionsCompanion Function({
+      required String id,
+      required String groupId,
+      required int optionIndex,
+      Value<int?> rollMin,
+      Value<int?> rollMax,
+      Value<String?> label,
+      required String content,
+      Value<int> rowid,
+    });
+typedef $$NarrativeOptionsTableUpdateCompanionBuilder =
+    NarrativeOptionsCompanion Function({
+      Value<String> id,
+      Value<String> groupId,
+      Value<int> optionIndex,
+      Value<int?> rollMin,
+      Value<int?> rollMax,
+      Value<String?> label,
+      Value<String> content,
+      Value<int> rowid,
+    });
+
+final class $$NarrativeOptionsTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $NarrativeOptionsTable, NarrativeOption> {
+  $$NarrativeOptionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $NarrativeOptionGroupsTable _groupIdTable(_$AppDatabase db) =>
+      db.narrativeOptionGroups.createAlias(
+        $_aliasNameGenerator(
+          db.narrativeOptions.groupId,
+          db.narrativeOptionGroups.id,
+        ),
+      );
+
+  $$NarrativeOptionGroupsTableProcessedTableManager get groupId {
+    final $_column = $_itemColumn<String>('group_id')!;
+
+    final manager = $$NarrativeOptionGroupsTableTableManager(
+      $_db,
+      $_db.narrativeOptionGroups,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_groupIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$NarrativeOptionsTableFilterComposer
+    extends Composer<_$AppDatabase, $NarrativeOptionsTable> {
+  $$NarrativeOptionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get optionIndex => $composableBuilder(
+    column: $table.optionIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get rollMin => $composableBuilder(
+    column: $table.rollMin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get rollMax => $composableBuilder(
+    column: $table.rollMax,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$NarrativeOptionGroupsTableFilterComposer get groupId {
+    final $$NarrativeOptionGroupsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.groupId,
+          referencedTable: $db.narrativeOptionGroups,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$NarrativeOptionGroupsTableFilterComposer(
+                $db: $db,
+                $table: $db.narrativeOptionGroups,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$NarrativeOptionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $NarrativeOptionsTable> {
+  $$NarrativeOptionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get optionIndex => $composableBuilder(
+    column: $table.optionIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get rollMin => $composableBuilder(
+    column: $table.rollMin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get rollMax => $composableBuilder(
+    column: $table.rollMax,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$NarrativeOptionGroupsTableOrderingComposer get groupId {
+    final $$NarrativeOptionGroupsTableOrderingComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.groupId,
+          referencedTable: $db.narrativeOptionGroups,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$NarrativeOptionGroupsTableOrderingComposer(
+                $db: $db,
+                $table: $db.narrativeOptionGroups,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$NarrativeOptionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $NarrativeOptionsTable> {
+  $$NarrativeOptionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get optionIndex => $composableBuilder(
+    column: $table.optionIndex,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get rollMin =>
+      $composableBuilder(column: $table.rollMin, builder: (column) => column);
+
+  GeneratedColumn<int> get rollMax =>
+      $composableBuilder(column: $table.rollMax, builder: (column) => column);
+
+  GeneratedColumn<String> get label =>
+      $composableBuilder(column: $table.label, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  $$NarrativeOptionGroupsTableAnnotationComposer get groupId {
+    final $$NarrativeOptionGroupsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.groupId,
+          referencedTable: $db.narrativeOptionGroups,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$NarrativeOptionGroupsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.narrativeOptionGroups,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$NarrativeOptionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $NarrativeOptionsTable,
+          NarrativeOption,
+          $$NarrativeOptionsTableFilterComposer,
+          $$NarrativeOptionsTableOrderingComposer,
+          $$NarrativeOptionsTableAnnotationComposer,
+          $$NarrativeOptionsTableCreateCompanionBuilder,
+          $$NarrativeOptionsTableUpdateCompanionBuilder,
+          (NarrativeOption, $$NarrativeOptionsTableReferences),
+          NarrativeOption,
+          PrefetchHooks Function({bool groupId})
+        > {
+  $$NarrativeOptionsTableTableManager(
+    _$AppDatabase db,
+    $NarrativeOptionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$NarrativeOptionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$NarrativeOptionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$NarrativeOptionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> groupId = const Value.absent(),
+                Value<int> optionIndex = const Value.absent(),
+                Value<int?> rollMin = const Value.absent(),
+                Value<int?> rollMax = const Value.absent(),
+                Value<String?> label = const Value.absent(),
+                Value<String> content = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => NarrativeOptionsCompanion(
+                id: id,
+                groupId: groupId,
+                optionIndex: optionIndex,
+                rollMin: rollMin,
+                rollMax: rollMax,
+                label: label,
+                content: content,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String groupId,
+                required int optionIndex,
+                Value<int?> rollMin = const Value.absent(),
+                Value<int?> rollMax = const Value.absent(),
+                Value<String?> label = const Value.absent(),
+                required String content,
+                Value<int> rowid = const Value.absent(),
+              }) => NarrativeOptionsCompanion.insert(
+                id: id,
+                groupId: groupId,
+                optionIndex: optionIndex,
+                rollMin: rollMin,
+                rollMax: rollMax,
+                label: label,
+                content: content,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$NarrativeOptionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({groupId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (groupId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.groupId,
+                                referencedTable:
+                                    $$NarrativeOptionsTableReferences
+                                        ._groupIdTable(db),
+                                referencedColumn:
+                                    $$NarrativeOptionsTableReferences
+                                        ._groupIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$NarrativeOptionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $NarrativeOptionsTable,
+      NarrativeOption,
+      $$NarrativeOptionsTableFilterComposer,
+      $$NarrativeOptionsTableOrderingComposer,
+      $$NarrativeOptionsTableAnnotationComposer,
+      $$NarrativeOptionsTableCreateCompanionBuilder,
+      $$NarrativeOptionsTableUpdateCompanionBuilder,
+      (NarrativeOption, $$NarrativeOptionsTableReferences),
+      NarrativeOption,
+      PrefetchHooks Function({bool groupId})
+    >;
 typedef $$BackgroundDefinitionsTableCreateCompanionBuilder =
     BackgroundDefinitionsCompanion Function({
       required String id,
@@ -17057,6 +20332,22 @@ class $AppDatabaseManager {
       $$CharacterCurrencyTableTableManager(_db, _db.characterCurrency);
   $$ClassDefinitionsTableTableManager get classDefinitions =>
       $$ClassDefinitionsTableTableManager(_db, _db.classDefinitions);
+  $$CharacterAdvancementDefinitionsTableTableManager
+  get characterAdvancementDefinitions =>
+      $$CharacterAdvancementDefinitionsTableTableManager(
+        _db,
+        _db.characterAdvancementDefinitions,
+      );
+  $$ClassStandardArrayRecommendationsTableTableManager
+  get classStandardArrayRecommendations =>
+      $$ClassStandardArrayRecommendationsTableTableManager(
+        _db,
+        _db.classStandardArrayRecommendations,
+      );
+  $$NarrativeOptionGroupsTableTableManager get narrativeOptionGroups =>
+      $$NarrativeOptionGroupsTableTableManager(_db, _db.narrativeOptionGroups);
+  $$NarrativeOptionsTableTableManager get narrativeOptions =>
+      $$NarrativeOptionsTableTableManager(_db, _db.narrativeOptions);
   $$BackgroundDefinitionsTableTableManager get backgroundDefinitions =>
       $$BackgroundDefinitionsTableTableManager(_db, _db.backgroundDefinitions);
   $$SpellDefinitionsTableTableManager get spellDefinitions =>

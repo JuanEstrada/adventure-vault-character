@@ -1,13 +1,16 @@
 import 'dart:convert';
 
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
+import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
+import 'package:drift/drift.dart';
 import 'package:flutter/services.dart';
 
 class AssetCompendiumRepository implements CompendiumRepository {
   AssetCompendiumRepository({
     AssetBundle? bundle,
+    AppDatabase? database,
     String backgroundsAssetPath =
         'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_backgrounds_5.5e.xml',
     String racesAssetPath =
@@ -20,23 +23,45 @@ class AssetCompendiumRepository implements CompendiumRepository {
         'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_feats_5.5e.xml',
     String monstersAssetPath =
         'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_bestiary_5.5e.xml',
+    String phbBackgroundsAssetPath =
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/01_Core/01_Players_Handbook/backgrounds-phb.xml',
+    String scagBackgroundsAssetPath =
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Sword_Coast_Adventurers_Guide/backgrounds-scag.xml',
+    String pamBackgroundsAssetPath =
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Planescape_Adventures_in_the_Multiverse/backgrounds-pam.xml',
+    String ggrBackgroundsAssetPath =
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Guildmasters_Guide_to_Ravnica/backgrounds-ggr.xml',
+    String erlwBackgroundsAssetPath =
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml',
     String fallbackCatalogAssetPath = 'assets/compendium/catalog.json',
   }) : _bundle = bundle ?? rootBundle,
+       _database = database,
        _backgroundsAssetPath = backgroundsAssetPath,
        _racesAssetPath = racesAssetPath,
        _classesAssetPath = classesAssetPath,
        _spellsAssetPath = spellsAssetPath,
        _featsAssetPath = featsAssetPath,
        _monstersAssetPath = monstersAssetPath,
+       _phbBackgroundsAssetPath = phbBackgroundsAssetPath,
+       _scagBackgroundsAssetPath = scagBackgroundsAssetPath,
+       _pamBackgroundsAssetPath = pamBackgroundsAssetPath,
+       _ggrBackgroundsAssetPath = ggrBackgroundsAssetPath,
+       _erlwBackgroundsAssetPath = erlwBackgroundsAssetPath,
        _fallbackCatalogAssetPath = fallbackCatalogAssetPath;
 
   final AssetBundle _bundle;
+  final AppDatabase? _database;
   final String _backgroundsAssetPath;
   final String _racesAssetPath;
   final String _classesAssetPath;
   final String _spellsAssetPath;
   final String _featsAssetPath;
   final String _monstersAssetPath;
+  final String _phbBackgroundsAssetPath;
+  final String _scagBackgroundsAssetPath;
+  final String _pamBackgroundsAssetPath;
+  final String _ggrBackgroundsAssetPath;
+  final String _erlwBackgroundsAssetPath;
   final String _fallbackCatalogAssetPath;
 
   CompendiumCatalog? _cachedCatalog;
@@ -56,6 +81,15 @@ class AssetCompendiumRepository implements CompendiumRepository {
       final spellsXml = await _tryLoadString(_spellsAssetPath);
       final featsXml = await _tryLoadString(_featsAssetPath);
       final monstersXml = await _tryLoadString(_monstersAssetPath);
+      final phbBackgroundsXml = await _tryLoadString(_phbBackgroundsAssetPath);
+      final scagBackgroundsXml = await _tryLoadString(
+        _scagBackgroundsAssetPath,
+      );
+      final pamBackgroundsXml = await _tryLoadString(_pamBackgroundsAssetPath);
+      final ggrBackgroundsXml = await _tryLoadString(_ggrBackgroundsAssetPath);
+      final erlwBackgroundsXml = await _tryLoadString(
+        _erlwBackgroundsAssetPath,
+      );
       catalog = _parseFightClubCatalog(
         backgroundsXml: backgroundsXml,
         racesXml: racesXml,
@@ -63,10 +97,21 @@ class AssetCompendiumRepository implements CompendiumRepository {
         spellsXml: spellsXml ?? '',
         featsXml: featsXml ?? '',
         monstersXml: monstersXml ?? '',
+        phbBackgroundsXml: phbBackgroundsXml ?? '',
+        scagBackgroundsXml: scagBackgroundsXml ?? '',
+        pamBackgroundsXml: pamBackgroundsXml ?? '',
+        ggrBackgroundsXml: ggrBackgroundsXml ?? '',
+        erlwBackgroundsXml: erlwBackgroundsXml ?? '',
       );
     } catch (_) {
       final rawJson = await _bundle.loadString(_fallbackCatalogAssetPath);
       catalog = _parseJsonCatalog(rawJson);
+    }
+
+    final database = _database;
+    if (database != null) {
+      await _persistNormalizedRuleReferences(database, catalog);
+      catalog = await _loadCatalogWithNormalizedRules(database, catalog);
     }
 
     _cachedCatalog = catalog;
@@ -219,6 +264,17 @@ class AssetCompendiumRepository implements CompendiumRepository {
           proficiencyBonus: '+6',
         ),
       ];
+  static const List<String> _alignmentOptions = <String>[
+    'Lawful Good',
+    'Neutral Good',
+    'Chaotic Good',
+    'Lawful Neutral',
+    'Neutral',
+    'Chaotic Neutral',
+    'Lawful Evil',
+    'Neutral Evil',
+    'Chaotic Evil',
+  ];
   static const List<StandardArrayByClassEntry> _standardArrayByClass =
       <StandardArrayByClassEntry>[
         StandardArrayByClassEntry(
@@ -350,6 +406,11 @@ class AssetCompendiumRepository implements CompendiumRepository {
     required String spellsXml,
     required String featsXml,
     required String monstersXml,
+    required String phbBackgroundsXml,
+    required String scagBackgroundsXml,
+    required String pamBackgroundsXml,
+    required String ggrBackgroundsXml,
+    required String erlwBackgroundsXml,
   }) {
     final races = _extractElements(racesXml, 'race')
         .map(
@@ -384,13 +445,21 @@ class AssetCompendiumRepository implements CompendiumRepository {
 
     final backgrounds = _extractElements(
       backgroundsXml,
-      'background',
+    'background',
     ).map(_parseFightClubBackground).toList(growable: false);
+    final narrativeOptionGroups = _parseNarrativeOptionGroups(
+      phbBackgroundsXml: phbBackgroundsXml,
+      scagBackgroundsXml: scagBackgroundsXml,
+      pamBackgroundsXml: pamBackgroundsXml,
+      ggrBackgroundsXml: ggrBackgroundsXml,
+      erlwBackgroundsXml: erlwBackgroundsXml,
+    );
 
     return CompendiumCatalog(
       races: races,
       classes: classes,
       backgrounds: backgrounds,
+      narrativeOptionGroups: narrativeOptionGroups,
       generatedAbilityScoreSet: _generatedAbilityScoreSet,
       manualAbilityScoreOptions: _manualAbilityScoreOptions,
       characterAdvancement: _characterAdvancement,
@@ -421,6 +490,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
             );
           })
           .toList(growable: false),
+      narrativeOptionGroups: const <CompendiumNarrativeOptionGroup>[],
       generatedAbilityScoreSet:
           (json['generatedAbilityScoreSet'] as List<dynamic>).cast<int>(),
       manualAbilityScoreOptions:
@@ -861,6 +931,16 @@ class AssetCompendiumRepository implements CompendiumRepository {
     return '';
   }
 
+  String _extractSourceLine(String text) {
+    for (final line in _normalizeMultilineText(text).split('\n')) {
+      final normalized = _normalizeText(line);
+      if (normalized.startsWith('Source:')) {
+        return normalized;
+      }
+    }
+    return '';
+  }
+
   List<String> _splitCsv(String text) {
     if (text.isEmpty) {
       return const <String>[];
@@ -997,6 +1077,678 @@ class AssetCompendiumRepository implements CompendiumRepository {
       text.replaceFirst(RegExp(r'^Level\s+\d+:\s*', caseSensitive: false), ''),
     );
   }
+
+  List<CompendiumNarrativeOptionGroup> _parseNarrativeOptionGroups({
+    required String phbBackgroundsXml,
+    required String scagBackgroundsXml,
+    required String pamBackgroundsXml,
+    required String ggrBackgroundsXml,
+    required String erlwBackgroundsXml,
+  }) {
+    return <CompendiumNarrativeOptionGroup>[
+      _buildAlignmentNarrativeGroup(),
+      ..._parsePhbBackgroundNarrativeGroups(phbBackgroundsXml),
+      ..._parseScagFactionGroups(scagBackgroundsXml),
+      ..._parsePamFactionGroups(pamBackgroundsXml),
+      ..._parseGgrFactionGroups(ggrBackgroundsXml),
+      ..._parseErlwFactionGroups(erlwBackgroundsXml),
+    ];
+  }
+
+  CompendiumNarrativeOptionGroup _buildAlignmentNarrativeGroup() {
+    return CompendiumNarrativeOptionGroup(
+      id: 'narrative-alignment-core',
+      fieldKey: 'alignment',
+      sourceType: 'core_rules',
+      sourceId: 'alignment_reference',
+      sourceName: 'Alignment Reference',
+      title: 'Official Alignments',
+      sourceBook: 'SRD reference',
+      options: _alignmentOptions
+          .asMap()
+          .entries
+          .map(
+            (entry) => CompendiumNarrativeOption(
+              id: 'narrative-alignment-${entry.key + 1}',
+              optionIndex: entry.key + 1,
+              text: entry.value,
+              label: entry.value,
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+
+  List<CompendiumNarrativeOptionGroup> _parsePhbBackgroundNarrativeGroups(
+    String xml,
+  ) {
+    if (xml.isEmpty) {
+      return const <CompendiumNarrativeOptionGroup>[];
+    }
+
+    final groups = <CompendiumNarrativeOptionGroup>[];
+    for (final background in _extractElements(xml, 'background')) {
+      final backgroundName = _extractSingleTagText(background.innerXml, 'name');
+      if (backgroundName == null || backgroundName.isEmpty) {
+        continue;
+      }
+      final backgroundId = _slugifyName(backgroundName);
+      final sourceBook = _extractSourceLine(
+        _findTraitTextByName(background.innerXml, 'Description'),
+      );
+      final suggestedTrait = _findTraitElement(
+        background.innerXml,
+        'Suggested Characteristics',
+      );
+      if (suggestedTrait == null) {
+        continue;
+      }
+      final suggestedText = _extractRawTagText(suggestedTrait.innerXml, 'text');
+      if (suggestedText == null || suggestedText.isEmpty) {
+        continue;
+      }
+      final rolls = <String, String>{};
+      for (final item in _extractElements(suggestedTrait.innerXml, 'roll')) {
+        final description = item.attributes['description'] ?? '';
+        if (description.isEmpty) {
+          continue;
+        }
+        rolls[description] = _normalizeText(item.innerXml);
+      }
+
+      for (final field in _narrativeTableFields) {
+        final section = _parseNarrativeTableSection(
+          suggestedText,
+          tableLabel: field.tableLabel,
+        );
+        if (section == null || section.options.isEmpty) {
+          continue;
+        }
+
+        groups.add(
+          CompendiumNarrativeOptionGroup(
+            id: 'narrative-$backgroundId-${field.fieldKey}',
+            fieldKey: field.fieldKey,
+            sourceType: 'background',
+            sourceId: backgroundId,
+            sourceName: backgroundName,
+            backgroundId: backgroundId,
+            backgroundName: backgroundName,
+            title: '${field.groupTitle} for $backgroundName',
+            diceFormula: rolls[field.tableLabel],
+            sourceBook:
+                sourceBook.isEmpty ? "Player's Handbook (2014)" : sourceBook,
+            options: section.options
+                .map(
+                  (option) => CompendiumNarrativeOption(
+                    id:
+                        'narrative-$backgroundId-${field.fieldKey}-${option.optionIndex}',
+                    optionIndex: option.optionIndex,
+                    rollMin: option.rollMin,
+                    rollMax: option.rollMax,
+                    label: option.label,
+                    text: option.text,
+                  ),
+                )
+                .toList(growable: false),
+          ),
+        );
+      }
+    }
+
+    return List<CompendiumNarrativeOptionGroup>.unmodifiable(groups);
+  }
+
+  List<CompendiumNarrativeOptionGroup> _parseScagFactionGroups(String xml) {
+    if (xml.isEmpty) {
+      return const <CompendiumNarrativeOptionGroup>[];
+    }
+
+    final factionAgent = _findElementByExactName(xml, 'background', 'Faction Agent');
+    if (factionAgent == null) {
+      return const <CompendiumNarrativeOptionGroup>[];
+    }
+
+    final factionsTrait = _findTraitElement(
+      factionAgent.innerXml,
+      'Factions of the Sword Coast',
+    );
+    final text = factionsTrait == null
+        ? null
+        : _extractRawTagText(factionsTrait.innerXml, 'text');
+    if (text == null || text.isEmpty) {
+      return const <CompendiumNarrativeOptionGroup>[];
+    }
+
+    final options = <CompendiumNarrativeOption>[];
+    var index = 1;
+    for (final line in _normalizeMultilineText(text).split('\n')) {
+      final trimmed = _normalizeText(line);
+      if (!trimmed.startsWith('The ') || !trimmed.contains('. ')) {
+        continue;
+      }
+      final separatorIndex = trimmed.indexOf('. ');
+      final label = trimmed.substring(0, separatorIndex).trim();
+      final description = trimmed.substring(separatorIndex + 2).trim();
+      if (label.isEmpty || description.isEmpty) {
+        continue;
+      }
+      options.add(
+        CompendiumNarrativeOption(
+          id: 'narrative-sword-coast-faction-$index',
+          optionIndex: index,
+          label: label,
+          text: description,
+        ),
+      );
+      index += 1;
+    }
+
+    if (options.isEmpty) {
+      return const <CompendiumNarrativeOptionGroup>[];
+    }
+
+    return <CompendiumNarrativeOptionGroup>[
+      CompendiumNarrativeOptionGroup(
+        id: 'narrative-sword-coast-factions',
+        fieldKey: 'faction',
+        sourceType: 'setting',
+        sourceId: 'sword_coast',
+        sourceName: 'Sword Coast Factions',
+        backgroundId: 'faction_agent',
+        backgroundName: 'Faction Agent',
+        title: 'Factions of the Sword Coast',
+        sourceBook: 'Sword Coast Adventurer\'s Guide',
+        options: options,
+      ),
+    ];
+  }
+
+  List<CompendiumNarrativeOptionGroup> _parsePamFactionGroups(String xml) {
+    if (xml.isEmpty) {
+      return const <CompendiumNarrativeOptionGroup>[];
+    }
+
+    final philosopher = _findElementByExactName(
+      xml,
+      'background',
+      'Planar Philosopher',
+    );
+    if (philosopher == null) {
+      return const <CompendiumNarrativeOptionGroup>[];
+    }
+
+    final factionsTrait = _findTraitElement(philosopher.innerXml, 'Factions of Sigil');
+    final text = factionsTrait == null
+        ? null
+        : _extractRawTagText(factionsTrait.innerXml, 'text');
+    if (text == null || text.isEmpty) {
+      return const <CompendiumNarrativeOptionGroup>[];
+    }
+
+    final options = <CompendiumNarrativeOption>[];
+    final matches = RegExp(r'•\s*([^:]+):\s*([^\n]+)').allMatches(
+      _normalizeMultilineText(text),
+    );
+    var index = 1;
+    for (final match in matches) {
+      final label = _normalizeText(match.group(1) ?? '');
+      final description = _normalizeText(match.group(2) ?? '');
+      if (label.isEmpty || description.isEmpty) {
+        continue;
+      }
+      options.add(
+        CompendiumNarrativeOption(
+          id: 'narrative-sigil-faction-$index',
+          optionIndex: index,
+          label: label,
+          text: description,
+        ),
+      );
+      index += 1;
+    }
+
+    if (options.isEmpty) {
+      return const <CompendiumNarrativeOptionGroup>[];
+    }
+
+    return <CompendiumNarrativeOptionGroup>[
+      CompendiumNarrativeOptionGroup(
+        id: 'narrative-sigil-factions',
+        fieldKey: 'faction',
+        sourceType: 'setting',
+        sourceId: 'sigil',
+        sourceName: 'Factions of Sigil',
+        backgroundId: 'planar_philosopher',
+        backgroundName: 'Planar Philosopher',
+        title: 'Factions of Sigil',
+        sourceBook: 'Planescape: Adventures in the Multiverse',
+        options: options,
+      ),
+    ];
+  }
+
+  List<CompendiumNarrativeOptionGroup> _parseGgrFactionGroups(String xml) {
+    if (xml.isEmpty) {
+      return const <CompendiumNarrativeOptionGroup>[];
+    }
+
+    final options = _extractElements(xml, 'background')
+        .map((background) => _extractSingleTagText(background.innerXml, 'name') ?? '')
+        .map(_normalizeCatalogName)
+        .where((name) => name.isNotEmpty)
+        .toSet()
+        .toList(growable: false);
+
+    if (options.isEmpty) {
+      return const <CompendiumNarrativeOptionGroup>[];
+    }
+
+    return <CompendiumNarrativeOptionGroup>[
+      CompendiumNarrativeOptionGroup(
+        id: 'narrative-ravnica-guilds',
+        fieldKey: 'faction',
+        sourceType: 'setting',
+        sourceId: 'ravnica',
+        sourceName: 'Guilds of Ravnica',
+        title: 'Guilds of Ravnica',
+        sourceBook: "Guildmasters' Guide to Ravnica",
+        options: options
+            .asMap()
+            .entries
+            .map(
+              (entry) => CompendiumNarrativeOption(
+                id: 'narrative-ravnica-guild-${entry.key + 1}',
+                optionIndex: entry.key + 1,
+                label: entry.value,
+                text: entry.value,
+              ),
+            )
+            .toList(growable: false),
+      ),
+    ];
+  }
+
+  List<CompendiumNarrativeOptionGroup> _parseErlwFactionGroups(String xml) {
+    if (xml.isEmpty) {
+      return const <CompendiumNarrativeOptionGroup>[];
+    }
+
+    final houseAgent = _findElementByExactName(xml, 'background', 'House Agent');
+    if (houseAgent == null) {
+      return const <CompendiumNarrativeOptionGroup>[];
+    }
+
+    final descriptionTrait = _findTraitElement(houseAgent.innerXml, 'Description');
+    final text = descriptionTrait == null
+        ? null
+        : _extractRawTagText(descriptionTrait.innerXml, 'text');
+    if (text == null || text.isEmpty) {
+      return const <CompendiumNarrativeOptionGroup>[];
+    }
+
+    final section = _parseNamedTableSection(
+      text,
+      tableLabel: 'House Tool Proficiencies',
+      firstColumnLabel: 'Your House',
+    );
+    if (section.isEmpty) {
+      return const <CompendiumNarrativeOptionGroup>[];
+    }
+
+    return <CompendiumNarrativeOptionGroup>[
+      CompendiumNarrativeOptionGroup(
+        id: 'narrative-eberron-houses',
+        fieldKey: 'faction',
+        sourceType: 'setting',
+        sourceId: 'eberron',
+        sourceName: 'Dragonmarked Houses',
+        backgroundId: 'house_agent',
+        backgroundName: 'House Agent',
+        title: 'Dragonmarked Houses',
+        sourceBook: 'Eberron: Rising from the Last War',
+        options: section
+            .asMap()
+            .entries
+            .map(
+              (entry) => CompendiumNarrativeOption(
+                id: 'narrative-eberron-house-${entry.key + 1}',
+                optionIndex: entry.key + 1,
+                label: entry.value.label,
+                text: entry.value.text,
+              ),
+            )
+            .toList(growable: false),
+      ),
+    ];
+  }
+
+  _XmlElement? _findTraitElement(String xml, String expectedName) {
+    for (final trait in _extractElements(xml, 'trait')) {
+      final name = _extractSingleTagText(trait.innerXml, 'name');
+      if (_normalizeText(name ?? '') == expectedName) {
+        return trait;
+      }
+    }
+    return null;
+  }
+
+  String _findTraitTextByName(String xml, String expectedName) {
+    final trait = _findTraitElement(xml, expectedName);
+    if (trait == null) {
+      return '';
+    }
+    return _extractRawTagText(trait.innerXml, 'text') ?? '';
+  }
+
+  String? _extractRawTagText(String xml, String tagName) {
+    final match = RegExp(
+      '<$tagName\\b[^>]*>([\\s\\S]*?)</$tagName>',
+      caseSensitive: false,
+    ).firstMatch(xml);
+    if (match == null) {
+      return null;
+    }
+
+    return _normalizeMultilineText(match.group(1) ?? '');
+  }
+
+  String _normalizeMultilineText(String text) {
+    return text
+        .replaceAll('&apos;', "'")
+        .replaceAll('&quot;', '"')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('\r\n', '\n')
+        .replaceAll('\r', '\n')
+        .replaceAllMapped(RegExp(r'[ \t]+\n'), (match) => '\n')
+        .trim();
+  }
+
+  _ParsedNarrativeTableSection? _parseNarrativeTableSection(
+    String text, {
+    required String tableLabel,
+  }) {
+    final normalized = _normalizeMultilineText(text);
+    final lines = normalized.split('\n');
+    final startIndex = lines.indexWhere((line) {
+      final trimmed = _normalizeText(line);
+      return trimmed.startsWith('d') && trimmed.endsWith(tableLabel);
+    });
+    if (startIndex == -1) {
+      return null;
+    }
+
+    final options = <_ParsedNarrativeOption>[];
+    for (final line in lines.skip(startIndex + 1)) {
+      final trimmed = _normalizeText(line);
+      if (trimmed.isEmpty) {
+        continue;
+      }
+      if (trimmed.startsWith('d') && trimmed.contains('|')) {
+        break;
+      }
+      final columns = trimmed.split('|');
+      if (columns.length < 2) {
+        continue;
+      }
+      final rollText = _normalizeText(columns.first);
+      final rawText = _normalizeText(columns.sublist(1).join('|'));
+      if (rawText.isEmpty) {
+        continue;
+      }
+      final rollParts = rollText.split('-');
+      final index = int.tryParse(rollParts.first) ?? options.length + 1;
+      final rollMin = int.tryParse(rollParts.first);
+      final rollMax =
+          rollParts.length > 1
+              ? int.tryParse(rollParts.last)
+              : int.tryParse(rollParts.first);
+      options.add(
+        _ParsedNarrativeOption(
+          optionIndex: index,
+          rollMin: rollMin,
+          rollMax: rollMax,
+          label: _extractNarrativeOptionLabel(rawText),
+          text: rawText,
+        ),
+      );
+    }
+
+    return options.isEmpty ? null : _ParsedNarrativeTableSection(options);
+  }
+
+  List<_NamedNarrativeOption> _parseNamedTableSection(
+    String text, {
+    required String tableLabel,
+    required String firstColumnLabel,
+  }) {
+    final normalized = _normalizeMultilineText(text);
+    final lines = normalized.split('\n');
+    final startIndex = lines.indexWhere(
+      (line) => _normalizeText(line) == '$tableLabel:',
+    );
+    if (startIndex == -1) {
+      return const <_NamedNarrativeOption>[];
+    }
+
+    var headerIndex = -1;
+    for (var i = startIndex + 1; i < lines.length; i += 1) {
+      if (_normalizeText(lines[i]).startsWith('$firstColumnLabel |')) {
+        headerIndex = i;
+        break;
+      }
+    }
+    if (headerIndex == -1) {
+      return const <_NamedNarrativeOption>[];
+    }
+
+    final options = <_NamedNarrativeOption>[];
+    for (final line in lines.skip(headerIndex + 1)) {
+      final trimmed = _normalizeText(line);
+      if (trimmed.isEmpty || !trimmed.contains('|')) {
+        break;
+      }
+      final separatorIndex = trimmed.indexOf('|');
+      final label = _normalizeText(trimmed.substring(0, separatorIndex));
+      final description = _normalizeText(trimmed.substring(separatorIndex + 1));
+      if (label.isEmpty || description.isEmpty) {
+        continue;
+      }
+      options.add(_NamedNarrativeOption(label: label, text: description));
+    }
+    return options;
+  }
+
+  String? _extractNarrativeOptionLabel(String rawText) {
+    final separatorIndex = rawText.indexOf('.');
+    if (separatorIndex <= 0) {
+      return null;
+    }
+    final candidate = rawText.substring(0, separatorIndex).trim();
+    if (candidate.split(' ').length > 5) {
+      return null;
+    }
+    return candidate;
+  }
+
+  Future<void> _persistNormalizedRuleReferences(
+    AppDatabase database,
+    CompendiumCatalog catalog,
+  ) async {
+    await database.delete(database.narrativeOptions).go();
+    await database.delete(database.narrativeOptionGroups).go();
+
+    await database.batch((Batch batch) {
+      batch.insertAll(
+        database.characterAdvancementDefinitions,
+        catalog.characterAdvancement
+            .map(
+              (entry) => CharacterAdvancementDefinitionsCompanion(
+                level: Value(entry.level),
+                experience: Value(entry.experience),
+                proficiencyBonus: Value(
+                  _parseProficiencyBonus(entry.proficiencyBonus),
+                ),
+              ),
+            )
+            .toList(growable: false),
+        mode: InsertMode.insertOrReplace,
+      );
+      batch.insertAll(
+        database.classStandardArrayRecommendations,
+        catalog.standardArrayByClass
+            .map(
+              (entry) => ClassStandardArrayRecommendationsCompanion(
+                classId: Value(entry.classId),
+                className: Value(entry.className),
+                strength: Value(entry.strength),
+                dexterity: Value(entry.dexterity),
+                constitution: Value(entry.constitution),
+                intelligence: Value(entry.intelligence),
+                wisdom: Value(entry.wisdom),
+                charisma: Value(entry.charisma),
+              ),
+            )
+            .toList(growable: false),
+        mode: InsertMode.insertOrReplace,
+      );
+      batch.insertAll(
+        database.narrativeOptionGroups,
+        catalog.narrativeOptionGroups
+            .map(
+              (group) => NarrativeOptionGroupsCompanion(
+                id: Value(group.id),
+                fieldKey: Value(group.fieldKey),
+                sourceType: Value(group.sourceType),
+                sourceId: Value(group.sourceId),
+                sourceName: Value(group.sourceName),
+                backgroundId: Value(group.backgroundId),
+                backgroundName: Value(group.backgroundName),
+                title: Value(group.title),
+                diceFormula: Value(group.diceFormula),
+                optionCount: Value(group.options.length),
+                sourceBook: Value(group.sourceBook),
+              ),
+            )
+            .toList(growable: false),
+        mode: InsertMode.insertOrReplace,
+      );
+      batch.insertAll(
+        database.narrativeOptions,
+        catalog.narrativeOptionGroups
+            .expand(
+              (group) => group.options.map(
+                (option) => NarrativeOptionsCompanion(
+                  id: Value(option.id),
+                  groupId: Value(group.id),
+                  optionIndex: Value(option.optionIndex),
+                  rollMin: Value(option.rollMin),
+                  rollMax: Value(option.rollMax),
+                  label: Value(option.label),
+                  content: Value(option.text),
+                ),
+              ),
+            )
+            .toList(growable: false),
+        mode: InsertMode.insertOrReplace,
+      );
+    });
+  }
+
+  Future<CompendiumCatalog> _loadCatalogWithNormalizedRules(
+    AppDatabase database,
+    CompendiumCatalog catalog,
+  ) async {
+    final advancementRows = await (database.select(
+      database.characterAdvancementDefinitions,
+    )..orderBy([
+      (table) => OrderingTerm.asc(table.level),
+    ])).get();
+    final standardArrayRows = await (database.select(
+      database.classStandardArrayRecommendations,
+    )..orderBy([
+      (table) => OrderingTerm.asc(table.className),
+    ])).get();
+    final narrativeGroupRows = await (database.select(
+      database.narrativeOptionGroups,
+    )..orderBy([
+      (table) => OrderingTerm.asc(table.fieldKey),
+      (table) => OrderingTerm.asc(table.title),
+    ])).get();
+    final narrativeOptionRows = await (database.select(
+      database.narrativeOptions,
+    )..orderBy([
+      (table) => OrderingTerm.asc(table.groupId),
+      (table) => OrderingTerm.asc(table.optionIndex),
+    ])).get();
+    final optionsByGroupId = <String, List<NarrativeOption>>{};
+    for (final row in narrativeOptionRows) {
+      optionsByGroupId.putIfAbsent(row.groupId, () => <NarrativeOption>[]).add(
+        row,
+      );
+    }
+
+    return catalog.copyWith(
+      characterAdvancement: advancementRows
+          .map(
+            (row) => CharacterAdvancementEntry(
+              level: row.level,
+              experience: row.experience,
+              proficiencyBonus: '+${row.proficiencyBonus}',
+            ),
+          )
+          .toList(growable: false),
+      standardArrayByClass: standardArrayRows
+          .map(
+            (row) => StandardArrayByClassEntry(
+              classId: row.classId,
+              className: row.className,
+              strength: row.strength,
+              dexterity: row.dexterity,
+              constitution: row.constitution,
+              intelligence: row.intelligence,
+              wisdom: row.wisdom,
+              charisma: row.charisma,
+            ),
+          )
+          .toList(growable: false),
+      narrativeOptionGroups: narrativeGroupRows
+          .map(
+            (row) => CompendiumNarrativeOptionGroup(
+              id: row.id,
+              fieldKey: row.fieldKey,
+              sourceType: row.sourceType,
+              sourceId: row.sourceId,
+              sourceName: row.sourceName,
+              backgroundId: row.backgroundId,
+              backgroundName: row.backgroundName,
+              title: row.title,
+              diceFormula: row.diceFormula,
+              sourceBook: row.sourceBook,
+              options: (optionsByGroupId[row.id] ?? const <NarrativeOption>[])
+                  .map(
+                    (option) => CompendiumNarrativeOption(
+                      id: option.id,
+                      optionIndex: option.optionIndex,
+                      rollMin: option.rollMin,
+                      rollMax: option.rollMax,
+                      label: option.label,
+                      text: option.content,
+                    ),
+                  )
+                  .toList(growable: false),
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+
+  int _parseProficiencyBonus(String rawValue) {
+    final normalized = rawValue.trim().replaceFirst('+', '');
+    return int.tryParse(normalized) ?? 0;
+  }
 }
 
 class _XmlElement {
@@ -1005,3 +1757,67 @@ class _XmlElement {
   final Map<String, String> attributes;
   final String innerXml;
 }
+
+class _NarrativeTableField {
+  const _NarrativeTableField({
+    required this.fieldKey,
+    required this.tableLabel,
+    required this.groupTitle,
+  });
+
+  final String fieldKey;
+  final String tableLabel;
+  final String groupTitle;
+}
+
+class _ParsedNarrativeTableSection {
+  const _ParsedNarrativeTableSection(this.options);
+
+  final List<_ParsedNarrativeOption> options;
+}
+
+class _ParsedNarrativeOption {
+  const _ParsedNarrativeOption({
+    required this.optionIndex,
+    required this.rollMin,
+    required this.rollMax,
+    required this.label,
+    required this.text,
+  });
+
+  final int optionIndex;
+  final int? rollMin;
+  final int? rollMax;
+  final String? label;
+  final String text;
+}
+
+class _NamedNarrativeOption {
+  const _NamedNarrativeOption({required this.label, required this.text});
+
+  final String label;
+  final String text;
+}
+
+const List<_NarrativeTableField> _narrativeTableFields = <_NarrativeTableField>[
+  _NarrativeTableField(
+    fieldKey: 'personality_traits',
+    tableLabel: 'Personality Trait',
+    groupTitle: 'Personality Traits',
+  ),
+  _NarrativeTableField(
+    fieldKey: 'ideals',
+    tableLabel: 'Ideal',
+    groupTitle: 'Ideals',
+  ),
+  _NarrativeTableField(
+    fieldKey: 'bonds',
+    tableLabel: 'Bond',
+    groupTitle: 'Bonds',
+  ),
+  _NarrativeTableField(
+    fieldKey: 'flaws',
+    tableLabel: 'Flaw',
+    groupTitle: 'Flaws',
+  ),
+];

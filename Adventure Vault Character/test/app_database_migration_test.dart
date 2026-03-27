@@ -7,7 +7,9 @@ import 'package:sqlite3/sqlite3.dart' as sqlite;
 
 void main() {
   group('AppDatabase migrations', () {
-    test('upgrades a v1 database to v8 and preserves character data', () async {
+    test(
+      'upgrades a v1 database to v10 and preserves character data',
+      () async {
       final file = await _createTempDatabaseFile();
       addTearDown(() async {
         if (await file.exists()) {
@@ -83,7 +85,7 @@ void main() {
     });
 
     test(
-      'upgrades a v4 database to v8, preserves normalized data, migrates provenance, and drops redundant snapshot columns',
+      'upgrades a v4 database to v10, preserves normalized data, migrates provenance, and drops redundant snapshot columns',
       () async {
         final file = await _createTempDatabaseFile();
         addTearDown(() async {
@@ -324,6 +326,22 @@ void main() {
         final columnNames = columns
             .map((row) => row.data['name'] as String)
             .toSet();
+        final advancementColumns = await database
+            .customSelect(
+              'PRAGMA table_info(character_advancement_definitions)',
+            )
+            .get();
+        final standardArrayColumns = await database
+            .customSelect(
+              'PRAGMA table_info(class_standard_array_recommendations)',
+            )
+            .get();
+        final narrativeGroupColumns = await database
+            .customSelect('PRAGMA table_info(narrative_option_groups)')
+            .get();
+        final narrativeOptionColumns = await database
+            .customSelect('PRAGMA table_info(narrative_options)')
+            .get();
 
         expect(character.classDefinitionId, 'class-wizard');
         expect(character.backgroundDefinitionRefId, 'acolyte');
@@ -358,6 +376,44 @@ void main() {
         expect(columnNames, isNot(contains('alignment')));
         expect(columnNames, isNot(contains('appearance_details')));
         expect(columnNames, isNot(contains('narrative_details')));
+        expect(
+          advancementColumns.map((row) => row.data['name'] as String),
+          containsAll(<String>['level', 'experience', 'proficiency_bonus']),
+        );
+        expect(
+          standardArrayColumns.map((row) => row.data['name'] as String),
+          containsAll(<String>[
+            'class_id',
+            'class_name',
+            'strength',
+            'dexterity',
+            'constitution',
+            'intelligence',
+            'wisdom',
+            'charisma',
+          ]),
+        );
+        expect(
+          narrativeGroupColumns.map((row) => row.data['name'] as String),
+          containsAll(<String>[
+            'id',
+            'field_key',
+            'source_type',
+            'title',
+            'option_count',
+          ]),
+        );
+        expect(
+          narrativeOptionColumns.map((row) => row.data['name'] as String),
+          containsAll(<String>[
+            'id',
+            'group_id',
+            'option_index',
+            'roll_min',
+            'roll_max',
+            'content',
+          ]),
+        );
       },
     );
   });

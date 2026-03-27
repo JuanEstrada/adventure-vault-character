@@ -220,6 +220,7 @@ void main() {
         races: <String>[],
         classes: <String>[],
         backgrounds: <CompendiumBackground>[],
+        narrativeOptionGroups: <CompendiumNarrativeOptionGroup>[],
         generatedAbilityScoreSet: <int>[15, 14, 13, 12, 10, 8],
         manualAbilityScoreOptions: <int>[8, 9, 10, 11, 12, 13, 14, 15],
         characterAdvancement: <CharacterAdvancementEntry>[],
@@ -283,6 +284,7 @@ const _testCatalog = CompendiumCatalog(
       socialPerks: <String>['Shelter of the Faithful', 'Temple support'],
     ),
   ],
+  narrativeOptionGroups: <CompendiumNarrativeOptionGroup>[],
   generatedAbilityScoreSet: <int>[15, 14, 13, 12, 10, 8],
   manualAbilityScoreOptions: <int>[8, 9, 10, 11, 12, 13, 14, 15],
   characterAdvancement: <CharacterAdvancementEntry>[
