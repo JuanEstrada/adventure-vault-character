@@ -80,30 +80,41 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.tap(find.widgetWithText(OutlinedButton, 'Importar XML'));
-    await tester.pump();
+    await tester.pumpAndSettle();
+    expect(find.text('Registro local de pack'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), _importFixture);
+    await tester.tap(find.widgetWithText(FilledButton, 'Registrar XML'));
+    await tester.pumpAndSettle();
+
     expect(
-      find.text('Importar XML todavia no esta implementado.'),
+      find.text(
+        'XML registrado localmente. Ya puedes gestionarlo como pack opcional.',
+      ),
       findsOneWidget,
     );
-
-    await tester.scrollUntilVisible(
-      find.widgetWithText(OutlinedButton, 'Administrar packs'),
-      300,
-      scrollable: find.byType(Scrollable).first,
+    expect(
+      find.text(
+        'Imported Acolyte Expansion • 1 entradas compatibles detectadas',
+      ),
+      findsOneWidget,
     );
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Administrar packs'));
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Abrir packs'));
     await tester.pumpAndSettle();
 
     expect(find.text('Administrar packs'), findsOneWidget);
     expect(find.text('Compendio base'), findsOneWidget);
     expect(find.text('Activo fijo'), findsOneWidget);
     expect(find.text('Packs opcionales importados'), findsOneWidget);
-    expect(find.text('Activo'), findsOneWidget);
+    expect(find.text('Activo'), findsNWidgets(2));
+    expect(find.text('Imported Acolyte Expansion'), findsOneWidget);
 
-    await tester.tap(find.byType(Switch).last);
+    await tester.tap(find.byType(Switch).at(1));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(Switch).at(2));
     await tester.pumpAndSettle();
 
-    expect(find.text('Inactivo'), findsOneWidget);
+    expect(find.text('Inactivo'), findsNWidgets(2));
 
     await tester.tap(find.byIcon(Icons.arrow_back));
     await tester.pumpAndSettle();
@@ -617,3 +628,16 @@ const _testCatalog = CompendiumCatalog(
     ],
   ),
 );
+
+const _importFixture = '''
+<compendium version="5" auto_indent="NO">
+  <background>
+    <name>Imported Acolyte Expansion</name>
+    <source>Imported Test Source</source>
+    <trait>
+      <name>Description</name>
+      <text>Imported background text.</text>
+    </trait>
+  </background>
+</compendium>
+''';

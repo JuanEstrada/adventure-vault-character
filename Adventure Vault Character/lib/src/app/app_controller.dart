@@ -158,6 +158,18 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void openCompendiumImport() {
+    _disposeCharacterEditorController();
+    _state = _state.copyWith(
+      screen: AppScreen.compendiumImport,
+      clearSelectedCharacter: true,
+      clearSelectedEditableCharacter: true,
+      clearCharacterEditorController: true,
+      clearError: true,
+    );
+    notifyListeners();
+  }
+
   void openCreateCharacter() {
     _disposeCharacterEditorController();
     _state = _state.copyWith(
@@ -204,6 +216,28 @@ class AppController extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  Future<String?> importCompendiumXml(String rawXml) async {
+    try {
+      final updatedCatalog = await _compendiumRepository.importXmlPack(rawXml);
+      _state = _state.copyWith(
+        compendiumCatalog: updatedCatalog,
+        clearError: true,
+      );
+      notifyListeners();
+      return null;
+    } on FormatException catch (error) {
+      final message = error.message;
+      _state = _state.copyWith(errorMessage: message);
+      notifyListeners();
+      return message;
+    } catch (_) {
+      const message = 'No se pudo registrar el XML localmente.';
+      _state = _state.copyWith(errorMessage: message);
+      notifyListeners();
+      return message;
+    }
   }
 
   Future<void> createCharacter(CreateCharacterInput input) async {

@@ -46,8 +46,9 @@ class CompendiumPacksScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'La activacion se guarda localmente. La aplicacion de estos '
-                  'packs al contenido cargado todavia sigue en expansion.',
+                  'La activacion se guarda localmente. Los XML registrados '
+                  'aparecen aqui como packs opcionales mientras la ingestion '
+                  'real del contenido sigue en expansion.',
                   style: theme.textTheme.bodyLarge,
                 ),
               ],

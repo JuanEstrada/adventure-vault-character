@@ -28,6 +28,7 @@ placeholders for future pack/import workflows.
 - Display of current bundled-base and optional-pack state
 - Local activation/deactivation state for optional packs
 - Read-only visibility of the future XML import entry point
+- Local XML paste-and-register flow for optional pack metadata
 - Navigation into a dedicated read-only pack-management screen
 - Coverage counts for currently loaded catalog sections
 - Section-by-section source policy details for primary and supplemental inputs
@@ -35,7 +36,7 @@ placeholders for future pack/import workflows.
 
 ## Out of Scope
 
-- XML import execution
+- Full XML content ingestion into the active catalog
 - Deep browsing of every race, class, spell, feat, or monster entry
 - Rules reference presentation
 
@@ -56,6 +57,7 @@ placeholders for future pack/import workflows.
 - Review which source files feed each section
 - Open the read-only pack-management screen
 - Trigger an explicit not-yet-implemented XML import message
+- Register pasted XML as a local optional pack
 
 ## Required Data
 
@@ -85,8 +87,12 @@ placeholders for future pack/import workflows.
 - Optional-pack filtering should be driven by explicit compendium metadata
   carried on affected content and source-policy sections, not by UI-local
   heuristics.
-- Tapping `Importar XML` gives explicit user feedback that the flow is not
-  implemented yet.
+- Tapping `Importar XML` opens a dedicated import screen.
+- The import screen accepts pasted XML, validates a minimal compatible
+  structure, and registers the XML as a local optional pack.
+- Successfully registered XML appears in `Administrar packs`.
+- The current import slice does not yet ingest imported content into the live
+  compendium catalog.
 - The screen shows current counts for major compendium sections such as races,
   classes, backgrounds, spells, feats, monsters, and narrative groups.
 - The screen lists each published source-policy section with its source type,

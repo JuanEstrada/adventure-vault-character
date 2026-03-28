@@ -6,12 +6,14 @@ class CompendiumScreen extends StatelessWidget {
     required this.catalog,
     required this.onBack,
     required this.onOpenCompendiumPacks,
+    required this.onOpenCompendiumImport,
     super.key,
   });
 
   final CompendiumCatalog catalog;
   final VoidCallback onBack;
   final VoidCallback onOpenCompendiumPacks;
+  final VoidCallback onOpenCompendiumImport;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +36,7 @@ class CompendiumScreen extends StatelessWidget {
           _ManagementCard(
             catalog: catalog,
             onOpenCompendiumPacks: onOpenCompendiumPacks,
+            onOpenCompendiumImport: onOpenCompendiumImport,
           ),
           const SizedBox(height: 24),
           Text(
@@ -134,10 +137,12 @@ class _ManagementCard extends StatelessWidget {
   const _ManagementCard({
     required this.catalog,
     required this.onOpenCompendiumPacks,
+    required this.onOpenCompendiumImport,
   });
 
   final CompendiumCatalog catalog;
   final VoidCallback onOpenCompendiumPacks;
+  final VoidCallback onOpenCompendiumImport;
 
   @override
   Widget build(BuildContext context) {
@@ -192,8 +197,8 @@ class _ManagementCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'El punto de entrada para importar XML permanece visible en la hoja '
-            'de Compendio, pero la ejecucion del flujo sigue diferida.',
+            'El flujo ya permite registrar XML pegado como pack local opcional. '
+            'La ingestion real del contenido todavia sigue diferida.',
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 12),
@@ -203,16 +208,8 @@ class _ManagementCard extends StatelessWidget {
             children: [
               _ActionChipButton(
                 label: 'Importar XML',
-                detail: 'Proximamente',
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Importar XML todavia no esta implementado.',
-                      ),
-                    ),
-                  );
-                },
+                detail: 'Registrar pack',
+                onPressed: onOpenCompendiumImport,
               ),
               _ActionChipButton(
                 label: 'Administrar packs',

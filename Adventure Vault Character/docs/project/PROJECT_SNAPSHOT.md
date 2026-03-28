@@ -233,8 +233,8 @@ summary.
   placeholders for future `Importar XML` and pack-management work while
   keeping the bundled base compendium explicitly active.
 - `Administrar packs` now opens a dedicated read-only screen, and
-  `Importar XML` now reports a clear pending-state message instead of staying
-  purely decorative.
+  `Importar XML` now opens a dedicated offline registration screen instead of
+  staying purely decorative.
 - The compendium-pack route now also persists and renders local active /
   inactive state for optional packs.
 - The effective compendium now also filters optional narrative-supplement
@@ -243,6 +243,9 @@ summary.
 - That filtering now comes from explicit pack metadata on normalized
   compendium content and source-policy sections instead of broad
   `sourceType`-based assumptions.
+- Pasted XML can now also be validated and registered locally as an imported
+  optional pack, and that imported-pack metadata persists through the same
+  Drift-backed pack-management path.
 - Widget coverage exists for the offline continuation path into the main menu.
 - Widget coverage now also verifies navigation into the compendium screen.
 - Widget coverage now also verifies the visible compendium management/import
@@ -314,10 +317,10 @@ summary.
   option catalogs.
 - Extend the new compendium screen toward future pack-management and import
   workflows without bypassing the existing repository/domain contract.
-- Decide the first real interaction to land behind the visible `Importar XML`
+- Extend the current XML import flow from pack registration into real content
+  ingestion and source-policy integration.
 - Decide how far persisted pack state should affect loaded catalog content
-  beyond the current narrative-supplement filtering, alongside a real XML
-  import workflow.
+  beyond the current narrative-supplement filtering.
 - Decide whether any additional reshaping is still needed in
   `local-assets/por ordenar/srd_55e_source_from_markdown/` before treating it
   as the stable long-term section reference tree.

@@ -4,4 +4,6 @@ abstract interface class CompendiumRepository {
   Future<CompendiumCatalog> loadCatalog();
 
   Future<CompendiumCatalog> setPackActive(String packId, bool isActive);
+
+  Future<CompendiumCatalog> importXmlPack(String rawXml);
 }

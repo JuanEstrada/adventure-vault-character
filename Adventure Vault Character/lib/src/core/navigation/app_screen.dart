@@ -4,6 +4,7 @@ enum AppScreen {
   mainMenu,
   compendium,
   compendiumPacks,
+  compendiumImport,
   createCharacter,
   characterSheet,
   editCharacter,

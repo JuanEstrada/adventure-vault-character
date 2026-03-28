@@ -185,8 +185,8 @@ Verified on 2026-03-28:
   are still marked as pending, and the future XML import entry point remains
   visible without executing any import flow.
 - `Administrar packs` now opens a dedicated read-only screen inside the same
-  compendium feature, while `Importar XML` now gives explicit user feedback
-  that the import flow is still pending.
+  compendium feature, while `Importar XML` now opens a dedicated offline
+  registration screen for pasted XML.
 - Compendium pack state is now persisted locally through Drift. The bundled
   base compendium remains fixed as active, optional packs now store local
   active/inactive state, and the pack-management screen can toggle that state.
@@ -197,6 +197,10 @@ Verified on 2026-03-28:
 - Narrative option groups and source-policy sections now carry explicit
   optional-pack ownership metadata, so that filtering survives the normalized
   Drift roundtrip instead of depending on a broad `sourceType` heuristic.
+- The first real XML import slice now exists: pasted XML can be validated and
+  registered locally as an optional imported pack that persists through Drift
+  and appears in pack management, even though imported content is not yet
+  ingested into the live compendium catalog.
 - `CompendiumCatalog` now exposes normalized `narrativeOptionGroups`, so the
   future finishing-details flow can consume official options without reparsing
   raw XML in widgets.
@@ -396,8 +400,8 @@ Primary references:
 
 These are the highest-value unresolved items:
 
-1. Decide when XML import moves from documented entry point into a real
-   implementation slice.
+1. Decide when XML import expands from pack registration into real content
+   ingestion and source-policy integration.
 2. Decide when deeper `Combat` features and the `Equipment` panel move from
    MVP-minimal states into populated panels.
 3. Decide how far pack-based filtering should go beyond narrative supplements,
@@ -478,7 +482,8 @@ Completed since the previous handoff:
   `Importar XML` and `Administrar packs`, keeping the future content-management
   direction visible without adding new persistence or import behavior.
 - The first real interaction is now in place: pack management has a dedicated
-  read-only route, and XML import reports a clear not-yet-implemented state.
+  route, and XML import now has a dedicated offline registration flow for
+  pasted XML.
 - Pack management now also persists local active/inactive state in Drift for
   optional packs while keeping the bundled base compendium fixed as active.
 - The effective compendium now also respects that stored pack state, so the UI
@@ -487,6 +492,8 @@ Completed since the previous handoff:
 - That filtering is now metadata-driven through persisted pack ownership on
   narrative groups plus optional-pack ownership on section supplemental
   sources, avoiding hardcoded filtering by broad source type.
+- Imported XML can now also create persistent optional-pack entries in that
+  same management flow, without yet attempting full compendium ingestion.
 - The main-menu spec and project snapshot/resume docs are aligned with that
   visible compendium status behavior.
 
