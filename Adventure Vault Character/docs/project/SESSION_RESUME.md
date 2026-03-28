@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-03-27
+Last updated: 2026-03-28
 
 This is the single file to read first when resuming work on Adventure Vault
 Character. It consolidates the current product, architecture, repository
@@ -44,7 +44,7 @@ Primary references:
 
 ## Repository Reality
 
-Verified on 2026-03-27:
+Verified on 2026-03-28:
 
 - Flutter project scaffolding exists for Android, iOS, web, Windows, Linux,
   and macOS.
@@ -56,13 +56,13 @@ Verified on 2026-03-27:
   SQLite database.
 - The previous single-table character persistence has now been extended into a
   normalized Drift schema.
-- The Drift schema is now at `v10` and includes dedicated character-side tables
+- The Drift schema is now at `v12` and includes dedicated character-side tables
   for `ability scores`, `ability score provenance`, `hit points`,
-  `finishing details`, `equipment loadout`, `skills`, `saving throws`, `inventory`,
-  `proficiencies`, and `currency`, plus
+  `finishing details`, `narrative selections`, `equipment loadout`, `skills`,
+  `saving throws`, `inventory`, `proficiencies`, and `currency`, plus
   compendium-side definition tables for `skills`, `equipment`, `classes`,
   `character advancement`, `class standard array recommendations`,
-  `narrative option groups`, `narrative options`,
+  `narrative option groups`, `narrative options`, `compendium pack states`,
   `backgrounds`, `spells`, and `trinkets`.
 - A first vertical slice now supports `create -> save -> card -> open sheet`
   with a minimal character record: `name`, `race`, `class`, and `level`.
@@ -150,9 +150,9 @@ Verified on 2026-03-27:
   now been removed from the active code path, with the remaining
   `EquipmentSummaryViewData` extracted into its own small shared type.
 - Drift migration regression coverage now exists for legacy schemas through
-  `v10`, including verification of backfilled normalized tables, migrated
+  `v12`, including verification of backfilled normalized tables, migrated
   ability-score provenance, and preserved hit-point / finishing-detail /
-  equipment-loadout data.
+  equipment-loadout / narrative-selection data, plus the new pack-state table.
 - The app startup path now shares one `AppDatabase` instance between the
   Drift character repository and the asset compendium repository, so local
   compendium loads can also seed normalized rule-reference tables.
@@ -177,6 +177,19 @@ Verified on 2026-03-27:
 - The main menu now surfaces that `sourcePolicy` in a read-only
   `Compendio activo` card so the loaded rules basis is visible before entering
   character creation.
+- The app now also exposes a first dedicated `Compendio` screen from that
+  main-menu entry, showing the active source policy plus section-by-section
+  coverage details from the loaded offline catalog.
+- That compendium screen now also exposes a first read-only content-management
+  block: the bundled base compendium is shown as always active, imported packs
+  are still marked as pending, and the future XML import entry point remains
+  visible without executing any import flow.
+- `Administrar packs` now opens a dedicated read-only screen inside the same
+  compendium feature, while `Importar XML` now gives explicit user feedback
+  that the import flow is still pending.
+- Compendium pack state is now persisted locally through Drift. The bundled
+  base compendium remains fixed as active, optional packs now store local
+  active/inactive state, and the pack-management screen can toggle that state.
 - `CompendiumCatalog` now exposes normalized `narrativeOptionGroups`, so the
   future finishing-details flow can consume official options without reparsing
   raw XML in widgets.
@@ -270,8 +283,8 @@ Verified on 2026-03-27:
   active while the bundled base compendium remains always enabled.
 - `test/widget_test.dart` covers the offline path into the main menu.
 - `flutter test` passed after the schema and repository changes.
-- `flutter analyze` and `flutter test` passed after the `v10` narrative-rules
-  normalization work.
+- `flutter analyze`, `flutter test`, and `build_runner` passed after the
+  `v12` compendium-pack-state persistence work.
 
 This means the repository now has an end-to-end offline character edit flow on
 top of the normalized read/write model, with shared rules and regression
@@ -376,13 +389,12 @@ Primary references:
 
 These are the highest-value unresolved items:
 
-1. Decide whether the next refactor introduces a real read-side character
-   domain model between Drift rows and sheet view models, now that panel-level
-   sheet contracts are separated.
-2. Decide when XML import moves from documented entry point into a real
+1. Decide when XML import moves from documented entry point into a real
    implementation slice.
-3. Decide when deeper `Combat` features and the `Equipment` panel move from
+2. Decide when deeper `Combat` features and the `Equipment` panel move from
    MVP-minimal states into populated panels.
+3. Decide when persisted pack state should start filtering the loaded catalog
+   instead of remaining a stored local preference only.
 
 Resolved architecture decision:
 
@@ -426,14 +438,14 @@ Resolved MVP decision:
 The next logical session should build on the current shell instead of
 restructuring it again:
 
-1. Turn the read-only `Compendio activo` summary into a real compendium screen
-   that exposes the active source policy and section coverage in more detail.
-2. Decide whether narrative option catalogs should remain sourced from legacy
+1. Decide whether narrative option catalogs should remain sourced from legacy
    5e XML supplements or move to a more explicit import/pack model.
-3. Extend deterministic character rules into persisted spell preparation,
+2. Extend deterministic character rules into persisted spell preparation,
    known spells, and spell-slot progression.
-4. Keep reducing static SRD defaults by deriving more gameplay data directly
+3. Keep reducing static SRD defaults by deriving more gameplay data directly
    from the FightClub source set through the compendium boundary.
+4. Connect persisted pack state to real catalog filtering and future XML
+   import, still without bypassing the existing `CompendiumCatalog` contract.
 
 Completed since the previous handoff:
 
@@ -451,6 +463,16 @@ Completed since the previous handoff:
   fallback-to-JSON catalog path.
 - The main menu now surfaces a read-only `Compendio activo` card so the
   loaded rules basis is visible before entering character creation.
+- The app now also routes `Compendio` into a dedicated read-only screen that
+  shows active source metadata, coverage counts, and section-by-section source
+  inputs from the loaded offline catalog.
+- The compendium screen now also surfaces read-only placeholders for
+  `Importar XML` and `Administrar packs`, keeping the future content-management
+  direction visible without adding new persistence or import behavior.
+- The first real interaction is now in place: pack management has a dedicated
+  read-only route, and XML import reports a clear not-yet-implemented state.
+- Pack management now also persists local active/inactive state in Drift for
+  optional packs while keeping the bundled base compendium fixed as active.
 - The main-menu spec and project snapshot/resume docs are aligned with that
   visible compendium status behavior.
 
@@ -467,8 +489,10 @@ Next-session starting point:
 - Use `lib/src/features/compendium/domain/compendium_catalog.dart` and
   `lib/src/features/compendium/data/asset_compendium_repository.dart` as the
   source of truth for the current compendium source-policy contract.
-- Use `lib/src/features/main_menu/presentation/main_menu_screen.dart` as the
-  source of truth for the visible `Compendio activo` summary behavior.
+- Use `lib/src/features/compendium/presentation/compendium_screen.dart` and
+  `lib/src/features/compendium/presentation/compendium_packs_screen.dart` as
+  the source of truth for the current visible compendium entry, summary, and
+  persisted pack-state behavior.
 - Use the FightClub SRD 5.5e XML source files under
   `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`
   as the canonical structured source for `backgrounds`, `races`, `classes`,

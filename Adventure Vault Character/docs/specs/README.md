@@ -17,6 +17,8 @@ between high-level architecture and the roadmap.
   continuation path.
 - [Main Menu Screen](main-menu-screen.md): central home hub with top menus,
   character cards, and create entry.
+- [Compendium Screen](compendium-screen.md): read-only source-policy and
+  coverage view for the active offline compendium.
 - [Character List Screen](character-list-screen.md): earlier list-focused spec
   retained as reference while the main menu hub replaces it.
 - [Empty State Screen](empty-state-screen.md): no-data entry point for first

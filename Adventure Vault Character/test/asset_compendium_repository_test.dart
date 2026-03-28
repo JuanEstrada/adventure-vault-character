@@ -104,6 +104,12 @@ void main() {
         'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml',
       ]),
     );
+    expect(catalog.packStates, hasLength(2));
+    expect(catalog.packStateById('bundled-base-compendium')?.isFixed, isTrue);
+    expect(
+      catalog.packStateById('legacy-narrative-supplements')?.isActive,
+      isTrue,
+    );
 
     final advancementRows = await database
         .select(database.characterAdvancementDefinitions)
@@ -131,6 +137,25 @@ void main() {
     );
     expect(narrativeGroupRows, isNotEmpty);
     expect(narrativeOptionRows, isNotEmpty);
+
+    final updatedCatalog = await repository.setPackActive(
+      'legacy-narrative-supplements',
+      false,
+    );
+    expect(
+      updatedCatalog.packStateById('legacy-narrative-supplements')?.isActive,
+      isFalse,
+    );
+
+    final persistedPackRows = await database
+        .select(database.compendiumPackStates)
+        .get();
+    expect(
+      persistedPackRows
+          .firstWhere((row) => row.id == 'legacy-narrative-supplements')
+          .isActive,
+      isFalse,
+    );
   });
 
   test(
@@ -182,6 +207,8 @@ void main() {
         catalog.sourcePolicyForSection('catalog')?.primarySources,
         <String>['assets/compendium/catalog.json'],
       );
+      expect(catalog.packStates, hasLength(1));
+      expect(catalog.packStates.single.isFixed, isTrue);
     },
   );
 }

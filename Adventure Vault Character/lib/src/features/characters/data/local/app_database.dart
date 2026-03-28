@@ -372,8 +372,7 @@ class CharacterAdvancementDefinitions extends Table {
 
   IntColumn get experience => integer()();
 
-  IntColumn get proficiencyBonus =>
-      integer().named('proficiency_bonus')();
+  IntColumn get proficiencyBonus => integer().named('proficiency_bonus')();
 
   @override
   Set<Column<Object>> get primaryKey => {level};
@@ -456,6 +455,27 @@ class NarrativeOptions extends Table {
   List<Set<Column<Object>>> get uniqueKeys => <Set<Column<Object>>>[
     {groupId, optionIndex},
   ];
+}
+
+class CompendiumPackStates extends Table {
+  TextColumn get id => text()();
+
+  TextColumn get title => text()();
+
+  TextColumn get description => text()();
+
+  TextColumn get kind => text()();
+
+  BoolColumn get isFixed =>
+      boolean().named('is_fixed').withDefault(const Constant(false))();
+
+  BoolColumn get isActive =>
+      boolean().named('is_active').withDefault(const Constant(true))();
+
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
 }
 
 class BackgroundDefinitions extends Table {
@@ -572,6 +592,7 @@ class TrinketDefinitions extends Table {
     ClassStandardArrayRecommendations,
     NarrativeOptionGroups,
     NarrativeOptions,
+    CompendiumPackStates,
     BackgroundDefinitions,
     SpellDefinitions,
     TrinketDefinitions,
@@ -593,7 +614,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.executor(super.executor);
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -734,6 +755,9 @@ class AppDatabase extends _$AppDatabase {
         await migrator.createTable(characterNarrativeSelections);
         await _backfillCharacterNarrativeSelectionsData();
       }
+      if (from < 12) {
+        await migrator.createTable(compendiumPackStates);
+      }
 
       await _createIndexes();
     },
@@ -807,6 +831,10 @@ class AppDatabase extends _$AppDatabase {
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_narrative_options_group '
       'ON narrative_options (group_id, option_index)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_compendium_pack_states_active '
+      'ON compendium_pack_states (is_active)',
     );
   }
 

@@ -1,7 +1,7 @@
 # Adventure Vault Character - Project Snapshot
 
 ## Last Update
-2026-03-27
+2026-03-28
 
 ## Role of This Document
 
@@ -24,7 +24,9 @@ draft, sheet flow, and edit/reopen path now also consume the official
 narrative option catalogs through a real finishing-details integration. In
 parallel, the project now also needs to keep translating the local SRD and
 Wizards XML sources into deterministic character systems for spells, combat,
-and richer inventory behavior.
+and richer inventory behavior, while turning the compendium source-policy work
+into a first dedicated offline screen instead of leaving it only as a main-menu
+summary.
 
 ## Repository State
 
@@ -35,14 +37,15 @@ and richer inventory behavior.
   state.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- The Drift schema is now at `v11` and includes normalized character-side
+- The Drift schema is now at `v12` and includes normalized character-side
   tables for `ability scores`, `ability score provenance`, `hit points`,
   `finishing details`, `narrative selections`, `equipment loadout`,
   `skills`, `saving throws`, `inventory`, `proficiencies`, and `currency`.
 - The local database now also includes compendium definition tables for
   `skills`, `equipment`, `classes`, `character advancement`,
   `class standard array recommendations`, `narrative option groups`,
-  `narrative options`, `backgrounds`, `spells`, and `trinkets`.
+  `narrative options`, `compendium pack states`, `backgrounds`, `spells`,
+  and `trinkets`.
 - The create-character screen now uses a first guided draft covering
   `Race + name`, `Background`, `Class / level / experience`, and
   `Ability scores`.
@@ -90,6 +93,9 @@ and richer inventory behavior.
 - Drift `v11` now also adds a dedicated normalized character-side table for
   persisted narrative selections, so `empty / rolled / manual` state survives
   `save -> reopen` independently of the compendium tables.
+- Drift `v12` now also adds a dedicated normalized compendium-side table for
+  persisted pack state, keeping the bundled base pack fixed as active while
+  storing local active/inactive preferences for optional packs.
 - The characters feature now uses explicit application services for
   `create character` and `character sheet` loading, with shared summary
   mapping extracted from the repository implementation.
@@ -217,7 +223,21 @@ and richer inventory behavior.
 - The main menu now renders a read-only `Compendio activo` summary card from
   that source-policy metadata, making the loaded rules basis visible in the
   offline home flow.
+- The app now also exposes a dedicated `Compendio` screen from the main menu,
+  showing source-policy details and current section coverage from the loaded
+  offline catalog.
+- That compendium screen now also shows the first read-only management
+  placeholders for future `Importar XML` and pack-management work while
+  keeping the bundled base compendium explicitly active.
+- `Administrar packs` now opens a dedicated read-only screen, and
+  `Importar XML` now reports a clear pending-state message instead of staying
+  purely decorative.
+- The compendium-pack route now also persists and renders local active /
+  inactive state for optional packs.
 - Widget coverage exists for the offline continuation path into the main menu.
+- Widget coverage now also verifies navigation into the compendium screen.
+- Widget coverage now also verifies the visible compendium management/import
+  placeholders.
 - `flutter test` passed after the schema normalization changes.
 
 ## Active Architecture Constraints
@@ -265,6 +285,14 @@ and richer inventory behavior.
 - The documentation set now includes a short project briefing, a player-input
   versus automatic-calculation reference, and a local rules-source inventory
   to support faster future rule extraction work.
+- The compendium source-policy work now has a first dedicated UI route instead
+  of living only as a home-screen summary card.
+- The compendium route now also exposes the first visible management/import
+  preparation block without changing repository or persistence contracts.
+- The compendium area now also has its first real management interaction,
+  still constrained to presentation-only behavior.
+- The compendium area now also persists local pack state through Drift, even
+  though that state does not yet filter the loaded catalog content.
 
 ## Pending Work
 
@@ -274,6 +302,11 @@ and richer inventory behavior.
 - Decide the source-of-truth policy between runtime SRD 5.5e XML and the
   broader official `DND_5e/WizardsOfTheCoast` background corpus for narrative
   option catalogs.
+- Extend the new compendium screen toward future pack-management and import
+  workflows without bypassing the existing repository/domain contract.
+- Decide the first real interaction to land behind the visible `Importar XML`
+- Decide when persisted pack state should start affecting loaded catalog
+  content, alongside a real XML import workflow.
 - Decide whether any additional reshaping is still needed in
   `local-assets/por ordenar/srd_55e_source_from_markdown/` before treating it
   as the stable long-term section reference tree.

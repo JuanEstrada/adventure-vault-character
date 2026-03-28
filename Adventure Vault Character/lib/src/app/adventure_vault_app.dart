@@ -12,6 +12,8 @@ import 'package:adventure_vault_character/src/features/characters/presentation/c
 import 'package:adventure_vault_character/src/features/characters/presentation/edit_character_screen.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/asset_compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
+import 'package:adventure_vault_character/src/features/compendium/presentation/compendium_packs_screen.dart';
+import 'package:adventure_vault_character/src/features/compendium/presentation/compendium_screen.dart';
 import 'package:adventure_vault_character/src/features/main_menu/presentation/main_menu_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -100,8 +102,19 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
             AppScreen.mainMenu => MainMenuScreen(
               characterSummaries: state.characterSummaries,
               compendiumCatalog: state.compendiumCatalog!,
+              onOpenCompendium: _controller.openCompendium,
               onCreateCharacter: _controller.openCreateCharacter,
               onOpenCharacter: _controller.openCharacter,
+            ),
+            AppScreen.compendium => CompendiumScreen(
+              catalog: state.compendiumCatalog!,
+              onBack: _controller.openMainMenu,
+              onOpenCompendiumPacks: _controller.openCompendiumPacks,
+            ),
+            AppScreen.compendiumPacks => CompendiumPacksScreen(
+              catalog: state.compendiumCatalog!,
+              onBack: _controller.openCompendium,
+              onSetPackActive: _controller.setCompendiumPackActive,
             ),
             AppScreen.createCharacter => CreateCharacterScreen(
               catalog: state.compendiumCatalog!,

@@ -13,11 +13,9 @@ void main() {
     await tester.pumpWidget(
       AdventureVaultApp(
         characterRepository: InMemoryCharacterRepository.empty(
-          compendiumRepository: const InMemoryCompendiumRepository(
-            _testCatalog,
-          ),
+          compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
         ),
-        compendiumRepository: const InMemoryCompendiumRepository(_testCatalog),
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       ),
     );
     await tester.pumpAndSettle();
@@ -45,10 +43,91 @@ void main() {
     );
   });
 
+  testWidgets('main menu opens compendium screen with source details', (
+    WidgetTester tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1200, 2200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      AdventureVaultApp(
+        characterRepository: InMemoryCharacterRepository.empty(
+          compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+        ),
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Continuar offline'));
+    await tester.tap(find.text('Continuar offline'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Compendio'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Gestion de contenido'), findsOneWidget);
+    expect(find.text('Base empaquetada'), findsOneWidget);
+    expect(find.text('Siempre activa'), findsOneWidget);
+    expect(find.text('Packs importados'), findsOneWidget);
+    expect(find.text('1 activos'), findsOneWidget);
+    expect(find.text('Importar XML'), findsOneWidget);
+    expect(find.text('Administrar packs'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.widgetWithText(OutlinedButton, 'Importar XML'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Importar XML'));
+    await tester.pump();
+    expect(
+      find.text('Importar XML todavia no esta implementado.'),
+      findsOneWidget,
+    );
+
+    await tester.scrollUntilVisible(
+      find.widgetWithText(OutlinedButton, 'Administrar packs'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Administrar packs'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Administrar packs'), findsOneWidget);
+    expect(find.text('Compendio base'), findsOneWidget);
+    expect(find.text('Activo fijo'), findsOneWidget);
+    expect(find.text('Packs opcionales importados'), findsOneWidget);
+    expect(find.text('Activo'), findsOneWidget);
+
+    await tester.tap(find.byType(Switch).last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Inactivo'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Cobertura actual'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Cobertura actual'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Narrative options'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Narrative options'), findsOneWidget);
+    expect(find.textContaining('backgrounds-phb.xml'), findsOneWidget);
+    expect(find.textContaining('backgrounds-scag.xml'), findsOneWidget);
+  });
+
   testWidgets('create flow saves character and opens sheet', (
     WidgetTester tester,
   ) async {
-    const compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
+    final compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
     final repository = InMemoryCharacterRepository.empty(
       compendiumRepository: compendiumRepository,
     );
@@ -109,7 +188,7 @@ void main() {
   testWidgets('generated ability set updates when class changes', (
     WidgetTester tester,
   ) async {
-    const compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
+    final compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
     final repository = InMemoryCharacterRepository.empty(
       compendiumRepository: compendiumRepository,
     );
@@ -188,7 +267,7 @@ void main() {
   testWidgets('open edit save and reopen keeps updated character data', (
     WidgetTester tester,
   ) async {
-    const compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
+    final compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
     final repository = InMemoryCharacterRepository.empty(
       compendiumRepository: compendiumRepository,
     );
@@ -270,7 +349,7 @@ void main() {
         equipmentSummariesByClass: <String, EquipmentSummaryViewData>{},
         equipmentLoadoutsByClass: <String, List<CompendiumEquipmentLoadout>>{},
       );
-      const compendiumRepository = InMemoryCompendiumRepository(
+      final compendiumRepository = InMemoryCompendiumRepository(
         incompleteCatalog,
       );
 
@@ -430,6 +509,24 @@ const _testCatalog = CompendiumCatalog(
       ),
     ],
   },
+  packStates: <CompendiumPackStateModel>[
+    CompendiumPackStateModel(
+      id: 'bundled-base-compendium',
+      title: 'Compendio base',
+      description: 'FightClub XML bundled base content',
+      kind: 'bundled_base',
+      isFixed: true,
+      isActive: true,
+    ),
+    CompendiumPackStateModel(
+      id: 'legacy-narrative-supplements',
+      title: 'Packs opcionales importados',
+      description: 'Legacy narrative supplements',
+      kind: 'optional_bundle',
+      isFixed: false,
+      isActive: true,
+    ),
+  ],
   sourcePolicy: CompendiumSourcePolicy(
     activeSourceType: 'fightclub_xml',
     activeSourceLabel:

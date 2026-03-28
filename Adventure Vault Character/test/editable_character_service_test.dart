@@ -18,7 +18,7 @@ void main() {
 
       final repository = DriftCharacterRepository(
         database: database,
-        compendiumRepository: const InMemoryCompendiumRepository(_testCatalog),
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
 
       final summary = await repository.createCharacter(
@@ -103,7 +103,7 @@ void main() {
 
       final repository = DriftCharacterRepository(
         database: database,
-        compendiumRepository: const InMemoryCompendiumRepository(_testCatalog),
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
 
       final summary = await repository.createCharacter(

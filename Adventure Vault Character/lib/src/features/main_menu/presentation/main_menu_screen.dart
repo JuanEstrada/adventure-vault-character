@@ -7,6 +7,7 @@ class MainMenuScreen extends StatelessWidget {
   const MainMenuScreen({
     required this.characterSummaries,
     required this.compendiumCatalog,
+    required this.onOpenCompendium,
     required this.onCreateCharacter,
     required this.onOpenCharacter,
     super.key,
@@ -14,6 +15,7 @@ class MainMenuScreen extends StatelessWidget {
 
   final List<CharacterSummary> characterSummaries;
   final CompendiumCatalog compendiumCatalog;
+  final VoidCallback onOpenCompendium;
   final VoidCallback onCreateCharacter;
   final ValueChanged<String> onOpenCharacter;
 
@@ -24,10 +26,10 @@ class MainMenuScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Adventure Vault Character'),
-        actions: const [
-          _TopAction(label: 'Compendio'),
-          _TopAction(label: 'Reglas'),
-          _TopAction(label: 'Settings'),
+        actions: [
+          _TopAction(label: 'Compendio', onPressed: onOpenCompendium),
+          const _TopAction(label: 'Reglas'),
+          const _TopAction(label: 'Settings'),
         ],
       ),
       body: Padding(
@@ -109,15 +111,16 @@ class MainMenuScreen extends StatelessWidget {
 }
 
 class _TopAction extends StatelessWidget {
-  const _TopAction({required this.label});
+  const _TopAction({required this.label, this.onPressed});
 
   final String label;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: TextButton(onPressed: () {}, child: Text(label)),
+      child: TextButton(onPressed: onPressed ?? () {}, child: Text(label)),
     );
   }
 }

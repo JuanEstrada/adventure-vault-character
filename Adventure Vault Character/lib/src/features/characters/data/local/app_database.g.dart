@@ -10264,6 +10264,468 @@ class NarrativeOptionsCompanion extends UpdateCompanion<NarrativeOption> {
   }
 }
 
+class $CompendiumPackStatesTable extends CompendiumPackStates
+    with TableInfo<$CompendiumPackStatesTable, CompendiumPackState> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CompendiumPackStatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isFixedMeta = const VerificationMeta(
+    'isFixed',
+  );
+  @override
+  late final GeneratedColumn<bool> isFixed = GeneratedColumn<bool>(
+    'is_fixed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_fixed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    title,
+    description,
+    kind,
+    isFixed,
+    isActive,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'compendium_pack_states';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CompendiumPackState> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_descriptionMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('is_fixed')) {
+      context.handle(
+        _isFixedMeta,
+        isFixed.isAcceptableOrUnknown(data['is_fixed']!, _isFixedMeta),
+      );
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CompendiumPackState map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CompendiumPackState(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      isFixed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_fixed'],
+      )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CompendiumPackStatesTable createAlias(String alias) {
+    return $CompendiumPackStatesTable(attachedDatabase, alias);
+  }
+}
+
+class CompendiumPackState extends DataClass
+    implements Insertable<CompendiumPackState> {
+  final String id;
+  final String title;
+  final String description;
+  final String kind;
+  final bool isFixed;
+  final bool isActive;
+  final DateTime updatedAt;
+  const CompendiumPackState({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.kind,
+    required this.isFixed,
+    required this.isActive,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['title'] = Variable<String>(title);
+    map['description'] = Variable<String>(description);
+    map['kind'] = Variable<String>(kind);
+    map['is_fixed'] = Variable<bool>(isFixed);
+    map['is_active'] = Variable<bool>(isActive);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  CompendiumPackStatesCompanion toCompanion(bool nullToAbsent) {
+    return CompendiumPackStatesCompanion(
+      id: Value(id),
+      title: Value(title),
+      description: Value(description),
+      kind: Value(kind),
+      isFixed: Value(isFixed),
+      isActive: Value(isActive),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory CompendiumPackState.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CompendiumPackState(
+      id: serializer.fromJson<String>(json['id']),
+      title: serializer.fromJson<String>(json['title']),
+      description: serializer.fromJson<String>(json['description']),
+      kind: serializer.fromJson<String>(json['kind']),
+      isFixed: serializer.fromJson<bool>(json['isFixed']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'title': serializer.toJson<String>(title),
+      'description': serializer.toJson<String>(description),
+      'kind': serializer.toJson<String>(kind),
+      'isFixed': serializer.toJson<bool>(isFixed),
+      'isActive': serializer.toJson<bool>(isActive),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  CompendiumPackState copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? kind,
+    bool? isFixed,
+    bool? isActive,
+    DateTime? updatedAt,
+  }) => CompendiumPackState(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    description: description ?? this.description,
+    kind: kind ?? this.kind,
+    isFixed: isFixed ?? this.isFixed,
+    isActive: isActive ?? this.isActive,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  CompendiumPackState copyWithCompanion(CompendiumPackStatesCompanion data) {
+    return CompendiumPackState(
+      id: data.id.present ? data.id.value : this.id,
+      title: data.title.present ? data.title.value : this.title,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      isFixed: data.isFixed.present ? data.isFixed.value : this.isFixed,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CompendiumPackState(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('kind: $kind, ')
+          ..write('isFixed: $isFixed, ')
+          ..write('isActive: $isActive, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, title, description, kind, isFixed, isActive, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CompendiumPackState &&
+          other.id == this.id &&
+          other.title == this.title &&
+          other.description == this.description &&
+          other.kind == this.kind &&
+          other.isFixed == this.isFixed &&
+          other.isActive == this.isActive &&
+          other.updatedAt == this.updatedAt);
+}
+
+class CompendiumPackStatesCompanion
+    extends UpdateCompanion<CompendiumPackState> {
+  final Value<String> id;
+  final Value<String> title;
+  final Value<String> description;
+  final Value<String> kind;
+  final Value<bool> isFixed;
+  final Value<bool> isActive;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const CompendiumPackStatesCompanion({
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    this.description = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.isFixed = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CompendiumPackStatesCompanion.insert({
+    required String id,
+    required String title,
+    required String description,
+    required String kind,
+    this.isFixed = const Value.absent(),
+    this.isActive = const Value.absent(),
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       title = Value(title),
+       description = Value(description),
+       kind = Value(kind),
+       updatedAt = Value(updatedAt);
+  static Insertable<CompendiumPackState> custom({
+    Expression<String>? id,
+    Expression<String>? title,
+    Expression<String>? description,
+    Expression<String>? kind,
+    Expression<bool>? isFixed,
+    Expression<bool>? isActive,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (title != null) 'title': title,
+      if (description != null) 'description': description,
+      if (kind != null) 'kind': kind,
+      if (isFixed != null) 'is_fixed': isFixed,
+      if (isActive != null) 'is_active': isActive,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CompendiumPackStatesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? title,
+    Value<String>? description,
+    Value<String>? kind,
+    Value<bool>? isFixed,
+    Value<bool>? isActive,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return CompendiumPackStatesCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      kind: kind ?? this.kind,
+      isFixed: isFixed ?? this.isFixed,
+      isActive: isActive ?? this.isActive,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (isFixed.present) {
+      map['is_fixed'] = Variable<bool>(isFixed.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CompendiumPackStatesCompanion(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('kind: $kind, ')
+          ..write('isFixed: $isFixed, ')
+          ..write('isActive: $isActive, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $BackgroundDefinitionsTable extends BackgroundDefinitions
     with TableInfo<$BackgroundDefinitionsTable, BackgroundDefinition> {
   @override
@@ -11807,6 +12269,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $NarrativeOptionsTable narrativeOptions = $NarrativeOptionsTable(
     this,
   );
+  late final $CompendiumPackStatesTable compendiumPackStates =
+      $CompendiumPackStatesTable(this);
   late final $BackgroundDefinitionsTable backgroundDefinitions =
       $BackgroundDefinitionsTable(this);
   late final $SpellDefinitionsTable spellDefinitions = $SpellDefinitionsTable(
@@ -11837,6 +12301,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     classStandardArrayRecommendations,
     narrativeOptionGroups,
     narrativeOptions,
+    compendiumPackStates,
     backgroundDefinitions,
     spellDefinitions,
   ];
@@ -20587,6 +21052,262 @@ typedef $$NarrativeOptionsTableProcessedTableManager =
       NarrativeOption,
       PrefetchHooks Function({bool groupId})
     >;
+typedef $$CompendiumPackStatesTableCreateCompanionBuilder =
+    CompendiumPackStatesCompanion Function({
+      required String id,
+      required String title,
+      required String description,
+      required String kind,
+      Value<bool> isFixed,
+      Value<bool> isActive,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$CompendiumPackStatesTableUpdateCompanionBuilder =
+    CompendiumPackStatesCompanion Function({
+      Value<String> id,
+      Value<String> title,
+      Value<String> description,
+      Value<String> kind,
+      Value<bool> isFixed,
+      Value<bool> isActive,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$CompendiumPackStatesTableFilterComposer
+    extends Composer<_$AppDatabase, $CompendiumPackStatesTable> {
+  $$CompendiumPackStatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isFixed => $composableBuilder(
+    column: $table.isFixed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CompendiumPackStatesTableOrderingComposer
+    extends Composer<_$AppDatabase, $CompendiumPackStatesTable> {
+  $$CompendiumPackStatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isFixed => $composableBuilder(
+    column: $table.isFixed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CompendiumPackStatesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CompendiumPackStatesTable> {
+  $$CompendiumPackStatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<bool> get isFixed =>
+      $composableBuilder(column: $table.isFixed, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$CompendiumPackStatesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CompendiumPackStatesTable,
+          CompendiumPackState,
+          $$CompendiumPackStatesTableFilterComposer,
+          $$CompendiumPackStatesTableOrderingComposer,
+          $$CompendiumPackStatesTableAnnotationComposer,
+          $$CompendiumPackStatesTableCreateCompanionBuilder,
+          $$CompendiumPackStatesTableUpdateCompanionBuilder,
+          (
+            CompendiumPackState,
+            BaseReferences<
+              _$AppDatabase,
+              $CompendiumPackStatesTable,
+              CompendiumPackState
+            >,
+          ),
+          CompendiumPackState,
+          PrefetchHooks Function()
+        > {
+  $$CompendiumPackStatesTableTableManager(
+    _$AppDatabase db,
+    $CompendiumPackStatesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CompendiumPackStatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CompendiumPackStatesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$CompendiumPackStatesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<bool> isFixed = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CompendiumPackStatesCompanion(
+                id: id,
+                title: title,
+                description: description,
+                kind: kind,
+                isFixed: isFixed,
+                isActive: isActive,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String title,
+                required String description,
+                required String kind,
+                Value<bool> isFixed = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => CompendiumPackStatesCompanion.insert(
+                id: id,
+                title: title,
+                description: description,
+                kind: kind,
+                isFixed: isFixed,
+                isActive: isActive,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CompendiumPackStatesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CompendiumPackStatesTable,
+      CompendiumPackState,
+      $$CompendiumPackStatesTableFilterComposer,
+      $$CompendiumPackStatesTableOrderingComposer,
+      $$CompendiumPackStatesTableAnnotationComposer,
+      $$CompendiumPackStatesTableCreateCompanionBuilder,
+      $$CompendiumPackStatesTableUpdateCompanionBuilder,
+      (
+        CompendiumPackState,
+        BaseReferences<
+          _$AppDatabase,
+          $CompendiumPackStatesTable,
+          CompendiumPackState
+        >,
+      ),
+      CompendiumPackState,
+      PrefetchHooks Function()
+    >;
 typedef $$BackgroundDefinitionsTableCreateCompanionBuilder =
     BackgroundDefinitionsCompanion Function({
       required String id,
@@ -21356,6 +22077,8 @@ class $AppDatabaseManager {
       $$NarrativeOptionGroupsTableTableManager(_db, _db.narrativeOptionGroups);
   $$NarrativeOptionsTableTableManager get narrativeOptions =>
       $$NarrativeOptionsTableTableManager(_db, _db.narrativeOptions);
+  $$CompendiumPackStatesTableTableManager get compendiumPackStates =>
+      $$CompendiumPackStatesTableTableManager(_db, _db.compendiumPackStates);
   $$BackgroundDefinitionsTableTableManager get backgroundDefinitions =>
       $$BackgroundDefinitionsTableTableManager(_db, _db.backgroundDefinitions);
   $$SpellDefinitionsTableTableManager get spellDefinitions =>

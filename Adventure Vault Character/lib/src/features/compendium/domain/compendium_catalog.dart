@@ -17,6 +17,7 @@ class CompendiumCatalog {
     required this.monsters,
     required this.equipmentSummariesByClass,
     required this.equipmentLoadoutsByClass,
+    this.packStates = const <CompendiumPackStateModel>[],
     this.sourcePolicy = const CompendiumSourcePolicy(
       activeSourceType: 'unknown',
       activeSourceLabel: 'Unknown compendium source',
@@ -38,6 +39,7 @@ class CompendiumCatalog {
   final List<CompendiumMonster> monsters;
   final Map<String, EquipmentSummaryViewData> equipmentSummariesByClass;
   final Map<String, List<CompendiumEquipmentLoadout>> equipmentLoadoutsByClass;
+  final List<CompendiumPackStateModel> packStates;
   final CompendiumSourcePolicy sourcePolicy;
 
   CompendiumCatalog copyWith({
@@ -54,6 +56,7 @@ class CompendiumCatalog {
     List<CompendiumMonster>? monsters,
     Map<String, EquipmentSummaryViewData>? equipmentSummariesByClass,
     Map<String, List<CompendiumEquipmentLoadout>>? equipmentLoadoutsByClass,
+    List<CompendiumPackStateModel>? packStates,
     CompendiumSourcePolicy? sourcePolicy,
   }) {
     return CompendiumCatalog(
@@ -75,6 +78,7 @@ class CompendiumCatalog {
           equipmentSummariesByClass ?? this.equipmentSummariesByClass,
       equipmentLoadoutsByClass:
           equipmentLoadoutsByClass ?? this.equipmentLoadoutsByClass,
+      packStates: packStates ?? this.packStates,
       sourcePolicy: sourcePolicy ?? this.sourcePolicy,
     );
   }
@@ -137,6 +141,52 @@ class CompendiumCatalog {
 
   CompendiumSectionSourcePolicy? sourcePolicyForSection(String sectionKey) {
     return sourcePolicy.sectionFor(sectionKey);
+  }
+
+  CompendiumPackStateModel? packStateById(String packId) {
+    for (final packState in packStates) {
+      if (packState.id == packId) {
+        return packState;
+      }
+    }
+    return null;
+  }
+}
+
+@immutable
+class CompendiumPackStateModel {
+  const CompendiumPackStateModel({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.kind,
+    required this.isFixed,
+    required this.isActive,
+  });
+
+  final String id;
+  final String title;
+  final String description;
+  final String kind;
+  final bool isFixed;
+  final bool isActive;
+
+  CompendiumPackStateModel copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? kind,
+    bool? isFixed,
+    bool? isActive,
+  }) {
+    return CompendiumPackStateModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      kind: kind ?? this.kind,
+      isFixed: isFixed ?? this.isFixed,
+      isActive: isActive ?? this.isActive,
+    );
   }
 }
 

@@ -134,6 +134,30 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void openCompendium() {
+    _disposeCharacterEditorController();
+    _state = _state.copyWith(
+      screen: AppScreen.compendium,
+      clearSelectedCharacter: true,
+      clearSelectedEditableCharacter: true,
+      clearCharacterEditorController: true,
+      clearError: true,
+    );
+    notifyListeners();
+  }
+
+  void openCompendiumPacks() {
+    _disposeCharacterEditorController();
+    _state = _state.copyWith(
+      screen: AppScreen.compendiumPacks,
+      clearSelectedCharacter: true,
+      clearSelectedEditableCharacter: true,
+      clearCharacterEditorController: true,
+      clearError: true,
+    );
+    notifyListeners();
+  }
+
   void openCreateCharacter() {
     _disposeCharacterEditorController();
     _state = _state.copyWith(
@@ -155,6 +179,30 @@ class AppController extends ChangeNotifier {
       clearCharacterEditorController: true,
       clearError: true,
     );
+    notifyListeners();
+  }
+
+  Future<void> setCompendiumPackActive(String packId, bool isActive) async {
+    final catalog = _state.compendiumCatalog;
+    if (catalog == null) {
+      return;
+    }
+
+    try {
+      final updatedCatalog = await _compendiumRepository.setPackActive(
+        packId,
+        isActive,
+      );
+      _state = _state.copyWith(
+        compendiumCatalog: updatedCatalog,
+        clearError: true,
+      );
+    } catch (_) {
+      _state = _state.copyWith(
+        errorMessage: 'No se pudo actualizar el estado local del pack.',
+      );
+    }
+
     notifyListeners();
   }
 

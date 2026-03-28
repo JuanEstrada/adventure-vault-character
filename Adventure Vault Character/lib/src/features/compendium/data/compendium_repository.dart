@@ -2,4 +2,6 @@ import 'package:adventure_vault_character/src/features/compendium/domain/compend
 
 abstract interface class CompendiumRepository {
   Future<CompendiumCatalog> loadCatalog();
+
+  Future<CompendiumCatalog> setPackActive(String packId, bool isActive);
 }

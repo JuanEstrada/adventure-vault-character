@@ -111,11 +111,45 @@ class AssetCompendiumRepository implements CompendiumRepository {
     final database = _database;
     if (database != null) {
       await _persistNormalizedRuleReferences(database, catalog);
+      await _persistPackStates(database, catalog);
       catalog = await _loadCatalogWithNormalizedRules(database, catalog);
     }
 
     _cachedCatalog = catalog;
     return catalog;
+  }
+
+  @override
+  Future<CompendiumCatalog> setPackActive(String packId, bool isActive) async {
+    final catalog = await loadCatalog();
+    final database = _database;
+    if (database == null) {
+      final updatedCatalog = _updateCatalogPackState(catalog, packId, isActive);
+      _cachedCatalog = updatedCatalog;
+      return updatedCatalog;
+    }
+
+    final existingRows = await (database.select(
+      database.compendiumPackStates,
+    )..where((table) => table.id.equals(packId))).get();
+    final existing = existingRows.isEmpty ? null : existingRows.single;
+    if (existing == null) {
+      return catalog;
+    }
+
+    final nextIsActive = existing.isFixed ? true : isActive;
+    await (database.update(
+      database.compendiumPackStates,
+    )..where((table) => table.id.equals(packId))).write(
+      CompendiumPackStatesCompanion(
+        isActive: Value(nextIsActive),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+
+    final refreshed = await _loadCatalogWithNormalizedRules(database, catalog);
+    _cachedCatalog = refreshed;
+    return refreshed;
   }
 
   static const Map<int, List<String>> _spellSeedsByLevel = <int, List<String>>{
@@ -454,6 +488,70 @@ class AssetCompendiumRepository implements CompendiumRepository {
       ggrBackgroundsXml: ggrBackgroundsXml,
       erlwBackgroundsXml: erlwBackgroundsXml,
     );
+    final sourcePolicy = CompendiumSourcePolicy(
+      activeSourceType: 'fightclub_xml',
+      activeSourceLabel:
+          'FightClub XML asset bundle with SRD 5.5e core data and legacy 5e narrative supplements',
+      fallbackSourceLabel: _fallbackCatalogAssetPath,
+      sections: <CompendiumSectionSourcePolicy>[
+        CompendiumSectionSourcePolicy(
+          sectionKey: 'backgrounds',
+          sectionLabel: 'Backgrounds',
+          sourceType: 'srd_5_5e_xml',
+          primarySources: <String>[_backgroundsAssetPath],
+        ),
+        CompendiumSectionSourcePolicy(
+          sectionKey: 'races',
+          sectionLabel: 'Races',
+          sourceType: 'srd_5_5e_xml',
+          primarySources: <String>[_racesAssetPath],
+        ),
+        CompendiumSectionSourcePolicy(
+          sectionKey: 'classes',
+          sectionLabel: 'Classes',
+          sourceType: 'srd_5_5e_xml',
+          primarySources: <String>[_classesAssetPath],
+        ),
+        CompendiumSectionSourcePolicy(
+          sectionKey: 'spells',
+          sectionLabel: 'Spells',
+          sourceType: 'srd_5_5e_xml',
+          primarySources: <String>[_spellsAssetPath],
+          notes:
+              'The current catalog keeps a small deterministic spell seed from the SRD 5.5e source set.',
+        ),
+        CompendiumSectionSourcePolicy(
+          sectionKey: 'feats',
+          sectionLabel: 'Feats',
+          sourceType: 'srd_5_5e_xml',
+          primarySources: <String>[_featsAssetPath],
+          notes:
+              'The current catalog keeps a small deterministic feat seed from the SRD 5.5e source set.',
+        ),
+        CompendiumSectionSourcePolicy(
+          sectionKey: 'monsters',
+          sectionLabel: 'Monsters',
+          sourceType: 'srd_5_5e_xml',
+          primarySources: <String>[_monstersAssetPath],
+          notes:
+              'The current catalog keeps a small deterministic monster seed from the SRD 5.5e source set.',
+        ),
+        CompendiumSectionSourcePolicy(
+          sectionKey: 'narrative_options',
+          sectionLabel: 'Narrative options',
+          sourceType: 'legacy_5e_xml_supplements',
+          primarySources: <String>[_phbBackgroundsAssetPath],
+          supplementalSources: <String>[
+            _scagBackgroundsAssetPath,
+            _pamBackgroundsAssetPath,
+            _ggrBackgroundsAssetPath,
+            _erlwBackgroundsAssetPath,
+          ],
+          notes:
+              'Narrative tables currently mix the Player\'s Handbook (2014) plus setting books while SRD 5.5e remains the canonical source for structured character-build data.',
+        ),
+      ],
+    );
 
     return CompendiumCatalog(
       races: races,
@@ -469,75 +567,28 @@ class AssetCompendiumRepository implements CompendiumRepository {
       monsters: _parseSeededMonsters(monstersXml),
       equipmentSummariesByClass: equipmentSummariesByClass,
       equipmentLoadoutsByClass: equipmentLoadoutsByClass,
-      sourcePolicy: CompendiumSourcePolicy(
-        activeSourceType: 'fightclub_xml',
-        activeSourceLabel:
-            'FightClub XML asset bundle with SRD 5.5e core data and legacy 5e narrative supplements',
-        fallbackSourceLabel: _fallbackCatalogAssetPath,
-        sections: <CompendiumSectionSourcePolicy>[
-          CompendiumSectionSourcePolicy(
-            sectionKey: 'backgrounds',
-            sectionLabel: 'Backgrounds',
-            sourceType: 'srd_5_5e_xml',
-            primarySources: <String>[_backgroundsAssetPath],
-          ),
-          CompendiumSectionSourcePolicy(
-            sectionKey: 'races',
-            sectionLabel: 'Races',
-            sourceType: 'srd_5_5e_xml',
-            primarySources: <String>[_racesAssetPath],
-          ),
-          CompendiumSectionSourcePolicy(
-            sectionKey: 'classes',
-            sectionLabel: 'Classes',
-            sourceType: 'srd_5_5e_xml',
-            primarySources: <String>[_classesAssetPath],
-          ),
-          CompendiumSectionSourcePolicy(
-            sectionKey: 'spells',
-            sectionLabel: 'Spells',
-            sourceType: 'srd_5_5e_xml',
-            primarySources: <String>[_spellsAssetPath],
-            notes:
-                'The current catalog keeps a small deterministic spell seed from the SRD 5.5e source set.',
-          ),
-          CompendiumSectionSourcePolicy(
-            sectionKey: 'feats',
-            sectionLabel: 'Feats',
-            sourceType: 'srd_5_5e_xml',
-            primarySources: <String>[_featsAssetPath],
-            notes:
-                'The current catalog keeps a small deterministic feat seed from the SRD 5.5e source set.',
-          ),
-          CompendiumSectionSourcePolicy(
-            sectionKey: 'monsters',
-            sectionLabel: 'Monsters',
-            sourceType: 'srd_5_5e_xml',
-            primarySources: <String>[_monstersAssetPath],
-            notes:
-                'The current catalog keeps a small deterministic monster seed from the SRD 5.5e source set.',
-          ),
-          CompendiumSectionSourcePolicy(
-            sectionKey: 'narrative_options',
-            sectionLabel: 'Narrative options',
-            sourceType: 'legacy_5e_xml_supplements',
-            primarySources: <String>[_phbBackgroundsAssetPath],
-            supplementalSources: <String>[
-              _scagBackgroundsAssetPath,
-              _pamBackgroundsAssetPath,
-              _ggrBackgroundsAssetPath,
-              _erlwBackgroundsAssetPath,
-            ],
-            notes:
-                'Narrative tables currently mix the Player\'s Handbook (2014) plus setting books while SRD 5.5e remains the canonical source for structured character-build data.',
-          ),
-        ],
-      ),
+      packStates: _buildDefaultPackStates(sourcePolicy),
+      sourcePolicy: sourcePolicy,
     );
   }
 
   CompendiumCatalog _parseJsonCatalog(String raw) {
     final Map<String, dynamic> json = jsonDecode(raw) as Map<String, dynamic>;
+    final sourcePolicy = CompendiumSourcePolicy(
+      activeSourceType: 'fallback_json',
+      activeSourceLabel: 'Fallback bundled JSON catalog',
+      fallbackSourceLabel: _fallbackCatalogAssetPath,
+      sections: <CompendiumSectionSourcePolicy>[
+        CompendiumSectionSourcePolicy(
+          sectionKey: 'catalog',
+          sectionLabel: 'Catalog',
+          sourceType: 'fallback_json',
+          primarySources: <String>[_fallbackCatalogAssetPath],
+          notes:
+              'Fallback mode provides a compact bundled catalog when FightClub XML assets cannot be loaded.',
+        ),
+      ],
+    );
 
     return CompendiumCatalog(
       races: (json['races'] as List<dynamic>).cast<String>(),
@@ -597,21 +648,8 @@ class AssetCompendiumRepository implements CompendiumRepository {
                 .toList(growable: false);
             return MapEntry(key, entries);
           }),
-      sourcePolicy: CompendiumSourcePolicy(
-        activeSourceType: 'fallback_json',
-        activeSourceLabel: 'Fallback bundled JSON catalog',
-        fallbackSourceLabel: _fallbackCatalogAssetPath,
-        sections: <CompendiumSectionSourcePolicy>[
-          CompendiumSectionSourcePolicy(
-            sectionKey: 'catalog',
-            sectionLabel: 'Catalog',
-            sourceType: 'fallback_json',
-            primarySources: <String>[_fallbackCatalogAssetPath],
-            notes:
-                'Fallback mode provides a compact bundled catalog when FightClub XML assets cannot be loaded.',
-          ),
-        ],
-      ),
+      packStates: _buildDefaultPackStates(sourcePolicy),
+      sourcePolicy: sourcePolicy,
     );
   }
 
@@ -1752,6 +1790,49 @@ class AssetCompendiumRepository implements CompendiumRepository {
     });
   }
 
+  Future<void> _persistPackStates(
+    AppDatabase database,
+    CompendiumCatalog catalog,
+  ) async {
+    final defaultPackStates = catalog.packStates;
+    final existingRows = await database
+        .select(database.compendiumPackStates)
+        .get();
+    final existingById = <String, CompendiumPackState>{
+      for (final row in existingRows) row.id: row,
+    };
+    final validIds = defaultPackStates.map((packState) => packState.id).toSet();
+
+    await (database.delete(
+      database.compendiumPackStates,
+    )..where((table) => table.id.isNotIn(validIds))).go();
+
+    await database.batch((batch) {
+      batch.insertAll(
+        database.compendiumPackStates,
+        defaultPackStates
+            .map((packState) {
+              final existing = existingById[packState.id];
+              return CompendiumPackStatesCompanion.insert(
+                id: packState.id,
+                title: packState.title,
+                description: packState.description,
+                kind: packState.kind,
+                isFixed: Value(packState.isFixed),
+                isActive: Value(
+                  packState.isFixed
+                      ? true
+                      : existing?.isActive ?? packState.isActive,
+                ),
+                updatedAt: existing?.updatedAt ?? DateTime.now(),
+              );
+            })
+            .toList(growable: false),
+        mode: InsertMode.insertOrReplace,
+      );
+    });
+  }
+
   Future<CompendiumCatalog> _loadCatalogWithNormalizedRules(
     AppDatabase database,
     CompendiumCatalog catalog,
@@ -1772,6 +1853,12 @@ class AssetCompendiumRepository implements CompendiumRepository {
         await (database.select(database.narrativeOptions)..orderBy([
               (table) => OrderingTerm.asc(table.groupId),
               (table) => OrderingTerm.asc(table.optionIndex),
+            ]))
+            .get();
+    final packStateRows =
+        await (database.select(database.compendiumPackStates)..orderBy([
+              (table) => OrderingTerm.asc(table.isFixed),
+              (table) => OrderingTerm.asc(table.title),
             ]))
             .get();
     final optionsByGroupId = <String, List<NarrativeOption>>{};
@@ -1833,7 +1920,71 @@ class AssetCompendiumRepository implements CompendiumRepository {
             ),
           )
           .toList(growable: false),
+      packStates: packStateRows
+          .map(
+            (row) => CompendiumPackStateModel(
+              id: row.id,
+              title: row.title,
+              description: row.description,
+              kind: row.kind,
+              isFixed: row.isFixed,
+              isActive: row.isActive,
+            ),
+          )
+          .toList(growable: false),
     );
+  }
+
+  CompendiumCatalog _updateCatalogPackState(
+    CompendiumCatalog catalog,
+    String packId,
+    bool isActive,
+  ) {
+    return catalog.copyWith(
+      packStates: catalog.packStates
+          .map((packState) {
+            if (packState.id != packId) {
+              return packState;
+            }
+            if (packState.isFixed) {
+              return packState.copyWith(isActive: true);
+            }
+            return packState.copyWith(isActive: isActive);
+          })
+          .toList(growable: false),
+    );
+  }
+
+  List<CompendiumPackStateModel> _buildDefaultPackStates(
+    CompendiumSourcePolicy sourcePolicy,
+  ) {
+    final packStates = <CompendiumPackStateModel>[
+      CompendiumPackStateModel(
+        id: 'bundled-base-compendium',
+        title: 'Compendio base',
+        description: sourcePolicy.activeSourceLabel,
+        kind: 'bundled_base',
+        isFixed: true,
+        isActive: true,
+      ),
+    ];
+
+    final narrativePolicy = sourcePolicy.sectionFor('narrative_options');
+    if (narrativePolicy != null) {
+      packStates.add(
+        const CompendiumPackStateModel(
+          id: 'legacy-narrative-supplements',
+          title: 'Narrative supplements',
+          description:
+              'Legacy supplemental narrative tables for faction and background flavor.',
+          kind: 'optional_bundle',
+          isFixed: false,
+          isActive: true,
+        ),
+      );
+    }
+
+    return List<CompendiumPackStateModel>.unmodifiable(packStates);
   }
 
   int _parseProficiencyBonus(String rawValue) {

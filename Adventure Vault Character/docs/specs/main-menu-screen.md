@@ -20,6 +20,7 @@ rules, settings, existing character cards, and character creation.
 
 - Top-level menu actions for compendium, rules, and settings
 - Read-only summary of the active compendium source policy
+- Navigation into the first read-only compendium screen
 - Character cards for existing local characters
 - Persistent `Crear personaje nuevo` entry point
 - Navigation to character sheet from character cards
@@ -27,10 +28,10 @@ rules, settings, existing character cards, and character creation.
 
 ## Out of Scope
 
-- Detailed compendium browsing behavior
 - Rules reference internals
 - Settings subflows
 - Character sorting and filtering beyond simple defaults
+- Compendium pack activation and XML import internals
 
 ## Entry Conditions
 
@@ -42,7 +43,8 @@ rules, settings, existing character cards, and character creation.
 - Open character sheet from a character card
 - Open create character guided flow
 - Open load-character-from-XML flow from the builder entry
-- Open future compendium, rules, or settings screens
+- Open the current compendium screen
+- Open future rules or settings screens
 
 ## Primary Actions
 
@@ -74,6 +76,7 @@ specification, not full character-detail payloads.
 - The screen shows which compendium source policy is active, including whether
   the app is running from the FightClub XML bundle or the bundled JSON
   fallback.
+- Tapping `Compendio` opens the current read-only compendium screen.
 - `Crear personaje nuevo` is always visible, even when characters already
   exist.
 - Tapping a character card opens that character's sheet directly.
