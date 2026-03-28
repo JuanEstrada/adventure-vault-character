@@ -7,7 +7,8 @@ class InMemoryCompendiumRepository implements CompendiumRepository {
   CompendiumCatalog _catalog;
 
   @override
-  Future<CompendiumCatalog> loadCatalog() async => _catalog;
+  Future<CompendiumCatalog> loadCatalog() async =>
+      _catalog.applyPackStateEffects();
 
   @override
   Future<CompendiumCatalog> setPackActive(String packId, bool isActive) async {
@@ -23,6 +24,6 @@ class InMemoryCompendiumRepository implements CompendiumRepository {
         })
         .toList(growable: false);
     _catalog = _catalog.copyWith(packStates: updatedPackStates);
-    return _catalog;
+    return _catalog.applyPackStateEffects();
   }
 }

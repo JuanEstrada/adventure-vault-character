@@ -151,6 +151,63 @@ class CompendiumCatalog {
     }
     return null;
   }
+
+  bool isPackActive(String packId, {bool defaultValue = true}) {
+    final packState = packStateById(packId);
+    return packState?.isActive ?? defaultValue;
+  }
+
+  CompendiumCatalog applyPackStateEffects() {
+    final inactivePackIds = packStates
+        .where((packState) => !packState.isFixed && !packState.isActive)
+        .map((packState) => packState.id)
+        .toSet();
+    if (inactivePackIds.isEmpty) {
+      return this;
+    }
+
+    final filteredNarrativeGroups = narrativeOptionGroups
+        .where(
+          (group) =>
+              group.packId == null || !inactivePackIds.contains(group.packId),
+        )
+        .toList(growable: false);
+
+    final filteredSections = sourcePolicy.sections
+        .map((section) {
+          final supplementalPackId = section.supplementalPackId;
+          if (supplementalPackId == null ||
+              !inactivePackIds.contains(supplementalPackId)) {
+            return section;
+          }
+          final packTitle =
+              packStateById(supplementalPackId)?.title ??
+              supplementalPackId.replaceAll('-', ' ');
+          final inactiveNote = '$packTitle is currently inactive.';
+          return CompendiumSectionSourcePolicy(
+            sectionKey: section.sectionKey,
+            sectionLabel: section.sectionLabel,
+            sourceType: section.sourceType,
+            primarySources: section.primarySources,
+            supplementalSources: const <String>[],
+            supplementalPackId: supplementalPackId,
+            notes: section.notes == null
+                ? inactiveNote
+                : '${section.notes} $inactiveNote',
+          );
+        })
+        .toList(growable: false);
+
+    return copyWith(
+      narrativeOptionGroups: filteredNarrativeGroups,
+      sourcePolicy: CompendiumSourcePolicy(
+        activeSourceType: sourcePolicy.activeSourceType,
+        activeSourceLabel: sourcePolicy.activeSourceLabel,
+        fallbackSourceLabel: sourcePolicy.fallbackSourceLabel,
+        sections: filteredSections,
+      ),
+    );
+  }
 }
 
 @immutable
@@ -222,6 +279,7 @@ class CompendiumSectionSourcePolicy {
     required this.sourceType,
     required this.primarySources,
     this.supplementalSources = const <String>[],
+    this.supplementalPackId,
     this.notes,
   });
 
@@ -230,6 +288,7 @@ class CompendiumSectionSourcePolicy {
   final String sourceType;
   final List<String> primarySources;
   final List<String> supplementalSources;
+  final String? supplementalPackId;
   final String? notes;
 }
 
@@ -294,6 +353,7 @@ class CompendiumNarrativeOptionGroup {
     required this.sourceType,
     required this.title,
     required this.options,
+    this.packId,
     this.sourceId,
     this.sourceName,
     this.backgroundId,
@@ -305,6 +365,7 @@ class CompendiumNarrativeOptionGroup {
   final String id;
   final String fieldKey;
   final String sourceType;
+  final String? packId;
   final String? sourceId;
   final String? sourceName;
   final String? backgroundId;

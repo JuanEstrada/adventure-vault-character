@@ -108,6 +108,8 @@ void main() {
     await tester.tap(find.byIcon(Icons.arrow_back));
     await tester.pumpAndSettle();
 
+    expect(find.text('0 activos'), findsOneWidget);
+
     await tester.scrollUntilVisible(
       find.text('Cobertura actual'),
       300,
@@ -121,7 +123,7 @@ void main() {
     );
     expect(find.text('Narrative options'), findsOneWidget);
     expect(find.textContaining('backgrounds-phb.xml'), findsOneWidget);
-    expect(find.textContaining('backgrounds-scag.xml'), findsOneWidget);
+    expect(find.textContaining('backgrounds-scag.xml'), findsNothing);
   });
 
   testWidgets('create flow saves character and opens sheet', (
@@ -402,7 +404,37 @@ const _testCatalog = CompendiumCatalog(
       socialPerks: <String>['Shelter of the Faithful', 'Temple support'],
     ),
   ],
-  narrativeOptionGroups: <CompendiumNarrativeOptionGroup>[],
+  narrativeOptionGroups: <CompendiumNarrativeOptionGroup>[
+    CompendiumNarrativeOptionGroup(
+      id: 'narrative-alignment-core',
+      fieldKey: 'alignment',
+      sourceType: 'core_rules',
+      title: 'Alignment',
+      options: <CompendiumNarrativeOption>[
+        CompendiumNarrativeOption(
+          id: 'narrative-alignment-1',
+          optionIndex: 1,
+          text: 'Lawful Good',
+        ),
+      ],
+    ),
+    CompendiumNarrativeOptionGroup(
+      id: 'narrative-sword-coast-factions',
+      fieldKey: 'faction',
+      sourceType: 'setting',
+      packId: 'legacy-narrative-supplements',
+      sourceId: 'sword_coast',
+      sourceName: 'Sword Coast Factions',
+      title: 'Factions of the Sword Coast',
+      options: <CompendiumNarrativeOption>[
+        CompendiumNarrativeOption(
+          id: 'narrative-sword-coast-faction-1',
+          optionIndex: 1,
+          text: 'The Harpers',
+        ),
+      ],
+    ),
+  ],
   generatedAbilityScoreSet: <int>[15, 14, 13, 12, 10, 8],
   manualAbilityScoreOptions: <int>[8, 9, 10, 11, 12, 13, 14, 15],
   characterAdvancement: <CharacterAdvancementEntry>[
@@ -580,6 +612,7 @@ const _testCatalog = CompendiumCatalog(
           'backgrounds-ggr.xml',
           'backgrounds-erlw.xml',
         ],
+        supplementalPackId: 'legacy-narrative-supplements',
       ),
     ],
   ),

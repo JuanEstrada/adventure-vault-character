@@ -56,7 +56,7 @@ Verified on 2026-03-28:
   SQLite database.
 - The previous single-table character persistence has now been extended into a
   normalized Drift schema.
-- The Drift schema is now at `v12` and includes dedicated character-side tables
+- The Drift schema is now at `v13` and includes dedicated character-side tables
   for `ability scores`, `ability score provenance`, `hit points`,
   `finishing details`, `narrative selections`, `equipment loadout`, `skills`,
   `saving throws`, `inventory`, `proficiencies`, and `currency`, plus
@@ -150,7 +150,7 @@ Verified on 2026-03-28:
   now been removed from the active code path, with the remaining
   `EquipmentSummaryViewData` extracted into its own small shared type.
 - Drift migration regression coverage now exists for legacy schemas through
-  `v12`, including verification of backfilled normalized tables, migrated
+  `v13`, including verification of backfilled normalized tables, migrated
   ability-score provenance, and preserved hit-point / finishing-detail /
   equipment-loadout / narrative-selection data, plus the new pack-state table.
 - The app startup path now shares one `AppDatabase` instance between the
@@ -190,6 +190,13 @@ Verified on 2026-03-28:
 - Compendium pack state is now persisted locally through Drift. The bundled
   base compendium remains fixed as active, optional packs now store local
   active/inactive state, and the pack-management screen can toggle that state.
+- That persisted optional-pack state now also filters the effective loaded
+  compendium. When the legacy narrative-supplement pack is inactive, its
+  narrative groups and supplemental source-policy inputs disappear from the
+  catalog exposed to the UI.
+- Narrative option groups and source-policy sections now carry explicit
+  optional-pack ownership metadata, so that filtering survives the normalized
+  Drift roundtrip instead of depending on a broad `sourceType` heuristic.
 - `CompendiumCatalog` now exposes normalized `narrativeOptionGroups`, so the
   future finishing-details flow can consume official options without reparsing
   raw XML in widgets.
@@ -284,7 +291,7 @@ Verified on 2026-03-28:
 - `test/widget_test.dart` covers the offline path into the main menu.
 - `flutter test` passed after the schema and repository changes.
 - `flutter analyze`, `flutter test`, and `build_runner` passed after the
-  `v12` compendium-pack-state persistence work.
+  `v13` compendium-pack metadata work.
 
 This means the repository now has an end-to-end offline character edit flow on
 top of the normalized read/write model, with shared rules and regression
@@ -393,8 +400,8 @@ These are the highest-value unresolved items:
    implementation slice.
 2. Decide when deeper `Combat` features and the `Equipment` panel move from
    MVP-minimal states into populated panels.
-3. Decide when persisted pack state should start filtering the loaded catalog
-   instead of remaining a stored local preference only.
+3. Decide how far pack-based filtering should go beyond narrative supplements,
+   and whether additional compendium areas should become optional-pack aware.
 
 Resolved architecture decision:
 
@@ -444,8 +451,9 @@ restructuring it again:
    known spells, and spell-slot progression.
 3. Keep reducing static SRD defaults by deriving more gameplay data directly
    from the FightClub source set through the compendium boundary.
-4. Connect persisted pack state to real catalog filtering and future XML
-   import, still without bypassing the existing `CompendiumCatalog` contract.
+4. Extend the current pack-based filtering beyond narrative supplements and
+   connect it to future XML import, still without bypassing the existing
+   `CompendiumCatalog` contract.
 
 Completed since the previous handoff:
 
@@ -473,6 +481,12 @@ Completed since the previous handoff:
   read-only route, and XML import reports a clear not-yet-implemented state.
 - Pack management now also persists local active/inactive state in Drift for
   optional packs while keeping the bundled base compendium fixed as active.
+- The effective compendium now also respects that stored pack state, so the UI
+  and tests see filtered narrative content and reduced supplemental source
+  metadata when optional packs are disabled.
+- That filtering is now metadata-driven through persisted pack ownership on
+  narrative groups plus optional-pack ownership on section supplemental
+  sources, avoiding hardcoded filtering by broad source type.
 - The main-menu spec and project snapshot/resume docs are aligned with that
   visible compendium status behavior.
 

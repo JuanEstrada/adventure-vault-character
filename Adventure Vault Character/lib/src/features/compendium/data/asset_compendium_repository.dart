@@ -115,8 +115,9 @@ class AssetCompendiumRepository implements CompendiumRepository {
       catalog = await _loadCatalogWithNormalizedRules(database, catalog);
     }
 
-    _cachedCatalog = catalog;
-    return catalog;
+    final effectiveCatalog = catalog.applyPackStateEffects();
+    _cachedCatalog = effectiveCatalog;
+    return effectiveCatalog;
   }
 
   @override
@@ -124,7 +125,11 @@ class AssetCompendiumRepository implements CompendiumRepository {
     final catalog = await loadCatalog();
     final database = _database;
     if (database == null) {
-      final updatedCatalog = _updateCatalogPackState(catalog, packId, isActive);
+      final updatedCatalog = _updateCatalogPackState(
+        catalog,
+        packId,
+        isActive,
+      ).applyPackStateEffects();
       _cachedCatalog = updatedCatalog;
       return updatedCatalog;
     }
@@ -134,7 +139,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
     )..where((table) => table.id.equals(packId))).get();
     final existing = existingRows.isEmpty ? null : existingRows.single;
     if (existing == null) {
-      return catalog;
+      return catalog.applyPackStateEffects();
     }
 
     final nextIsActive = existing.isFixed ? true : isActive;
@@ -148,8 +153,9 @@ class AssetCompendiumRepository implements CompendiumRepository {
     );
 
     final refreshed = await _loadCatalogWithNormalizedRules(database, catalog);
-    _cachedCatalog = refreshed;
-    return refreshed;
+    final effectiveCatalog = refreshed.applyPackStateEffects();
+    _cachedCatalog = effectiveCatalog;
+    return effectiveCatalog;
   }
 
   static const Map<int, List<String>> _spellSeedsByLevel = <int, List<String>>{
@@ -547,6 +553,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
             _ggrBackgroundsAssetPath,
             _erlwBackgroundsAssetPath,
           ],
+          supplementalPackId: 'legacy-narrative-supplements',
           notes:
               'Narrative tables currently mix the Player\'s Handbook (2014) plus setting books while SRD 5.5e remains the canonical source for structured character-build data.',
         ),
@@ -1374,6 +1381,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
         id: 'narrative-sword-coast-factions',
         fieldKey: 'faction',
         sourceType: 'setting',
+        packId: 'legacy-narrative-supplements',
         sourceId: 'sword_coast',
         sourceName: 'Sword Coast Factions',
         backgroundId: 'faction_agent',
@@ -1441,6 +1449,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
         id: 'narrative-sigil-factions',
         fieldKey: 'faction',
         sourceType: 'setting',
+        packId: 'legacy-narrative-supplements',
         sourceId: 'sigil',
         sourceName: 'Factions of Sigil',
         backgroundId: 'planar_philosopher',
@@ -1476,6 +1485,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
         id: 'narrative-ravnica-guilds',
         fieldKey: 'faction',
         sourceType: 'setting',
+        packId: 'legacy-narrative-supplements',
         sourceId: 'ravnica',
         sourceName: 'Guilds of Ravnica',
         title: 'Guilds of Ravnica',
@@ -1535,6 +1545,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
         id: 'narrative-eberron-houses',
         fieldKey: 'faction',
         sourceType: 'setting',
+        packId: 'legacy-narrative-supplements',
         sourceId: 'eberron',
         sourceName: 'Dragonmarked Houses',
         backgroundId: 'house_agent',
@@ -1755,6 +1766,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
                 id: Value(group.id),
                 fieldKey: Value(group.fieldKey),
                 sourceType: Value(group.sourceType),
+                packId: Value(group.packId),
                 sourceId: Value(group.sourceId),
                 sourceName: Value(group.sourceName),
                 backgroundId: Value(group.backgroundId),
@@ -1898,6 +1910,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
               id: row.id,
               fieldKey: row.fieldKey,
               sourceType: row.sourceType,
+              packId: row.packId,
               sourceId: row.sourceId,
               sourceName: row.sourceName,
               backgroundId: row.backgroundId,

@@ -80,6 +80,11 @@ placeholders for future pack/import workflows.
 - Tapping `Administrar packs` opens a dedicated screen that keeps the bundled
   base compendium fixed as active and allows optional pack state to be stored
   locally.
+- Optional pack state affects the effective compendium shown by this screen,
+  including current coverage and source-policy supplemental inputs.
+- Optional-pack filtering should be driven by explicit compendium metadata
+  carried on affected content and source-policy sections, not by UI-local
+  heuristics.
 - Tapping `Importar XML` gives explicit user feedback that the flow is not
   implemented yet.
 - The screen shows current counts for major compendium sections such as races,
@@ -95,5 +100,7 @@ placeholders for future pack/import workflows.
   than reading raw assets or persistence rows directly.
 - Persisted pack state should stay local-first and use the existing Drift
   database instead of introducing a separate storage path.
+- The effective catalog shown in the UI should be filtered from persisted pack
+  state through the existing compendium repository boundary.
 - Future import behavior belongs to the compendium feature but should build on
   this route instead of replacing the contract.

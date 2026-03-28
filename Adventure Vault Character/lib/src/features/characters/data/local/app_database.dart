@@ -411,6 +411,8 @@ class NarrativeOptionGroups extends Table {
 
   TextColumn get sourceType => text().named('source_type')();
 
+  TextColumn get packId => text().named('pack_id').nullable()();
+
   TextColumn get sourceId => text().named('source_id').nullable()();
 
   TextColumn get sourceName => text().named('source_name').nullable()();
@@ -614,7 +616,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.executor(super.executor);
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -757,6 +759,11 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 12) {
         await migrator.createTable(compendiumPackStates);
+      }
+      if (from >= 10 && from < 13) {
+        await customStatement(
+          'ALTER TABLE narrative_option_groups ADD COLUMN pack_id TEXT NULL',
+        );
       }
 
       await _createIndexes();

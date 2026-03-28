@@ -37,7 +37,7 @@ summary.
   state.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- The Drift schema is now at `v12` and includes normalized character-side
+- The Drift schema is now at `v13` and includes normalized character-side
   tables for `ability scores`, `ability score provenance`, `hit points`,
   `finishing details`, `narrative selections`, `equipment loadout`,
   `skills`, `saving throws`, `inventory`, `proficiencies`, and `currency`.
@@ -96,6 +96,9 @@ summary.
 - Drift `v12` now also adds a dedicated normalized compendium-side table for
   persisted pack state, keeping the bundled base pack fixed as active while
   storing local active/inactive preferences for optional packs.
+- Drift `v13` now also adds explicit optional-pack ownership to normalized
+  narrative option groups, so effective catalog filtering survives the local
+  persistence roundtrip.
 - The characters feature now uses explicit application services for
   `create character` and `character sheet` loading, with shared summary
   mapping extracted from the repository implementation.
@@ -234,6 +237,12 @@ summary.
   purely decorative.
 - The compendium-pack route now also persists and renders local active /
   inactive state for optional packs.
+- The effective compendium now also filters optional narrative-supplement
+  content based on that persisted pack state, reducing both visible narrative
+  groups and supplemental source-policy metadata when the pack is inactive.
+- That filtering now comes from explicit pack metadata on normalized
+  compendium content and source-policy sections instead of broad
+  `sourceType`-based assumptions.
 - Widget coverage exists for the offline continuation path into the main menu.
 - Widget coverage now also verifies navigation into the compendium screen.
 - Widget coverage now also verifies the visible compendium management/import
@@ -292,7 +301,8 @@ summary.
 - The compendium area now also has its first real management interaction,
   still constrained to presentation-only behavior.
 - The compendium area now also persists local pack state through Drift, even
-  though that state does not yet filter the loaded catalog content.
+  though that state currently only filters the narrative-supplement portion of
+  the loaded catalog content.
 
 ## Pending Work
 
@@ -305,8 +315,9 @@ summary.
 - Extend the new compendium screen toward future pack-management and import
   workflows without bypassing the existing repository/domain contract.
 - Decide the first real interaction to land behind the visible `Importar XML`
-- Decide when persisted pack state should start affecting loaded catalog
-  content, alongside a real XML import workflow.
+- Decide how far persisted pack state should affect loaded catalog content
+  beyond the current narrative-supplement filtering, alongside a real XML
+  import workflow.
 - Decide whether any additional reshaping is still needed in
   `local-assets/por ordenar/srd_55e_source_from_markdown/` before treating it
   as the stable long-term section reference tree.

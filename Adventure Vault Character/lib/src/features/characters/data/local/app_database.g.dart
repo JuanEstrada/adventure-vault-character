@@ -9143,6 +9143,15 @@ class $NarrativeOptionGroupsTable extends NarrativeOptionGroups
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _packIdMeta = const VerificationMeta('packId');
+  @override
+  late final GeneratedColumn<String> packId = GeneratedColumn<String>(
+    'pack_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _sourceIdMeta = const VerificationMeta(
     'sourceId',
   );
@@ -9235,6 +9244,7 @@ class $NarrativeOptionGroupsTable extends NarrativeOptionGroups
     id,
     fieldKey,
     sourceType,
+    packId,
     sourceId,
     sourceName,
     backgroundId,
@@ -9276,6 +9286,12 @@ class $NarrativeOptionGroupsTable extends NarrativeOptionGroups
       );
     } else if (isInserting) {
       context.missing(_sourceTypeMeta);
+    }
+    if (data.containsKey('pack_id')) {
+      context.handle(
+        _packIdMeta,
+        packId.isAcceptableOrUnknown(data['pack_id']!, _packIdMeta),
+      );
     }
     if (data.containsKey('source_id')) {
       context.handle(
@@ -9360,6 +9376,10 @@ class $NarrativeOptionGroupsTable extends NarrativeOptionGroups
         DriftSqlType.string,
         data['${effectivePrefix}source_type'],
       )!,
+      packId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pack_id'],
+      ),
       sourceId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}source_id'],
@@ -9406,6 +9426,7 @@ class NarrativeOptionGroup extends DataClass
   final String id;
   final String fieldKey;
   final String sourceType;
+  final String? packId;
   final String? sourceId;
   final String? sourceName;
   final String? backgroundId;
@@ -9418,6 +9439,7 @@ class NarrativeOptionGroup extends DataClass
     required this.id,
     required this.fieldKey,
     required this.sourceType,
+    this.packId,
     this.sourceId,
     this.sourceName,
     this.backgroundId,
@@ -9433,6 +9455,9 @@ class NarrativeOptionGroup extends DataClass
     map['id'] = Variable<String>(id);
     map['field_key'] = Variable<String>(fieldKey);
     map['source_type'] = Variable<String>(sourceType);
+    if (!nullToAbsent || packId != null) {
+      map['pack_id'] = Variable<String>(packId);
+    }
     if (!nullToAbsent || sourceId != null) {
       map['source_id'] = Variable<String>(sourceId);
     }
@@ -9461,6 +9486,9 @@ class NarrativeOptionGroup extends DataClass
       id: Value(id),
       fieldKey: Value(fieldKey),
       sourceType: Value(sourceType),
+      packId: packId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(packId),
       sourceId: sourceId == null && nullToAbsent
           ? const Value.absent()
           : Value(sourceId),
@@ -9493,6 +9521,7 @@ class NarrativeOptionGroup extends DataClass
       id: serializer.fromJson<String>(json['id']),
       fieldKey: serializer.fromJson<String>(json['fieldKey']),
       sourceType: serializer.fromJson<String>(json['sourceType']),
+      packId: serializer.fromJson<String?>(json['packId']),
       sourceId: serializer.fromJson<String?>(json['sourceId']),
       sourceName: serializer.fromJson<String?>(json['sourceName']),
       backgroundId: serializer.fromJson<String?>(json['backgroundId']),
@@ -9510,6 +9539,7 @@ class NarrativeOptionGroup extends DataClass
       'id': serializer.toJson<String>(id),
       'fieldKey': serializer.toJson<String>(fieldKey),
       'sourceType': serializer.toJson<String>(sourceType),
+      'packId': serializer.toJson<String?>(packId),
       'sourceId': serializer.toJson<String?>(sourceId),
       'sourceName': serializer.toJson<String?>(sourceName),
       'backgroundId': serializer.toJson<String?>(backgroundId),
@@ -9525,6 +9555,7 @@ class NarrativeOptionGroup extends DataClass
     String? id,
     String? fieldKey,
     String? sourceType,
+    Value<String?> packId = const Value.absent(),
     Value<String?> sourceId = const Value.absent(),
     Value<String?> sourceName = const Value.absent(),
     Value<String?> backgroundId = const Value.absent(),
@@ -9537,6 +9568,7 @@ class NarrativeOptionGroup extends DataClass
     id: id ?? this.id,
     fieldKey: fieldKey ?? this.fieldKey,
     sourceType: sourceType ?? this.sourceType,
+    packId: packId.present ? packId.value : this.packId,
     sourceId: sourceId.present ? sourceId.value : this.sourceId,
     sourceName: sourceName.present ? sourceName.value : this.sourceName,
     backgroundId: backgroundId.present ? backgroundId.value : this.backgroundId,
@@ -9555,6 +9587,7 @@ class NarrativeOptionGroup extends DataClass
       sourceType: data.sourceType.present
           ? data.sourceType.value
           : this.sourceType,
+      packId: data.packId.present ? data.packId.value : this.packId,
       sourceId: data.sourceId.present ? data.sourceId.value : this.sourceId,
       sourceName: data.sourceName.present
           ? data.sourceName.value
@@ -9584,6 +9617,7 @@ class NarrativeOptionGroup extends DataClass
           ..write('id: $id, ')
           ..write('fieldKey: $fieldKey, ')
           ..write('sourceType: $sourceType, ')
+          ..write('packId: $packId, ')
           ..write('sourceId: $sourceId, ')
           ..write('sourceName: $sourceName, ')
           ..write('backgroundId: $backgroundId, ')
@@ -9601,6 +9635,7 @@ class NarrativeOptionGroup extends DataClass
     id,
     fieldKey,
     sourceType,
+    packId,
     sourceId,
     sourceName,
     backgroundId,
@@ -9617,6 +9652,7 @@ class NarrativeOptionGroup extends DataClass
           other.id == this.id &&
           other.fieldKey == this.fieldKey &&
           other.sourceType == this.sourceType &&
+          other.packId == this.packId &&
           other.sourceId == this.sourceId &&
           other.sourceName == this.sourceName &&
           other.backgroundId == this.backgroundId &&
@@ -9632,6 +9668,7 @@ class NarrativeOptionGroupsCompanion
   final Value<String> id;
   final Value<String> fieldKey;
   final Value<String> sourceType;
+  final Value<String?> packId;
   final Value<String?> sourceId;
   final Value<String?> sourceName;
   final Value<String?> backgroundId;
@@ -9645,6 +9682,7 @@ class NarrativeOptionGroupsCompanion
     this.id = const Value.absent(),
     this.fieldKey = const Value.absent(),
     this.sourceType = const Value.absent(),
+    this.packId = const Value.absent(),
     this.sourceId = const Value.absent(),
     this.sourceName = const Value.absent(),
     this.backgroundId = const Value.absent(),
@@ -9659,6 +9697,7 @@ class NarrativeOptionGroupsCompanion
     required String id,
     required String fieldKey,
     required String sourceType,
+    this.packId = const Value.absent(),
     this.sourceId = const Value.absent(),
     this.sourceName = const Value.absent(),
     this.backgroundId = const Value.absent(),
@@ -9676,6 +9715,7 @@ class NarrativeOptionGroupsCompanion
     Expression<String>? id,
     Expression<String>? fieldKey,
     Expression<String>? sourceType,
+    Expression<String>? packId,
     Expression<String>? sourceId,
     Expression<String>? sourceName,
     Expression<String>? backgroundId,
@@ -9690,6 +9730,7 @@ class NarrativeOptionGroupsCompanion
       if (id != null) 'id': id,
       if (fieldKey != null) 'field_key': fieldKey,
       if (sourceType != null) 'source_type': sourceType,
+      if (packId != null) 'pack_id': packId,
       if (sourceId != null) 'source_id': sourceId,
       if (sourceName != null) 'source_name': sourceName,
       if (backgroundId != null) 'background_id': backgroundId,
@@ -9706,6 +9747,7 @@ class NarrativeOptionGroupsCompanion
     Value<String>? id,
     Value<String>? fieldKey,
     Value<String>? sourceType,
+    Value<String?>? packId,
     Value<String?>? sourceId,
     Value<String?>? sourceName,
     Value<String?>? backgroundId,
@@ -9720,6 +9762,7 @@ class NarrativeOptionGroupsCompanion
       id: id ?? this.id,
       fieldKey: fieldKey ?? this.fieldKey,
       sourceType: sourceType ?? this.sourceType,
+      packId: packId ?? this.packId,
       sourceId: sourceId ?? this.sourceId,
       sourceName: sourceName ?? this.sourceName,
       backgroundId: backgroundId ?? this.backgroundId,
@@ -9743,6 +9786,9 @@ class NarrativeOptionGroupsCompanion
     }
     if (sourceType.present) {
       map['source_type'] = Variable<String>(sourceType.value);
+    }
+    if (packId.present) {
+      map['pack_id'] = Variable<String>(packId.value);
     }
     if (sourceId.present) {
       map['source_id'] = Variable<String>(sourceId.value);
@@ -9780,6 +9826,7 @@ class NarrativeOptionGroupsCompanion
           ..write('id: $id, ')
           ..write('fieldKey: $fieldKey, ')
           ..write('sourceType: $sourceType, ')
+          ..write('packId: $packId, ')
           ..write('sourceId: $sourceId, ')
           ..write('sourceName: $sourceName, ')
           ..write('backgroundId: $backgroundId, ')
@@ -20227,6 +20274,7 @@ typedef $$NarrativeOptionGroupsTableCreateCompanionBuilder =
       required String id,
       required String fieldKey,
       required String sourceType,
+      Value<String?> packId,
       Value<String?> sourceId,
       Value<String?> sourceName,
       Value<String?> backgroundId,
@@ -20242,6 +20290,7 @@ typedef $$NarrativeOptionGroupsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> fieldKey,
       Value<String> sourceType,
+      Value<String?> packId,
       Value<String?> sourceId,
       Value<String?> sourceName,
       Value<String?> backgroundId,
@@ -20311,6 +20360,11 @@ class $$NarrativeOptionGroupsTableFilterComposer
 
   ColumnFilters<String> get sourceType => $composableBuilder(
     column: $table.sourceType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get packId => $composableBuilder(
+    column: $table.packId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -20404,6 +20458,11 @@ class $$NarrativeOptionGroupsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get packId => $composableBuilder(
+    column: $table.packId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get sourceId => $composableBuilder(
     column: $table.sourceId,
     builder: (column) => ColumnOrderings(column),
@@ -20464,6 +20523,9 @@ class $$NarrativeOptionGroupsTableAnnotationComposer
     column: $table.sourceType,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get packId =>
+      $composableBuilder(column: $table.packId, builder: (column) => column);
 
   GeneratedColumn<String> get sourceId =>
       $composableBuilder(column: $table.sourceId, builder: (column) => column);
@@ -20569,6 +20631,7 @@ class $$NarrativeOptionGroupsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> fieldKey = const Value.absent(),
                 Value<String> sourceType = const Value.absent(),
+                Value<String?> packId = const Value.absent(),
                 Value<String?> sourceId = const Value.absent(),
                 Value<String?> sourceName = const Value.absent(),
                 Value<String?> backgroundId = const Value.absent(),
@@ -20582,6 +20645,7 @@ class $$NarrativeOptionGroupsTableTableManager
                 id: id,
                 fieldKey: fieldKey,
                 sourceType: sourceType,
+                packId: packId,
                 sourceId: sourceId,
                 sourceName: sourceName,
                 backgroundId: backgroundId,
@@ -20597,6 +20661,7 @@ class $$NarrativeOptionGroupsTableTableManager
                 required String id,
                 required String fieldKey,
                 required String sourceType,
+                Value<String?> packId = const Value.absent(),
                 Value<String?> sourceId = const Value.absent(),
                 Value<String?> sourceName = const Value.absent(),
                 Value<String?> backgroundId = const Value.absent(),
@@ -20610,6 +20675,7 @@ class $$NarrativeOptionGroupsTableTableManager
                 id: id,
                 fieldKey: fieldKey,
                 sourceType: sourceType,
+                packId: packId,
                 sourceId: sourceId,
                 sourceName: sourceName,
                 backgroundId: backgroundId,

@@ -137,6 +137,12 @@ void main() {
     );
     expect(narrativeGroupRows, isNotEmpty);
     expect(narrativeOptionRows, isNotEmpty);
+    expect(
+      narrativeGroupRows
+          .firstWhere((row) => row.id == 'narrative-sword-coast-factions')
+          .packId,
+      'legacy-narrative-supplements',
+    );
 
     final updatedCatalog = await repository.setPackActive(
       'legacy-narrative-supplements',
@@ -145,6 +151,19 @@ void main() {
     expect(
       updatedCatalog.packStateById('legacy-narrative-supplements')?.isActive,
       isFalse,
+    );
+    expect(updatedCatalog.narrativeGroupsForField('faction'), isEmpty);
+    expect(
+      updatedCatalog
+          .sourcePolicyForSection('narrative_options')
+          ?.supplementalSources,
+      isEmpty,
+    );
+    expect(
+      updatedCatalog
+          .sourcePolicyForSection('narrative_options')
+          ?.supplementalPackId,
+      'legacy-narrative-supplements',
     );
 
     final persistedPackRows = await database
