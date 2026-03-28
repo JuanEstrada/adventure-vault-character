@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
+import 'package:adventure_vault_character/src/features/compendium/data/imported_compendium_content.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/services.dart';
@@ -65,6 +66,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
   final String _fallbackCatalogAssetPath;
 
   CompendiumCatalog? _cachedCatalog;
+  final Map<String, String> _importedPackXmlById = <String, String>{};
 
   @override
   Future<CompendiumCatalog> loadCatalog() async {
@@ -73,46 +75,12 @@ class AssetCompendiumRepository implements CompendiumRepository {
       return cachedCatalog;
     }
 
-    CompendiumCatalog? catalog;
-    try {
-      final backgroundsXml = await _bundle.loadString(_backgroundsAssetPath);
-      final racesXml = await _bundle.loadString(_racesAssetPath);
-      final classesXml = await _bundle.loadString(_classesAssetPath);
-      final spellsXml = await _tryLoadString(_spellsAssetPath);
-      final featsXml = await _tryLoadString(_featsAssetPath);
-      final monstersXml = await _tryLoadString(_monstersAssetPath);
-      final phbBackgroundsXml = await _tryLoadString(_phbBackgroundsAssetPath);
-      final scagBackgroundsXml = await _tryLoadString(
-        _scagBackgroundsAssetPath,
-      );
-      final pamBackgroundsXml = await _tryLoadString(_pamBackgroundsAssetPath);
-      final ggrBackgroundsXml = await _tryLoadString(_ggrBackgroundsAssetPath);
-      final erlwBackgroundsXml = await _tryLoadString(
-        _erlwBackgroundsAssetPath,
-      );
-      catalog = _parseFightClubCatalog(
-        backgroundsXml: backgroundsXml,
-        racesXml: racesXml,
-        classesXml: classesXml,
-        spellsXml: spellsXml ?? '',
-        featsXml: featsXml ?? '',
-        monstersXml: monstersXml ?? '',
-        phbBackgroundsXml: phbBackgroundsXml ?? '',
-        scagBackgroundsXml: scagBackgroundsXml ?? '',
-        pamBackgroundsXml: pamBackgroundsXml ?? '',
-        ggrBackgroundsXml: ggrBackgroundsXml ?? '',
-        erlwBackgroundsXml: erlwBackgroundsXml ?? '',
-      );
-    } catch (_) {
-      final rawJson = await _bundle.loadString(_fallbackCatalogAssetPath);
-      catalog = _parseJsonCatalog(rawJson);
-    }
-
+    var catalog = await _loadBaseCatalog();
     final database = _database;
     if (database != null) {
-      await _persistNormalizedRuleReferences(database, catalog);
-      await _persistPackStates(database, catalog);
-      catalog = await _loadCatalogWithNormalizedRules(database, catalog);
+      catalog = await _mergeImportedCompendiumContent(database, catalog);
+    } else {
+      catalog = _mergeImportedCompendiumContentFromMemory(catalog);
     }
 
     final effectiveCatalog = catalog.applyPackStateEffects();
@@ -125,10 +93,8 @@ class AssetCompendiumRepository implements CompendiumRepository {
     final catalog = await loadCatalog();
     final database = _database;
     if (database == null) {
-      final updatedCatalog = _updateCatalogPackState(
-        catalog,
-        packId,
-        isActive,
+      final updatedCatalog = _mergeImportedCompendiumContentFromMemory(
+        _updateCatalogPackState(catalog, packId, isActive),
       ).applyPackStateEffects();
       _cachedCatalog = updatedCatalog;
       return updatedCatalog;
@@ -152,7 +118,8 @@ class AssetCompendiumRepository implements CompendiumRepository {
       ),
     );
 
-    final refreshed = await _loadCatalogWithNormalizedRules(database, catalog);
+    var refreshed = await _loadBaseCatalog();
+    refreshed = await _mergeImportedCompendiumContent(database, refreshed);
     final effectiveCatalog = refreshed.applyPackStateEffects();
     _cachedCatalog = effectiveCatalog;
     return effectiveCatalog;
@@ -165,34 +132,52 @@ class AssetCompendiumRepository implements CompendiumRepository {
       rawXml,
       catalog.packStates,
     );
+    parseImportedCompendiumContent(
+      packId: importedPackState.id,
+      packTitle: importedPackState.title,
+      rawXml: rawXml,
+    );
     final database = _database;
 
     if (database == null) {
-      final updatedCatalog = catalog
-          .copyWith(
-            packStates: _mergeImportedPackState(
-              catalog.packStates,
-              importedPackState,
-            ),
-          )
-          .applyPackStateEffects();
+      _importedPackXmlById[importedPackState.id] = rawXml;
+      final updatedCatalog = _mergeImportedCompendiumContentFromMemory(
+        catalog.copyWith(
+          packStates: _mergeImportedPackState(
+            catalog.packStates,
+            importedPackState,
+          ),
+        ),
+      ).applyPackStateEffects();
       _cachedCatalog = updatedCatalog;
       return updatedCatalog;
     }
 
-    await database.into(database.compendiumPackStates).insertOnConflictUpdate(
-      CompendiumPackStatesCompanion.insert(
-        id: importedPackState.id,
-        title: importedPackState.title,
-        description: importedPackState.description,
-        kind: importedPackState.kind,
-        isFixed: Value(importedPackState.isFixed),
-        isActive: Value(importedPackState.isActive),
-        updatedAt: DateTime.now(),
-      ),
-    );
+    await database
+        .into(database.compendiumPackStates)
+        .insertOnConflictUpdate(
+          CompendiumPackStatesCompanion.insert(
+            id: importedPackState.id,
+            title: importedPackState.title,
+            description: importedPackState.description,
+            kind: importedPackState.kind,
+            isFixed: Value(importedPackState.isFixed),
+            isActive: Value(importedPackState.isActive),
+            updatedAt: DateTime.now(),
+          ),
+        );
+    await database
+        .into(database.importedCompendiumPacks)
+        .insertOnConflictUpdate(
+          ImportedCompendiumPacksCompanion.insert(
+            id: importedPackState.id,
+            rawXml: rawXml,
+            importedAt: DateTime.now(),
+          ),
+        );
 
-    final refreshed = await _loadCatalogWithNormalizedRules(database, catalog);
+    var refreshed = await _loadBaseCatalog();
+    refreshed = await _mergeImportedCompendiumContent(database, refreshed);
     final effectiveCatalog = refreshed.applyPackStateEffects();
     _cachedCatalog = effectiveCatalog;
     return effectiveCatalog;
@@ -2119,6 +2104,97 @@ class AssetCompendiumRepository implements CompendiumRepository {
         .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
         .replaceAll(RegExp(r'^-+|-+$'), '');
     return slug.isEmpty ? 'xml-pack' : slug;
+  }
+
+  Future<CompendiumCatalog> _mergeImportedCompendiumContent(
+    AppDatabase database,
+    CompendiumCatalog catalog,
+  ) async {
+    final importedRows = await (database.select(
+      database.importedCompendiumPacks,
+    )..orderBy([(table) => OrderingTerm.asc(table.importedAt)])).get();
+    final activeContents = importedRows
+        .where((row) => catalog.isPackActive(row.id))
+        .map(
+          (row) => parseImportedCompendiumContent(
+            packId: row.id,
+            packTitle:
+                catalog.packStateById(row.id)?.title ?? 'Imported XML pack',
+            rawXml: row.rawXml,
+          ),
+        )
+        .toList(growable: false);
+    return _mergeImportedContent(catalog: catalog, contents: activeContents);
+  }
+
+  CompendiumCatalog _mergeImportedCompendiumContentFromMemory(
+    CompendiumCatalog catalog,
+  ) {
+    final activeContents = _importedPackXmlById.entries
+        .where((entry) => catalog.isPackActive(entry.key))
+        .map(
+          (entry) => parseImportedCompendiumContent(
+            packId: entry.key,
+            packTitle:
+                catalog.packStateById(entry.key)?.title ?? 'Imported XML pack',
+            rawXml: entry.value,
+          ),
+        )
+        .toList(growable: false);
+    return _mergeImportedContent(catalog: catalog, contents: activeContents);
+  }
+
+  CompendiumCatalog _mergeImportedContent({
+    required CompendiumCatalog catalog,
+    required List<ImportedCompendiumContent> contents,
+  }) {
+    return mergeImportedCompendiumContents(catalog, contents);
+  }
+
+  Future<CompendiumCatalog> _loadBaseCatalog() async {
+    CompendiumCatalog? catalog;
+    try {
+      final backgroundsXml = await _bundle.loadString(_backgroundsAssetPath);
+      final racesXml = await _bundle.loadString(_racesAssetPath);
+      final classesXml = await _bundle.loadString(_classesAssetPath);
+      final spellsXml = await _tryLoadString(_spellsAssetPath);
+      final featsXml = await _tryLoadString(_featsAssetPath);
+      final monstersXml = await _tryLoadString(_monstersAssetPath);
+      final phbBackgroundsXml = await _tryLoadString(_phbBackgroundsAssetPath);
+      final scagBackgroundsXml = await _tryLoadString(
+        _scagBackgroundsAssetPath,
+      );
+      final pamBackgroundsXml = await _tryLoadString(_pamBackgroundsAssetPath);
+      final ggrBackgroundsXml = await _tryLoadString(_ggrBackgroundsAssetPath);
+      final erlwBackgroundsXml = await _tryLoadString(
+        _erlwBackgroundsAssetPath,
+      );
+      catalog = _parseFightClubCatalog(
+        backgroundsXml: backgroundsXml,
+        racesXml: racesXml,
+        classesXml: classesXml,
+        spellsXml: spellsXml ?? '',
+        featsXml: featsXml ?? '',
+        monstersXml: monstersXml ?? '',
+        phbBackgroundsXml: phbBackgroundsXml ?? '',
+        scagBackgroundsXml: scagBackgroundsXml ?? '',
+        pamBackgroundsXml: pamBackgroundsXml ?? '',
+        ggrBackgroundsXml: ggrBackgroundsXml ?? '',
+        erlwBackgroundsXml: erlwBackgroundsXml ?? '',
+      );
+    } catch (_) {
+      final rawJson = await _bundle.loadString(_fallbackCatalogAssetPath);
+      catalog = _parseJsonCatalog(rawJson);
+    }
+
+    final database = _database;
+    if (database == null) {
+      return catalog;
+    }
+
+    await _persistNormalizedRuleReferences(database, catalog);
+    await _persistPackStates(database, catalog);
+    return _loadCatalogWithNormalizedRules(database, catalog);
   }
 }
 

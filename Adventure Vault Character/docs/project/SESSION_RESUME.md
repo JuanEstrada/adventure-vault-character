@@ -56,7 +56,7 @@ Verified on 2026-03-28:
   SQLite database.
 - The previous single-table character persistence has now been extended into a
   normalized Drift schema.
-- The Drift schema is now at `v13` and includes dedicated character-side tables
+- The Drift schema is now at `v14` and includes dedicated character-side tables
   for `ability scores`, `ability score provenance`, `hit points`,
   `finishing details`, `narrative selections`, `equipment loadout`, `skills`,
   `saving throws`, `inventory`, `proficiencies`, and `currency`, plus
@@ -201,6 +201,10 @@ Verified on 2026-03-28:
   registered locally as an optional imported pack that persists through Drift
   and appears in pack management, even though imported content is not yet
   ingested into the live compendium catalog.
+- That import slice now also persists the raw imported XML payload and merges
+  supported imported `backgrounds`, `races`, `classes`, `spells`, `feats`,
+  and `monsters` into the effective compendium whenever the imported pack is
+  active.
 - `CompendiumCatalog` now exposes normalized `narrativeOptionGroups`, so the
   future finishing-details flow can consume official options without reparsing
   raw XML in widgets.
@@ -295,7 +299,7 @@ Verified on 2026-03-28:
 - `test/widget_test.dart` covers the offline path into the main menu.
 - `flutter test` passed after the schema and repository changes.
 - `flutter analyze`, `flutter test`, and `build_runner` passed after the
-  `v13` compendium-pack metadata work.
+  `v14` imported-compendium-content ingestion work.
 
 This means the repository now has an end-to-end offline character edit flow on
 top of the normalized read/write model, with shared rules and regression
@@ -400,8 +404,8 @@ Primary references:
 
 These are the highest-value unresolved items:
 
-1. Decide when XML import expands from pack registration into real content
-   ingestion and source-policy integration.
+1. Decide how far XML import should expand beyond the current supported
+   imported catalog sections and into narrative-option or deeper rules data.
 2. Decide when deeper `Combat` features and the `Equipment` panel move from
    MVP-minimal states into populated panels.
 3. Decide how far pack-based filtering should go beyond narrative supplements,
@@ -493,7 +497,10 @@ Completed since the previous handoff:
   narrative groups plus optional-pack ownership on section supplemental
   sources, avoiding hardcoded filtering by broad source type.
 - Imported XML can now also create persistent optional-pack entries in that
-  same management flow, without yet attempting full compendium ingestion.
+  same management flow.
+- Active imported XML packs now also augment the loaded compendium with
+  supported imported entries and add visible source-policy notes for the
+  affected sections.
 - The main-menu spec and project snapshot/resume docs are aligned with that
   visible compendium status behavior.
 

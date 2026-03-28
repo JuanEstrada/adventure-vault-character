@@ -1,14 +1,17 @@
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
+import 'package:adventure_vault_character/src/features/compendium/data/imported_compendium_content.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 
 class InMemoryCompendiumRepository implements CompendiumRepository {
-  InMemoryCompendiumRepository(CompendiumCatalog catalog) : _catalog = catalog;
+  InMemoryCompendiumRepository(CompendiumCatalog catalog)
+    : _catalog = catalog,
+      _importedPackXmlById = <String, String>{};
 
   CompendiumCatalog _catalog;
+  final Map<String, String> _importedPackXmlById;
 
   @override
-  Future<CompendiumCatalog> loadCatalog() async =>
-      _catalog.applyPackStateEffects();
+  Future<CompendiumCatalog> loadCatalog() async => _effectiveCatalog(_catalog);
 
   @override
   Future<CompendiumCatalog> setPackActive(String packId, bool isActive) async {
@@ -24,7 +27,7 @@ class InMemoryCompendiumRepository implements CompendiumRepository {
         })
         .toList(growable: false);
     _catalog = _catalog.copyWith(packStates: updatedPackStates);
-    return _catalog.applyPackStateEffects();
+    return _effectiveCatalog(_catalog);
   }
 
   @override
@@ -33,6 +36,12 @@ class InMemoryCompendiumRepository implements CompendiumRepository {
       rawXml,
       _catalog.packStates,
     );
+    parseImportedCompendiumContent(
+      packId: importedPackState.id,
+      packTitle: importedPackState.title,
+      rawXml: rawXml,
+    );
+    _importedPackXmlById[importedPackState.id] = rawXml;
     _catalog = _catalog.copyWith(
       packStates: <CompendiumPackStateModel>[
         ..._catalog.packStates.where(
@@ -41,7 +50,7 @@ class InMemoryCompendiumRepository implements CompendiumRepository {
         importedPackState,
       ],
     );
-    return _catalog.applyPackStateEffects();
+    return _effectiveCatalog(_catalog);
   }
 
   CompendiumPackStateModel _buildImportedPackState(
@@ -114,5 +123,23 @@ class InMemoryCompendiumRepository implements CompendiumRepository {
         .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
         .replaceAll(RegExp(r'^-|-$'), '');
     return slug.isEmpty ? 'xml-pack' : slug;
+  }
+
+  CompendiumCatalog _effectiveCatalog(CompendiumCatalog catalog) {
+    final importedContents = _importedPackXmlById.entries
+        .where((entry) => catalog.isPackActive(entry.key))
+        .map(
+          (entry) => parseImportedCompendiumContent(
+            packId: entry.key,
+            packTitle:
+                catalog.packStateById(entry.key)?.title ?? 'Imported XML pack',
+            rawXml: entry.value,
+          ),
+        )
+        .toList(growable: false);
+    return mergeImportedCompendiumContents(
+      catalog,
+      importedContents,
+    ).applyPackStateEffects();
   }
 }

@@ -37,7 +37,7 @@ summary.
   state.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- The Drift schema is now at `v13` and includes normalized character-side
+- The Drift schema is now at `v14` and includes normalized character-side
   tables for `ability scores`, `ability score provenance`, `hit points`,
   `finishing details`, `narrative selections`, `equipment loadout`,
   `skills`, `saving throws`, `inventory`, `proficiencies`, and `currency`.
@@ -99,6 +99,9 @@ summary.
 - Drift `v13` now also adds explicit optional-pack ownership to normalized
   narrative option groups, so effective catalog filtering survives the local
   persistence roundtrip.
+- Drift `v14` now also adds a dedicated imported-compendium table so
+  registered XML payloads can be rebuilt into effective catalog content on
+  future loads.
 - The characters feature now uses explicit application services for
   `create character` and `character sheet` loading, with shared summary
   mapping extracted from the repository implementation.
@@ -246,6 +249,10 @@ summary.
 - Pasted XML can now also be validated and registered locally as an imported
   optional pack, and that imported-pack metadata persists through the same
   Drift-backed pack-management path.
+- Active imported XML packs now also contribute supported imported
+  `backgrounds`, `races`, `classes`, `spells`, `feats`, and `monsters` to the
+  effective catalog, with source-policy notes showing those imported sources
+  section by section.
 - Widget coverage exists for the offline continuation path into the main menu.
 - Widget coverage now also verifies navigation into the compendium screen.
 - Widget coverage now also verifies the visible compendium management/import
@@ -317,8 +324,9 @@ summary.
   option catalogs.
 - Extend the new compendium screen toward future pack-management and import
   workflows without bypassing the existing repository/domain contract.
-- Extend the current XML import flow from pack registration into real content
-  ingestion and source-policy integration.
+- Extend the current XML import flow beyond the currently supported imported
+  catalog sections and into deeper compendium areas such as narrative option
+  catalogs.
 - Decide how far persisted pack state should affect loaded catalog content
   beyond the current narrative-supplement filtering.
 - Decide whether any additional reshaping is still needed in

@@ -480,6 +480,17 @@ class CompendiumPackStates extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class ImportedCompendiumPacks extends Table {
+  TextColumn get id => text()();
+
+  TextColumn get rawXml => text().named('raw_xml')();
+
+  DateTimeColumn get importedAt => dateTime().named('imported_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 class BackgroundDefinitions extends Table {
   TextColumn get id => text()();
 
@@ -595,6 +606,7 @@ class TrinketDefinitions extends Table {
     NarrativeOptionGroups,
     NarrativeOptions,
     CompendiumPackStates,
+    ImportedCompendiumPacks,
     BackgroundDefinitions,
     SpellDefinitions,
     TrinketDefinitions,
@@ -616,7 +628,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.executor(super.executor);
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -764,6 +776,9 @@ class AppDatabase extends _$AppDatabase {
         await customStatement(
           'ALTER TABLE narrative_option_groups ADD COLUMN pack_id TEXT NULL',
         );
+      }
+      if (from < 14) {
+        await migrator.createTable(importedCompendiumPacks);
       }
 
       await _createIndexes();

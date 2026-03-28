@@ -10773,6 +10773,274 @@ class CompendiumPackStatesCompanion
   }
 }
 
+class $ImportedCompendiumPacksTable extends ImportedCompendiumPacks
+    with TableInfo<$ImportedCompendiumPacksTable, ImportedCompendiumPack> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ImportedCompendiumPacksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rawXmlMeta = const VerificationMeta('rawXml');
+  @override
+  late final GeneratedColumn<String> rawXml = GeneratedColumn<String>(
+    'raw_xml',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _importedAtMeta = const VerificationMeta(
+    'importedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> importedAt = GeneratedColumn<DateTime>(
+    'imported_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, rawXml, importedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'imported_compendium_packs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ImportedCompendiumPack> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('raw_xml')) {
+      context.handle(
+        _rawXmlMeta,
+        rawXml.isAcceptableOrUnknown(data['raw_xml']!, _rawXmlMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rawXmlMeta);
+    }
+    if (data.containsKey('imported_at')) {
+      context.handle(
+        _importedAtMeta,
+        importedAt.isAcceptableOrUnknown(data['imported_at']!, _importedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_importedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ImportedCompendiumPack map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ImportedCompendiumPack(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      rawXml: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}raw_xml'],
+      )!,
+      importedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}imported_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ImportedCompendiumPacksTable createAlias(String alias) {
+    return $ImportedCompendiumPacksTable(attachedDatabase, alias);
+  }
+}
+
+class ImportedCompendiumPack extends DataClass
+    implements Insertable<ImportedCompendiumPack> {
+  final String id;
+  final String rawXml;
+  final DateTime importedAt;
+  const ImportedCompendiumPack({
+    required this.id,
+    required this.rawXml,
+    required this.importedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['raw_xml'] = Variable<String>(rawXml);
+    map['imported_at'] = Variable<DateTime>(importedAt);
+    return map;
+  }
+
+  ImportedCompendiumPacksCompanion toCompanion(bool nullToAbsent) {
+    return ImportedCompendiumPacksCompanion(
+      id: Value(id),
+      rawXml: Value(rawXml),
+      importedAt: Value(importedAt),
+    );
+  }
+
+  factory ImportedCompendiumPack.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ImportedCompendiumPack(
+      id: serializer.fromJson<String>(json['id']),
+      rawXml: serializer.fromJson<String>(json['rawXml']),
+      importedAt: serializer.fromJson<DateTime>(json['importedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'rawXml': serializer.toJson<String>(rawXml),
+      'importedAt': serializer.toJson<DateTime>(importedAt),
+    };
+  }
+
+  ImportedCompendiumPack copyWith({
+    String? id,
+    String? rawXml,
+    DateTime? importedAt,
+  }) => ImportedCompendiumPack(
+    id: id ?? this.id,
+    rawXml: rawXml ?? this.rawXml,
+    importedAt: importedAt ?? this.importedAt,
+  );
+  ImportedCompendiumPack copyWithCompanion(
+    ImportedCompendiumPacksCompanion data,
+  ) {
+    return ImportedCompendiumPack(
+      id: data.id.present ? data.id.value : this.id,
+      rawXml: data.rawXml.present ? data.rawXml.value : this.rawXml,
+      importedAt: data.importedAt.present
+          ? data.importedAt.value
+          : this.importedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ImportedCompendiumPack(')
+          ..write('id: $id, ')
+          ..write('rawXml: $rawXml, ')
+          ..write('importedAt: $importedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, rawXml, importedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ImportedCompendiumPack &&
+          other.id == this.id &&
+          other.rawXml == this.rawXml &&
+          other.importedAt == this.importedAt);
+}
+
+class ImportedCompendiumPacksCompanion
+    extends UpdateCompanion<ImportedCompendiumPack> {
+  final Value<String> id;
+  final Value<String> rawXml;
+  final Value<DateTime> importedAt;
+  final Value<int> rowid;
+  const ImportedCompendiumPacksCompanion({
+    this.id = const Value.absent(),
+    this.rawXml = const Value.absent(),
+    this.importedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ImportedCompendiumPacksCompanion.insert({
+    required String id,
+    required String rawXml,
+    required DateTime importedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       rawXml = Value(rawXml),
+       importedAt = Value(importedAt);
+  static Insertable<ImportedCompendiumPack> custom({
+    Expression<String>? id,
+    Expression<String>? rawXml,
+    Expression<DateTime>? importedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (rawXml != null) 'raw_xml': rawXml,
+      if (importedAt != null) 'imported_at': importedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ImportedCompendiumPacksCompanion copyWith({
+    Value<String>? id,
+    Value<String>? rawXml,
+    Value<DateTime>? importedAt,
+    Value<int>? rowid,
+  }) {
+    return ImportedCompendiumPacksCompanion(
+      id: id ?? this.id,
+      rawXml: rawXml ?? this.rawXml,
+      importedAt: importedAt ?? this.importedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (rawXml.present) {
+      map['raw_xml'] = Variable<String>(rawXml.value);
+    }
+    if (importedAt.present) {
+      map['imported_at'] = Variable<DateTime>(importedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ImportedCompendiumPacksCompanion(')
+          ..write('id: $id, ')
+          ..write('rawXml: $rawXml, ')
+          ..write('importedAt: $importedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $BackgroundDefinitionsTable extends BackgroundDefinitions
     with TableInfo<$BackgroundDefinitionsTable, BackgroundDefinition> {
   @override
@@ -12318,6 +12586,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $CompendiumPackStatesTable compendiumPackStates =
       $CompendiumPackStatesTable(this);
+  late final $ImportedCompendiumPacksTable importedCompendiumPacks =
+      $ImportedCompendiumPacksTable(this);
   late final $BackgroundDefinitionsTable backgroundDefinitions =
       $BackgroundDefinitionsTable(this);
   late final $SpellDefinitionsTable spellDefinitions = $SpellDefinitionsTable(
@@ -12349,6 +12619,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     narrativeOptionGroups,
     narrativeOptions,
     compendiumPackStates,
+    importedCompendiumPacks,
     backgroundDefinitions,
     spellDefinitions,
   ];
@@ -21374,6 +21645,189 @@ typedef $$CompendiumPackStatesTableProcessedTableManager =
       CompendiumPackState,
       PrefetchHooks Function()
     >;
+typedef $$ImportedCompendiumPacksTableCreateCompanionBuilder =
+    ImportedCompendiumPacksCompanion Function({
+      required String id,
+      required String rawXml,
+      required DateTime importedAt,
+      Value<int> rowid,
+    });
+typedef $$ImportedCompendiumPacksTableUpdateCompanionBuilder =
+    ImportedCompendiumPacksCompanion Function({
+      Value<String> id,
+      Value<String> rawXml,
+      Value<DateTime> importedAt,
+      Value<int> rowid,
+    });
+
+class $$ImportedCompendiumPacksTableFilterComposer
+    extends Composer<_$AppDatabase, $ImportedCompendiumPacksTable> {
+  $$ImportedCompendiumPacksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rawXml => $composableBuilder(
+    column: $table.rawXml,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get importedAt => $composableBuilder(
+    column: $table.importedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ImportedCompendiumPacksTableOrderingComposer
+    extends Composer<_$AppDatabase, $ImportedCompendiumPacksTable> {
+  $$ImportedCompendiumPacksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rawXml => $composableBuilder(
+    column: $table.rawXml,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get importedAt => $composableBuilder(
+    column: $table.importedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ImportedCompendiumPacksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ImportedCompendiumPacksTable> {
+  $$ImportedCompendiumPacksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get rawXml =>
+      $composableBuilder(column: $table.rawXml, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get importedAt => $composableBuilder(
+    column: $table.importedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$ImportedCompendiumPacksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ImportedCompendiumPacksTable,
+          ImportedCompendiumPack,
+          $$ImportedCompendiumPacksTableFilterComposer,
+          $$ImportedCompendiumPacksTableOrderingComposer,
+          $$ImportedCompendiumPacksTableAnnotationComposer,
+          $$ImportedCompendiumPacksTableCreateCompanionBuilder,
+          $$ImportedCompendiumPacksTableUpdateCompanionBuilder,
+          (
+            ImportedCompendiumPack,
+            BaseReferences<
+              _$AppDatabase,
+              $ImportedCompendiumPacksTable,
+              ImportedCompendiumPack
+            >,
+          ),
+          ImportedCompendiumPack,
+          PrefetchHooks Function()
+        > {
+  $$ImportedCompendiumPacksTableTableManager(
+    _$AppDatabase db,
+    $ImportedCompendiumPacksTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ImportedCompendiumPacksTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$ImportedCompendiumPacksTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ImportedCompendiumPacksTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> rawXml = const Value.absent(),
+                Value<DateTime> importedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ImportedCompendiumPacksCompanion(
+                id: id,
+                rawXml: rawXml,
+                importedAt: importedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String rawXml,
+                required DateTime importedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ImportedCompendiumPacksCompanion.insert(
+                id: id,
+                rawXml: rawXml,
+                importedAt: importedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ImportedCompendiumPacksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ImportedCompendiumPacksTable,
+      ImportedCompendiumPack,
+      $$ImportedCompendiumPacksTableFilterComposer,
+      $$ImportedCompendiumPacksTableOrderingComposer,
+      $$ImportedCompendiumPacksTableAnnotationComposer,
+      $$ImportedCompendiumPacksTableCreateCompanionBuilder,
+      $$ImportedCompendiumPacksTableUpdateCompanionBuilder,
+      (
+        ImportedCompendiumPack,
+        BaseReferences<
+          _$AppDatabase,
+          $ImportedCompendiumPacksTable,
+          ImportedCompendiumPack
+        >,
+      ),
+      ImportedCompendiumPack,
+      PrefetchHooks Function()
+    >;
 typedef $$BackgroundDefinitionsTableCreateCompanionBuilder =
     BackgroundDefinitionsCompanion Function({
       required String id,
@@ -22145,6 +22599,11 @@ class $AppDatabaseManager {
       $$NarrativeOptionsTableTableManager(_db, _db.narrativeOptions);
   $$CompendiumPackStatesTableTableManager get compendiumPackStates =>
       $$CompendiumPackStatesTableTableManager(_db, _db.compendiumPackStates);
+  $$ImportedCompendiumPacksTableTableManager get importedCompendiumPacks =>
+      $$ImportedCompendiumPacksTableTableManager(
+        _db,
+        _db.importedCompendiumPacks,
+      );
   $$BackgroundDefinitionsTableTableManager get backgroundDefinitions =>
       $$BackgroundDefinitionsTableTableManager(_db, _db.backgroundDefinitions);
   $$SpellDefinitionsTableTableManager get spellDefinitions =>

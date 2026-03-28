@@ -177,71 +177,104 @@ void main() {
     );
   });
 
-  test('imports XML pack metadata and preserves it across reload', () async {
-    final database = AppDatabase.executor(NativeDatabase.memory());
-    addTearDown(database.close);
+  test(
+    'imports XML pack content, exposes it in the catalog, and removes it when inactive',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
 
-    final bundle = _FakeAssetBundle({
-      'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_backgrounds_5.5e.xml':
-          _backgroundsFixture,
-      'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_races_5.5e.xml':
-          _racesFixture,
-      'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_classes_5.5e.xml':
-          _classesFixture,
-      'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_spells_5.5e.xml':
-          _spellsFixture,
-      'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_feats_5.5e.xml':
-          _featsFixture,
-      'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_bestiary_5.5e.xml':
-          _monstersFixture,
-      'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/01_Core/01_Players_Handbook/backgrounds-phb.xml':
-          _phbNarrativeFixture,
-      'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Sword_Coast_Adventurers_Guide/backgrounds-scag.xml':
-          _scagNarrativeFixture,
-      'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Planescape_Adventures_in_the_Multiverse/backgrounds-pam.xml':
-          _pamNarrativeFixture,
-      'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Guildmasters_Guide_to_Ravnica/backgrounds-ggr.xml':
-          _ggrNarrativeFixture,
-      'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml':
-          _erlwNarrativeFixture,
-      'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{}),
-    });
-    final repository = AssetCompendiumRepository(
-      database: database,
-      bundle: bundle,
-    );
+      final bundle = _FakeAssetBundle({
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_backgrounds_5.5e.xml':
+            _backgroundsFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_races_5.5e.xml':
+            _racesFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_classes_5.5e.xml':
+            _classesFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_spells_5.5e.xml':
+            _spellsFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_feats_5.5e.xml':
+            _featsFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_bestiary_5.5e.xml':
+            _monstersFixture,
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/01_Core/01_Players_Handbook/backgrounds-phb.xml':
+            _phbNarrativeFixture,
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Sword_Coast_Adventurers_Guide/backgrounds-scag.xml':
+            _scagNarrativeFixture,
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Planescape_Adventures_in_the_Multiverse/backgrounds-pam.xml':
+            _pamNarrativeFixture,
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Guildmasters_Guide_to_Ravnica/backgrounds-ggr.xml':
+            _ggrNarrativeFixture,
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml':
+            _erlwNarrativeFixture,
+        'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{}),
+      });
+      final repository = AssetCompendiumRepository(
+        database: database,
+        bundle: bundle,
+      );
 
-    await repository.loadCatalog();
-    final importedCatalog = await repository.importXmlPack(_importFixture);
+      final initialCatalog = await repository.loadCatalog();
+      expect(
+        initialCatalog.backgrounds.map((background) => background.name),
+        isNot(contains('Imported Acolyte Expansion')),
+      );
 
-    expect(
-      importedCatalog.packStates.map((packState) => packState.id),
-      contains('imported-imported-acolyte-expansion'),
-    );
-    expect(
-      importedCatalog
-          .packStateById('imported-imported-acolyte-expansion')
-          ?.kind,
-      'imported_xml',
-    );
+      final importedCatalog = await repository.importXmlPack(_importFixture);
 
-    final reloadedRepository = AssetCompendiumRepository(
-      database: database,
-      bundle: bundle,
-    );
-    final reloadedCatalog = await reloadedRepository.loadCatalog();
+      expect(
+        importedCatalog.packStates.map((packState) => packState.id),
+        contains('imported-imported-acolyte-expansion'),
+      );
+      expect(
+        importedCatalog
+            .packStateById('imported-imported-acolyte-expansion')
+            ?.kind,
+        'imported_xml',
+      );
+      expect(
+        importedCatalog.backgrounds.map((background) => background.name),
+        contains('Imported Acolyte Expansion'),
+      );
+      expect(
+        importedCatalog.sourcePolicyForSection('backgrounds')?.notes,
+        contains('Imported XML packs active: Imported Acolyte Expansion (1).'),
+      );
 
-    expect(
-      reloadedCatalog.packStates.map((packState) => packState.id),
-      contains('imported-imported-acolyte-expansion'),
-    );
-    expect(
-      reloadedCatalog
-          .packStateById('imported-imported-acolyte-expansion')
-          ?.isActive,
-      isTrue,
-    );
-  });
+      final reloadedRepository = AssetCompendiumRepository(
+        database: database,
+        bundle: bundle,
+      );
+      final reloadedCatalog = await reloadedRepository.loadCatalog();
+
+      expect(
+        reloadedCatalog.packStates.map((packState) => packState.id),
+        contains('imported-imported-acolyte-expansion'),
+      );
+      expect(
+        reloadedCatalog
+            .packStateById('imported-imported-acolyte-expansion')
+            ?.isActive,
+        isTrue,
+      );
+      expect(
+        reloadedCatalog.backgrounds.map((background) => background.name),
+        contains('Imported Acolyte Expansion'),
+      );
+
+      final inactiveCatalog = await reloadedRepository.setPackActive(
+        'imported-imported-acolyte-expansion',
+        false,
+      );
+      expect(
+        inactiveCatalog.backgrounds.map((background) => background.name),
+        isNot(contains('Imported Acolyte Expansion')),
+      );
+      expect(
+        inactiveCatalog.sourcePolicyForSection('backgrounds')?.notes,
+        isNot(contains('Imported XML packs active:')),
+      );
+    },
+  );
 
   test(
     'falls back to bundled json catalog when core XML assets fail',

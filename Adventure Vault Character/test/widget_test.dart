@@ -109,6 +109,32 @@ void main() {
     expect(find.text('Activo'), findsNWidgets(2));
     expect(find.text('Imported Acolyte Expansion'), findsOneWidget);
 
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.pumpAndSettle();
+
+    expect(find.text('2 activos'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.textContaining(
+        'Imported XML packs active: Imported Acolyte Expansion (1).',
+      ),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(
+      find.textContaining(
+        'Imported XML packs active: Imported Acolyte Expansion (1).',
+      ),
+      findsOneWidget,
+    );
+
+    await tester.scrollUntilVisible(
+      find.widgetWithText(OutlinedButton, 'Administrar packs'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Administrar packs'));
+    await tester.pumpAndSettle();
+
     await tester.tap(find.byType(Switch).at(1));
     await tester.pumpAndSettle();
     await tester.tap(find.byType(Switch).at(2));
@@ -120,6 +146,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('0 activos'), findsOneWidget);
+    expect(find.textContaining('Imported XML packs active:'), findsNothing);
 
     await tester.scrollUntilVisible(
       find.text('Cobertura actual'),

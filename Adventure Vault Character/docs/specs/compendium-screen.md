@@ -91,8 +91,10 @@ placeholders for future pack/import workflows.
 - The import screen accepts pasted XML, validates a minimal compatible
   structure, and registers the XML as a local optional pack.
 - Successfully registered XML appears in `Administrar packs`.
-- The current import slice does not yet ingest imported content into the live
-  compendium catalog.
+- Active imported packs now contribute supported imported entries to the live
+  compendium catalog and annotate affected source-policy sections.
+- The current import slice still does not ingest imported narrative option
+  catalogs or more advanced structured rules data.
 - The screen shows current counts for major compendium sections such as races,
   classes, backgrounds, spells, feats, monsters, and narrative groups.
 - The screen lists each published source-policy section with its source type,
