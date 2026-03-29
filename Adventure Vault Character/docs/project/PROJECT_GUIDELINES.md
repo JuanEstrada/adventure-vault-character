@@ -45,11 +45,11 @@ must follow.
 
 When a tradeoff is required, evaluate options in this order:
 
-1. Exactitud de reglas
-2. Alineación con decisiones y lineamientos del proyecto
-3. Escalabilidad futura
-4. Simplicidad y mantenibilidad de implementación
-5. Optimización avanzada
+1. Rules accuracy
+2. Alignment with accepted project decisions and guidelines
+3. Future scalability
+4. Implementation simplicity and maintainability
+5. Advanced optimization
 
 ## How To Use This Document
 

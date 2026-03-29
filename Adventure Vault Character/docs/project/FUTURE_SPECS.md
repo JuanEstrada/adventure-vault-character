@@ -69,32 +69,33 @@ possible without requiring cloud sync.
 
 ## FS-003: Compendium Content Selector
 
+Status: Implemented baseline (promoted from future-only)
+
 ### Summary
 
-Add a future compendium-management screen that lets the player review bundled
-and imported compendium packs and control which optional packs are active.
+Continue evolving the implemented compendium-management screens that already let
+the player review bundled/imported packs and control optional pack activation.
 
 ### Goal
 
-Make the active rules/content set explicit once the app supports a bundled
-base compendium plus future imported XML compendium packs.
+Deepen the current pack management behavior so the active rules/content set
+remains explicit and predictable as more imported content is supported.
 
 ### Expected Behavior
 
-- The player can open a `Compendio` management screen from the app.
-- The screen shows the bundled base compendium and any imported compendium
-  packs.
-- The bundled base compendium remains always active.
-- Optional imported packs can be enabled or disabled from the selector.
-- The app warns the player before disabling a pack that may affect existing
-  characters or creation options.
-- The create-character flow and other compendium-backed screens read from the
-  currently active compendium set.
+- Compendium summary and management screens remain reachable from main menu.
+- The bundled base compendium stays always active.
+- Optional imported packs continue to be enabled/disabled locally with
+  persistence.
+- Filtering extends beyond the current narrative-focused coverage into broader
+  compendium areas.
+- The app adds compatibility warnings before disabling packs that may affect
+  existing characters.
+- Create/edit/sheet/compendium paths consistently read from the same effective
+  active compendium set.
 
 ### Notes
 
-- This should be treated as a future content-management feature, not MVP.
-- The feature depends on the `Compendium Import System` and on support for
-  multiple compendium packs in local persistence.
-- A later iteration should define precedence rules, conflict handling,
-  compatibility warnings, and pack metadata shown in the UI.
+- This is no longer future-only; the baseline exists and should be expanded.
+- Next iterations should define precedence rules, conflict handling, and richer
+  compatibility warnings across character dependencies.

@@ -1,13 +1,13 @@
 # User Inputs And Automatic Calculations
 
-Resumen rapido de que datos calcula la app por si sola y que datos debe
-ingresar, elegir o confirmar el usuario.
+Quick reference for what the app calculates automatically versus what the user
+must enter, choose, or confirm.
 
-## Fecha de verificacion
+## Verification Date
 
-- 2026-03-27, actualizada tras la normalizacion `v10`
+- 2026-03-29, aligned with post-normalization `v15` state
 
-## Fuentes de verdad
+## Sources of Truth
 
 - `docs/project/SESSION_RESUME.md`
 - `docs/project/PROJECT_SNAPSHOT.md`
@@ -16,163 +16,153 @@ ingresar, elegir o confirmar el usuario.
 - `docs/specs/first-character-sheet-contents.md`
 - `docs/project/ROADMAP.md`
 
-## Como leer este documento
+## How To Read This Document
 
-- `Actual`: comportamiento ya respaldado por el estado actual del repo
-- `Futuro esperado`: direccion documentada en roadmap o specs futuras
-- `No automatizado`: la app todavia no lo resuelve automaticamente
+- `Current`: behavior already supported by the current repository state
+- `Expected future`: documented direction in roadmap or future specs
+- `Not automated`: behavior the app does not yet automate
 
-## Que calcula automaticamente la app
+## What The App Calculates Automatically
 
-### Actual
+### Current
 
-- Modificador de cada ability score a partir del valor final de
-  `Strength`, `Dexterity`, `Constitution`, `Intelligence`, `Wisdom` y
-  `Charisma`
-- `Proficiency bonus` a partir del nivel
-- Progreso hacia el siguiente nivel a partir de nivel y experiencia
-- Nivel cuando el usuario cambia la experiencia en el flujo de creacion
-- Experiencia minima requerida cuando el usuario cambia manualmente el nivel
-- Hit points iniciales a partir de clase, nivel y Constitution
-- Hit points maximos al editar si cambian clase, nivel o Constitution
-- Recomendacion de `Standard Array by Class` cuando la clase cambia y el
-  metodo activo es `generated set assignment`
-- Carga y persistencia local de bases oficiales normalizadas para
-  `character advancement` y `standard array by class`
-- Carga y persistencia local de catalogos oficiales normalizados para
-  `alignment`, `personality traits`, `ideals`, `bonds`, `flaws` y una base
-  inicial de `faction`, aunque el flujo visible todavia no resuelve esos
-  campos con modos `rolled / manual`
-- Validacion de secciones obligatorias antes de guardar:
+- Ability score modifier from final `Strength`, `Dexterity`, `Constitution`,
+  `Intelligence`, `Wisdom`, and `Charisma`
+- `Proficiency bonus` from level
+- Progress to next level from level and experience
+- Level when the user changes experience during character creation
+- Minimum required experience when the user manually changes level
+- Initial hit points from class, level, and Constitution
+- Maximum hit points recalculation during edits when class, level, or
+  Constitution changes
+- `Standard Array by Class` recommendation when class changes and the active
+  method is `generated set assignment`
+- Loading and local persistence of normalized official rule bases for
+  `character advancement` and `standard array by class`
+- Loading and local persistence of normalized official narrative catalogs for
+  `alignment`, `personality traits`, `ideals`, `bonds`, `flaws`, and an initial
+  `faction` base, used by visible `empty / rolled / manual` modes
+- Required-section validation before save:
   `Race + name`, `Background`, `Ability scores`,
   `Class / level / experience`
-- Resumenes derivados visibles en la hoja, como method label de abilities,
-  progreso de nivel y composicion visible de equipo cuando aplica
-- Progresion deterministica de spell slots para las clases lanzadoras ya
-  soportadas y resumen derivado de slots restantes en la hoja
-- Limites simplificados por clase para la cantidad de hechizos seleccionados
-  en las clases lanzadoras estandar ya soportadas
+- Sheet-visible derived summaries such as ability method label, level progress,
+  and visible equipment composition when applicable
+- Deterministic spell-slot progression for currently supported caster classes,
+  including sheet-visible remaining-slot summaries
+- Simplified class-based limits for selected spell count in currently supported
+  standard caster classes
 
-### Futuro esperado
+### Expected Future
 
-- Resultados de tiradas y utilidades conectadas al contexto del personaje
-- Resumenes mas ricos de inventario, hechizos y recursos del personaje
-- Gestion mas completa de compendium packs activos e inactivos
-- Resolucion por tirada o seleccion manual sobre opciones oficiales para cada
-  campo narrativo de `finishing details`
-- Modelos especiales como `warlock` y separacion completa entre libro de
-  hechizos y prepared spells para `wizard`
+- Dice utilities and roll outcomes connected to character context
+- Richer inventory, spell, and character-resource summaries
+- Broader management of active/inactive compendium packs
+- Richer narrative-field coverage (more sources, contextual rules, and advanced
+  UX) in `finishing details`
+- Special-case models such as `warlock` pact magic and full separation between
+  spellbook and prepared spells for `wizard`
 
-### No automatizado hoy
+### Not Automated Today
 
-- Calculo completo de ataques
-- Modelos especiales de spellcasting, recuperacion por descanso y limites
-  completos fuera del modelo simplificado actual de seleccion de hechizos
-- Armor Class, initiative y combate avanzado como sistema completo
-- Reglas de inventario completo fuera del flujo MVP de equipo inicial
-- Automatizacion total de recursos de clase, rasgos o consumos por descanso
+- Full attack calculation
+- Complete spellcasting special cases, rest recovery behavior, and limits
+  beyond the current simplified spell-selection model
+- Full Armor Class, initiative, and advanced combat as a complete subsystem
+- Complete inventory rules beyond MVP starter-equipment flow
+- Full automation for class resources, traits, or rest-based consumption
 
-## Que debe ingresar o confirmar el usuario
+## What The User Must Enter Or Confirm
 
-### Actual
+### Current
 
-- Nombre del personaje
-- Raza elegida desde el compendio
-- Background elegido desde el compendio
-- Clase elegida desde el compendio
-- Nivel inicial o experiencia inicial
-- Metodo de ability scores
-- Asignacion final de los seis ability scores
-- Equipo inicial seleccionado
-- Cantidad de objetos comprables cuando aplique
-- Confirmacion de costo total frente al dinero disponible al comprar equipo
-- `portrait` opcional como campo libre
-- `appearance` opcional como campo libre
-- `alignment` visible como seleccion cerrada en el flujo actual
-- `narrative details` como campo libre donde hoy pueden quedar resumidos
-  traits, ideals, bonds, flaws u otras notas
-- Seleccion de hechizos y gasto actual de spell slots para clases lanzadoras
-  soportadas
-- Confirmacion final de que la seleccion de hechizos cabe dentro del limite
-  derivado visible para la clase, nivel y ability actual
+- Character name
+- Race selected from compendium
+- Background selected from compendium
+- Class selected from compendium
+- Initial level or initial experience
+- Ability-score method
+- Final assignment of the six ability scores
+- Selected starter equipment
+- Purchasable-item quantities when applicable
+- Total cost confirmation against available funds during purchases
+- Optional `portrait` free text/field
+- Optional `appearance` free text/field
+- Per-field narrative selections in `empty / rolled / manual` for
+  `alignment`, `faction`, `personality traits`, `ideals`, `bonds`, and `flaws`
+- Optional `narrative details` free-form note when the user wants it
+- Spell selection and current spell-slot usage for supported caster classes
+- Final confirmation that selected spells fit the visible derived limit for
+  current class, level, and casting ability
 
-### Futuro esperado
+### Expected Future
 
-- Tiradas manuales o acciones iniciadas por el jugador desde una pantalla de
-  dados
-- Ajustes detallados de inventario
-- Gestion de hechizos y recursos
-- Seleccion de compendium packs opcionales cuando exista el selector de
-  contenido
+- Manual rolls or player-started dice actions from a dedicated dice surface
+- Detailed inventory adjustments
+- Deeper spell and resource management
+- Optional compendium-pack selection in richer content-selector flows
 
-## Que se sincroniza automaticamente cuando cambia un dato
+## What Syncs Automatically When Data Changes
 
-- Si cambia la experiencia, la app recalcula el nivel segun los thresholds
-  definidos
-- Si cambia el nivel, la app resetea la experiencia al minimo requerido para
-  ese nivel
-- Si cambia la clase y el metodo de abilities es `generated set assignment`,
-  cambia la recomendacion visible del array
-- Si cambian clase, nivel o Constitution durante edicion, la app recomputa
-  HP maximo y conserva HP actual cuando es posible
-- En el comportamiento documentado para futuro cercano, la app podra
-  resolver por tirada o seleccion manual los campos narrativos de
-  `finishing details` usando los catalogos oficiales ya normalizados
-- Si cambia clase o nivel en una clase lanzadora soportada, la app recorta
-  hechizos fuera del nivel lanzable actual y ajusta el gasto de slots al
-  nuevo maximo derivado
-- Si cambia la clase, el nivel o la ability de casteo en una clase lanzadora
-  soportada, la app recalcula el limite visible de hechizos seleccionados y
-  recorta el exceso de forma deterministica
-- La hoja de personaje reutiliza valores derivados del dominio en lugar de
-  recalcularlos dentro de widgets
+- If experience changes, the app recalculates level using defined thresholds
+- If level changes, the app resets experience to minimum required for that
+  level
+- If class changes and ability method is `generated set assignment`, the visible
+  array recommendation updates
+- If class, level, or Constitution changes during editing, the app recomputes
+  maximum HP and preserves current HP when possible
+- Narrative `finishing details` fields resolve via roll or manual selection
+  using normalized official catalogs
+- If class or level changes in a supported caster class, the app trims spells
+  above currently castable level and adjusts slot usage to the new derived max
+- If class, level, or casting ability changes in a supported caster class, the
+  app recalculates selected-spell limit and trims overflow deterministically
+- The character sheet reuses domain-derived values instead of recalculating
+  inside widgets
 
-## Reglas de frontera
+## Boundary Rules
 
-- Que un dato se vea en pantalla no significa que lo escriba el usuario
-- Que un dato exista en persistencia no significa que sea canonico o no
-  derivado
-- Los calculos deben vivir en `domain` o `application`, no en widgets
-- La persistencia no debe almacenar derivados evitables si pueden
-  recomputarse desde el estado canonico
+- A visible value on screen does not imply user-entered data
+- A persisted value does not automatically mean canonical or non-derived
+- Calculations must live in `domain` or `application`, not in widgets
+- Persistence should not store avoidable derived values when they can be
+  recomputed from canonical state
 
-## Vista corta por categoria
+## Short View By Category
 
-### Calculado por la app
+### Calculated by the App
 
 - Ability modifiers
 - Proficiency bonus
 - Level progress
-- Sincronizacion `level <-> experience`
-- HP inicial y HP maximo recomputado en edicion
-- Recomendacion de standard array por clase
-- Carga local de catalogos oficiales narrativos y de progresion
-- Validacion de secciones obligatorias
+- `level <-> experience` synchronization
+- Initial HP and edit-time maximum HP recomputation
+- Class-based standard-array recommendation
+- Local loading of official narrative and progression catalogs
+- Required-section validation
 
-### Ingresado o confirmado por el usuario
+### Entered or Confirmed by the User
 
-- Identidad del personaje
-- Race, background y class
-- Experience o level inicial
-- Ability score method
-- Valores finales de abilities
-- Equipo inicial y compras
-- `portrait` y `appearance` como detalles opcionales libres
-- `alignment` actual
-- Notas narrativas libres en `narrative details`
+- Character identity
+- Race, background, and class
+- Initial experience or level
+- Ability-score method
+- Final ability values
+- Starter equipment and purchases
+- Optional `portrait` and `appearance` free-form details
+- Narrative selections and optional narrative notes
 
-## Aclaracion sobre finishing details
+## Finishing Details Clarification
 
-- El repositorio ya tiene bases oficiales normalizadas para
-  `alignment`, `faction`, `personality traits`, `ideals`, `bonds` y `flaws`
-- El flujo visible actual todavia no expone la seleccion completa
-  `empty / rolled / manual` por campo
-- Esa conexion UI + dominio queda como siguiente paso, no como comportamiento
-  ya entregado
+- The repository includes normalized official bases for
+  `alignment`, `faction`, `personality traits`, `ideals`, `bonds`, and `flaws`
+- The visible flow supports full per-field `empty / rolled / manual` selection
+  and persists/reopens that state
+- Remaining work targets advanced UX and special-case behavior, not baseline
+  UI/domain integration
 
-## Limites de este documento
+## Limits Of This Document
 
-- No reemplaza specs de pantalla ni de dominio
-- No define contratos tecnicos de persistencia o API
-- No promete automatizaciones no aprobadas en roadmap o specs
-- Sirve como referencia rapida para sesiones de IA y alineacion del proyecto
+- It does not replace screen or domain specs
+- It does not define persistence/API implementation contracts
+- It does not promise automation not approved by roadmap or specs
+- It is a quick reference for AI sessions and project alignment

@@ -1,45 +1,74 @@
 # Session Close Checklist
 
-Usa esta lista para cerrar una sesion y dejar el repo listo para retomarlo en
-la siguiente.
+Use this checklist to close a session and leave the repository ready for the
+next one.
 
-## 1. Verifica el Trabajo
+## 1. During the Session (If Real State Changes)
 
-- corre los checks necesarios
-- revisa `git diff`
-- confirma que la documentacion no quedo desalineada
+Review whether these need updates:
 
-## 2. Actualiza la Documentacion
+- `docs/project/SESSION_RESUME.md`
+- `docs/project/PROJECT_SNAPSHOT.md`
+- `README.md`
+- `docs/README.md`
+- `docs/project/README.md`
+- any file under `docs/specs/`
+- any file under `docs/architecture/`
+- any file under `docs/adr/`
 
-Actualiza como minimo:
+Update documentation when these change:
+
+- implemented flow
+- current repository state
+- recommended next step
+- newly accepted decisions
+- newly created files or modules
+- pending work that no longer applies
+
+Do not update by inertia:
+
+- do not rewrite documents only for style changes
+- do not duplicate information if a source-of-truth doc already exists
+- do not change specs without a real product decision
+
+## 2. Verify the Work
+
+- run the required checks
+- review `git diff`
+- confirm documentation is not out of sync
+
+## 3. Update Documentation
+
+Update at minimum:
 
 - `docs/project/SESSION_RESUME.md`
 - `docs/project/PROJECT_SNAPSHOT.md`
 
-Actualiza tambien cualquier README, spec, arquitectura o ADR que haya quedado
-obsoleto por los cambios de la sesion.
+Also update any README, spec, architecture doc, or ADR made obsolete by
+session changes.
 
-## 3. Deja Claro el Siguiente Paso
+## 4. Leave the Next Step Clear
 
-En `docs/project/SESSION_RESUME.md` deja escrito:
+In `docs/project/SESSION_RESUME.md`, record:
 
-- que se completo
-- que sigue
-- que archivos son fuente de verdad para continuar
+- what was completed
+- what comes next
+- which files are the source of truth to continue
 
-## 4. Guarda el Trabajo
+## 5. Save the Work
 
 ```bash
 git status --short
-git add <archivos>
-git commit -m "mensaje claro"
-git push origin main
+git add <files>
+git commit -m "clear message"
+# push only if it matches the current branch workflow
+git push <remote> <branch>
 ```
 
-## 5. Cierre Esperado
+## 6. Expected Closure
 
-Antes de terminar:
+Before ending the session:
 
-- el repo debe quedar limpio o con cambios intencionales explicitos
-- la documentacion debe coincidir con el estado real del codigo
-- el siguiente bloque de trabajo debe quedar claro
+- the repo should be clean or have explicit intentional changes
+- documentation should match the real code state
+- the next work block should be clear

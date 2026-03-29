@@ -233,6 +233,6 @@ Every new screen spec added under `docs/specs/` should eventually document:
 
 ## Current Priority
 
-Phase 0 - Application Lifecycle Baseline
+Phase 5 - Inventory, Spells, and Character Resources
 then
-Phase 1 - First Playable Shell
+Phase 6 - Import and Structured Content

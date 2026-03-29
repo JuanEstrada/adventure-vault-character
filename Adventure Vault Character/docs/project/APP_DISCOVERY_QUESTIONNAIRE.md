@@ -1,149 +1,146 @@
 # App Discovery Snapshot
 
-Resumen operativo del proyecto para dar contexto rapido a herramientas de IA y
-retomar sesiones sin volver a inferir el estado de la app desde cero.
+Operational project summary for AI tools and fast session restarts without
+reconstructing app state from scratch.
 
-## Fecha de verificacion
+## Verification Date
 
-- 2026-03-27, actualizada tras la normalizacion `v10`
+- 2026-03-29, aligned with post-normalization `v15` state
 
-## Fuentes de verdad
+## Sources of Truth
 
 - `docs/project/SESSION_RESUME.md`
 - `docs/project/PROJECT_SNAPSHOT.md`
 - `docs/project/PROJECT_GUIDELINES.md`
 
-## Como usar este archivo
+## How To Use This File
 
-- Usalo como briefing corto del estado actual del producto.
-- Usalo para resolver rapidamente alcance, stack, arquitectura y restricciones.
-- No lo uses como reemplazo de ADRs, specs o documentacion de arquitectura.
+- Use it as a short briefing of current product state.
+- Use it for quick scope, stack, architecture, and constraints alignment.
+- Do not use it as a replacement for ADRs, specs, or architecture docs.
 
-## Estado actual de la app
+## Current App State
 
-- Estado: En desarrollo
-- Madurez actual: MVP funcional parcial sobre una base ya implementada
-- Que ya funciona:
-  - Flujo offline `bootstrap -> access -> main menu`
-  - Creacion guiada de personaje
-  - Guardado local de personajes con Drift sobre SQLite
-  - Lista de personajes guardados
-  - Apertura de hoja de personaje
-  - Reapertura y edicion de personajes existentes
-  - Carga local de compendio SRD y soporte base para XML como fuente
+- State: In development
+- Current maturity: Partial functional MVP on top of an implemented baseline
+- Already working:
+  - Offline flow `bootstrap -> access -> main menu`
+  - Guided character creation
+  - Local character persistence with Drift over SQLite
+  - Saved character list
+  - Character sheet opening
+  - Reopen and edit existing characters
+  - Local SRD compendium loading with baseline XML-source support
 
 ## Stack
 
 - Frontend: Flutter + Dart
-- Backend: No hay backend productivo activo en la app actual
-- Base de datos: Drift sobre SQLite local
-- Modelo de producto: offline-first, con el dispositivo local como fuente de
-  verdad
+- Backend: No production backend in the current app
+- Database: Drift over local SQLite
+- Product model: offline-first, with the local device as source of truth
 
-## Que ya esta hecho
+## What Is Already Done
 
-- Shell de aplicacion con organizacion feature-first
-- Separacion de capas entre `presentation`, `application`, `domain` y `data`
-- Persistencia normalizada de personajes y compendio local en Drift
-- Flujo MVP `crear -> guardar -> tarjeta -> abrir hoja -> editar -> guardar`
-- Reglas compartidas para modificadores, proficiency bonus, progreso e hit
-  points iniciales
-- Reglas base de compendio normalizadas en Drift para
-  `character advancement` y `standard array by class`
-- Catalogos narrativos oficiales normalizados en Drift para
-  `alignment`, `personality traits`, `ideals`, `bonds`, `flaws` y una base
-  inicial de `faction`
-- Cobertura base de migraciones y de flujos principales
+- Feature-first application shell
+- Layer separation between `presentation`, `application`, `domain`, and `data`
+- Normalized local persistence for characters and compendium in Drift
+- MVP flow `create -> save -> card -> open sheet -> edit -> save`
+- Shared rules for modifiers, proficiency bonus, progression, and initial hit
+  points
+- Normalized compendium rule bases in Drift for
+  `character advancement` and `standard array by class`
+- Normalized official narrative catalogs in Drift for
+  `alignment`, `personality traits`, `ideals`, `bonds`, `flaws`, and an initial
+  `faction` base
+- Baseline migration and core-flow coverage
+- Compendium state with dedicated screen, pack management, and baseline XML
+  import integrated
 
-## Que quiere tener la app final
+## What The Final App Should Include
 
-- Personajes: Si
-- Tiradas: Probable a futuro, pero no definidas como capacidad cerrada del MVP
-- Hechizos: Si
-- Inventario: Si
-- DM online: No en esta app
-- Otras capacidades esperadas:
-  - Compendio local
-  - Importacion de `compendium packs` por XML
-  - Referencia de reglas SRD offline
-  - Hoja de personaje con calculos deterministas
+- Characters: Yes
+- Dice rolling: Likely in the future, not finalized as MVP scope
+- Spells: Yes
+- Inventory: Yes
+- Online DM features: No in this app
+- Other expected capabilities:
+  - Local compendium
+  - XML `compendium pack` import
+  - Offline SRD rules reference
+  - Character sheet with deterministic calculations
 
-## Nivel de fidelidad a D&D
+## D&D Fidelity Level
 
-- Seleccion: Exacto SRD
-- Nota: el proyecto prioriza exactitud de reglas, comportamiento
-  determinista y trazabilidad de calculos sobre simplificaciones de UI o de
-  implementacion.
+- Selection: SRD-accurate behavior
+- Note: The project prioritizes rule accuracy, deterministic behavior, and
+  traceable calculations over UI simplifications or implementation shortcuts.
 
-## Diseno
+## Design
 
-- Seleccion: Minimalista funcional
-- Estado del diseno:
-  - Hay decisiones funcionales ya tomadas, como hoja por paneles y tarjetas
-    de personaje tipo biblioteca
-  - No existe todavia un sistema visual final completamente cerrado
+- Selection: Functional minimalism
+- Current design status:
+  - Functional decisions already exist, such as panel-based sheet layout and
+    library-style character cards
+  - A final complete visual system is not yet fully closed
 
-## Arquitectura
+## Architecture
 
-- Seleccion: Ya definida
-- Arquitectura vigente:
+- Selection: Already defined
+- Current architecture:
   - Offline-first
   - Flutter + Dart
-  - Drift sobre SQLite
-  - Estructura feature-first
-  - Separacion estricta entre `presentation`, `application`, `domain` y `data`
-  - Reglas del personaje fuera de widgets y fuera de la persistencia
+  - Drift over SQLite
+  - Feature-first structure
+  - Strict separation between `presentation`, `application`, `domain`, and
+    `data`
+  - Character rules outside widgets and outside persistence implementations
 
-## Margen para cambios en el codigo
+## Margin For Code Changes
 
-- Seleccion: Mejorar
-- Que significa en este proyecto:
-  - Se puede refactorizar para mejorar claridad, extensibilidad y separacion de
-    responsabilidades
-  - No se debe rehacer la base sin necesidad ni romper decisiones ya aceptadas
-- Restricciones:
-  - Respetar la arquitectura actual y los ADRs aceptados
-  - Mantener separacion de capas
-  - No mover logica de reglas a widgets
-  - No acoplar reglas de dominio a Drift ni a Flutter UI
+- Selection: Improve
+- Meaning in this project:
+  - Refactoring is allowed to improve clarity, extensibility, and separation of
+    responsibilities
+  - Do not rebuild core foundations without need or break accepted decisions
+- Constraints:
+  - Respect current architecture and accepted ADRs
+  - Maintain layer separation
+  - Do not move rules logic into widgets
+  - Do not couple domain rules to Drift or Flutter UI
 
-## Documentacion y tests
+## Documentation And Tests
 
-- Seleccion: Si
-- Expectativa actual:
-  - Mantener actualizados `SESSION_RESUME.md` y `PROJECT_SNAPSHOT.md`
-  - Actualizar specs, arquitectura o ADRs cuando cambie el comportamiento o la
-    estructura del sistema
-  - Agregar o actualizar tests cuando cambien reglas, persistencia o flujos
-    significativos
+- Selection: Yes
+- Current expectation:
+  - Keep `SESSION_RESUME.md` and `PROJECT_SNAPSHOT.md` up to date
+  - Update specs, architecture docs, or ADRs when behavior or structure changes
+  - Add or update tests when rules, persistence, or meaningful flows change
 
-## Donde se usara el prompt
+## Where This Prompt Is Used
 
-- Seleccion: Codex
-- Audiencia principal de este documento: contexto rapido para IA
+- Selection: Codex
+- Primary audience for this document: fast context for AI sessions
 
-## Restricciones clave que no deben romperse
+## Key Constraints That Must Not Break
 
-- La exactitud de reglas tiene prioridad sobre la conveniencia de UI
-- Las funciones centrales del jugador deben funcionar offline
-- El dispositivo local es la fuente de verdad del estado del personaje
-- La app del jugador y la futura app de DM son productos separados
-- La logica de dominio debe seguir siendo determinista y testeable
+- Rule accuracy has priority over UI convenience
+- Core player functions must work offline
+- The local device is the source of truth for character state
+- The player app and future DM app are separate products
+- Domain logic must remain deterministic and testable
 
-## Proximos focos esperados
+## Expected Next Focus Areas
 
-- Extender el flujo de edicion mas alla del MVP guiado actual
-- Profundizar la fidelidad del compendio cargado desde XML
-- Formalizar mas reglas de personaje a traves de contratos de dominio y
-  servicios deterministas
-- Conectar los catalogos narrativos ya normalizados con el flujo real de
-  `finishing details` para soportar modos `empty / rolled / manual`
-- Poblar con mas contenido real las areas de sheet que hoy siguen en estado
-  MVP o parcial
+- Extend editing beyond the current guided MVP fields
+- Increase compendium fidelity from local XML sources
+- Formalize more character rules through deterministic domain contracts and
+  services
+- Continue expanding narrative and spell rules for advanced cases
+- Populate sheet areas that are still MVP-level or partial
 
-## Limites de este documento
+## Limits Of This Document
 
-- No reemplaza `docs/specs/`
-- No reemplaza `docs/adr/`
-- No define contratos detallados de implementacion
-- Sirve como snapshot corto y verificado, no como especificacion completa
+- It does not replace `docs/specs/`
+- It does not replace `docs/adr/`
+- It does not define detailed implementation contracts
+- It is a short verified snapshot, not a full specification
