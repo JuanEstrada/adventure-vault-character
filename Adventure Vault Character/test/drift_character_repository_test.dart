@@ -162,6 +162,7 @@ void main() {
         sheet.spellcasting!.selectedSpells.map((spell) => spell.name),
         <String>['Magic Missile'],
       );
+      expect(sheet.spellcasting!.selectionSummary, '1 / 7');
       expect(sheet.spellcasting!.slotProgression.first.displaySummary, '3 / 4');
       expect(
         sheet.equipment.visibleItems,
@@ -386,12 +387,108 @@ void main() {
         sheet.spellcasting!.selectedSpells.map((spell) => spell.name),
         <String>['Mage Hand'],
       );
+      expect(sheet.spellcasting!.selectionSummary, '1 / 2');
       expect(sheet.featuresNotes.alignment, 'Lawful Good');
       expect(sheet.equipment.money.startingMoneySummary, '20 gp');
       expect(sheet.equipment.visibleItems, <String>[
         'Quarterstaff (equipped)',
         'Torch x2',
       ]);
+    },
+  );
+
+  test(
+    'createCharacter rejects spell selections above the derived class limit',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      await expectLater(
+        () => repository.createCharacter(
+          const CreateCharacterInput(
+            name: 'Meris',
+            raceName: 'Elf',
+            backgroundId: 'acolyte',
+            backgroundName: 'Acolyte',
+            backgroundSummary: 'Temple acolyte',
+            abilityScoreMethod: 'generatedSetAssignment',
+            abilityScoreProvenance:
+                'method=generatedSetAssignment;Strength=8;Dexterity=12;Constitution=13;Intelligence=15;Wisdom=14;Charisma=10',
+            strength: 8,
+            dexterity: 12,
+            constitution: 13,
+            intelligence: 15,
+            wisdom: 14,
+            charisma: 10,
+            className: 'Wizard',
+            level: 1,
+            experience: 0,
+            equipmentLoadoutId: 'wizard-focus',
+            equipmentLoadoutLabel: 'Arcane focus kit',
+            startingMoneySummary: '15 gp, 4 sp',
+            selectedEquipmentItems: <String>[
+              'Quarterstaff',
+              'Component pouch',
+              'Scholar pack',
+            ],
+            currentHitPoints: 8,
+            maximumHitPoints: 8,
+            temporaryHitPoints: 0,
+            spellState: CharacterSpellStateInput(
+              selectionMode: CharacterSpellSelectionMode.prepared,
+              selectedSpells: <CharacterSpellSelectionInput>[
+                CharacterSpellSelectionInput(
+                  spellId: 'light',
+                  spellName: 'Light',
+                  selectionMode: CharacterSpellSelectionMode.prepared,
+                ),
+                CharacterSpellSelectionInput(
+                  spellId: 'mage-hand',
+                  spellName: 'Mage Hand',
+                  selectionMode: CharacterSpellSelectionMode.prepared,
+                ),
+                CharacterSpellSelectionInput(
+                  spellId: 'magic-missile',
+                  spellName: 'Magic Missile',
+                  selectionMode: CharacterSpellSelectionMode.prepared,
+                ),
+                CharacterSpellSelectionInput(
+                  spellId: 'shield',
+                  spellName: 'Shield',
+                  selectionMode: CharacterSpellSelectionMode.prepared,
+                ),
+              ],
+              slotUsages: <CharacterSpellSlotUsageInput>[
+                CharacterSpellSlotUsageInput(spellLevel: 1, slotsExpended: 0),
+              ],
+            ),
+            finishingDetails: CharacterFinishingDetailsInput(
+              appearanceDetails: '',
+              narrativeNotes: '',
+              narrativeSelections: <NarrativeSelection>[
+                NarrativeSelection.empty(NarrativeFieldKey.alignment),
+                NarrativeSelection.empty(NarrativeFieldKey.faction),
+                NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+                NarrativeSelection.empty(NarrativeFieldKey.ideals),
+                NarrativeSelection.empty(NarrativeFieldKey.bonds),
+                NarrativeSelection.empty(NarrativeFieldKey.flaws),
+              ],
+            ),
+          ),
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            'Selected spells exceed the current class limit.',
+          ),
+        ),
+      );
     },
   );
 }
@@ -436,6 +533,19 @@ const _testCatalog = CompendiumCatalog(
   ],
   spells: <CompendiumSpell>[
     CompendiumSpell(
+      id: 'light',
+      name: 'Light',
+      level: 0,
+      school: 'Evocation',
+      castingTime: '1 action',
+      range: 'Touch',
+      components: 'V, M',
+      duration: '1 hour',
+      classes: <String>['Wizard'],
+      description: <String>['An object shines with bright light.'],
+      source: 'SRD',
+    ),
+    CompendiumSpell(
       id: 'mage-hand',
       name: 'Mage Hand',
       level: 0,
@@ -459,6 +569,19 @@ const _testCatalog = CompendiumCatalog(
       duration: 'Instantaneous',
       classes: <String>['Wizard'],
       description: <String>['Three darts of magical force.'],
+      source: 'SRD',
+    ),
+    CompendiumSpell(
+      id: 'shield',
+      name: 'Shield',
+      level: 1,
+      school: 'Abjuration',
+      castingTime: '1 reaction',
+      range: 'Self',
+      components: 'V, S',
+      duration: '1 round',
+      classes: <String>['Wizard'],
+      description: <String>['An invisible barrier of magical force appears.'],
       source: 'SRD',
     ),
   ],

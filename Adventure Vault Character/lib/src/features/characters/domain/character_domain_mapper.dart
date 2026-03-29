@@ -2,6 +2,7 @@ import 'package:adventure_vault_character/src/features/characters/data/local/app
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_record.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_spell_rules.dart';
 
 class CharacterDomainMapper {
@@ -226,20 +227,26 @@ class CharacterDomainMapper {
       for (final usage in record.spellSlotUsages)
         usage.spellLevel: usage.slotsExpended,
     };
+    final abilityScore = _abilityScoreForKey(
+      abilityKey: abilityKey,
+      scores: resolvedAbilityScores,
+    );
 
     return CharacterSpellcastingDomainModel(
       abilityKey: abilityKey,
       abilityLabel: _spellcastingAbilityLabel(abilityKey),
-      abilityScore: _abilityScoreForKey(
-        abilityKey: abilityKey,
-        scores: resolvedAbilityScores,
-      ),
+      abilityScore: abilityScore,
       proficiencyBonus: progression.proficiencyBonus,
       availableSpells: availableSpells,
       selectionMode: _characterSpellRules.selectionModeForClass(
         record.row.className,
       ),
       selectedSpells: selectedSpells,
+      selectionLimit: _characterSpellRules.selectionLimitFor(
+        className: record.row.className,
+        level: record.row.level,
+        abilityModifier: _characterSpellAbilityModifier(abilityScore),
+      ),
       slotProgression: slotProgression
           .map(
             (slot) => CharacterSpellSlotDomainModel(
@@ -317,6 +324,10 @@ class CharacterDomainMapper {
       'CHA' => scores.charismaScore,
       _ => 0,
     };
+  }
+
+  int _characterSpellAbilityModifier(int abilityScore) {
+    return CharacterRules.abilityModifier(abilityScore);
   }
 
   String _spellcastingAbilityLabel(String abilityKey) {

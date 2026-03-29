@@ -37,7 +37,7 @@ summary.
   state.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- The Drift schema is now at `v14` and includes normalized character-side
+- The Drift schema is now at `v15` and includes normalized character-side
   tables for `ability scores`, `ability score provenance`, `hit points`,
   `finishing details`, `narrative selections`, `equipment loadout`,
   `skills`, `saving throws`, `inventory`, `proficiencies`, and `currency`.
@@ -156,6 +156,10 @@ summary.
 - Standard spellcaster classes now also persist selected spells and spell-slot
   usage in the normalized character model, and that state now survives
   create, reopen, edit, and sheet rendering.
+- The supported standard-caster spell flow now also enforces simplified
+  class-specific selection limits, shows `selected / max` in the builder and
+  sheet, and trims overflow selections deterministically when the current
+  class, level, or casting ability changes.
 - Regression tests now cover Drift migrations from legacy schemas into `v4`.
 - Regression tests now also cover loading an editable aggregate from
   normalized persistence and mapping it back into the current
@@ -389,8 +393,9 @@ summary.
    and broader official Wizards XML.
 2. Continue translating the available rules sources into explicit
    deterministic application/domain services.
-3. Extend the new spellcasting foundation beyond the first persisted slots and
-   selected-spells slice into class-specific limits and special cases.
+3. Extend the new spellcasting foundation beyond the new class-specific limit
+   enforcement into special cases such as warlock pact magic and wizard
+   spellbook behavior.
 4. Expand the inventory/equipment model beyond starter loadouts.
 5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 

@@ -56,7 +56,7 @@ Verified on 2026-03-28:
   SQLite database.
 - The previous single-table character persistence has now been extended into a
   normalized Drift schema.
-- The Drift schema is now at `v14` and includes dedicated character-side tables
+- The Drift schema is now at `v15` and includes dedicated character-side tables
   for `ability scores`, `ability score provenance`, `hit points`,
   `finishing details`, `narrative selections`, `equipment loadout`, `skills`,
   `saving throws`, `inventory`, `proficiencies`, and `currency`, plus
@@ -235,6 +235,10 @@ Verified on 2026-03-28:
 - Standard spellcaster classes now also persist selected spells and spell-slot
   usage in Drift, reopen that state through create/edit, and render the stored
   spell choices plus remaining slots on the character sheet.
+- That persisted spell-state flow now also enforces simplified class-specific
+  selection limits for the currently supported standard casters, shows
+  `selected / max` in create/edit and on the sheet, and trims overflow
+  deterministically when class, level, or casting ability changes.
 - Draft save now runs through a non-widget validator that reports missing
   sections using builder-facing names before persistence.
 - A dedicated `CompendiumRepository` boundary now sits between the app and

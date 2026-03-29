@@ -338,6 +338,34 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
         level: _selectedLevel,
       );
 
+  Map<String, int> get _activeAbilityAssignments =>
+      _selectedAbilityMethod == 'generatedSetAssignment'
+      ? _generatedAssignments
+      : _manualAssignments;
+
+  int get _spellSelectionLimit {
+    return _characterSpellRules.selectionLimitFor(
+      className: _selectedClass,
+      level: _selectedLevel,
+      abilityModifier: CharacterRules.abilityModifier(
+        _spellcastingAbilityScore,
+      ),
+    );
+  }
+
+  int get _spellcastingAbilityScore {
+    final assignments = _activeAbilityAssignments;
+    return switch (_selectedClass.trim().toLowerCase()) {
+      'bard' || 'paladin' || 'sorcerer' => assignments['Charisma'] ?? 0,
+      'cleric' || 'druid' || 'ranger' => assignments['Wisdom'] ?? 0,
+      'wizard' => assignments['Intelligence'] ?? 0,
+      _ => 0,
+    };
+  }
+
+  bool get _hasReachedSpellSelectionLimit =>
+      _selectedSpellIds.length >= _spellSelectionLimit;
+
   void _syncSpellStateForClassLevel() {
     if (!_showsSpellSection) {
       _selectedSpellIds.clear();
@@ -351,6 +379,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     _selectedSpellIds.removeWhere(
       (spellId) => !allowedSpellIds.contains(spellId),
     );
+    _trimSelectedSpellsToLimit();
 
     final allowedSlotLevels = _spellSlotProgression
         .map((slot) => slot.spellLevel)
@@ -362,6 +391,22 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
       final current = _spellSlotUsages[slot.spellLevel] ?? 0;
       _spellSlotUsages[slot.spellLevel] = current.clamp(0, slot.slotsMax);
     }
+  }
+
+  void _trimSelectedSpellsToLimit() {
+    final selectionLimit = _spellSelectionLimit;
+    if (_selectedSpellIds.length <= selectionLimit) {
+      return;
+    }
+
+    final orderedSelectedIds = _availableSpellOptions
+        .map((spell) => spell.id)
+        .where(_selectedSpellIds.contains)
+        .take(selectionLimit)
+        .toSet();
+    _selectedSpellIds
+      ..clear()
+      ..addAll(orderedSelectedIds);
   }
 
   void _submit() {
@@ -767,6 +812,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                 : (selection) {
                     setState(() {
                       _selectedAbilityMethod = selection.first;
+                      _syncSpellStateForClassLevel();
                     });
                   },
           ),
@@ -789,11 +835,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
             enabled: !widget.isSaving,
             onChanged: (ability, score) {
               setState(() {
-                final target =
-                    _selectedAbilityMethod == 'generatedSetAssignment'
-                    ? _generatedAssignments
-                    : _manualAssignments;
-                target[ability] = score;
+                _activeAbilityAssignments[ability] = score;
+                _syncSpellStateForClassLevel();
               });
             },
           ),
@@ -805,6 +848,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   Widget _buildSpellSection(ThemeData theme) {
     final availableSpells = _availableSpellOptions;
     final slotProgression = _spellSlotProgression;
+    final selectionLimit = _spellSelectionLimit;
     final selectionLabel = switch (_spellSelectionMode) {
       CharacterSpellSelectionMode.prepared => 'Prepared spells',
       CharacterSpellSelectionMode.known => 'Known spells',
@@ -821,17 +865,32 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
             style: theme.textTheme.bodyLarge,
           ),
           const SizedBox(height: 8),
-          Text(selectionLabel, style: theme.textTheme.titleMedium),
+          Text(
+            '$selectionLabel • ${_selectedSpellIds.length} / $selectionLimit selected',
+            style: theme.textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
+          if (_hasReachedSpellSelectionLimit && availableSpells.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                'Current class limit reached. Unselect a spell to choose another.',
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
           if (availableSpells.isEmpty)
             Text(
               'No local spells available for the current class and level yet.',
               style: theme.textTheme.bodyMedium,
             )
           else
-            ...availableSpells.map(
-              (spell) => CheckboxListTile(
-                value: _selectedSpellIds.contains(spell.id),
+            ...availableSpells.map((spell) {
+              final isSelected = _selectedSpellIds.contains(spell.id);
+              final isDisabled =
+                  widget.isSaving ||
+                  (!isSelected && _hasReachedSpellSelectionLimit);
+              return CheckboxListTile(
+                value: isSelected,
                 contentPadding: EdgeInsets.zero,
                 title: Text(
                   spell.level == 0
@@ -839,7 +898,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                       : '${spell.name} (Level ${spell.level})',
                 ),
                 subtitle: Text('${spell.school} • ${spell.castingTime}'),
-                onChanged: widget.isSaving
+                onChanged: isDisabled
                     ? null
                     : (value) {
                         setState(() {
@@ -850,8 +909,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                           }
                         });
                       },
-              ),
-            ),
+              );
+            }),
           const SizedBox(height: 12),
           Text('Spell slots', style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),

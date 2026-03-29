@@ -447,6 +447,11 @@ class _SpellsPanel extends StatelessWidget {
               spellcasting.selectionLabel,
               style: theme.textTheme.titleMedium,
             ),
+            const SizedBox(height: 4),
+            _FactRow(
+              label: 'Selected / max',
+              value: spellcasting.selectionSummary,
+            ),
             const SizedBox(height: 8),
             if (spellcasting.selectedSpells.isEmpty)
               Text(

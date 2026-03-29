@@ -475,6 +475,11 @@ class InMemoryCharacterRepository implements CharacterRepository {
       availableSpells: availableSpells,
       selectionMode: _characterSpellRules.selectionModeForClass(className),
       selectedSpells: selectedSpells,
+      selectionLimit: _characterSpellRules.selectionLimitFor(
+        className: className,
+        level: progression.level,
+        abilityModifier: CharacterRules.abilityModifier(abilityScore),
+      ),
       slotProgression: slotProgression
           .map(
             (slot) => CharacterSpellSlotDomainModel(

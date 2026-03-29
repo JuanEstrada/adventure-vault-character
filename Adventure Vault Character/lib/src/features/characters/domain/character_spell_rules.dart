@@ -72,6 +72,75 @@ class CharacterSpellRules {
     20: <int>[4, 3, 3, 3, 2],
   };
 
+  static const Map<int, int> _bardKnownSpellsByLevel = <int, int>{
+    1: 2,
+    2: 3,
+    3: 4,
+    4: 5,
+    5: 6,
+    6: 7,
+    7: 8,
+    8: 9,
+    9: 10,
+    10: 11,
+    11: 12,
+    12: 14,
+    13: 15,
+    14: 15,
+    15: 16,
+    16: 18,
+    17: 19,
+    18: 20,
+    19: 22,
+    20: 22,
+  };
+
+  static const Map<int, int> _rangerKnownSpellsByLevel = <int, int>{
+    1: 0,
+    2: 2,
+    3: 3,
+    4: 3,
+    5: 4,
+    6: 4,
+    7: 5,
+    8: 5,
+    9: 6,
+    10: 6,
+    11: 7,
+    12: 7,
+    13: 8,
+    14: 8,
+    15: 9,
+    16: 9,
+    17: 10,
+    18: 10,
+    19: 11,
+    20: 11,
+  };
+
+  static const Map<int, int> _sorcererKnownSpellsByLevel = <int, int>{
+    1: 2,
+    2: 3,
+    3: 4,
+    4: 5,
+    5: 6,
+    6: 7,
+    7: 8,
+    8: 9,
+    9: 10,
+    10: 11,
+    11: 12,
+    12: 12,
+    13: 13,
+    14: 13,
+    15: 14,
+    16: 14,
+    17: 15,
+    18: 15,
+    19: 15,
+    20: 15,
+  };
+
   bool supportsPersistentSpellState(String className) =>
       selectionModeForClass(className) != null;
 
@@ -117,6 +186,32 @@ class CharacterSpellRules {
       return 0;
     }
     return progression.last.spellLevel;
+  }
+
+  int selectionLimitFor({
+    required String className,
+    required int level,
+    required int abilityModifier,
+  }) {
+    final normalized = _normalizeClassName(className);
+    return switch (normalized) {
+      'bard' => _bardKnownSpellsByLevel[level] ?? 0,
+      'ranger' => _rangerKnownSpellsByLevel[level] ?? 0,
+      'sorcerer' => _sorcererKnownSpellsByLevel[level] ?? 0,
+      'cleric' || 'druid' || 'wizard' => _preparedLimit(
+        baseCount: level,
+        abilityModifier: abilityModifier,
+      ),
+      'paladin' => _preparedLimit(
+        baseCount: level ~/ 2,
+        abilityModifier: abilityModifier,
+      ),
+      _ => 0,
+    };
+  }
+
+  int _preparedLimit({required int baseCount, required int abilityModifier}) {
+    return (baseCount + abilityModifier).clamp(1, 999);
   }
 
   String _normalizeClassName(String raw) => raw.trim().toLowerCase();

@@ -147,6 +147,7 @@ class CharacterSpellcastingDomainModel {
     required this.selectionMode,
     required this.selectedSpells,
     required this.slotProgression,
+    this.selectionLimit = 0,
   });
 
   final String abilityKey;
@@ -157,6 +158,7 @@ class CharacterSpellcastingDomainModel {
   final CharacterSpellSelectionMode? selectionMode;
   final List<CharacterSpellReferenceDomainModel> selectedSpells;
   final List<CharacterSpellSlotDomainModel> slotProgression;
+  final int selectionLimit;
 
   int get abilityModifier => CharacterRules.abilityModifier(abilityScore);
 
@@ -177,6 +179,8 @@ class CharacterSpellcastingDomainModel {
       _ => 'Selected spells',
     };
   }
+
+  String get selectionSummary => '${selectedSpells.length} / $selectionLimit';
 
   List<CharacterSpellLevelDomainModel> get spellsByLevel {
     return _groupSpellsByLevel(availableSpells);

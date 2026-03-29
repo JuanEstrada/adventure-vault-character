@@ -277,9 +277,10 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('Prepared spells'), findsOneWidget);
+    expect(find.text('Prepared spells • 0 / 3 selected'), findsOneWidget);
     await tester.tap(find.text('Magic Missile (Level 1)'));
     await tester.pumpAndSettle();
+    expect(find.text('Prepared spells • 1 / 3 selected'), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.widgetWithText(FilledButton, 'Guardar draft').first,
@@ -313,19 +314,119 @@ void main() {
     expect(savedCharacter.spellcasting, isNotNull);
     expect(savedCharacter.spellcasting!.abilityLabel, 'Intelligence');
     expect(savedCharacter.spellcasting!.spellSaveDc, 12);
+    expect(savedCharacter.spellcasting!.selectionSummary, '1 / 3');
     expect(
       savedCharacter.spellcasting!.selectedSpells.map((item) => item.name),
       <String>['Magic Missile'],
     );
     expect(
       savedCharacter.spellcasting!.availableSpells.map((item) => item.name),
-      <String>['Mage Hand', 'Magic Missile'],
+      <String>['Light', 'Mage Hand', 'Magic Missile', 'Shield'],
     );
     expect(find.text('Spells'), findsWidgets);
     expect(find.text('Prepared spells'), findsOneWidget);
     expect(find.text('Spell save DC'), findsOneWidget);
+    expect(find.text('Selected / max'), findsOneWidget);
+    expect(find.text('1 / 3'), findsOneWidget);
     expect(find.textContaining('Magic Missile'), findsWidgets);
   });
+
+  testWidgets(
+    'spell picker enforces limit and trims overflow on ability change',
+    (WidgetTester tester) async {
+      final compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: compendiumRepository,
+      );
+      await tester.binding.setSurfaceSize(const Size(1200, 4200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        AdventureVaultApp(
+          characterRepository: repository,
+          compendiumRepository: compendiumRepository,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Continuar offline'));
+      await tester.tap(find.text('Continuar offline'));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Crear personaje nuevo'));
+      await tester.tap(find.text('Crear personaje nuevo'));
+      await tester.pumpAndSettle();
+
+      final classField = find.byWidgetPredicate(
+        (widget) =>
+            widget is DropdownButtonFormField<String> &&
+            widget.decoration.labelText == 'Clase',
+      );
+
+      await tester.enterText(find.byType(TextFormField).first, 'Limit Test');
+      await tester.tap(classField);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Wizard').last);
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.text('Spells'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text('Light (Cantrip)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mage Hand (Cantrip)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Magic Missile (Level 1)'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Prepared spells • 3 / 3 selected'), findsOneWidget);
+      expect(
+        find.text(
+          'Current class limit reached. Unselect a spell to choose another.',
+        ),
+        findsOneWidget,
+      );
+
+      final shieldTile = tester.widget<CheckboxListTile>(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is CheckboxListTile &&
+              widget.title is Text &&
+              (widget.title! as Text).data == 'Shield (Level 1)',
+        ),
+      );
+      expect(shieldTile.onChanged, isNull);
+
+      await tester.tap(find.text('Manual').first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Prepared spells • 1 / 1 selected'), findsOneWidget);
+      expect(find.text('Light (Cantrip)'), findsWidgets);
+      await tester.scrollUntilVisible(
+        find.widgetWithText(FilledButton, 'Guardar draft').first,
+        400,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Guardar draft'));
+      await tester.pumpAndSettle();
+
+      final summaries = await repository.getCharacterSummaries();
+      final character = await repository.getCharacterSheetById(
+        summaries.single.id,
+      );
+
+      expect(find.text('Selected / max'), findsOneWidget);
+      expect(find.text('1 / 1'), findsOneWidget);
+      expect(character, isNotNull);
+      expect(character!.spellcasting!.selectionSummary, '1 / 1');
+      expect(
+        character.spellcasting!.selectedSpells.map((spell) => spell.name),
+        <String>['Light'],
+      );
+    },
+  );
 
   testWidgets('open edit save and reopen keeps updated character data', (
     WidgetTester tester,
@@ -525,6 +626,19 @@ const _testCatalog = CompendiumCatalog(
   ],
   spells: <CompendiumSpell>[
     CompendiumSpell(
+      id: 'light',
+      name: 'Light',
+      level: 0,
+      school: 'Evocation',
+      castingTime: '1 action',
+      range: 'Touch',
+      components: 'V, M',
+      duration: '1 hour',
+      classes: <String>['Wizard', 'Cleric'],
+      description: <String>['An object shines with bright light.'],
+      source: 'SRD',
+    ),
+    CompendiumSpell(
       id: 'mage-hand',
       name: 'Mage Hand',
       level: 0,
@@ -548,6 +662,19 @@ const _testCatalog = CompendiumCatalog(
       duration: 'Instantaneous',
       classes: <String>['Wizard', 'Sorcerer'],
       description: <String>['Three glowing darts of magical force.'],
+      source: 'SRD',
+    ),
+    CompendiumSpell(
+      id: 'shield',
+      name: 'Shield',
+      level: 1,
+      school: 'Abjuration',
+      castingTime: '1 reaction',
+      range: 'Self',
+      components: 'V, S',
+      duration: '1 round',
+      classes: <String>['Wizard'],
+      description: <String>['A barrier of magical force protects you.'],
       source: 'SRD',
     ),
     CompendiumSpell(

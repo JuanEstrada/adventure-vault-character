@@ -50,6 +50,8 @@ ingresar, elegir o confirmar el usuario.
   progreso de nivel y composicion visible de equipo cuando aplica
 - Progresion deterministica de spell slots para las clases lanzadoras ya
   soportadas y resumen derivado de slots restantes en la hoja
+- Limites simplificados por clase para la cantidad de hechizos seleccionados
+  en las clases lanzadoras estandar ya soportadas
 
 ### Futuro esperado
 
@@ -58,14 +60,14 @@ ingresar, elegir o confirmar el usuario.
 - Gestion mas completa de compendium packs activos e inactivos
 - Resolucion por tirada o seleccion manual sobre opciones oficiales para cada
   campo narrativo de `finishing details`
-- Limites especificos por clase para prepared spells, known spells y modelos
-  especiales como `warlock`
+- Modelos especiales como `warlock` y separacion completa entre libro de
+  hechizos y prepared spells para `wizard`
 
 ### No automatizado hoy
 
 - Calculo completo de ataques
 - Modelos especiales de spellcasting, recuperacion por descanso y limites
-  completos de prepared/known spells
+  completos fuera del modelo simplificado actual de seleccion de hechizos
 - Armor Class, initiative y combate avanzado como sistema completo
 - Reglas de inventario completo fuera del flujo MVP de equipo inicial
 - Automatizacion total de recursos de clase, rasgos o consumos por descanso
@@ -91,6 +93,8 @@ ingresar, elegir o confirmar el usuario.
   traits, ideals, bonds, flaws u otras notas
 - Seleccion de hechizos y gasto actual de spell slots para clases lanzadoras
   soportadas
+- Confirmacion final de que la seleccion de hechizos cabe dentro del limite
+  derivado visible para la clase, nivel y ability actual
 
 ### Futuro esperado
 
@@ -117,6 +121,9 @@ ingresar, elegir o confirmar el usuario.
 - Si cambia clase o nivel en una clase lanzadora soportada, la app recorta
   hechizos fuera del nivel lanzable actual y ajusta el gasto de slots al
   nuevo maximo derivado
+- Si cambia la clase, el nivel o la ability de casteo en una clase lanzadora
+  soportada, la app recalcula el limite visible de hechizos seleccionados y
+  recorta el exceso de forma deterministica
 - La hoja de personaje reutiliza valores derivados del dominio en lugar de
   recalcularlos dentro de widgets
 

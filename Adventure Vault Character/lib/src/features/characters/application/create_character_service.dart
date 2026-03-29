@@ -99,6 +99,7 @@ class CreateCharacterService {
     _validateSpellState(
       input: input,
       catalog: catalog,
+      spellcastingAbilityKey: classSeed.spellcastingAbility,
       className: input.className,
       level: input.level,
     );
@@ -909,6 +910,7 @@ class CreateCharacterService {
   void _validateSpellState({
     required CreateCharacterInput input,
     required CompendiumCatalog catalog,
+    required String? spellcastingAbilityKey,
     required String className,
     required int level,
   }) {
@@ -928,6 +930,17 @@ class CreateCharacterService {
     final expectedMode = _characterSpellRules.selectionModeForClass(className);
     if (input.spellState.selectionMode != expectedMode) {
       throw StateError('Spell selection mode does not match the active class.');
+    }
+
+    final selectionLimit = _characterSpellRules.selectionLimitFor(
+      className: className,
+      level: level,
+      abilityModifier: CharacterRules.abilityModifier(
+        _abilityScoreForKey(input, spellcastingAbilityKey),
+      ),
+    );
+    if (input.spellState.selectedSpells.length > selectionLimit) {
+      throw StateError('Selected spells exceed the current class limit.');
     }
 
     final highestSpellLevel = _characterSpellRules.highestCastableSpellLevel(
@@ -972,6 +985,18 @@ class CreateCharacterService {
         throw StateError('Spell slot usage exceeds the derived slot maximum.');
       }
     }
+  }
+
+  int _abilityScoreForKey(CreateCharacterInput input, String? abilityKey) {
+    return switch (abilityKey?.trim().toUpperCase()) {
+      'STR' => input.strength,
+      'DEX' => input.dexterity,
+      'CON' => input.constitution,
+      'INT' => input.intelligence,
+      'WIS' => input.wisdom,
+      'CHA' => input.charisma,
+      _ => 0,
+    };
   }
 
   String _selectionModeStorageKey(CharacterSpellSelectionMode mode) {
