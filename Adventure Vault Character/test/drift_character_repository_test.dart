@@ -491,11 +491,92 @@ void main() {
       );
     },
   );
+
+  test(
+    'createCharacter persists warlock pact-magic spell state and sheet summary',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        const CreateCharacterInput(
+          name: 'Nim',
+          raceName: 'Elf',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'generatedSetAssignment',
+          abilityScoreProvenance:
+              'method=generatedSetAssignment;Strength=8;Dexterity=12;Constitution=13;Intelligence=14;Wisdom=10;Charisma=15',
+          strength: 8,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 14,
+          wisdom: 10,
+          charisma: 15,
+          className: 'Warlock',
+          level: 5,
+          experience: 6500,
+          equipmentLoadoutId: 'wizard-focus',
+          equipmentLoadoutLabel: 'Arcane focus kit',
+          startingMoneySummary: '15 gp, 4 sp',
+          selectedEquipmentItems: <String>['Quarterstaff'],
+          currentHitPoints: 26,
+          maximumHitPoints: 26,
+          temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.known,
+            selectedSpells: <CharacterSpellSelectionInput>[
+              CharacterSpellSelectionInput(
+                spellId: 'light',
+                spellName: 'Light',
+                selectionMode: CharacterSpellSelectionMode.known,
+              ),
+            ],
+            slotUsages: <CharacterSpellSlotUsageInput>[
+              CharacterSpellSlotUsageInput(spellLevel: 3, slotsExpended: 1),
+            ],
+          ),
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: '',
+            narrativeNotes: '',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection.empty(NarrativeFieldKey.alignment),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
+        ),
+      );
+
+      final sheet = await repository.getCharacterSheetById(summary.id);
+
+      expect(sheet, isNotNull);
+      expect(sheet!.identity.className, 'Warlock');
+      expect(sheet.spellcasting, isNotNull);
+      expect(sheet.spellcasting!.selectionLabel, 'Known spells');
+      expect(sheet.spellcasting!.selectionSummary, '1 / 6');
+      expect(sheet.spellcasting!.slotProgression, hasLength(1));
+      expect(sheet.spellcasting!.slotProgression.single.spellLevel, 3);
+      expect(
+        sheet.spellcasting!.slotProgression.single.displaySummary,
+        '1 / 2',
+      );
+    },
+  );
 }
 
 const _testCatalog = CompendiumCatalog(
   races: <String>['Elf'],
-  classes: <String>['Wizard'],
+  classes: <String>['Wizard', 'Warlock'],
   backgrounds: <CompendiumBackground>[
     CompendiumBackground(
       id: 'acolyte',
@@ -541,7 +622,7 @@ const _testCatalog = CompendiumCatalog(
       range: 'Touch',
       components: 'V, M',
       duration: '1 hour',
-      classes: <String>['Wizard'],
+      classes: <String>['Wizard', 'Warlock'],
       description: <String>['An object shines with bright light.'],
       source: 'SRD',
     ),

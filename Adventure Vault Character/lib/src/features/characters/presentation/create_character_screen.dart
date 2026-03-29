@@ -356,7 +356,10 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   int get _spellcastingAbilityScore {
     final assignments = _activeAbilityAssignments;
     return switch (_selectedClass.trim().toLowerCase()) {
-      'bard' || 'paladin' || 'sorcerer' => assignments['Charisma'] ?? 0,
+      'bard' ||
+      'paladin' ||
+      'sorcerer' ||
+      'warlock' => assignments['Charisma'] ?? 0,
       'cleric' || 'druid' || 'ranger' => assignments['Wisdom'] ?? 0,
       'wizard' => assignments['Intelligence'] ?? 0,
       _ => 0,
@@ -1199,7 +1202,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
 
 String _spellcastingAbilityLabelForClass(String className) {
   return switch (className.trim().toLowerCase()) {
-    'bard' || 'paladin' || 'sorcerer' => 'Charisma',
+    'bard' || 'paladin' || 'sorcerer' || 'warlock' => 'Charisma',
     'cleric' || 'druid' || 'ranger' => 'Wisdom',
     'wizard' => 'Intelligence',
     _ => 'Unknown',

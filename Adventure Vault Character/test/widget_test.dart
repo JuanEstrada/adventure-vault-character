@@ -331,6 +331,56 @@ void main() {
     expect(find.textContaining('Magic Missile'), findsWidgets);
   });
 
+  testWidgets('warlock uses known-spell mode with pact slot progression', (
+    WidgetTester tester,
+  ) async {
+    final compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
+    final repository = InMemoryCharacterRepository.empty(
+      compendiumRepository: compendiumRepository,
+    );
+    await tester.binding.setSurfaceSize(const Size(1200, 4200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      AdventureVaultApp(
+        characterRepository: repository,
+        compendiumRepository: compendiumRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Continuar offline'));
+    await tester.tap(find.text('Continuar offline'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Crear personaje nuevo'));
+    await tester.tap(find.text('Crear personaje nuevo'));
+    await tester.pumpAndSettle();
+
+    final classField = find.byWidgetPredicate(
+      (widget) =>
+          widget is DropdownButtonFormField<String> &&
+          widget.decoration.labelText == 'Clase',
+    );
+
+    await tester.enterText(find.byType(TextFormField).first, 'Nim');
+    await tester.tap(classField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Warlock').last);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Spells'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+
+    expect(find.text('Known spells • 0 / 2 selected'), findsOneWidget);
+    expect(find.text('Spell slots'), findsOneWidget);
+    expect(find.text('Level 1 slots'), findsOneWidget);
+    expect(find.text('Expended / 1'), findsOneWidget);
+  });
+
   testWidgets(
     'spell picker enforces limit and trims overflow on ability change',
     (WidgetTester tester) async {
@@ -552,7 +602,14 @@ void main() {
 
 const _testCatalog = CompendiumCatalog(
   races: <String>['Human', 'Dragonborn (Black)', 'Elf', 'Dwarf', 'Halfling'],
-  classes: <String>['Fighter', 'Ranger', 'Wizard', 'Rogue', 'Cleric'],
+  classes: <String>[
+    'Fighter',
+    'Ranger',
+    'Wizard',
+    'Warlock',
+    'Rogue',
+    'Cleric',
+  ],
   backgrounds: <CompendiumBackground>[
     CompendiumBackground(
       id: 'acolyte',

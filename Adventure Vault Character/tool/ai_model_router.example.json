@@ -1,0 +1,15 @@
+{
+  "models": {
+    "discovery": "o3",
+    "implementation": "gpt-5.3-codex",
+    "validation": "gpt-5.3-codex",
+    "quick": "gpt-5.3-mini"
+  },
+  "runner_template": "opencode run --model \"{model}\" --prompt-file \"{task_file}\"",
+  "stage_runner_templates": {
+    "discovery": "opencode run --model \"{model}\" --prompt-file \"{task_file}\"",
+    "implementation": "opencode run --model \"{model}\" --prompt-file \"{task_file}\"",
+    "validation": "opencode run --model \"{model}\" --prompt-file \"{task_file}\"",
+    "quick": "opencode run --model \"{model}\" --prompt-file \"{task_file}\""
+  }
+}

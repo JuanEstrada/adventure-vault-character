@@ -71,6 +71,48 @@ and regression safety stay balanced.
 - If uncertain, start with `gpt-5.3-codex` and escalate to `o3` when trade-offs
   become unclear.
 
+## Automatic Routing Script
+
+Use `tool/ai_model_router.py` to automate stage-based model selection.
+
+### What it does
+
+- infers stage (`discovery`, `implementation`, `validation`, `quick`) or uses
+  explicit `--stage`
+- picks the model using this playbook defaults
+- can run a configured command template that starts the target model
+
+### Basic usage
+
+```bash
+python tool/ai_model_router.py --task "Plan warlock spellbook edge cases"
+python tool/ai_model_router.py --stage implementation --task-file task.txt
+python tool/ai_model_router.py --stage validation --task "Run analyze/test and fix" --execute
+```
+
+### Configure command execution
+
+Set a runner template so `--execute` can launch your CLI automatically:
+
+```powershell
+setx AVC_AI_RUNNER_TEMPLATE "opencode run --model \"{model}\" --prompt-file \"{task_file}\""
+```
+
+You can also provide stage-specific templates:
+
+- `AVC_AI_RUNNER_DISCOVERY`
+- `AVC_AI_RUNNER_IMPLEMENTATION`
+- `AVC_AI_RUNNER_VALIDATION`
+- `AVC_AI_RUNNER_QUICK`
+
+Or use a config file (`--config`) based on
+`tool/ai_model_router.example.json`.
+
+### Note
+
+Model switching happens across separate runs started by the runner command.
+It does not hot-swap the model inside an already-running single session.
+
 ## Session Template
 
 Use this sequence for a normal work session:

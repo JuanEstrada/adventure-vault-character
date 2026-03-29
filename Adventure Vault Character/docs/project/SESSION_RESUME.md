@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-03-28
+Last updated: 2026-03-29
 
 This is the single file to read first when resuming work on Adventure Vault
 Character. It consolidates the current product, architecture, repository
@@ -521,6 +521,10 @@ Completed since the previous handoff:
   spellcasters, including create/edit capture plus reopen-safe sheet output.
 - The main-menu spec and project snapshot/resume docs are aligned with that
   visible compendium status behavior.
+- Warlock is now included in the persisted spell-state flow with deterministic
+  known-spell limits and pact-magic slot progression.
+- Create/edit spell UX, repository validation, and sheet rendering now all
+  agree on warlock spell mode (`known`), selection limits, and pact slot usage.
 
 Next-session starting point:
 

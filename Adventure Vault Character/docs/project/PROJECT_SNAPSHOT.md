@@ -1,7 +1,7 @@
 # Adventure Vault Character - Project Snapshot
 
 ## Last Update
-2026-03-28
+2026-03-29
 
 ## Role of This Document
 
@@ -169,6 +169,9 @@ summary.
 - Regression tests now also cover deterministic narrative-option source
   resolution, normalized persistence of narrative selections, and the new
   spellcasting summary foundation.
+- The spellcasting rules now include warlock pact magic in the deterministic
+  pipeline (known-spell limits plus pact slot progression) across
+  create/edit/persistence/sheet paths.
 - A dedicated `CompendiumRepository` now loads active XML assets directly from
   `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`,
   with JSON fallback preserved.
@@ -394,8 +397,7 @@ summary.
 2. Continue translating the available rules sources into explicit
    deterministic application/domain services.
 3. Extend the new spellcasting foundation beyond the new class-specific limit
-   enforcement into special cases such as warlock pact magic and wizard
-   spellbook behavior.
+   enforcement into remaining special cases such as wizard spellbook behavior.
 4. Expand the inventory/equipment model beyond starter loadouts.
 5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
