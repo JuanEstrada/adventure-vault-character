@@ -246,6 +246,32 @@ class CharacterSpellRules {
     return progression.last.spellLevel;
   }
 
+  Map<int, int> resetSlotUsagesForShortRest({
+    required String className,
+    required int level,
+    required Map<int, int> currentUsages,
+  }) {
+    final normalized = _normalizeClassName(className);
+    if (normalized != 'warlock') {
+      return Map<int, int>.unmodifiable(currentUsages);
+    }
+
+    final slots = slotProgressionFor(className: className, level: level);
+    return Map<int, int>.unmodifiable(<int, int>{
+      for (final slot in slots) slot.spellLevel: 0,
+    });
+  }
+
+  Map<int, int> resetSlotUsagesForLongRest({
+    required String className,
+    required int level,
+  }) {
+    final slots = slotProgressionFor(className: className, level: level);
+    return Map<int, int>.unmodifiable(<int, int>{
+      for (final slot in slots) slot.spellLevel: 0,
+    });
+  }
+
   int selectionLimitFor({
     required String className,
     required int level,

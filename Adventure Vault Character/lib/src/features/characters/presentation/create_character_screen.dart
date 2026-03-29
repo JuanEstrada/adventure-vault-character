@@ -412,6 +412,34 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
       ..addAll(orderedSelectedIds);
   }
 
+  bool get _supportsShortRestSlotRecovery =>
+      _selectedClass.trim().toLowerCase() == 'warlock';
+
+  void _applyShortRestRecovery() {
+    final reset = _characterSpellRules.resetSlotUsagesForShortRest(
+      className: _selectedClass,
+      level: _selectedLevel,
+      currentUsages: _spellSlotUsages,
+    );
+    setState(() {
+      _spellSlotUsages
+        ..clear()
+        ..addAll(reset);
+    });
+  }
+
+  void _applyLongRestRecovery() {
+    final reset = _characterSpellRules.resetSlotUsagesForLongRest(
+      className: _selectedClass,
+      level: _selectedLevel,
+    );
+    setState(() {
+      _spellSlotUsages
+        ..clear()
+        ..addAll(reset);
+    });
+  }
+
   void _submit() {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -917,6 +945,33 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
             }),
           const SizedBox(height: 12),
           Text('Spell slots', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton.icon(
+                onPressed: widget.isSaving || !_supportsShortRestSlotRecovery
+                    ? null
+                    : _applyShortRestRecovery,
+                icon: const Icon(Icons.timer_outlined),
+                label: const Text('Apply short rest'),
+              ),
+              OutlinedButton.icon(
+                onPressed: widget.isSaving ? null : _applyLongRestRecovery,
+                icon: const Icon(Icons.bed_outlined),
+                label: const Text('Apply long rest'),
+              ),
+            ],
+          ),
+          if (!_supportsShortRestSlotRecovery)
+            Padding(
+              padding: const EdgeInsets.only(top: 6, bottom: 2),
+              child: Text(
+                'Short rest slot recovery currently applies to warlock pact magic only.',
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
           const SizedBox(height: 8),
           if (slotProgression.isEmpty)
             Text(

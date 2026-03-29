@@ -379,6 +379,8 @@ void main() {
     expect(find.text('Spell slots'), findsOneWidget);
     expect(find.text('Level 1 slots'), findsOneWidget);
     expect(find.text('Expended / 1'), findsOneWidget);
+    expect(find.text('Apply short rest'), findsOneWidget);
+    expect(find.text('Apply long rest'), findsOneWidget);
   });
 
   testWidgets(

@@ -75,4 +75,34 @@ void main() {
     expect(rules.highestCastableSpellLevel(className: 'Warlock', level: 5), 3);
     expect(rules.highestCastableSpellLevel(className: 'Warlock', level: 17), 5);
   });
+
+  test('short rest resets warlock pact slot usage only', () {
+    final warlockReset = rules.resetSlotUsagesForShortRest(
+      className: 'Warlock',
+      level: 5,
+      currentUsages: <int, int>{3: 2},
+    );
+    expect(warlockReset, <int, int>{3: 0});
+
+    final wizardReset = rules.resetSlotUsagesForShortRest(
+      className: 'Wizard',
+      level: 5,
+      currentUsages: <int, int>{1: 1, 2: 2, 3: 1},
+    );
+    expect(wizardReset, <int, int>{1: 1, 2: 2, 3: 1});
+  });
+
+  test('long rest resets all derived slot usage rows', () {
+    final wizardReset = rules.resetSlotUsagesForLongRest(
+      className: 'Wizard',
+      level: 5,
+    );
+    expect(wizardReset, <int, int>{1: 0, 2: 0, 3: 0});
+
+    final warlockReset = rules.resetSlotUsagesForLongRest(
+      className: 'Warlock',
+      level: 5,
+    );
+    expect(warlockReset, <int, int>{3: 0});
+  });
 }
