@@ -1003,6 +1003,7 @@ class CreateCharacterService {
     return switch (mode) {
       CharacterSpellSelectionMode.prepared => 'prepared',
       CharacterSpellSelectionMode.known => 'known',
+      CharacterSpellSelectionMode.spellbook => 'spellbook',
     };
   }
 

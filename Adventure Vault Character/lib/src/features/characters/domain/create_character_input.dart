@@ -85,7 +85,7 @@ class CharacterSpellStateInput {
       slotUsages = const <CharacterSpellSlotUsageInput>[];
 }
 
-enum CharacterSpellSelectionMode { prepared, known }
+enum CharacterSpellSelectionMode { prepared, known, spellbook }
 
 @immutable
 class CharacterSpellSelectionInput {

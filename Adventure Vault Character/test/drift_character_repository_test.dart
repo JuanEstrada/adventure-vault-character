@@ -51,12 +51,12 @@ void main() {
           maximumHitPoints: 28,
           temporaryHitPoints: 0,
           spellState: CharacterSpellStateInput(
-            selectionMode: CharacterSpellSelectionMode.prepared,
+            selectionMode: CharacterSpellSelectionMode.spellbook,
             selectedSpells: <CharacterSpellSelectionInput>[
               CharacterSpellSelectionInput(
                 spellId: 'magic-missile',
                 spellName: 'Magic Missile',
-                selectionMode: CharacterSpellSelectionMode.prepared,
+                selectionMode: CharacterSpellSelectionMode.spellbook,
               ),
             ],
             slotUsages: <CharacterSpellSlotUsageInput>[
@@ -135,7 +135,7 @@ void main() {
       expect(hitPoints.maximum, 27);
       expect(spellSelections, hasLength(1));
       expect(spellSelections.single.spellDefinitionId, 'magic-missile');
-      expect(spellSelections.single.selectionKind, 'prepared');
+      expect(spellSelections.single.selectionKind, 'spellbook');
       expect(spellSlotUsages, hasLength(1));
       expect(spellSlotUsages.single.spellLevel, 1);
       expect(spellSlotUsages.single.slotsExpended, 1);
@@ -217,12 +217,12 @@ void main() {
           maximumHitPoints: 28,
           temporaryHitPoints: 0,
           spellState: CharacterSpellStateInput(
-            selectionMode: CharacterSpellSelectionMode.prepared,
+            selectionMode: CharacterSpellSelectionMode.spellbook,
             selectedSpells: <CharacterSpellSelectionInput>[
               CharacterSpellSelectionInput(
                 spellId: 'magic-missile',
                 spellName: 'Magic Missile',
-                selectionMode: CharacterSpellSelectionMode.prepared,
+                selectionMode: CharacterSpellSelectionMode.spellbook,
               ),
             ],
             slotUsages: <CharacterSpellSlotUsageInput>[
@@ -278,12 +278,12 @@ void main() {
           maximumHitPoints: 28,
           temporaryHitPoints: 0,
           spellState: CharacterSpellStateInput(
-            selectionMode: CharacterSpellSelectionMode.prepared,
+            selectionMode: CharacterSpellSelectionMode.spellbook,
             selectedSpells: <CharacterSpellSelectionInput>[
               CharacterSpellSelectionInput(
                 spellId: 'mage-hand',
                 spellName: 'Mage Hand',
-                selectionMode: CharacterSpellSelectionMode.prepared,
+                selectionMode: CharacterSpellSelectionMode.spellbook,
               ),
             ],
             slotUsages: <CharacterSpellSlotUsageInput>[
@@ -440,27 +440,27 @@ void main() {
             maximumHitPoints: 8,
             temporaryHitPoints: 0,
             spellState: CharacterSpellStateInput(
-              selectionMode: CharacterSpellSelectionMode.prepared,
+              selectionMode: CharacterSpellSelectionMode.spellbook,
               selectedSpells: <CharacterSpellSelectionInput>[
                 CharacterSpellSelectionInput(
                   spellId: 'light',
                   spellName: 'Light',
-                  selectionMode: CharacterSpellSelectionMode.prepared,
+                  selectionMode: CharacterSpellSelectionMode.spellbook,
                 ),
                 CharacterSpellSelectionInput(
                   spellId: 'mage-hand',
                   spellName: 'Mage Hand',
-                  selectionMode: CharacterSpellSelectionMode.prepared,
+                  selectionMode: CharacterSpellSelectionMode.spellbook,
                 ),
                 CharacterSpellSelectionInput(
                   spellId: 'magic-missile',
                   spellName: 'Magic Missile',
-                  selectionMode: CharacterSpellSelectionMode.prepared,
+                  selectionMode: CharacterSpellSelectionMode.spellbook,
                 ),
                 CharacterSpellSelectionInput(
                   spellId: 'shield',
                   spellName: 'Shield',
-                  selectionMode: CharacterSpellSelectionMode.prepared,
+                  selectionMode: CharacterSpellSelectionMode.spellbook,
                 ),
               ],
               slotUsages: <CharacterSpellSlotUsageInput>[

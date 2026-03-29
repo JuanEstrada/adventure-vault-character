@@ -525,6 +525,10 @@ Completed since the previous handoff:
   known-spell limits and pact-magic slot progression.
 - Create/edit spell UX, repository validation, and sheet rendering now all
   agree on warlock spell mode (`known`), selection limits, and pact slot usage.
+- Wizard persisted spell-state behavior now uses an explicit `spellbook` mode
+  instead of sharing the generic `prepared` mode.
+- Wizard create/edit persistence, service validation, editable reload mapping,
+  and sheet labels now align on `spellbook` mode end-to-end.
 
 Next-session starting point:
 

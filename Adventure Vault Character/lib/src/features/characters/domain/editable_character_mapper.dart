@@ -166,6 +166,7 @@ class EditableCharacterMapper {
     return switch (raw) {
       'prepared' => CharacterSpellSelectionMode.prepared,
       'known' => CharacterSpellSelectionMode.known,
+      'spellbook' => CharacterSpellSelectionMode.spellbook,
       _ => null,
     };
   }

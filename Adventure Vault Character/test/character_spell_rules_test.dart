@@ -13,6 +13,14 @@ void main() {
     );
   });
 
+  test('wizard uses spellbook mode for persisted spell selection state', () {
+    expect(rules.supportsPersistentSpellState('Wizard'), isTrue);
+    expect(
+      rules.selectionModeForClass('Wizard'),
+      CharacterSpellSelectionMode.spellbook,
+    );
+  });
+
   test('warlock known-spell limits follow level table', () {
     expect(
       rules.selectionLimitFor(

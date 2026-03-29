@@ -176,6 +176,7 @@ class CharacterSpellcastingDomainModel {
     return switch (selectionMode) {
       CharacterSpellSelectionMode.prepared => 'Prepared spells',
       CharacterSpellSelectionMode.known => 'Known spells',
+      CharacterSpellSelectionMode.spellbook => 'Spellbook spells',
       _ => 'Selected spells',
     };
   }

@@ -172,6 +172,8 @@ summary.
 - The spellcasting rules now include warlock pact magic in the deterministic
   pipeline (known-spell limits plus pact slot progression) across
   create/edit/persistence/sheet paths.
+- Wizard spell state now uses explicit `spellbook` mode across create/edit,
+  persisted selection-kind storage, editable reload, and sheet-facing labels.
 - A dedicated `CompendiumRepository` now loads active XML assets directly from
   `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`,
   with JSON fallback preserved.
@@ -397,7 +399,8 @@ summary.
 2. Continue translating the available rules sources into explicit
    deterministic application/domain services.
 3. Extend the new spellcasting foundation beyond the new class-specific limit
-   enforcement into remaining special cases such as wizard spellbook behavior.
+   enforcement into remaining special cases such as full wizard prepared-list
+   workflows and rest-based resource recovery.
 4. Expand the inventory/equipment model beyond starter loadouts.
 5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 

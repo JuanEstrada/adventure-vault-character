@@ -52,12 +52,12 @@ void main() {
           maximumHitPoints: 28,
           temporaryHitPoints: 0,
           spellState: CharacterSpellStateInput(
-            selectionMode: CharacterSpellSelectionMode.prepared,
+            selectionMode: CharacterSpellSelectionMode.spellbook,
             selectedSpells: <CharacterSpellSelectionInput>[
               CharacterSpellSelectionInput(
                 spellId: 'magic-missile',
                 spellName: 'Magic Missile',
-                selectionMode: CharacterSpellSelectionMode.prepared,
+                selectionMode: CharacterSpellSelectionMode.spellbook,
               ),
             ],
             slotUsages: <CharacterSpellSlotUsageInput>[
@@ -101,7 +101,7 @@ void main() {
       expect(editable.equipment.loadoutId, 'wizard-focus');
       expect(
         editable.spellState.selectionMode,
-        CharacterSpellSelectionMode.prepared,
+        CharacterSpellSelectionMode.spellbook,
       );
       expect(
         editable.spellState.selectedSpells.single.spellId,

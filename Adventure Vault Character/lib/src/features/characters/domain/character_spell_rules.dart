@@ -24,7 +24,7 @@ class CharacterSpellRules {
         'ranger': CharacterSpellSelectionMode.known,
         'sorcerer': CharacterSpellSelectionMode.known,
         'warlock': CharacterSpellSelectionMode.known,
-        'wizard': CharacterSpellSelectionMode.prepared,
+        'wizard': CharacterSpellSelectionMode.spellbook,
       };
 
   static const Map<int, List<int>> _fullCasterSlots = <int, List<int>>{

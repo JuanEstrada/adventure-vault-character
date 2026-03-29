@@ -277,10 +277,10 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('Prepared spells • 0 / 3 selected'), findsOneWidget);
+    expect(find.text('Spellbook spells • 0 / 3 selected'), findsOneWidget);
     await tester.tap(find.text('Magic Missile (Level 1)'));
     await tester.pumpAndSettle();
-    expect(find.text('Prepared spells • 1 / 3 selected'), findsOneWidget);
+    expect(find.text('Spellbook spells • 1 / 3 selected'), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.widgetWithText(FilledButton, 'Guardar draft').first,
@@ -324,7 +324,7 @@ void main() {
       <String>['Light', 'Mage Hand', 'Magic Missile', 'Shield'],
     );
     expect(find.text('Spells'), findsWidgets);
-    expect(find.text('Prepared spells'), findsOneWidget);
+    expect(find.text('Spellbook spells'), findsOneWidget);
     expect(find.text('Spell save DC'), findsOneWidget);
     expect(find.text('Selected / max'), findsOneWidget);
     expect(find.text('1 / 3'), findsOneWidget);
@@ -431,7 +431,7 @@ void main() {
       await tester.tap(find.text('Magic Missile (Level 1)'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Prepared spells • 3 / 3 selected'), findsOneWidget);
+      expect(find.text('Spellbook spells • 3 / 3 selected'), findsOneWidget);
       expect(
         find.text(
           'Current class limit reached. Unselect a spell to choose another.',
@@ -452,7 +452,7 @@ void main() {
       await tester.tap(find.text('Manual').first);
       await tester.pumpAndSettle();
 
-      expect(find.text('Prepared spells • 1 / 1 selected'), findsOneWidget);
+      expect(find.text('Spellbook spells • 1 / 1 selected'), findsOneWidget);
       expect(find.text('Light (Cantrip)'), findsWidgets);
       await tester.scrollUntilVisible(
         find.widgetWithText(FilledButton, 'Guardar draft').first,

@@ -855,6 +855,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     final selectionLabel = switch (_spellSelectionMode) {
       CharacterSpellSelectionMode.prepared => 'Prepared spells',
       CharacterSpellSelectionMode.known => 'Known spells',
+      CharacterSpellSelectionMode.spellbook => 'Spellbook spells',
       _ => 'Selected spells',
     };
 
