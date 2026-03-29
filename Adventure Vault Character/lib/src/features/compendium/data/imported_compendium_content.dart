@@ -289,15 +289,83 @@ CompendiumBackground? _parseBackground(
   if (name.isEmpty) {
     return null;
   }
+  final traits = _extractBackgroundTraits(element.innerXml);
   final description = _extractTraitText(element.innerXml, 'Description');
+  final summary = description.isEmpty
+      ? _extractSingleTagText(element.innerXml, 'text') ??
+            'Imported XML background.'
+      : description;
+  final bonuses = _extractBackgroundBonuses(element.innerXml, traits);
+  final socialPerks = _extractBackgroundSocialPerks(traits);
   return CompendiumBackground(
     id: _slugifyName(name),
     name: name,
-    summary: description.isEmpty ? 'Imported XML background.' : description,
-    bonuses: const <String>['Imported XML background'],
-    socialPerks: const <String>['Imported XML pack'],
+    summary: summary,
+    bonuses: bonuses.isEmpty
+        ? const <String>['Imported XML background']
+        : List<String>.unmodifiable(bonuses),
+    socialPerks: socialPerks.isEmpty
+        ? const <String>['Imported XML pack']
+        : List<String>.unmodifiable(socialPerks),
     packId: packId,
   );
+}
+
+List<String> _extractBackgroundBonuses(
+  String xml,
+  List<_BackgroundTraitEntry> traits,
+) {
+  final bonuses = <String>[];
+  final proficiency = _extractSingleTagText(xml, 'proficiency');
+  if (proficiency != null && proficiency.trim().isNotEmpty) {
+    bonuses.add('Skills: ${_normalizeText(proficiency)}');
+  }
+
+  for (final trait in traits) {
+    final normalizedName = trait.name.toLowerCase();
+    if (normalizedName.startsWith('ability score') ||
+        normalizedName.startsWith('ability scores') ||
+        normalizedName.startsWith('proficiency') ||
+        normalizedName.startsWith('tool proficiency') ||
+        normalizedName.startsWith('language')) {
+      bonuses.add('${trait.name}: ${trait.text}'.trim());
+    }
+  }
+
+  return bonuses;
+}
+
+List<String> _extractBackgroundSocialPerks(List<_BackgroundTraitEntry> traits) {
+  final perks = <String>[];
+  for (final trait in traits) {
+    final normalizedName = trait.name.toLowerCase();
+    if (normalizedName == 'description' ||
+        normalizedName == 'suggested characteristics') {
+      continue;
+    }
+    if (normalizedName.startsWith('ability score') ||
+        normalizedName.startsWith('ability scores') ||
+        normalizedName.startsWith('proficiency') ||
+        normalizedName.startsWith('tool proficiency') ||
+        normalizedName.startsWith('language')) {
+      continue;
+    }
+    if (trait.name.trim().isNotEmpty) {
+      perks.add(trait.name.trim());
+    }
+  }
+  return perks;
+}
+
+List<_BackgroundTraitEntry> _extractBackgroundTraits(String xml) {
+  return _extractElements(xml, 'trait')
+      .map((trait) {
+        final name = _extractSingleTagText(trait.innerXml, 'name') ?? '';
+        final text = _extractSingleTagText(trait.innerXml, 'text') ?? '';
+        return _BackgroundTraitEntry(name: _normalizeText(name), text: text);
+      })
+      .where((entry) => entry.name.isNotEmpty)
+      .toList(growable: false);
 }
 
 List<CompendiumNarrativeOptionGroup> _parseBackgroundNarrativeGroups({
@@ -540,6 +608,13 @@ class _XmlElement {
   const _XmlElement({required this.innerXml});
 
   final String innerXml;
+}
+
+class _BackgroundTraitEntry {
+  const _BackgroundTraitEntry({required this.name, required this.text});
+
+  final String name;
+  final String text;
 }
 
 class _NarrativeTableField {

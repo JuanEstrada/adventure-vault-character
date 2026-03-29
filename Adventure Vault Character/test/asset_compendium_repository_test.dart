@@ -235,6 +235,11 @@ void main() {
         importedCatalog.backgrounds.map((background) => background.name),
         contains('Imported Acolyte Expansion'),
       );
+      final importedBackground = importedCatalog.backgrounds.firstWhere(
+        (background) => background.name == 'Imported Acolyte Expansion',
+      );
+      expect(importedBackground.bonuses, contains('Skills: Religion, Insight'));
+      expect(importedBackground.socialPerks, contains('Temple Privilege'));
       expect(
         importedCatalog.spells.map((spell) => spell.name),
         contains('Imported Arc Bolt'),
@@ -720,9 +725,14 @@ const _importFixture = '''
   <background>
     <name>Imported Acolyte Expansion</name>
     <source>Imported Test Source</source>
+    <proficiency>Religion, Insight</proficiency>
     <trait>
       <name>Description</name>
       <text>Imported background text.</text>
+    </trait>
+    <trait>
+      <name>Temple Privilege</name>
+      <text>You can request shelter from faithful communities.</text>
     </trait>
     <trait>
       <name>Suggested Characteristics</name>
