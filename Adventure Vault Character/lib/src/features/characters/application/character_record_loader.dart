@@ -36,6 +36,8 @@ class CharacterRecordLoader {
     final equipmentLoadout = await _readDao.getEquipmentLoadoutByCharacterId(
       id,
     );
+    final spellSelections = await _readDao.getSpellSelectionsByCharacterId(id);
+    final spellSlotUsages = await _readDao.getSpellSlotUsagesByCharacterId(id);
     final currency = await _readDao.getCurrencyByCharacterId(id);
     final inventory = await _readDao.getInventoryByCharacterId(id);
     final savingThrows = await _readDao.getSavingThrowsByCharacterId(id);
@@ -54,6 +56,8 @@ class CharacterRecordLoader {
       finishingDetails: finishingDetails,
       narrativeSelections: narrativeSelections,
       equipmentLoadout: equipmentLoadout,
+      spellSelections: spellSelections,
+      spellSlotUsages: spellSlotUsages,
       currency: currency,
       inventory: inventory,
       savingThrows: savingThrows,

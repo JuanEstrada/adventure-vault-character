@@ -2,9 +2,14 @@ import 'package:adventure_vault_character/src/features/characters/data/local/app
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_record.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_spell_rules.dart';
 
 class CharacterDomainMapper {
-  const CharacterDomainMapper();
+  const CharacterDomainMapper({
+    CharacterSpellRules characterSpellRules = const CharacterSpellRules(),
+  }) : _characterSpellRules = characterSpellRules;
+
+  final CharacterSpellRules _characterSpellRules;
 
   CharacterDomainModel map(CharacterRecord record) {
     final row = record.row;
@@ -180,7 +185,7 @@ class CharacterDomainMapper {
       return null;
     }
 
-    final spells =
+    final availableSpells =
         record.catalog.spells
             .where(
               (spell) =>
@@ -188,6 +193,7 @@ class CharacterDomainMapper {
             )
             .map(
               (spell) => CharacterSpellReferenceDomainModel(
+                id: spell.id,
                 name: spell.name,
                 level: spell.level,
                 school: spell.school,
@@ -205,6 +211,21 @@ class CharacterDomainMapper {
             }
             return left.name.compareTo(right.name);
           });
+    final availableSpellsById = <String, CharacterSpellReferenceDomainModel>{
+      for (final spell in availableSpells) spell.id: spell,
+    };
+    final selectedSpells = record.spellSelections
+        .map((row) => availableSpellsById[row.spellDefinitionId])
+        .whereType<CharacterSpellReferenceDomainModel>()
+        .toList(growable: false);
+    final slotProgression = _characterSpellRules.slotProgressionFor(
+      className: record.row.className,
+      level: record.row.level,
+    );
+    final slotUsageByLevel = <int, int>{
+      for (final usage in record.spellSlotUsages)
+        usage.spellLevel: usage.slotsExpended,
+    };
 
     return CharacterSpellcastingDomainModel(
       abilityKey: abilityKey,
@@ -214,7 +235,23 @@ class CharacterDomainMapper {
         scores: resolvedAbilityScores,
       ),
       proficiencyBonus: progression.proficiencyBonus,
-      availableSpells: spells,
+      availableSpells: availableSpells,
+      selectionMode: _characterSpellRules.selectionModeForClass(
+        record.row.className,
+      ),
+      selectedSpells: selectedSpells,
+      slotProgression: slotProgression
+          .map(
+            (slot) => CharacterSpellSlotDomainModel(
+              spellLevel: slot.spellLevel,
+              slotsExpended: (slotUsageByLevel[slot.spellLevel] ?? 0).clamp(
+                0,
+                slot.slotsMax,
+              ),
+              slotsMax: slot.slotsMax,
+            ),
+          )
+          .toList(growable: false),
     );
   }
 

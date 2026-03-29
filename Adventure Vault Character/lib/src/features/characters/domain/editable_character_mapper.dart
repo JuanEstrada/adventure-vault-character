@@ -4,6 +4,7 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/domain/character_record.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/editable_character.dart';
+import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 
 class EditableCharacterMapper {
   const EditableCharacterMapper({
@@ -39,6 +40,27 @@ class EditableCharacterMapper {
       ),
       progression: character.identity.progression,
       hitPoints: character.combat.hitPoints,
+      spellState: EditableCharacterSpellState(
+        selectionMode: character.spellcasting?.selectionMode,
+        selectedSpells: record.spellSelections
+            .map(
+              (row) => _mapSpellSelection(
+                row,
+                catalog: record.catalog,
+                fallbackMode: character.spellcasting?.selectionMode,
+              ),
+            )
+            .whereType<CharacterSpellSelectionInput>()
+            .toList(growable: false),
+        slotUsages: record.spellSlotUsages
+            .map(
+              (row) => CharacterSpellSlotUsageInput(
+                spellLevel: row.spellLevel,
+                slotsExpended: row.slotsExpended,
+              ),
+            )
+            .toList(growable: false),
+      ),
       equipment: EditableCharacterEquipment(
         loadoutId: record.equipmentLoadout?.loadoutId,
         loadoutLabel: character.equipment.selectedEquipmentLabel,
@@ -104,6 +126,11 @@ class EditableCharacterMapper {
       currentHitPoints: character.hitPoints.current,
       maximumHitPoints: character.hitPoints.maximum,
       temporaryHitPoints: character.hitPoints.temporary,
+      spellState: CharacterSpellStateInput(
+        selectionMode: character.spellState.selectionMode,
+        selectedSpells: character.spellState.selectedSpells,
+        slotUsages: character.spellState.slotUsages,
+      ),
       finishingDetails: CharacterFinishingDetailsInput(
         portraitAssetPath: character.finishingDetails.portraitAssetPath,
         appearanceDetails: character.finishingDetails.appearanceDetails,
@@ -111,6 +138,36 @@ class EditableCharacterMapper {
         narrativeSelections: _resolvedNarrativeSelections(character),
       ),
     );
+  }
+
+  CharacterSpellSelectionInput? _mapSpellSelection(
+    CharacterSpellSelection row, {
+    required CompendiumCatalog catalog,
+    required CharacterSpellSelectionMode? fallbackMode,
+  }) {
+    final spell = catalog.spells
+        .where((item) => item.id == row.spellDefinitionId)
+        .firstOrNull;
+    if (spell == null) {
+      return null;
+    }
+
+    return CharacterSpellSelectionInput(
+      spellId: row.spellDefinitionId,
+      spellName: spell.name,
+      selectionMode:
+          _selectionModeFromStorage(row.selectionKind) ??
+          fallbackMode ??
+          CharacterSpellSelectionMode.prepared,
+    );
+  }
+
+  CharacterSpellSelectionMode? _selectionModeFromStorage(String raw) {
+    return switch (raw) {
+      'prepared' => CharacterSpellSelectionMode.prepared,
+      'known' => CharacterSpellSelectionMode.known,
+      _ => null,
+    };
   }
 
   EditableAbilityScoreProvenance _mapAbilityScoreProvenance(

@@ -413,6 +413,7 @@ class CompendiumEquipmentLoadout {
 @immutable
 class CompendiumSpell {
   const CompendiumSpell({
+    required this.id,
     required this.name,
     required this.level,
     required this.school,
@@ -425,6 +426,7 @@ class CompendiumSpell {
     required this.source,
   });
 
+  final String id;
   final String name;
   final int level;
   final String school;

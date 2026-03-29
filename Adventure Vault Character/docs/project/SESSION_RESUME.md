@@ -232,6 +232,9 @@ Verified on 2026-03-28:
 - The sheet now lists the locally available compendium spells for the active
   class as a first read-only spell foundation, ordered by spell level and
   name.
+- Standard spellcaster classes now also persist selected spells and spell-slot
+  usage in Drift, reopen that state through create/edit, and render the stored
+  spell choices plus remaining slots on the character sheet.
 - Draft save now runs through a non-widget validator that reports missing
   sections using builder-facing names before persistence.
 - A dedicated `CompendiumRepository` boundary now sits between the app and
@@ -461,8 +464,8 @@ restructuring it again:
 
 1. Decide whether narrative option catalogs should remain sourced from legacy
    5e XML supplements or move to a more explicit import/pack model.
-2. Extend deterministic character rules into persisted spell preparation,
-   known spells, and spell-slot progression.
+2. Extend deterministic character rules beyond the first persisted spell-state
+   slice, including class-specific limits and special-case spellcasting models.
 3. Keep reducing static SRD defaults by deriving more gameplay data directly
    from the FightClub source set through the compendium boundary.
 4. Extend the current pack-based filtering beyond narrative supplements and
@@ -510,6 +513,8 @@ Completed since the previous handoff:
 - Imported background `Suggested Characteristics` tables now also augment the
   loaded narrative option catalog for active imported packs and disappear
   again when those packs are disabled.
+- The first persisted spell-state vertical slice now exists for standard
+  spellcasters, including create/edit capture plus reopen-safe sheet output.
 - The main-menu spec and project snapshot/resume docs are aligned with that
   visible compendium status behavior.
 

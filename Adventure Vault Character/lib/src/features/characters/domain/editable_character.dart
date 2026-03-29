@@ -1,5 +1,6 @@
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:flutter/foundation.dart';
 
 @immutable
@@ -11,6 +12,7 @@ class EditableCharacter {
     required this.abilities,
     required this.progression,
     required this.hitPoints,
+    required this.spellState,
     required this.equipment,
     required this.finishingDetails,
     required this.createdAt,
@@ -23,10 +25,24 @@ class EditableCharacter {
   final EditableCharacterAbilities abilities;
   final CharacterProgressionDomainModel progression;
   final CharacterHitPointsDomainModel hitPoints;
+  final EditableCharacterSpellState spellState;
   final EditableCharacterEquipment equipment;
   final EditableCharacterFinishingDetails finishingDetails;
   final DateTime createdAt;
   final DateTime updatedAt;
+}
+
+@immutable
+class EditableCharacterSpellState {
+  const EditableCharacterSpellState({
+    required this.selectionMode,
+    required this.selectedSpells,
+    required this.slotUsages,
+  });
+
+  final CharacterSpellSelectionMode? selectionMode;
+  final List<CharacterSpellSelectionInput> selectedSpells;
+  final List<CharacterSpellSlotUsageInput> slotUsages;
 }
 
 @immutable

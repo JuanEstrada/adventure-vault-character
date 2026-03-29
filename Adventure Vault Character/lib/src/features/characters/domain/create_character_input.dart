@@ -27,6 +27,7 @@ class CreateCharacterInput {
     required this.currentHitPoints,
     required this.maximumHitPoints,
     required this.temporaryHitPoints,
+    required this.spellState,
     required this.finishingDetails,
   });
 
@@ -53,6 +54,7 @@ class CreateCharacterInput {
   final int currentHitPoints;
   final int maximumHitPoints;
   final int temporaryHitPoints;
+  final CharacterSpellStateInput spellState;
   final CharacterFinishingDetailsInput finishingDetails;
 
   String get alignment =>
@@ -63,4 +65,48 @@ class CreateCharacterInput {
   String get narrativeDetails => finishingDetails.narrativeNotes;
 
   String? get portraitAssetPath => finishingDetails.portraitAssetPath;
+}
+
+@immutable
+class CharacterSpellStateInput {
+  const CharacterSpellStateInput({
+    required this.selectionMode,
+    required this.selectedSpells,
+    required this.slotUsages,
+  });
+
+  final CharacterSpellSelectionMode? selectionMode;
+  final List<CharacterSpellSelectionInput> selectedSpells;
+  final List<CharacterSpellSlotUsageInput> slotUsages;
+
+  const CharacterSpellStateInput.empty()
+    : selectionMode = null,
+      selectedSpells = const <CharacterSpellSelectionInput>[],
+      slotUsages = const <CharacterSpellSlotUsageInput>[];
+}
+
+enum CharacterSpellSelectionMode { prepared, known }
+
+@immutable
+class CharacterSpellSelectionInput {
+  const CharacterSpellSelectionInput({
+    required this.spellId,
+    required this.spellName,
+    required this.selectionMode,
+  });
+
+  final String spellId;
+  final String spellName;
+  final CharacterSpellSelectionMode selectionMode;
+}
+
+@immutable
+class CharacterSpellSlotUsageInput {
+  const CharacterSpellSlotUsageInput({
+    required this.spellLevel,
+    required this.slotsExpended,
+  });
+
+  final int spellLevel;
+  final int slotsExpended;
 }

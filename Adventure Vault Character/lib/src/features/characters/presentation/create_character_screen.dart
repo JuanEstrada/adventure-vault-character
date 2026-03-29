@@ -1,6 +1,7 @@
 import 'package:adventure_vault_character/src/features/characters/application/finishing_details_service.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_spell_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:flutter/material.dart';
@@ -37,6 +38,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   final _appearanceController = TextEditingController();
   final _narrativeNotesController = TextEditingController();
   final _finishingDetailsService = const FinishingDetailsService();
+  final _characterSpellRules = const CharacterSpellRules();
   final Map<String, int> _generatedAssignments = <String, int>{
     'Strength': 15,
     'Dexterity': 14,
@@ -69,6 +71,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   int _maximumHitPoints = 10;
   int _temporaryHitPoints = 0;
   String? _portraitAssetPath;
+  final Set<String> _selectedSpellIds = <String>{};
+  final Map<int, int> _spellSlotUsages = <int, int>{};
 
   static const List<String> _abilityOrder = <String>[
     'Strength',
@@ -109,14 +113,16 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     }
     final initialDraft = widget.initialDraft;
     _selectedRace =
-        initialDraft != null && widget.catalog.races.contains(initialDraft.raceName)
+        initialDraft != null &&
+            widget.catalog.races.contains(initialDraft.raceName)
         ? initialDraft.raceName
         : widget.catalog.races.first;
     _selectedBackground =
         widget.catalog.backgroundById(initialDraft?.backgroundId) ??
         widget.catalog.backgrounds.first;
     _selectedClass =
-        initialDraft != null && widget.catalog.classes.contains(initialDraft.className)
+        initialDraft != null &&
+            widget.catalog.classes.contains(initialDraft.className)
         ? initialDraft.className
         : widget.catalog.classes.first;
     _selectedAbilityMethod =
@@ -151,13 +157,31 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
         ..['Charisma'] = initialDraft.charisma;
     }
 
-    final equipmentOptions = widget.catalog.equipmentLoadoutsForClass(_selectedClass);
+    final equipmentOptions = widget.catalog.equipmentLoadoutsForClass(
+      _selectedClass,
+    );
     _selectedEquipmentLoadout = initialDraft == null
         ? equipmentOptions.first
         : equipmentOptions.firstWhere(
             (option) => option.id == initialDraft.equipmentLoadoutId,
             orElse: () => equipmentOptions.first,
           );
+    _selectedSpellIds
+      ..clear()
+      ..addAll(
+        initialDraft?.spellState.selectedSpells
+                .map((spell) => spell.spellId)
+                .toList(growable: false) ??
+            const <String>[],
+      );
+    _spellSlotUsages
+      ..clear()
+      ..addEntries(
+        initialDraft?.spellState.slotUsages.map(
+              (usage) => MapEntry(usage.spellLevel, usage.slotsExpended),
+            ) ??
+            const Iterable<MapEntry<int, int>>.empty(),
+      );
 
     final initialSelections =
         initialDraft?.finishingDetails.narrativeSelections ??
@@ -171,6 +195,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
       _selectedGroupIds[fieldKey] = selection.groupId;
     }
     _syncNarrativeStateForBackground(forceResetInvalidSelections: false);
+    _syncSpellStateForClassLevel();
   }
 
   @override
@@ -229,11 +254,12 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           group.options.any((option) => option.id == current.optionId);
 
       if (current.mode == NarrativeSelectionMode.rolled) {
-        _narrativeSelections[fieldKey] = _finishingDetailsService.rolledSelection(
-          fieldKey: fieldKey,
-          group: group,
-          seed: _rollSeed(fieldKey, group.id),
-        );
+        _narrativeSelections[fieldKey] = _finishingDetailsService
+            .rolledSelection(
+              fieldKey: fieldKey,
+              group: group,
+              seed: _rollSeed(fieldKey, group.id),
+            );
       } else if (current.mode == NarrativeSelectionMode.manual &&
           !optionStillValid &&
           forceResetInvalidSelections) {
@@ -275,6 +301,69 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     return 'method=$_selectedAbilityMethod;$values';
   }
 
+  CharacterSpellSelectionMode? get _spellSelectionMode =>
+      _characterSpellRules.selectionModeForClass(_selectedClass);
+
+  bool get _showsSpellSection =>
+      _characterSpellRules.supportsPersistentSpellState(_selectedClass);
+
+  List<CompendiumSpell> get _availableSpellOptions {
+    final highestSpellLevel = _characterSpellRules.highestCastableSpellLevel(
+      className: _selectedClass,
+      level: _selectedLevel,
+    );
+    return widget.catalog.spells
+        .where(
+          (spell) =>
+              spell.classes.any(
+                (item) =>
+                    item.trim().toLowerCase() ==
+                    _selectedClass.trim().toLowerCase(),
+              ) &&
+              spell.level <= highestSpellLevel,
+        )
+        .toList(growable: false)
+      ..sort((left, right) {
+        final byLevel = left.level.compareTo(right.level);
+        if (byLevel != 0) {
+          return byLevel;
+        }
+        return left.name.compareTo(right.name);
+      });
+  }
+
+  List<CharacterSpellSlotProgression> get _spellSlotProgression =>
+      _characterSpellRules.slotProgressionFor(
+        className: _selectedClass,
+        level: _selectedLevel,
+      );
+
+  void _syncSpellStateForClassLevel() {
+    if (!_showsSpellSection) {
+      _selectedSpellIds.clear();
+      _spellSlotUsages.clear();
+      return;
+    }
+
+    final allowedSpellIds = _availableSpellOptions
+        .map((spell) => spell.id)
+        .toSet();
+    _selectedSpellIds.removeWhere(
+      (spellId) => !allowedSpellIds.contains(spellId),
+    );
+
+    final allowedSlotLevels = _spellSlotProgression
+        .map((slot) => slot.spellLevel)
+        .toSet();
+    _spellSlotUsages.removeWhere(
+      (spellLevel, _) => !allowedSlotLevels.contains(spellLevel),
+    );
+    for (final slot in _spellSlotProgression) {
+      final current = _spellSlotUsages[slot.spellLevel] ?? 0;
+      _spellSlotUsages[slot.spellLevel] = current.clamp(0, slot.slotsMax);
+    }
+  }
+
   void _submit() {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -309,6 +398,27 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
         currentHitPoints: _currentHitPoints,
         maximumHitPoints: _maximumHitPoints,
         temporaryHitPoints: _temporaryHitPoints,
+        spellState: CharacterSpellStateInput(
+          selectionMode: _spellSelectionMode,
+          selectedSpells: _availableSpellOptions
+              .where((spell) => _selectedSpellIds.contains(spell.id))
+              .map(
+                (spell) => CharacterSpellSelectionInput(
+                  spellId: spell.id,
+                  spellName: spell.name,
+                  selectionMode: _spellSelectionMode!,
+                ),
+              )
+              .toList(growable: false),
+          slotUsages: _spellSlotProgression
+              .map(
+                (slot) => CharacterSpellSlotUsageInput(
+                  spellLevel: slot.spellLevel,
+                  slotsExpended: _spellSlotUsages[slot.spellLevel] ?? 0,
+                ),
+              )
+              .toList(growable: false),
+        ),
         finishingDetails: CharacterFinishingDetailsInput(
           portraitAssetPath: _portraitAssetPath,
           appearanceDetails: _appearanceController.text.trim(),
@@ -377,7 +487,9 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
       );
     }
 
-    final equipmentOptions = widget.catalog.equipmentLoadoutsForClass(_selectedClass);
+    final equipmentOptions = widget.catalog.equipmentLoadoutsForClass(
+      _selectedClass,
+    );
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -415,6 +527,10 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                     const SizedBox(height: 16),
                     _buildClassSection(theme),
                     const SizedBox(height: 16),
+                    if (_showsSpellSection) ...[
+                      _buildSpellSection(theme),
+                      const SizedBox(height: 16),
+                    ],
                     _buildAbilitySection(theme),
                     const SizedBox(height: 16),
                     _buildEquipmentSection(theme, equipmentOptions),
@@ -437,7 +553,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                       children: [
                         FilledButton(
                           onPressed:
-                              widget.isSaving || !_hasSupportedEquipmentSelection
+                              widget.isSaving ||
+                                  !_hasSupportedEquipmentSelection
                               ? null
                               : _submit,
                           child: Text(
@@ -489,10 +606,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
             ),
             items: widget.catalog.races
                 .map(
-                  (race) => DropdownMenuItem<String>(
-                    value: race,
-                    child: Text(race),
-                  ),
+                  (race) =>
+                      DropdownMenuItem<String>(value: race, child: Text(race)),
                 )
                 .toList(growable: false),
             onChanged: widget.isSaving
@@ -546,10 +661,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                   },
           ),
           const SizedBox(height: 16),
-          Text(
-            _selectedBackground.summary,
-            style: theme.textTheme.bodyLarge,
-          ),
+          Text(_selectedBackground.summary, style: theme.textTheme.bodyLarge),
         ],
       ),
     );
@@ -586,6 +698,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                       _selectedEquipmentLoadout = widget.catalog
                           .equipmentLoadoutsForClass(value)
                           .first;
+                      _syncSpellStateForClassLevel();
                     });
                   },
           ),
@@ -614,6 +727,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                       _selectedLevel = value;
                       _selectedExperience =
                           CharacterRules.experienceFloorForLevel(value);
+                      _syncSpellStateForClassLevel();
                     });
                   },
           ),
@@ -675,13 +789,120 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
             enabled: !widget.isSaving,
             onChanged: (ability, score) {
               setState(() {
-                final target = _selectedAbilityMethod == 'generatedSetAssignment'
+                final target =
+                    _selectedAbilityMethod == 'generatedSetAssignment'
                     ? _generatedAssignments
                     : _manualAssignments;
                 target[ability] = score;
               });
             },
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSpellSection(ThemeData theme) {
+    final availableSpells = _availableSpellOptions;
+    final slotProgression = _spellSlotProgression;
+    final selectionLabel = switch (_spellSelectionMode) {
+      CharacterSpellSelectionMode.prepared => 'Prepared spells',
+      CharacterSpellSelectionMode.known => 'Known spells',
+      _ => 'Selected spells',
+    };
+
+    return _SectionCard(
+      title: 'Spells',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Casting ability: ${_spellcastingAbilityLabelForClass(_selectedClass)}',
+            style: theme.textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 8),
+          Text(selectionLabel, style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          if (availableSpells.isEmpty)
+            Text(
+              'No local spells available for the current class and level yet.',
+              style: theme.textTheme.bodyMedium,
+            )
+          else
+            ...availableSpells.map(
+              (spell) => CheckboxListTile(
+                value: _selectedSpellIds.contains(spell.id),
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  spell.level == 0
+                      ? '${spell.name} (Cantrip)'
+                      : '${spell.name} (Level ${spell.level})',
+                ),
+                subtitle: Text('${spell.school} • ${spell.castingTime}'),
+                onChanged: widget.isSaving
+                    ? null
+                    : (value) {
+                        setState(() {
+                          if (value ?? false) {
+                            _selectedSpellIds.add(spell.id);
+                          } else {
+                            _selectedSpellIds.remove(spell.id);
+                          }
+                        });
+                      },
+              ),
+            ),
+          const SizedBox(height: 12),
+          Text('Spell slots', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          if (slotProgression.isEmpty)
+            Text(
+              'No spell slots available at this level yet.',
+              style: theme.textTheme.bodyMedium,
+            )
+          else
+            ...slotProgression.map(
+              (slot) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  children: [
+                    Expanded(child: Text('Level ${slot.spellLevel} slots')),
+                    SizedBox(
+                      width: 180,
+                      child: DropdownButtonFormField<int>(
+                        initialValue: _spellSlotUsages[slot.spellLevel] ?? 0,
+                        decoration: InputDecoration(
+                          labelText: 'Expended / ${slot.slotsMax}',
+                          border: const OutlineInputBorder(),
+                        ),
+                        items:
+                            List<int>.generate(
+                                  slot.slotsMax + 1,
+                                  (index) => index,
+                                )
+                                .map(
+                                  (value) => DropdownMenuItem<int>(
+                                    value: value,
+                                    child: Text(value.toString()),
+                                  ),
+                                )
+                                .toList(growable: false),
+                        onChanged: widget.isSaving
+                            ? null
+                            : (value) {
+                                if (value == null) {
+                                  return;
+                                }
+                                setState(() {
+                                  _spellSlotUsages[slot.spellLevel] = value;
+                                });
+                              },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -768,16 +989,16 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
               padding: const EdgeInsets.only(bottom: 16),
               child: _NarrativeFieldEditor(
                 fieldKey: fieldKey,
-                selection: _narrativeSelections[fieldKey] ??
+                selection:
+                    _narrativeSelections[fieldKey] ??
                     NarrativeSelection.empty(fieldKey),
                 groups: _groupsFor(fieldKey),
                 selectedGroupId: _selectedGroupIds[fieldKey],
                 enabled: !widget.isSaving,
-                onModeChanged: (mode) => _onNarrativeModeChanged(fieldKey, mode),
-                onGroupChanged: (groupId) => _onNarrativeGroupChanged(
-                  fieldKey,
-                  groupId,
-                ),
+                onModeChanged: (mode) =>
+                    _onNarrativeModeChanged(fieldKey, mode),
+                onGroupChanged: (groupId) =>
+                    _onNarrativeGroupChanged(fieldKey, groupId),
                 onRollPressed: () => _onNarrativeRollPressed(fieldKey),
                 onManualOptionChanged: (optionId) =>
                     _onNarrativeOptionChanged(fieldKey, optionId),
@@ -805,7 +1026,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   ) {
     setState(() {
       final groups = _groupsFor(fieldKey);
-      final selectedGroupId = _selectedGroupIds[fieldKey] ??
+      final selectedGroupId =
+          _selectedGroupIds[fieldKey] ??
           (groups.isNotEmpty ? groups.first.id : null);
       _selectedGroupIds[fieldKey] = selectedGroupId;
 
@@ -818,11 +1040,12 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
 
       final group = groups.firstWhere((item) => item.id == selectedGroupId);
       if (mode == NarrativeSelectionMode.rolled) {
-        _narrativeSelections[fieldKey] = _finishingDetailsService.rolledSelection(
-          fieldKey: fieldKey,
-          group: group,
-          seed: _rollSeed(fieldKey, selectedGroupId),
-        );
+        _narrativeSelections[fieldKey] = _finishingDetailsService
+            .rolledSelection(
+              fieldKey: fieldKey,
+              group: group,
+              seed: _rollSeed(fieldKey, selectedGroupId),
+            );
         return;
       }
 
@@ -842,14 +1065,17 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
       _selectedGroupIds[fieldKey] = groupId;
       final selection =
           _narrativeSelections[fieldKey] ?? NarrativeSelection.empty(fieldKey);
-      final group = _groupsFor(fieldKey).firstWhere((item) => item.id == groupId);
+      final group = _groupsFor(
+        fieldKey,
+      ).firstWhere((item) => item.id == groupId);
 
       if (selection.mode == NarrativeSelectionMode.rolled) {
-        _narrativeSelections[fieldKey] = _finishingDetailsService.rolledSelection(
-          fieldKey: fieldKey,
-          group: group,
-          seed: _rollSeed(fieldKey, group.id),
-        );
+        _narrativeSelections[fieldKey] = _finishingDetailsService
+            .rolledSelection(
+              fieldKey: fieldKey,
+              group: group,
+              seed: _rollSeed(fieldKey, group.id),
+            );
         return;
       }
 
@@ -885,10 +1111,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     });
   }
 
-  void _onNarrativeOptionChanged(
-    NarrativeFieldKey fieldKey,
-    String? optionId,
-  ) {
+  void _onNarrativeOptionChanged(NarrativeFieldKey fieldKey, String? optionId) {
     final group = _finishingDetailsService.groupById(
       catalog: widget.catalog,
       fieldKey: fieldKey,
@@ -913,6 +1136,15 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
       );
     });
   }
+}
+
+String _spellcastingAbilityLabelForClass(String className) {
+  return switch (className.trim().toLowerCase()) {
+    'bard' || 'paladin' || 'sorcerer' => 'Charisma',
+    'cleric' || 'druid' || 'ranger' => 'Wisdom',
+    'wizard' => 'Intelligence',
+    _ => 'Unknown',
+  };
 }
 
 class _SectionCard extends StatelessWidget {
@@ -1028,10 +1260,12 @@ class _NarrativeFieldEditor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final selectedGroup = groups.cast<CompendiumNarrativeOptionGroup?>().firstWhere(
-      (group) => group?.id == selectedGroupId,
-      orElse: () => groups.isNotEmpty ? groups.first : null,
-    );
+    final selectedGroup = groups
+        .cast<CompendiumNarrativeOptionGroup?>()
+        .firstWhere(
+          (group) => group?.id == selectedGroupId,
+          orElse: () => groups.isNotEmpty ? groups.first : null,
+        );
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1120,14 +1354,16 @@ class _NarrativeFieldEditor extends StatelessWidget {
                   labelText: 'Official option',
                   border: OutlineInputBorder(),
                 ),
-                items: (selectedGroup?.options ?? const <CompendiumNarrativeOption>[])
-                    .map(
-                      (option) => DropdownMenuItem<String>(
-                        value: option.id,
-                        child: Text(option.label ?? option.text),
-                      ),
-                    )
-                    .toList(growable: false),
+                items:
+                    (selectedGroup?.options ??
+                            const <CompendiumNarrativeOption>[])
+                        .map(
+                          (option) => DropdownMenuItem<String>(
+                            value: option.id,
+                            child: Text(option.label ?? option.text),
+                          ),
+                        )
+                        .toList(growable: false),
                 onChanged: enabled ? onManualOptionChanged : null,
               ),
               if (selection.hasValue) ...[

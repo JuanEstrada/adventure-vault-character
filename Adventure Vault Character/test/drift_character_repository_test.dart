@@ -50,6 +50,19 @@ void main() {
           currentHitPoints: 28,
           maximumHitPoints: 28,
           temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.prepared,
+            selectedSpells: <CharacterSpellSelectionInput>[
+              CharacterSpellSelectionInput(
+                spellId: 'magic-missile',
+                spellName: 'Magic Missile',
+                selectionMode: CharacterSpellSelectionMode.prepared,
+              ),
+            ],
+            slotUsages: <CharacterSpellSlotUsageInput>[
+              CharacterSpellSlotUsageInput(spellLevel: 1, slotsExpended: 1),
+            ],
+          ),
           finishingDetails: CharacterFinishingDetailsInput(
             appearanceDetails: 'Tall and quiet',
             narrativeNotes: 'Keeps careful notes.',
@@ -91,6 +104,12 @@ void main() {
       final hitPoints = await (database.select(
         database.characterHitPoints,
       )..where((table) => table.characterId.equals(summary.id))).getSingle();
+      final spellSelections = await (database.select(
+        database.characterSpellSelections,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final spellSlotUsages = await (database.select(
+        database.characterSpellSlotUsages,
+      )..where((table) => table.characterId.equals(summary.id))).get();
       final finishingDetails = await (database.select(
         database.characterFinishingDetails,
       )..where((table) => table.characterId.equals(summary.id))).getSingle();
@@ -114,6 +133,12 @@ void main() {
       expect(equipmentLoadout.loadoutId, 'wizard-focus');
       expect(equipmentLoadout.loadoutLabel, 'Arcane focus kit');
       expect(hitPoints.maximum, 27);
+      expect(spellSelections, hasLength(1));
+      expect(spellSelections.single.spellDefinitionId, 'magic-missile');
+      expect(spellSelections.single.selectionKind, 'prepared');
+      expect(spellSlotUsages, hasLength(1));
+      expect(spellSlotUsages.single.spellLevel, 1);
+      expect(spellSlotUsages.single.slotsExpended, 1);
       expect(finishingDetails.alignment, 'Neutral');
       expect(finishingDetails.appearanceDetails, 'Tall and quiet');
       expect(narrativeSelections, hasLength(1));
@@ -133,6 +158,11 @@ void main() {
       );
       expect(sheet.equipment.selectedEquipmentLabel, 'Arcane focus kit');
       expect(sheet.equipment.money.startingMoneySummary, '15 gp, 4 sp');
+      expect(
+        sheet.spellcasting!.selectedSpells.map((spell) => spell.name),
+        <String>['Magic Missile'],
+      );
+      expect(sheet.spellcasting!.slotProgression.first.displaySummary, '3 / 4');
       expect(
         sheet.equipment.visibleItems,
         containsAll(<String>[
@@ -185,6 +215,19 @@ void main() {
           currentHitPoints: 28,
           maximumHitPoints: 28,
           temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.prepared,
+            selectedSpells: <CharacterSpellSelectionInput>[
+              CharacterSpellSelectionInput(
+                spellId: 'magic-missile',
+                spellName: 'Magic Missile',
+                selectionMode: CharacterSpellSelectionMode.prepared,
+              ),
+            ],
+            slotUsages: <CharacterSpellSlotUsageInput>[
+              CharacterSpellSlotUsageInput(spellLevel: 1, slotsExpended: 1),
+            ],
+          ),
           finishingDetails: CharacterFinishingDetailsInput(
             appearanceDetails: 'Tall and quiet',
             narrativeNotes: 'Keeps careful notes.',
@@ -233,6 +276,19 @@ void main() {
           currentHitPoints: 28,
           maximumHitPoints: 28,
           temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.prepared,
+            selectedSpells: <CharacterSpellSelectionInput>[
+              CharacterSpellSelectionInput(
+                spellId: 'mage-hand',
+                spellName: 'Mage Hand',
+                selectionMode: CharacterSpellSelectionMode.prepared,
+              ),
+            ],
+            slotUsages: <CharacterSpellSlotUsageInput>[
+              CharacterSpellSlotUsageInput(spellLevel: 1, slotsExpended: 0),
+            ],
+          ),
           finishingDetails: CharacterFinishingDetailsInput(
             appearanceDetails: 'Short hair',
             narrativeNotes: 'Updated after review.',
@@ -277,6 +333,12 @@ void main() {
       final hitPoints = await (database.select(
         database.characterHitPoints,
       )..where((table) => table.characterId.equals(created.id))).getSingle();
+      final spellSelections = await (database.select(
+        database.characterSpellSelections,
+      )..where((table) => table.characterId.equals(created.id))).get();
+      final spellSlotUsages = await (database.select(
+        database.characterSpellSlotUsages,
+      )..where((table) => table.characterId.equals(created.id))).get();
       final finishingDetails = await (database.select(
         database.characterFinishingDetails,
       )..where((table) => table.characterId.equals(created.id))).getSingle();
@@ -305,6 +367,9 @@ void main() {
       expect(equipmentLoadout.loadoutLabel, 'Arcane focus kit');
       expect(hitPoints.maximum, 7);
       expect(hitPoints.current, 7);
+      expect(spellSelections, hasLength(1));
+      expect(spellSelections.single.spellDefinitionId, 'mage-hand');
+      expect(spellSlotUsages.single.slotsExpended, 0);
       expect(finishingDetails.alignment, 'Lawful Good');
       expect(finishingDetails.appearanceDetails, 'Short hair');
       expect(inventory.map((item) => item.displayNameSnapshot), <String>[
@@ -317,6 +382,10 @@ void main() {
       expect(sheet!.identity.name, 'Aelar');
       expect(sheet.identity.progression.level, 1);
       expect(sheet.abilities.methodLabel, 'Manual point allocation');
+      expect(
+        sheet.spellcasting!.selectedSpells.map((spell) => spell.name),
+        <String>['Mage Hand'],
+      );
       expect(sheet.featuresNotes.alignment, 'Lawful Good');
       expect(sheet.equipment.money.startingMoneySummary, '20 gp');
       expect(sheet.equipment.visibleItems, <String>[
@@ -365,7 +434,34 @@ const _testCatalog = CompendiumCatalog(
       charisma: 10,
     ),
   ],
-  spells: <CompendiumSpell>[],
+  spells: <CompendiumSpell>[
+    CompendiumSpell(
+      id: 'mage-hand',
+      name: 'Mage Hand',
+      level: 0,
+      school: 'Conjuration',
+      castingTime: '1 action',
+      range: '30 feet',
+      components: 'V, S',
+      duration: '1 minute',
+      classes: <String>['Wizard'],
+      description: <String>['A spectral hand appears.'],
+      source: 'SRD',
+    ),
+    CompendiumSpell(
+      id: 'magic-missile',
+      name: 'Magic Missile',
+      level: 1,
+      school: 'Evocation',
+      castingTime: '1 action',
+      range: '120 feet',
+      components: 'V, S',
+      duration: 'Instantaneous',
+      classes: <String>['Wizard'],
+      description: <String>['Three darts of magical force.'],
+      source: 'SRD',
+    ),
+  ],
   feats: <CompendiumFeat>[],
   monsters: <CompendiumMonster>[],
   equipmentSummariesByClass: <String, EquipmentSummaryViewData>{

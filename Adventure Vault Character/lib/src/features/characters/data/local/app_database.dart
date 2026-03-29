@@ -155,6 +155,32 @@ class CharacterEquipmentLoadouts extends Table {
   Set<Column<Object>> get primaryKey => {characterId};
 }
 
+class CharacterSpellSelections extends Table {
+  TextColumn get characterId => text().references(Characters, #id)();
+
+  TextColumn get spellDefinitionId => text().named('spell_definition_id')();
+
+  TextColumn get selectionKind => text().named('selection_kind')();
+
+  IntColumn get selectedAtOrder =>
+      integer().named('selected_at_order').withDefault(const Constant(0))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {characterId, spellDefinitionId};
+}
+
+class CharacterSpellSlotUsages extends Table {
+  TextColumn get characterId => text().references(Characters, #id)();
+
+  IntColumn get spellLevel => integer().named('spell_level')();
+
+  IntColumn get slotsExpended =>
+      integer().named('slots_expended').withDefault(const Constant(0))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {characterId, spellLevel};
+}
+
 class SkillDefinitions extends Table {
   TextColumn get id => text()();
 
@@ -593,6 +619,8 @@ class TrinketDefinitions extends Table {
     CharacterFinishingDetails,
     CharacterNarrativeSelections,
     CharacterEquipmentLoadouts,
+    CharacterSpellSelections,
+    CharacterSpellSlotUsages,
     SkillDefinitions,
     CharacterSkills,
     CharacterSavingThrows,
@@ -628,7 +656,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.executor(super.executor);
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -780,6 +808,10 @@ class AppDatabase extends _$AppDatabase {
       if (from < 14) {
         await migrator.createTable(importedCompendiumPacks);
       }
+      if (from < 15) {
+        await migrator.createTable(characterSpellSelections);
+        await migrator.createTable(characterSpellSlotUsages);
+      }
 
       await _createIndexes();
     },
@@ -813,6 +845,14 @@ class AppDatabase extends _$AppDatabase {
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_character_equipment_loadouts_character '
       'ON character_equipment_loadouts (character_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_character_spell_selections_character '
+      'ON character_spell_selections (character_id, selected_at_order)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_character_spell_slot_usages_character '
+      'ON character_spell_slot_usages (character_id)',
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_character_skills_character '

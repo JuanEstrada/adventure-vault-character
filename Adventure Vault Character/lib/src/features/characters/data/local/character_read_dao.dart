@@ -77,6 +77,24 @@ class CharacterReadDao {
     )..where((table) => table.characterId.equals(id))).getSingleOrNull();
   }
 
+  Future<List<CharacterSpellSelection>> getSpellSelectionsByCharacterId(
+    String id,
+  ) {
+    return (_database.select(_database.characterSpellSelections)
+          ..where((table) => table.characterId.equals(id))
+          ..orderBy([(table) => OrderingTerm.asc(table.selectedAtOrder)]))
+        .get();
+  }
+
+  Future<List<CharacterSpellSlotUsage>> getSpellSlotUsagesByCharacterId(
+    String id,
+  ) {
+    return (_database.select(_database.characterSpellSlotUsages)
+          ..where((table) => table.characterId.equals(id))
+          ..orderBy([(table) => OrderingTerm.asc(table.spellLevel)]))
+        .get();
+  }
+
   Future<CharacterCurrencyData?> getCurrencyByCharacterId(String id) {
     return (_database.select(
       _database.characterCurrency,

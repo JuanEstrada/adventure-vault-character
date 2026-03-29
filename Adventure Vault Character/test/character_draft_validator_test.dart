@@ -88,6 +88,7 @@ CreateCharacterInput _validInput({
     currentHitPoints: currentHitPoints,
     maximumHitPoints: maximumHitPoints,
     temporaryHitPoints: temporaryHitPoints,
+    spellState: const CharacterSpellStateInput.empty(),
     finishingDetails: CharacterFinishingDetailsInput(
       appearanceDetails: appearanceDetails,
       narrativeNotes: narrativeDetails,

@@ -15,6 +15,8 @@ class CharacterRecord {
     required this.finishingDetails,
     required this.narrativeSelections,
     required this.equipmentLoadout,
+    required this.spellSelections,
+    required this.spellSlotUsages,
     required this.currency,
     required this.inventory,
     required this.savingThrows,
@@ -33,6 +35,8 @@ class CharacterRecord {
   final CharacterFinishingDetail? finishingDetails;
   final List<CharacterNarrativeSelection> narrativeSelections;
   final CharacterEquipmentLoadout? equipmentLoadout;
+  final List<CharacterSpellSelection> spellSelections;
+  final List<CharacterSpellSlotUsage> spellSlotUsages;
   final CharacterCurrencyData? currency;
   final List<CharacterInventoryData> inventory;
   final List<CharacterSavingThrow> savingThrows;

@@ -153,6 +153,9 @@ summary.
   spellcaster classes, with deterministic `casting ability`,
   `spell save DC`, `spell attack bonus`, and a read-only list of available
   compendium spells for the active class.
+- Standard spellcaster classes now also persist selected spells and spell-slot
+  usage in the normalized character model, and that state now survives
+  create, reopen, edit, and sheet rendering.
 - Regression tests now cover Drift migrations from legacy schemas into `v4`.
 - Regression tests now also cover loading an editable aggregate from
   normalized persistence and mapping it back into the current
@@ -386,8 +389,8 @@ summary.
    and broader official Wizards XML.
 2. Continue translating the available rules sources into explicit
    deterministic application/domain services.
-3. Extend the new spellcasting foundation into persisted slots, prepared/known
-   spells, and reopen-safe spell state.
+3. Extend the new spellcasting foundation beyond the first persisted slots and
+   selected-spells slice into class-specific limits and special cases.
 4. Expand the inventory/equipment model beyond starter loadouts.
 5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 

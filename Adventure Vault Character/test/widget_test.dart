@@ -273,6 +273,15 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
+      find.text('Spells'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Prepared spells'), findsOneWidget);
+    await tester.tap(find.text('Magic Missile (Level 1)'));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
       find.widgetWithText(FilledButton, 'Guardar draft').first,
       400,
       scrollable: find.byType(Scrollable).first,
@@ -305,12 +314,17 @@ void main() {
     expect(savedCharacter.spellcasting!.abilityLabel, 'Intelligence');
     expect(savedCharacter.spellcasting!.spellSaveDc, 12);
     expect(
+      savedCharacter.spellcasting!.selectedSpells.map((item) => item.name),
+      <String>['Magic Missile'],
+    );
+    expect(
       savedCharacter.spellcasting!.availableSpells.map((item) => item.name),
       <String>['Mage Hand', 'Magic Missile'],
     );
     expect(find.text('Spells'), findsWidgets);
+    expect(find.text('Prepared spells'), findsOneWidget);
     expect(find.text('Spell save DC'), findsOneWidget);
-    expect(find.textContaining('Magic Missile'), findsOneWidget);
+    expect(find.textContaining('Magic Missile'), findsWidgets);
   });
 
   testWidgets('open edit save and reopen keeps updated character data', (
@@ -511,6 +525,7 @@ const _testCatalog = CompendiumCatalog(
   ],
   spells: <CompendiumSpell>[
     CompendiumSpell(
+      id: 'mage-hand',
       name: 'Mage Hand',
       level: 0,
       school: 'Conjuration',
@@ -523,6 +538,7 @@ const _testCatalog = CompendiumCatalog(
       source: 'SRD',
     ),
     CompendiumSpell(
+      id: 'magic-missile',
       name: 'Magic Missile',
       level: 1,
       school: 'Evocation',
@@ -535,6 +551,7 @@ const _testCatalog = CompendiumCatalog(
       source: 'SRD',
     ),
     CompendiumSpell(
+      id: 'cure-wounds',
       name: 'Cure Wounds',
       level: 1,
       school: 'Evocation',

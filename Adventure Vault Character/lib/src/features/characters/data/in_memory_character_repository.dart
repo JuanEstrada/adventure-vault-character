@@ -4,6 +4,7 @@ import 'package:adventure_vault_character/src/features/characters/data/character
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_spell_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary_mapper.dart';
@@ -30,6 +31,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
   final CompendiumRepository _compendiumRepository;
   final CharacterSummaryMapper _characterSummaryMapper =
       const CharacterSummaryMapper();
+  final CharacterSpellRules _characterSpellRules = const CharacterSpellRules();
   final StreamController<void> _changes = StreamController<void>.broadcast();
 
   @override
@@ -125,6 +127,8 @@ class InMemoryCharacterRepository implements CharacterRepository {
       className: className,
       catalog: catalog,
       progression: progression,
+      spellState:
+          createdInput?.spellState ?? const CharacterSpellStateInput.empty(),
       strength: createdInput?.strength ?? 15,
       dexterity: createdInput?.dexterity ?? 14,
       constitution: createdInput?.constitution ?? 13,
@@ -291,6 +295,15 @@ class InMemoryCharacterRepository implements CharacterRepository {
       ),
       progression: sheet.identity.progression,
       hitPoints: sheet.combat.hitPoints,
+      spellState: EditableCharacterSpellState(
+        selectionMode: createdInput?.spellState.selectionMode,
+        selectedSpells:
+            createdInput?.spellState.selectedSpells ??
+            const <CharacterSpellSelectionInput>[],
+        slotUsages:
+            createdInput?.spellState.slotUsages ??
+            const <CharacterSpellSlotUsageInput>[],
+      ),
       equipment: EditableCharacterEquipment(
         loadoutId: createdInput?.equipmentLoadoutId,
         loadoutLabel: sheet.equipment.selectedEquipmentLabel,
@@ -388,6 +401,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
     required String className,
     required CompendiumCatalog catalog,
     required CharacterProgressionDomainModel progression,
+    required CharacterSpellStateInput spellState,
     required int strength,
     required int dexterity,
     required int constitution,
@@ -419,6 +433,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
             )
             .map(
               (spell) => CharacterSpellReferenceDomainModel(
+                id: spell.id,
                 name: spell.name,
                 level: spell.level,
                 school: spell.school,
@@ -436,6 +451,21 @@ class InMemoryCharacterRepository implements CharacterRepository {
             }
             return left.name.compareTo(right.name);
           });
+    final availableSpellsById = <String, CharacterSpellReferenceDomainModel>{
+      for (final spell in availableSpells) spell.id: spell,
+    };
+    final selectedSpells = spellState.selectedSpells
+        .map((selection) => availableSpellsById[selection.spellId])
+        .whereType<CharacterSpellReferenceDomainModel>()
+        .toList(growable: false);
+    final slotProgression = _characterSpellRules.slotProgressionFor(
+      className: className,
+      level: progression.level,
+    );
+    final slotUsageByLevel = <int, int>{
+      for (final usage in spellState.slotUsages)
+        usage.spellLevel: usage.slotsExpended,
+    };
 
     return CharacterSpellcastingDomainModel(
       abilityKey: abilityKey,
@@ -443,6 +473,20 @@ class InMemoryCharacterRepository implements CharacterRepository {
       abilityScore: abilityScore,
       proficiencyBonus: progression.proficiencyBonus,
       availableSpells: availableSpells,
+      selectionMode: _characterSpellRules.selectionModeForClass(className),
+      selectedSpells: selectedSpells,
+      slotProgression: slotProgression
+          .map(
+            (slot) => CharacterSpellSlotDomainModel(
+              spellLevel: slot.spellLevel,
+              slotsExpended: (slotUsageByLevel[slot.spellLevel] ?? 0).clamp(
+                0,
+                slot.slotsMax,
+              ),
+              slotsMax: slot.slotsMax,
+            ),
+          )
+          .toList(growable: false),
     );
   }
 

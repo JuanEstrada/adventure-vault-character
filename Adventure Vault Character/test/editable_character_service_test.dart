@@ -51,6 +51,19 @@ void main() {
           currentHitPoints: 28,
           maximumHitPoints: 28,
           temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.prepared,
+            selectedSpells: <CharacterSpellSelectionInput>[
+              CharacterSpellSelectionInput(
+                spellId: 'magic-missile',
+                spellName: 'Magic Missile',
+                selectionMode: CharacterSpellSelectionMode.prepared,
+              ),
+            ],
+            slotUsages: <CharacterSpellSlotUsageInput>[
+              CharacterSpellSlotUsageInput(spellLevel: 1, slotsExpended: 1),
+            ],
+          ),
           finishingDetails: CharacterFinishingDetailsInput(
             appearanceDetails: 'Tall and quiet',
             narrativeNotes: 'Keeps careful notes.',
@@ -86,6 +99,15 @@ void main() {
       expect(editable.progression.proficiencyBonus, 3);
       expect(editable.hitPoints.maximum, 27);
       expect(editable.equipment.loadoutId, 'wizard-focus');
+      expect(
+        editable.spellState.selectionMode,
+        CharacterSpellSelectionMode.prepared,
+      );
+      expect(
+        editable.spellState.selectedSpells.single.spellId,
+        'magic-missile',
+      );
+      expect(editable.spellState.slotUsages.single.slotsExpended, 1);
       expect(editable.equipment.items[1].name, 'Torch');
       expect(editable.equipment.items[1].quantity, 2);
       expect(
@@ -132,6 +154,7 @@ void main() {
           currentHitPoints: 12,
           maximumHitPoints: 12,
           temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput.empty(),
           finishingDetails: CharacterFinishingDetailsInput(
             appearanceDetails: 'Short hair',
             narrativeNotes: 'Ready for patrol.',
@@ -162,6 +185,7 @@ void main() {
       expect(remapped.abilityScoreMethod, 'manualPointAllocation');
       expect(remapped.strength, 15);
       expect(remapped.equipmentLoadoutId, 'fighter-chain-mail');
+      expect(remapped.spellState.selectionMode, isNull);
       expect(remapped.selectedEquipmentItems, <String>[
         'Chain mail',
         'Shield',
@@ -219,7 +243,21 @@ const _testCatalog = CompendiumCatalog(
       charisma: 10,
     ),
   ],
-  spells: <CompendiumSpell>[],
+  spells: <CompendiumSpell>[
+    CompendiumSpell(
+      id: 'magic-missile',
+      name: 'Magic Missile',
+      level: 1,
+      school: 'Evocation',
+      castingTime: '1 action',
+      range: '120 feet',
+      components: 'V, S',
+      duration: 'Instantaneous',
+      classes: <String>['Wizard'],
+      description: <String>['Three darts of magical force.'],
+      source: 'SRD',
+    ),
+  ],
   feats: <CompendiumFeat>[],
   monsters: <CompendiumMonster>[],
   equipmentSummariesByClass: <String, EquipmentSummaryViewData>{

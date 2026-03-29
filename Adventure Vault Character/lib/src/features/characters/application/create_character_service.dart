@@ -5,6 +5,7 @@ import 'package:adventure_vault_character/src/features/characters/data/local/cha
 import 'package:adventure_vault_character/src/features/characters/data/local/character_write_dao.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_spell_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary_mapper.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
@@ -20,17 +21,20 @@ class CreateCharacterService {
     required CompendiumRepository compendiumRepository,
     CharacterSummaryMapper characterSummaryMapper =
         const CharacterSummaryMapper(),
+    CharacterSpellRules characterSpellRules = const CharacterSpellRules(),
   }) : _database = database,
        _referenceDao = referenceDao,
        _writeDao = writeDao,
        _compendiumRepository = compendiumRepository,
-       _characterSummaryMapper = characterSummaryMapper;
+       _characterSummaryMapper = characterSummaryMapper,
+       _characterSpellRules = characterSpellRules;
 
   final AppDatabase _database;
   final CharacterReferenceDao _referenceDao;
   final CharacterWriteDao _writeDao;
   final CompendiumRepository _compendiumRepository;
   final CharacterSummaryMapper _characterSummaryMapper;
+  final CharacterSpellRules _characterSpellRules;
   Future<CompendiumCatalog>? _catalogFuture;
 
   Future<CharacterSummary> createCharacter(CreateCharacterInput input) async {
@@ -91,6 +95,12 @@ class CreateCharacterService {
     final resolvedHitPoints = _resolveHitPoints(
       existingHitPoints: existingHitPoints,
       recomputedMaximum: recomputedHitPoints,
+    );
+    _validateSpellState(
+      input: input,
+      catalog: catalog,
+      className: input.className,
+      level: input.level,
     );
     final inventoryItems = input.selectedEquipmentItems
         .map(_parseInventoryItemSpec)
@@ -154,6 +164,14 @@ class CreateCharacterService {
         id,
         input,
         replaceExisting: existingRow != null,
+      );
+      await _writeDao.deleteSpellSelectionsByCharacterId(id);
+      await _writeDao.insertSpellSelections(
+        _buildSpellSelectionRows(characterId: id, input: input),
+      );
+      await _writeDao.deleteSpellSlotUsagesByCharacterId(id);
+      await _writeDao.insertSpellSlotUsages(
+        _buildSpellSlotUsageRows(characterId: id, input: input),
       );
       await _writeDao.deleteSkillsByCharacterId(id);
       await _writeDao.insertSkills(
@@ -414,6 +432,39 @@ class CreateCharacterService {
         loadoutLabel: Value(input.equipmentLoadoutLabel),
       ),
     );
+  }
+
+  List<CharacterSpellSelectionsCompanion> _buildSpellSelectionRows({
+    required String characterId,
+    required CreateCharacterInput input,
+  }) {
+    return input.spellState.selectedSpells
+        .asMap()
+        .entries
+        .map(
+          (entry) => CharacterSpellSelectionsCompanion.insert(
+            characterId: characterId,
+            spellDefinitionId: entry.value.spellId,
+            selectionKind: _selectionModeStorageKey(entry.value.selectionMode),
+            selectedAtOrder: Value(entry.key),
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  List<CharacterSpellSlotUsagesCompanion> _buildSpellSlotUsageRows({
+    required String characterId,
+    required CreateCharacterInput input,
+  }) {
+    return input.spellState.slotUsages
+        .map(
+          (usage) => CharacterSpellSlotUsagesCompanion.insert(
+            characterId: characterId,
+            spellLevel: usage.spellLevel,
+            slotsExpended: Value(usage.slotsExpended),
+          ),
+        )
+        .toList(growable: false);
   }
 
   Future<CompendiumCatalog> _loadCatalog() {
@@ -853,6 +904,91 @@ class CreateCharacterService {
           weaponProficiencies: const <String>[],
           toolProficiencies: const <String>[],
         );
+  }
+
+  void _validateSpellState({
+    required CreateCharacterInput input,
+    required CompendiumCatalog catalog,
+    required String className,
+    required int level,
+  }) {
+    final supportsSpellState = _characterSpellRules
+        .supportsPersistentSpellState(className);
+    if (!supportsSpellState) {
+      if (input.spellState.selectedSpells.isNotEmpty ||
+          input.spellState.slotUsages.isNotEmpty ||
+          input.spellState.selectionMode != null) {
+        throw StateError(
+          'Only supported spellcaster classes can persist spell state.',
+        );
+      }
+      return;
+    }
+
+    final expectedMode = _characterSpellRules.selectionModeForClass(className);
+    if (input.spellState.selectionMode != expectedMode) {
+      throw StateError('Spell selection mode does not match the active class.');
+    }
+
+    final highestSpellLevel = _characterSpellRules.highestCastableSpellLevel(
+      className: className,
+      level: level,
+    );
+    final availableSpells = <String, CompendiumSpell>{
+      for (final spell in catalog.spells)
+        if (_spellMatchesClass(spell.classes, className)) spell.id: spell,
+    };
+    final seenSpellIds = <String>{};
+    for (final selection in input.spellState.selectedSpells) {
+      final spell = availableSpells[selection.spellId];
+      if (spell == null) {
+        throw StateError('Selected spell does not belong to the active class.');
+      }
+      if (!seenSpellIds.add(selection.spellId)) {
+        throw StateError('Duplicate selected spells are not allowed.');
+      }
+      if (spell.level > highestSpellLevel) {
+        throw StateError('Selected spell is above the current castable level.');
+      }
+    }
+
+    final slotsByLevel = <int, int>{
+      for (final slot in _characterSpellRules.slotProgressionFor(
+        className: className,
+        level: level,
+      ))
+        slot.spellLevel: slot.slotsMax,
+    };
+    final seenSlotLevels = <int>{};
+    for (final usage in input.spellState.slotUsages) {
+      final slotsMax = slotsByLevel[usage.spellLevel];
+      if (slotsMax == null) {
+        throw StateError('Spell slot usage references an invalid spell level.');
+      }
+      if (!seenSlotLevels.add(usage.spellLevel)) {
+        throw StateError('Duplicate spell slot usage rows are not allowed.');
+      }
+      if (usage.slotsExpended < 0 || usage.slotsExpended > slotsMax) {
+        throw StateError('Spell slot usage exceeds the derived slot maximum.');
+      }
+    }
+  }
+
+  String _selectionModeStorageKey(CharacterSpellSelectionMode mode) {
+    return switch (mode) {
+      CharacterSpellSelectionMode.prepared => 'prepared',
+      CharacterSpellSelectionMode.known => 'known',
+    };
+  }
+
+  bool _spellMatchesClass(List<String> spellClasses, String className) {
+    final normalizedClassName = _slugify(className);
+    for (final spellClass in spellClasses) {
+      if (_slugify(spellClass) == normalizedClassName) {
+        return true;
+      }
+    }
+    return false;
   }
 
   _ParsedAbilityScoreProvenance _parseAbilityScoreProvenance(

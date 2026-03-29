@@ -48,6 +48,8 @@ ingresar, elegir o confirmar el usuario.
   `Class / level / experience`
 - Resumenes derivados visibles en la hoja, como method label de abilities,
   progreso de nivel y composicion visible de equipo cuando aplica
+- Progresion deterministica de spell slots para las clases lanzadoras ya
+  soportadas y resumen derivado de slots restantes en la hoja
 
 ### Futuro esperado
 
@@ -56,11 +58,14 @@ ingresar, elegir o confirmar el usuario.
 - Gestion mas completa de compendium packs activos e inactivos
 - Resolucion por tirada o seleccion manual sobre opciones oficiales para cada
   campo narrativo de `finishing details`
+- Limites especificos por clase para prepared spells, known spells y modelos
+  especiales como `warlock`
 
 ### No automatizado hoy
 
 - Calculo completo de ataques
-- Spell slots y uso detallado de hechizos
+- Modelos especiales de spellcasting, recuperacion por descanso y limites
+  completos de prepared/known spells
 - Armor Class, initiative y combate avanzado como sistema completo
 - Reglas de inventario completo fuera del flujo MVP de equipo inicial
 - Automatizacion total de recursos de clase, rasgos o consumos por descanso
@@ -84,6 +89,8 @@ ingresar, elegir o confirmar el usuario.
 - `alignment` visible como seleccion cerrada en el flujo actual
 - `narrative details` como campo libre donde hoy pueden quedar resumidos
   traits, ideals, bonds, flaws u otras notas
+- Seleccion de hechizos y gasto actual de spell slots para clases lanzadoras
+  soportadas
 
 ### Futuro esperado
 
@@ -107,6 +114,9 @@ ingresar, elegir o confirmar el usuario.
 - En el comportamiento documentado para futuro cercano, la app podra
   resolver por tirada o seleccion manual los campos narrativos de
   `finishing details` usando los catalogos oficiales ya normalizados
+- Si cambia clase o nivel en una clase lanzadora soportada, la app recorta
+  hechizos fuera del nivel lanzable actual y ajusta el gasto de slots al
+  nuevo maximo derivado
 - La hoja de personaje reutiliza valores derivados del dominio en lugar de
   recalcularlos dentro de widgets
 

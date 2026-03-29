@@ -360,6 +360,7 @@ CompendiumSpell? _parseSpell(_XmlElement element) {
     return null;
   }
   return CompendiumSpell(
+    id: _slugifyName(name),
     name: name,
     level: int.tryParse(_extractSingleTagText(xml, 'level') ?? '0') ?? 0,
     school: _extractSingleTagText(xml, 'school') ?? '',

@@ -443,6 +443,51 @@ class _SpellsPanel extends StatelessWidget {
               value: spellcasting.displaySpellAttackBonus,
             ),
             const SizedBox(height: 8),
+            Text(
+              spellcasting.selectionLabel,
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            if (spellcasting.selectedSpells.isEmpty)
+              Text(
+                'No persisted spells selected yet.',
+                style: theme.textTheme.bodyLarge,
+              )
+            else
+              ...spellcasting.selectedSpellsByLevel.map(
+                (levelGroup) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        levelGroup.label,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      ...levelGroup.spells.map(
+                        (spell) => Text('• ${spell.name}'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: 8),
+            Text('Spell slots', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            if (spellcasting.slotProgression.isEmpty)
+              Text(
+                'No spell slots available at this level.',
+                style: theme.textTheme.bodyLarge,
+              )
+            else
+              ...spellcasting.slotProgression.map(
+                (slot) =>
+                    _FactRow(label: slot.label, value: slot.displaySummary),
+              ),
+            const SizedBox(height: 8),
             Text('Available spells', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             if (spellcasting.availableSpells.isEmpty)

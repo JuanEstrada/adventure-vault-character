@@ -1,5 +1,6 @@
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -124,8 +125,29 @@ void main() {
           abilityLabel: 'Intelligence',
           abilityScore: 15,
           proficiencyBonus: 3,
+          selectionMode: CharacterSpellSelectionMode.prepared,
+          selectedSpells: <CharacterSpellReferenceDomainModel>[
+            CharacterSpellReferenceDomainModel(
+              id: 'magic-missile',
+              name: 'Magic Missile',
+              level: 1,
+              school: 'Evocation',
+              castingTime: '1 action',
+              range: '120 feet',
+              duration: 'Instantaneous',
+              source: 'SRD',
+            ),
+          ],
+          slotProgression: <CharacterSpellSlotDomainModel>[
+            CharacterSpellSlotDomainModel(
+              spellLevel: 1,
+              slotsExpended: 1,
+              slotsMax: 4,
+            ),
+          ],
           availableSpells: <CharacterSpellReferenceDomainModel>[
             CharacterSpellReferenceDomainModel(
+              id: 'mage-hand',
               name: 'Mage Hand',
               level: 0,
               school: 'Conjuration',
@@ -135,6 +157,7 @@ void main() {
               source: 'SRD',
             ),
             CharacterSpellReferenceDomainModel(
+              id: 'magic-missile',
               name: 'Magic Missile',
               level: 1,
               school: 'Evocation',
@@ -168,6 +191,11 @@ void main() {
       expect(character.spellcasting!.displayAbilityModifier, '+2');
       expect(character.spellcasting!.spellSaveDc, 13);
       expect(character.spellcasting!.displaySpellAttackBonus, '+5');
+      expect(character.spellcasting!.selectionLabel, 'Prepared spells');
+      expect(
+        character.spellcasting!.slotProgression.single.displaySummary,
+        '3 / 4',
+      );
       expect(
         character.spellcasting!.spellsByLevel.map((item) => item.label),
         <String>['Cantrips', 'Level 1'],

@@ -745,6 +745,11 @@ class AssetCompendiumRepository implements CompendiumRepository {
         final spellXml = element.innerXml;
         spells.add(
           CompendiumSpell(
+            id: _slugifyName(
+              _normalizeCatalogName(
+                _extractSingleTagText(spellXml, 'name') ?? name,
+              ),
+            ),
             name: _normalizeCatalogName(
               _extractSingleTagText(spellXml, 'name') ?? name,
             ),

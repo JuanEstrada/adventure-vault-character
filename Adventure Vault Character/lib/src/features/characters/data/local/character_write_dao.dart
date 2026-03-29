@@ -89,7 +89,9 @@ class CharacterWriteDao {
   Future<void> insertEquipmentLoadout(
     CharacterEquipmentLoadoutsCompanion companion,
   ) {
-    return _database.into(_database.characterEquipmentLoadouts).insert(companion);
+    return _database
+        .into(_database.characterEquipmentLoadouts)
+        .insert(companion);
   }
 
   Future<void> replaceEquipmentLoadout(
@@ -98,6 +100,38 @@ class CharacterWriteDao {
     await _database
         .into(_database.characterEquipmentLoadouts)
         .insertOnConflictUpdate(companion);
+  }
+
+  Future<void> insertSpellSelections(
+    List<CharacterSpellSelectionsCompanion> companions,
+  ) async {
+    if (companions.isEmpty) {
+      return;
+    }
+
+    await _database.batch((Batch batch) {
+      batch.insertAll(
+        _database.characterSpellSelections,
+        companions,
+        mode: InsertMode.insertOrReplace,
+      );
+    });
+  }
+
+  Future<void> insertSpellSlotUsages(
+    List<CharacterSpellSlotUsagesCompanion> companions,
+  ) async {
+    if (companions.isEmpty) {
+      return;
+    }
+
+    await _database.batch((Batch batch) {
+      batch.insertAll(
+        _database.characterSpellSlotUsages,
+        companions,
+        mode: InsertMode.insertOrReplace,
+      );
+    });
   }
 
   Future<void> insertSkills(List<CharacterSkillsCompanion> companions) async {
@@ -195,6 +229,18 @@ class CharacterWriteDao {
   Future<void> deleteNarrativeSelectionsByCharacterId(String characterId) {
     return (_database.delete(
       _database.characterNarrativeSelections,
+    )..where((table) => table.characterId.equals(characterId))).go();
+  }
+
+  Future<void> deleteSpellSelectionsByCharacterId(String characterId) {
+    return (_database.delete(
+      _database.characterSpellSelections,
+    )..where((table) => table.characterId.equals(characterId))).go();
+  }
+
+  Future<void> deleteSpellSlotUsagesByCharacterId(String characterId) {
+    return (_database.delete(
+      _database.characterSpellSlotUsages,
     )..where((table) => table.characterId.equals(characterId))).go();
   }
 }

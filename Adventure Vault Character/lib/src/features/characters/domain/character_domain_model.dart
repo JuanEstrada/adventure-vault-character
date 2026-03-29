@@ -1,6 +1,7 @@
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:flutter/foundation.dart';
 
 @immutable
@@ -143,6 +144,9 @@ class CharacterSpellcastingDomainModel {
     required this.abilityScore,
     required this.proficiencyBonus,
     required this.availableSpells,
+    required this.selectionMode,
+    required this.selectedSpells,
+    required this.slotProgression,
   });
 
   final String abilityKey;
@@ -150,6 +154,9 @@ class CharacterSpellcastingDomainModel {
   final int abilityScore;
   final int proficiencyBonus;
   final List<CharacterSpellReferenceDomainModel> availableSpells;
+  final CharacterSpellSelectionMode? selectionMode;
+  final List<CharacterSpellReferenceDomainModel> selectedSpells;
+  final List<CharacterSpellSlotDomainModel> slotProgression;
 
   int get abilityModifier => CharacterRules.abilityModifier(abilityScore);
 
@@ -163,9 +170,27 @@ class CharacterSpellcastingDomainModel {
   String get displaySpellAttackBonus =>
       spellAttackBonus >= 0 ? '+$spellAttackBonus' : '$spellAttackBonus';
 
+  String get selectionLabel {
+    return switch (selectionMode) {
+      CharacterSpellSelectionMode.prepared => 'Prepared spells',
+      CharacterSpellSelectionMode.known => 'Known spells',
+      _ => 'Selected spells',
+    };
+  }
+
   List<CharacterSpellLevelDomainModel> get spellsByLevel {
+    return _groupSpellsByLevel(availableSpells);
+  }
+
+  List<CharacterSpellLevelDomainModel> get selectedSpellsByLevel {
+    return _groupSpellsByLevel(selectedSpells);
+  }
+
+  List<CharacterSpellLevelDomainModel> _groupSpellsByLevel(
+    List<CharacterSpellReferenceDomainModel> spells,
+  ) {
     final byLevel = <int, List<CharacterSpellReferenceDomainModel>>{};
-    for (final spell in availableSpells) {
+    for (final spell in spells) {
       byLevel
           .putIfAbsent(
             spell.level,
@@ -204,6 +229,7 @@ class CharacterSpellLevelDomainModel {
 @immutable
 class CharacterSpellReferenceDomainModel {
   const CharacterSpellReferenceDomainModel({
+    required this.id,
     required this.name,
     required this.level,
     required this.school,
@@ -213,6 +239,7 @@ class CharacterSpellReferenceDomainModel {
     required this.source,
   });
 
+  final String id;
   final String name;
   final int level;
   final String school;
@@ -220,6 +247,25 @@ class CharacterSpellReferenceDomainModel {
   final String range;
   final String duration;
   final String source;
+}
+
+@immutable
+class CharacterSpellSlotDomainModel {
+  const CharacterSpellSlotDomainModel({
+    required this.spellLevel,
+    required this.slotsExpended,
+    required this.slotsMax,
+  });
+
+  final int spellLevel;
+  final int slotsExpended;
+  final int slotsMax;
+
+  int get slotsRemaining => slotsMax - slotsExpended;
+
+  String get label => 'Level $spellLevel';
+
+  String get displaySummary => '$slotsRemaining / $slotsMax';
 }
 
 @immutable

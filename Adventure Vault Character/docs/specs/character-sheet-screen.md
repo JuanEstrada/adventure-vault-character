@@ -211,6 +211,9 @@ Foundation expectation:
   active class
 - prepared spells, spell slots, and resource editing remain out of scope for
   this first spell foundation
+- the next implemented slice may promote selected spells and current slot
+  usage into persisted read/write character state while still deferring richer
+  spellbook and rest-recovery systems
 
 ## UI States
 
@@ -254,6 +257,8 @@ Foundation expectation:
 - The combat panel shows current, maximum, and temporary hit points in MVP.
 - When the active class is a spellcaster, the sheet can show a read-only
   spellcasting summary derived from domain logic and the local compendium.
+- When persisted spell state exists, the sheet should also show the stored
+  selected spells plus remaining spell slots for the current level.
 - `Equipment` may still appear as a simple placeholder in MVP.
 - The character sheet can be opened from the character card without layout
   mismatch or a separate temporary detail screen.
