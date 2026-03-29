@@ -236,6 +236,24 @@ void main() {
         contains('Imported Acolyte Expansion'),
       );
       expect(
+        importedCatalog.spells.map((spell) => spell.name),
+        contains('Imported Arc Bolt'),
+      );
+      expect(
+        importedCatalog.feats.map((feat) => feat.name),
+        contains('Imported Adept'),
+      );
+      expect(
+        importedCatalog.monsters.map((monster) => monster.name),
+        contains('Imported Watcher'),
+      );
+      expect(
+        importedCatalog.spells
+            .firstWhere((spell) => spell.name == 'Imported Arc Bolt')
+            .packId,
+        'imported-imported-acolyte-expansion',
+      );
+      expect(
         importedCatalog
             .narrativeGroupsForBackground(
               'imported_acolyte_expansion',
@@ -294,6 +312,18 @@ void main() {
       expect(
         inactiveCatalog.backgrounds.map((background) => background.name),
         isNot(contains('Imported Acolyte Expansion')),
+      );
+      expect(
+        inactiveCatalog.spells.map((spell) => spell.name),
+        isNot(contains('Imported Arc Bolt')),
+      );
+      expect(
+        inactiveCatalog.feats.map((feat) => feat.name),
+        isNot(contains('Imported Adept')),
+      );
+      expect(
+        inactiveCatalog.monsters.map((monster) => monster.name),
+        isNot(contains('Imported Watcher')),
       );
       expect(
         inactiveCatalog.sourcePolicyForSection('backgrounds')?.notes,
@@ -700,5 +730,35 @@ const _importFixture = '''
 1 | Tradition. Preserve the old ways.</text>
     </trait>
   </background>
+  <spell>
+    <name>Imported Arc Bolt</name>
+    <level>1</level>
+    <school>Evocation</school>
+    <time>1 action</time>
+    <range>60 feet</range>
+    <components>V, S</components>
+    <duration>Instantaneous</duration>
+    <classes>Wizard, Sorcerer</classes>
+    <text>Imported spell text.</text>
+  </spell>
+  <feat>
+    <name>Imported Adept</name>
+    <prerequisite>Level 1+</prerequisite>
+    <text>Imported feat text.</text>
+  </feat>
+  <monster>
+    <name>Imported Watcher</name>
+    <size>Medium</size>
+    <type>Construct</type>
+    <alignment>Neutral</alignment>
+    <ac>14</ac>
+    <hp>22</hp>
+    <speed>30 ft.</speed>
+    <cr>1</cr>
+    <senses>Darkvision 60 ft.</senses>
+    <languages>Common</languages>
+    <trait><name>Alert</name></trait>
+    <action><name>Arc Slam</name></action>
+  </monster>
 </compendium>
 ''';

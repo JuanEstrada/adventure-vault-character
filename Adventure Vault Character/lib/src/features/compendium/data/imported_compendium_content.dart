@@ -81,7 +81,7 @@ ImportedCompendiumContent parseImportedCompendiumContent({
       .where((name) => name.isNotEmpty)
       .toList(growable: false);
   final backgrounds = _extractElements(normalizedXml, 'background')
-      .map(_parseBackground)
+      .map((element) => _parseBackground(element, packId: packId))
       .whereType<CompendiumBackground>()
       .toList(growable: false);
   final narrativeOptionGroups = _extractElements(normalizedXml, 'background')
@@ -92,18 +92,18 @@ ImportedCompendiumContent parseImportedCompendiumContent({
         ),
       )
       .toList(growable: false);
-  final spells = _extractElements(
-    normalizedXml,
-    'spell',
-  ).map(_parseSpell).whereType<CompendiumSpell>().toList(growable: false);
-  final feats = _extractElements(
-    normalizedXml,
-    'feat',
-  ).map(_parseFeat).whereType<CompendiumFeat>().toList(growable: false);
-  final monsters = _extractElements(
-    normalizedXml,
-    'monster',
-  ).map(_parseMonster).whereType<CompendiumMonster>().toList(growable: false);
+  final spells = _extractElements(normalizedXml, 'spell')
+      .map((element) => _parseSpell(element, packId: packId))
+      .whereType<CompendiumSpell>()
+      .toList(growable: false);
+  final feats = _extractElements(normalizedXml, 'feat')
+      .map((element) => _parseFeat(element, packId: packId))
+      .whereType<CompendiumFeat>()
+      .toList(growable: false);
+  final monsters = _extractElements(normalizedXml, 'monster')
+      .map((element) => _parseMonster(element, packId: packId))
+      .whereType<CompendiumMonster>()
+      .toList(growable: false);
 
   final content = ImportedCompendiumContent(
     packId: packId,
@@ -279,7 +279,10 @@ List<T> _mergeUniqueByName<T>(
   return List<T>.unmodifiable(merged);
 }
 
-CompendiumBackground? _parseBackground(_XmlElement element) {
+CompendiumBackground? _parseBackground(
+  _XmlElement element, {
+  required String packId,
+}) {
   final name = _normalizeCatalogName(
     _extractSingleTagText(element.innerXml, 'name') ?? '',
   );
@@ -293,6 +296,7 @@ CompendiumBackground? _parseBackground(_XmlElement element) {
     summary: description.isEmpty ? 'Imported XML background.' : description,
     bonuses: const <String>['Imported XML background'],
     socialPerks: const <String>['Imported XML pack'],
+    packId: packId,
   );
 }
 
@@ -353,7 +357,7 @@ List<CompendiumNarrativeOptionGroup> _parseBackgroundNarrativeGroups({
   return List<CompendiumNarrativeOptionGroup>.unmodifiable(groups);
 }
 
-CompendiumSpell? _parseSpell(_XmlElement element) {
+CompendiumSpell? _parseSpell(_XmlElement element, {required String packId}) {
   final xml = element.innerXml;
   final name = _normalizeCatalogName(_extractSingleTagText(xml, 'name') ?? '');
   if (name.isEmpty) {
@@ -373,10 +377,11 @@ CompendiumSpell? _parseSpell(_XmlElement element) {
     ).map(_normalizeCatalogName).toList(growable: false),
     description: _extractTextParagraphs(xml),
     source: _extractSource(xml),
+    packId: packId,
   );
 }
 
-CompendiumFeat? _parseFeat(_XmlElement element) {
+CompendiumFeat? _parseFeat(_XmlElement element, {required String packId}) {
   final xml = element.innerXml;
   final name = _normalizeCatalogName(_extractSingleTagText(xml, 'name') ?? '');
   if (name.isEmpty) {
@@ -392,10 +397,14 @@ CompendiumFeat? _parseFeat(_XmlElement element) {
         .where((text) => text.isNotEmpty)
         .toList(growable: false),
     source: _extractSource(xml),
+    packId: packId,
   );
 }
 
-CompendiumMonster? _parseMonster(_XmlElement element) {
+CompendiumMonster? _parseMonster(
+  _XmlElement element, {
+  required String packId,
+}) {
   final xml = element.innerXml;
   final name = _normalizeCatalogName(_extractSingleTagText(xml, 'name') ?? '');
   if (name.isEmpty) {
@@ -422,6 +431,7 @@ CompendiumMonster? _parseMonster(_XmlElement element) {
         .where((text) => text.trim().isNotEmpty)
         .toList(growable: false),
     source: _extractSource(xml),
+    packId: packId,
   );
 }
 

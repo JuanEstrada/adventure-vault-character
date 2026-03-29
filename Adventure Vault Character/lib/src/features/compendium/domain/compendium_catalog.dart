@@ -172,6 +172,32 @@ class CompendiumCatalog {
               group.packId == null || !inactivePackIds.contains(group.packId),
         )
         .toList(growable: false);
+    final filteredBackgrounds = backgrounds
+        .where(
+          (background) =>
+              background.packId == null ||
+              !inactivePackIds.contains(background.packId),
+        )
+        .toList(growable: false);
+    final filteredSpells = spells
+        .where(
+          (spell) =>
+              spell.packId == null || !inactivePackIds.contains(spell.packId),
+        )
+        .toList(growable: false);
+    final filteredFeats = feats
+        .where(
+          (feat) =>
+              feat.packId == null || !inactivePackIds.contains(feat.packId),
+        )
+        .toList(growable: false);
+    final filteredMonsters = monsters
+        .where(
+          (monster) =>
+              monster.packId == null ||
+              !inactivePackIds.contains(monster.packId),
+        )
+        .toList(growable: false);
 
     final filteredSections = sourcePolicy.sections
         .map((section) {
@@ -199,7 +225,11 @@ class CompendiumCatalog {
         .toList(growable: false);
 
     return copyWith(
+      backgrounds: filteredBackgrounds,
       narrativeOptionGroups: filteredNarrativeGroups,
+      spells: filteredSpells,
+      feats: filteredFeats,
+      monsters: filteredMonsters,
       sourcePolicy: CompendiumSourcePolicy(
         activeSourceType: sourcePolicy.activeSourceType,
         activeSourceLabel: sourcePolicy.activeSourceLabel,
@@ -336,6 +366,7 @@ class CompendiumBackground {
     required this.summary,
     required this.bonuses,
     required this.socialPerks,
+    this.packId,
   });
 
   final String id;
@@ -343,6 +374,7 @@ class CompendiumBackground {
   final String summary;
   final List<String> bonuses;
   final List<String> socialPerks;
+  final String? packId;
 }
 
 @immutable
@@ -424,6 +456,7 @@ class CompendiumSpell {
     required this.classes,
     required this.description,
     required this.source,
+    this.packId,
   });
 
   final String id;
@@ -437,6 +470,7 @@ class CompendiumSpell {
   final List<String> classes;
   final List<String> description;
   final String source;
+  final String? packId;
 }
 
 @immutable
@@ -447,6 +481,7 @@ class CompendiumFeat {
     required this.description,
     required this.modifiers,
     required this.source,
+    this.packId,
   });
 
   final String name;
@@ -454,6 +489,7 @@ class CompendiumFeat {
   final List<String> description;
   final List<String> modifiers;
   final String source;
+  final String? packId;
 }
 
 @immutable
@@ -472,6 +508,7 @@ class CompendiumMonster {
     required this.traits,
     required this.actions,
     required this.source,
+    this.packId,
   });
 
   final String name;
@@ -487,4 +524,5 @@ class CompendiumMonster {
   final List<String> traits;
   final List<String> actions;
   final String source;
+  final String? packId;
 }
