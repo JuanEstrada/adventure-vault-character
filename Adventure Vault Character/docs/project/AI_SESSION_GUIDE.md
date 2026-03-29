@@ -2,6 +2,15 @@
 
 Use this runbook as the single operational guide for AI-assisted sessions.
 
+## Instruction Precedence
+
+When instructions overlap, apply them in this order:
+
+1. `AGENTS.md` (repository-wide operating constraints)
+2. `docs/project/PROJECT_GUIDELINES.md` (product and technical decision rules)
+3. `docs/project/AI_SESSION_GUIDE.md` (session execution runbook)
+4. `docs/project/playbooks/AI_MODEL_PLAYBOOK.md` (model-routing strategy)
+
 ## Start Here
 
 1. Read [SESSION_RESUME.md](SESSION_RESUME.md).

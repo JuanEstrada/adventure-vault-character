@@ -16,6 +16,8 @@ implementation slices.
   work, pending work, and next recommended steps.
 - [Project Guidelines](project/PROJECT_GUIDELINES.md): official product and
   technical rules for evaluating proposals.
+- [AI Session Runbook](project/AI_SESSION_GUIDE.md): canonical execution guide
+  for AI-assisted sessions.
 - [AI Model Playbook](project/playbooks/AI_MODEL_PLAYBOOK.md): model routing
   and prompt templates for AI-assisted implementation sessions.
 - [Future Specs](project/FUTURE_SPECS.md): candidate features intentionally
@@ -36,6 +38,7 @@ implementation slices.
 | Project index | Central navigation for planning docs | [Project Index](project/README.md) |
 | Project state | Current status and next steps | [Project Snapshot](project/PROJECT_SNAPSHOT.md) |
 | Project guidelines | Official decision and implementation rules | [Project Guidelines](project/PROJECT_GUIDELINES.md) |
+| AI session runbook | Canonical execution guide for AI sessions | [AI Session Runbook](project/AI_SESSION_GUIDE.md) |
 | AI model workflow | Stage-based model routing and prompt templates | [AI Model Playbook](project/playbooks/AI_MODEL_PLAYBOOK.md) |
 | Future features | Deferred or speculative feature candidates | [Future Specs](project/FUTURE_SPECS.md) |
 | Specifications | Accepted or in-planning functional specs | [Specifications Index](specs/README.md) |
