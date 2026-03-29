@@ -529,6 +529,13 @@ Completed since the previous handoff:
   instead of sharing the generic `prepared` mode.
 - Wizard create/edit persistence, service validation, editable reload mapping,
   and sheet labels now align on `spellbook` mode end-to-end.
+- Spell-slot tracking now supports deterministic rest actions in the create/edit
+  flow: long rest resets all derived slot rows, and short rest currently
+  resets warlock pact-magic slots.
+- Compendium pack filtering now applies beyond narrative groups by honoring
+  `packId` on backgrounds, spells, feats, and monsters when packs are inactive.
+- Imported XML background parsing now derives bonus/perk-style fields from XML
+  content instead of relying on static placeholder defaults.
 
 Next-session starting point:
 

@@ -174,6 +174,12 @@ summary.
   create/edit/persistence/sheet paths.
 - Wizard spell state now uses explicit `spellbook` mode across create/edit,
   persisted selection-kind storage, editable reload, and sheet-facing labels.
+- Spell-slot tracking now exposes deterministic short-rest/long-rest reset
+  actions in create/edit spell state handling.
+- Pack-state filtering now also trims pack-tagged backgrounds, spells, feats,
+  and monsters, not only narrative-option groups.
+- Imported XML backgrounds now derive bonuses and social-perk style values from
+  XML fields/traits instead of static placeholder defaults.
 - A dedicated `CompendiumRepository` now loads active XML assets directly from
   `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`,
   with JSON fallback preserved.
@@ -401,8 +407,10 @@ summary.
 3. Extend the new spellcasting foundation beyond the new class-specific limit
    enforcement into remaining special cases such as full wizard prepared-list
    workflows and rest-based resource recovery.
-4. Expand the inventory/equipment model beyond starter loadouts.
-5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
+4. Expand deterministic resource recovery beyond spell slots (class resources,
+   rest cadence, and sheet-visible recovery summaries).
+5. Expand the inventory/equipment model beyond starter loadouts.
+6. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
 ## Next Session Guardrail
 
