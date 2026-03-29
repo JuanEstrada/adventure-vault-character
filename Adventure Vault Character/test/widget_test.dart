@@ -114,9 +114,7 @@ void main() {
 
     expect(find.text('2 activos'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.textContaining(
-        'Imported XML packs active: Imported Acolyte Expansion (1).',
-      ),
+      find.text('Narrative options'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
@@ -124,7 +122,18 @@ void main() {
       find.textContaining(
         'Imported XML packs active: Imported Acolyte Expansion (1).',
       ),
-      findsOneWidget,
+      findsWidgets,
+    );
+    await tester.scrollUntilVisible(
+      find.text('Narrative options'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(
+      find.textContaining(
+        'Imported XML packs active: Imported Acolyte Expansion (1).',
+      ),
+      findsNWidgets(2),
     );
 
     await tester.scrollUntilVisible(
@@ -664,6 +673,11 @@ const _importFixture = '''
     <trait>
       <name>Description</name>
       <text>Imported background text.</text>
+    </trait>
+    <trait>
+      <name>Suggested Characteristics</name>
+      <text>d6 | Ideal
+1 | Tradition. Preserve the old ways.</text>
     </trait>
   </background>
 </compendium>

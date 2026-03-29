@@ -62,8 +62,8 @@ class _CompendiumImportScreenState extends State<CompendiumImportScreen> {
                 const SizedBox(height: 8),
                 Text(
                   'Pega un XML FightClub compatible para registrarlo como pack opcional local. '
-                  'Esta iteracion valida la estructura y persiste el pack en Administrar packs, '
-                  'pero todavia no ingiere su contenido al catalogo activo.',
+                  'Esta iteracion valida la estructura, persiste el pack en Administrar packs, '
+                  'e ingiere entradas compatibles en el catalogo activo cuando el pack queda encendido.',
                   style: theme.textTheme.bodyMedium,
                 ),
               ],

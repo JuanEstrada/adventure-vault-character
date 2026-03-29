@@ -93,8 +93,9 @@ placeholders for future pack/import workflows.
 - Successfully registered XML appears in `Administrar packs`.
 - Active imported packs now contribute supported imported entries to the live
   compendium catalog and annotate affected source-policy sections.
-- The current import slice still does not ingest imported narrative option
-  catalogs or more advanced structured rules data.
+- The current import slice now also ingests imported background
+  `Suggested Characteristics` tables into narrative option catalogs, while
+  deeper imported rules data still remains out of scope.
 - The screen shows current counts for major compendium sections such as races,
   classes, backgrounds, spells, feats, monsters, and narrative groups.
 - The screen lists each published source-policy section with its source type,

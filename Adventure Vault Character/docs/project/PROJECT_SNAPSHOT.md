@@ -253,6 +253,10 @@ summary.
   `backgrounds`, `races`, `classes`, `spells`, `feats`, and `monsters` to the
   effective catalog, with source-policy notes showing those imported sources
   section by section.
+- Imported background `Suggested Characteristics` tables now also contribute
+  narrative option groups to the effective catalog for active imported packs,
+  and those imported narrative groups disappear again when the pack is
+  deactivated.
 - Widget coverage exists for the offline continuation path into the main menu.
 - Widget coverage now also verifies navigation into the compendium screen.
 - Widget coverage now also verifies the visible compendium management/import
@@ -325,8 +329,8 @@ summary.
 - Extend the new compendium screen toward future pack-management and import
   workflows without bypassing the existing repository/domain contract.
 - Extend the current XML import flow beyond the currently supported imported
-  catalog sections and into deeper compendium areas such as narrative option
-  catalogs.
+  catalog sections and first imported narrative-option slice into deeper
+  compendium areas.
 - Decide how far persisted pack state should affect loaded catalog content
   beyond the current narrative-supplement filtering.
 - Decide whether any additional reshaping is still needed in

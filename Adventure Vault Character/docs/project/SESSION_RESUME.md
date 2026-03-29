@@ -205,6 +205,11 @@ Verified on 2026-03-28:
   supported imported `backgrounds`, `races`, `classes`, `spells`, `feats`,
   and `monsters` into the effective compendium whenever the imported pack is
   active.
+- Active imported XML packs now also parse background
+  `Suggested Characteristics` tables into normalized narrative option groups,
+  so imported `ideals`, `bonds`, `flaws`, and `personality traits` can appear
+  through the same compendium catalog used by finishing details and source
+  policy.
 - `CompendiumCatalog` now exposes normalized `narrativeOptionGroups`, so the
   future finishing-details flow can consume official options without reparsing
   raw XML in widgets.
@@ -405,7 +410,8 @@ Primary references:
 These are the highest-value unresolved items:
 
 1. Decide how far XML import should expand beyond the current supported
-   imported catalog sections and into narrative-option or deeper rules data.
+   imported catalog sections and the first imported narrative-option slice
+   into deeper rules data.
 2. Decide when deeper `Combat` features and the `Equipment` panel move from
    MVP-minimal states into populated panels.
 3. Decide how far pack-based filtering should go beyond narrative supplements,
@@ -501,6 +507,9 @@ Completed since the previous handoff:
 - Active imported XML packs now also augment the loaded compendium with
   supported imported entries and add visible source-policy notes for the
   affected sections.
+- Imported background `Suggested Characteristics` tables now also augment the
+  loaded narrative option catalog for active imported packs and disappear
+  again when those packs are disabled.
 - The main-menu spec and project snapshot/resume docs are aligned with that
   visible compendium status behavior.
 

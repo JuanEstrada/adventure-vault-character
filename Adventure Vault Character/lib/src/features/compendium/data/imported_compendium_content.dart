@@ -7,6 +7,7 @@ class ImportedCompendiumContent {
     required this.races,
     required this.classes,
     required this.backgrounds,
+    required this.narrativeOptionGroups,
     required this.spells,
     required this.feats,
     required this.monsters,
@@ -17,6 +18,7 @@ class ImportedCompendiumContent {
   final List<String> races;
   final List<String> classes;
   final List<CompendiumBackground> backgrounds;
+  final List<CompendiumNarrativeOptionGroup> narrativeOptionGroups;
   final List<CompendiumSpell> spells;
   final List<CompendiumFeat> feats;
   final List<CompendiumMonster> monsters;
@@ -25,6 +27,7 @@ class ImportedCompendiumContent {
       races.length +
       classes.length +
       backgrounds.length +
+      narrativeOptionGroups.length +
       spells.length +
       feats.length +
       monsters.length;
@@ -34,6 +37,7 @@ class ImportedCompendiumContent {
       'races' => races.length,
       'classes' => classes.length,
       'backgrounds' => backgrounds.length,
+      'narrative_options' => narrativeOptionGroups.length,
       'spells' => spells.length,
       'feats' => feats.length,
       'monsters' => monsters.length,
@@ -80,6 +84,14 @@ ImportedCompendiumContent parseImportedCompendiumContent({
       .map(_parseBackground)
       .whereType<CompendiumBackground>()
       .toList(growable: false);
+  final narrativeOptionGroups = _extractElements(normalizedXml, 'background')
+      .expand(
+        (element) => _parseBackgroundNarrativeGroups(
+          packId: packId,
+          backgroundXml: element.innerXml,
+        ),
+      )
+      .toList(growable: false);
   final spells = _extractElements(
     normalizedXml,
     'spell',
@@ -99,6 +111,7 @@ ImportedCompendiumContent parseImportedCompendiumContent({
     races: races,
     classes: classes,
     backgrounds: backgrounds,
+    narrativeOptionGroups: narrativeOptionGroups,
     spells: spells,
     feats: feats,
     monsters: monsters,
@@ -132,6 +145,10 @@ CompendiumCatalog mergeImportedCompendiumContents(
     catalog.backgrounds,
     contents.expand((content) => content.backgrounds),
   );
+  final mergedNarrativeOptionGroups = _mergeUniqueNarrativeGroups(
+    catalog.narrativeOptionGroups,
+    contents.expand((content) => content.narrativeOptionGroups),
+  );
   final mergedSpells = _mergeUniqueByName<CompendiumSpell>(
     catalog.spells,
     contents.expand((content) => content.spells),
@@ -156,6 +173,7 @@ CompendiumCatalog mergeImportedCompendiumContents(
     races: mergedRaces,
     classes: mergedClasses,
     backgrounds: mergedBackgrounds,
+    narrativeOptionGroups: mergedNarrativeOptionGroups,
     spells: mergedSpells,
     feats: mergedFeats,
     monsters: mergedMonsters,
@@ -232,6 +250,20 @@ List<CompendiumBackground> _mergeUniqueBackgrounds(
   return List<CompendiumBackground>.unmodifiable(merged);
 }
 
+List<CompendiumNarrativeOptionGroup> _mergeUniqueNarrativeGroups(
+  List<CompendiumNarrativeOptionGroup> baseValues,
+  Iterable<CompendiumNarrativeOptionGroup> importedValues,
+) {
+  final merged = <CompendiumNarrativeOptionGroup>[...baseValues];
+  final knownIds = baseValues.map((item) => item.id).toSet();
+  for (final value in importedValues) {
+    if (knownIds.add(value.id)) {
+      merged.add(value);
+    }
+  }
+  return List<CompendiumNarrativeOptionGroup>.unmodifiable(merged);
+}
+
 List<T> _mergeUniqueByName<T>(
   List<T> baseValues,
   Iterable<T> importedValues,
@@ -262,6 +294,63 @@ CompendiumBackground? _parseBackground(_XmlElement element) {
     bonuses: const <String>['Imported XML background'],
     socialPerks: const <String>['Imported XML pack'],
   );
+}
+
+List<CompendiumNarrativeOptionGroup> _parseBackgroundNarrativeGroups({
+  required String packId,
+  required String backgroundXml,
+}) {
+  final backgroundName = _normalizeCatalogName(
+    _extractSingleTagText(backgroundXml, 'name') ?? '',
+  );
+  if (backgroundName.isEmpty) {
+    return const <CompendiumNarrativeOptionGroup>[];
+  }
+  final backgroundId = _slugifyName(backgroundName);
+  final suggestedText = _extractTraitText(
+    backgroundXml,
+    'Suggested Characteristics',
+  );
+  if (suggestedText.isEmpty) {
+    return const <CompendiumNarrativeOptionGroup>[];
+  }
+
+  final groups = <CompendiumNarrativeOptionGroup>[];
+  for (final field in _narrativeTableFields) {
+    final options = _parseNarrativeTableOptions(
+      suggestedText,
+      tableLabel: field.tableLabel,
+    );
+    if (options.isEmpty) {
+      continue;
+    }
+    groups.add(
+      CompendiumNarrativeOptionGroup(
+        id: 'imported-$packId-$backgroundId-${field.fieldKey}',
+        fieldKey: field.fieldKey,
+        sourceType: 'background',
+        packId: packId,
+        sourceId: backgroundId,
+        sourceName: backgroundName,
+        backgroundId: backgroundId,
+        backgroundName: backgroundName,
+        title: '${field.groupTitle} for $backgroundName',
+        options: options
+            .map(
+              (option) => CompendiumNarrativeOption(
+                id: 'imported-$packId-$backgroundId-${field.fieldKey}-${option.optionIndex}',
+                optionIndex: option.optionIndex,
+                rollMin: option.rollMin,
+                rollMax: option.rollMax,
+                label: option.label,
+                text: option.text,
+              ),
+            )
+            .toList(growable: false),
+      ),
+    );
+  }
+  return List<CompendiumNarrativeOptionGroup>.unmodifiable(groups);
 }
 
 CompendiumSpell? _parseSpell(_XmlElement element) {
@@ -441,3 +530,118 @@ class _XmlElement {
 
   final String innerXml;
 }
+
+class _NarrativeTableField {
+  const _NarrativeTableField({
+    required this.fieldKey,
+    required this.tableLabel,
+    required this.groupTitle,
+  });
+
+  final String fieldKey;
+  final String tableLabel;
+  final String groupTitle;
+}
+
+class _ParsedNarrativeOption {
+  const _ParsedNarrativeOption({
+    required this.optionIndex,
+    required this.rollMin,
+    required this.rollMax,
+    required this.label,
+    required this.text,
+  });
+
+  final int optionIndex;
+  final int? rollMin;
+  final int? rollMax;
+  final String? label;
+  final String text;
+}
+
+List<_ParsedNarrativeOption> _parseNarrativeTableOptions(
+  String text, {
+  required String tableLabel,
+}) {
+  final normalized = _normalizeMultilineText(text);
+  final lines = normalized.split('\n');
+  final startIndex = lines.indexWhere((line) {
+    final trimmed = _normalizeText(line);
+    return trimmed.startsWith('d') && trimmed.endsWith(tableLabel);
+  });
+  if (startIndex == -1) {
+    return const <_ParsedNarrativeOption>[];
+  }
+
+  final options = <_ParsedNarrativeOption>[];
+  for (final line in lines.skip(startIndex + 1)) {
+    final trimmed = _normalizeText(line);
+    if (trimmed.isEmpty) {
+      continue;
+    }
+    if (trimmed.startsWith('d') && trimmed.contains('|')) {
+      break;
+    }
+    final columns = trimmed.split('|');
+    if (columns.length < 2) {
+      continue;
+    }
+    final rollText = _normalizeText(columns.first);
+    final rawText = _normalizeText(columns.sublist(1).join('|'));
+    if (rawText.isEmpty) {
+      continue;
+    }
+    final rollParts = rollText.split('-');
+    final optionIndex = int.tryParse(rollParts.first) ?? options.length + 1;
+    final rollMin = int.tryParse(rollParts.first);
+    final rollMax = rollParts.length > 1
+        ? int.tryParse(rollParts.last)
+        : int.tryParse(rollParts.first);
+    options.add(
+      _ParsedNarrativeOption(
+        optionIndex: optionIndex,
+        rollMin: rollMin,
+        rollMax: rollMax,
+        label: _extractNarrativeOptionLabel(rawText),
+        text: rawText,
+      ),
+    );
+  }
+
+  return List<_ParsedNarrativeOption>.unmodifiable(options);
+}
+
+String? _extractNarrativeOptionLabel(String rawText) {
+  final separatorIndex = rawText.indexOf('.');
+  if (separatorIndex <= 0) {
+    return null;
+  }
+  final candidate = rawText.substring(0, separatorIndex).trim();
+  if (candidate.split(' ').length > 5) {
+    return null;
+  }
+  return candidate;
+}
+
+const List<_NarrativeTableField> _narrativeTableFields = <_NarrativeTableField>[
+  _NarrativeTableField(
+    fieldKey: 'personality_traits',
+    tableLabel: 'Personality Trait',
+    groupTitle: 'Personality Traits',
+  ),
+  _NarrativeTableField(
+    fieldKey: 'ideals',
+    tableLabel: 'Ideal',
+    groupTitle: 'Ideals',
+  ),
+  _NarrativeTableField(
+    fieldKey: 'bonds',
+    tableLabel: 'Bond',
+    groupTitle: 'Bonds',
+  ),
+  _NarrativeTableField(
+    fieldKey: 'flaws',
+    tableLabel: 'Flaw',
+    groupTitle: 'Flaws',
+  ),
+];

@@ -236,7 +236,22 @@ void main() {
         contains('Imported Acolyte Expansion'),
       );
       expect(
+        importedCatalog
+            .narrativeGroupsForBackground(
+              'imported_acolyte_expansion',
+              'ideals',
+            )
+            .single
+            .options
+            .map((option) => option.text),
+        contains('Tradition. Preserve the old ways.'),
+      );
+      expect(
         importedCatalog.sourcePolicyForSection('backgrounds')?.notes,
+        contains('Imported XML packs active: Imported Acolyte Expansion (1).'),
+      );
+      expect(
+        importedCatalog.sourcePolicyForSection('narrative_options')?.notes,
         contains('Imported XML packs active: Imported Acolyte Expansion (1).'),
       );
 
@@ -260,6 +275,17 @@ void main() {
         reloadedCatalog.backgrounds.map((background) => background.name),
         contains('Imported Acolyte Expansion'),
       );
+      expect(
+        reloadedCatalog
+            .narrativeGroupsForBackground(
+              'imported_acolyte_expansion',
+              'ideals',
+            )
+            .single
+            .options
+            .map((option) => option.text),
+        contains('Tradition. Preserve the old ways.'),
+      );
 
       final inactiveCatalog = await reloadedRepository.setPackActive(
         'imported-imported-acolyte-expansion',
@@ -271,6 +297,20 @@ void main() {
       );
       expect(
         inactiveCatalog.sourcePolicyForSection('backgrounds')?.notes,
+        isNot(contains('Imported XML packs active:')),
+      );
+      expect(
+        inactiveCatalog
+            .narrativeGroupsForField('ideals')
+            .map((group) => group.id),
+        isNot(
+          contains(
+            'imported-imported-imported-acolyte-expansion-imported_acolyte_expansion-ideals',
+          ),
+        ),
+      );
+      expect(
+        inactiveCatalog.sourcePolicyForSection('narrative_options')?.notes,
         isNot(contains('Imported XML packs active:')),
       );
     },
@@ -653,6 +693,11 @@ const _importFixture = '''
     <trait>
       <name>Description</name>
       <text>Imported background text.</text>
+    </trait>
+    <trait>
+      <name>Suggested Characteristics</name>
+      <text>d6 | Ideal
+1 | Tradition. Preserve the old ways.</text>
     </trait>
   </background>
 </compendium>
