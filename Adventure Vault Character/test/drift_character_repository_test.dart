@@ -1,3 +1,4 @@
+import 'package:adventure_vault_character/src/features/characters/application/character_inventory_service.dart';
 import 'package:adventure_vault_character/src/features/characters/data/drift_character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
@@ -1002,6 +1003,162 @@ void main() {
     expect(restoredTorch.chargesMax, 5);
   });
 
+  test('inventory container validation returns policy error codes', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final repository = DriftCharacterRepository(
+      database: database,
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+
+    final summary = await repository.createCharacter(
+      const CreateCharacterInput(
+        name: 'Nora',
+        raceName: 'Human',
+        backgroundId: 'acolyte',
+        backgroundName: 'Acolyte',
+        backgroundSummary: 'Temple acolyte',
+        abilityScoreMethod: 'manualPointAllocation',
+        abilityScoreProvenance: 'method=manualPointAllocation',
+        strength: 10,
+        dexterity: 12,
+        constitution: 13,
+        intelligence: 10,
+        wisdom: 14,
+        charisma: 8,
+        className: 'Wizard',
+        level: 2,
+        experience: 300,
+        equipmentLoadoutId: 'wizard-focus',
+        equipmentLoadoutLabel: 'Arcane focus kit',
+        startingMoneySummary: '0 gp',
+        selectedEquipmentItems: <String>[
+          'Backpack',
+          'Torch',
+          'Anvil',
+          'Scholar pack',
+          'Explorer pack',
+          'Priest pack',
+          'Burglar pack',
+          'Dungeoneer pack',
+        ],
+        currentHitPoints: 12,
+        maximumHitPoints: 12,
+        temporaryHitPoints: 0,
+        spellState: CharacterSpellStateInput(
+          selectionMode: CharacterSpellSelectionMode.spellbook,
+          selectedSpells: <CharacterSpellSelectionInput>[],
+          slotUsages: <CharacterSpellSlotUsageInput>[],
+        ),
+        finishingDetails: CharacterFinishingDetailsInput(
+          appearanceDetails: '',
+          narrativeNotes: '',
+          narrativeSelections: <NarrativeSelection>[
+            NarrativeSelection.empty(NarrativeFieldKey.alignment),
+            NarrativeSelection.empty(NarrativeFieldKey.faction),
+            NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+            NarrativeSelection.empty(NarrativeFieldKey.ideals),
+            NarrativeSelection.empty(NarrativeFieldKey.bonds),
+            NarrativeSelection.empty(NarrativeFieldKey.flaws),
+          ],
+        ),
+      ),
+    );
+
+    var sheet = await repository.getCharacterSheetById(summary.id);
+    expect(sheet, isNotNull);
+    final itemByName = <String, String>{
+      for (final item in sheet!.equipment.items) item.name: item.id,
+    };
+    final backpackId = itemByName['Backpack']!;
+    final torchId = itemByName['Torch']!;
+    final anvilId = itemByName['Anvil']!;
+    final scholarPackId = itemByName['Scholar pack']!;
+    final explorerPackId = itemByName['Explorer pack']!;
+    final priestPackId = itemByName['Priest pack']!;
+    final burglarPackId = itemByName['Burglar pack']!;
+    final dungeoneerPackId = itemByName['Dungeoneer pack']!;
+
+    await repository.setInventoryItemContainer(summary.id, torchId, backpackId);
+
+    await expectLater(
+      repository.setInventoryItemContainer(summary.id, backpackId, torchId),
+      throwsA(
+        isA<CharacterInventoryValidationError>().having(
+          (error) => error.code,
+          'code',
+          'invalid_target',
+        ),
+      ),
+    );
+
+    await expectLater(
+      repository.setInventoryItemContainer(summary.id, torchId, anvilId),
+      throwsA(
+        isA<CharacterInventoryValidationError>().having(
+          (error) => error.code,
+          'code',
+          'invalid_target',
+        ),
+      ),
+    );
+
+    await (database.update(database.equipmentDefinitions)
+          ..where((table) => table.id.equals('equipment-anvil')))
+        .write(const EquipmentDefinitionsCompanion(weight: Value(50)));
+    await expectLater(
+      repository.setInventoryItemContainer(summary.id, anvilId, backpackId),
+      throwsA(
+        isA<CharacterInventoryValidationError>().having(
+          (error) => error.code,
+          'code',
+          'capacity_exceeded',
+        ),
+      ),
+    );
+
+    await repository.setInventoryItemContainer(
+      summary.id,
+      backpackId,
+      scholarPackId,
+    );
+    await repository.setInventoryItemContainer(
+      summary.id,
+      scholarPackId,
+      explorerPackId,
+    );
+    await repository.setInventoryItemContainer(
+      summary.id,
+      explorerPackId,
+      priestPackId,
+    );
+    await repository.setInventoryItemContainer(
+      summary.id,
+      priestPackId,
+      burglarPackId,
+    );
+
+    await expectLater(
+      repository.setInventoryItemContainer(
+        summary.id,
+        burglarPackId,
+        dungeoneerPackId,
+      ),
+      throwsA(
+        isA<CharacterInventoryValidationError>().having(
+          (error) => error.code,
+          'code',
+          'invalid_structure',
+        ),
+      ),
+    );
+
+    sheet = await repository.getCharacterSheetById(summary.id);
+    expect(sheet, isNotNull);
+    expect(sheet!.equipment.inventoryInvariantReport.isValid, isTrue);
+  });
+
   test(
     'seeded equipment metadata preserves defaults for common gear',
     () async {
@@ -1138,7 +1295,7 @@ void main() {
 
       await (database.update(database.equipmentDefinitions)
             ..where((table) => table.id.equals('equipment-anvil')))
-          .write(const EquipmentDefinitionsCompanion(weight: Value(50)));
+          .write(const EquipmentDefinitionsCompanion(weight: Value(20)));
 
       var sheet = await repository.getCharacterSheetById(summary.id);
       expect(sheet, isNotNull);
@@ -1148,7 +1305,7 @@ void main() {
       final anvil = sheet.equipment.items.firstWhere(
         (item) => item.name == 'Anvil',
       );
-      expect(sheet.equipment.carrying.totalWeight, 55);
+      expect(sheet.equipment.carrying.totalWeight, 25);
 
       await repository.setInventoryItemContainer(
         summary.id,
@@ -1165,7 +1322,7 @@ void main() {
 
       sheet = await repository.getCharacterSheetById(summary.id);
       expect(sheet, isNotNull);
-      expect(sheet!.equipment.carrying.totalWeight, 55);
+      expect(sheet!.equipment.carrying.totalWeight, 25);
     },
   );
 }

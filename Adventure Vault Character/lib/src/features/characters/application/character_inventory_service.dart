@@ -1,6 +1,7 @@
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_read_dao.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_write_dao.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:drift/drift.dart';
 
 class CharacterInventoryService {
@@ -75,48 +76,121 @@ class CharacterInventoryService {
     String inventoryItemId,
     String? containerInventoryItemId,
   ) async {
-    if (containerInventoryItemId != null &&
-        containerInventoryItemId.isNotEmpty) {
-      if (containerInventoryItemId == inventoryItemId) {
-        throw StateError('Item cannot contain itself.');
-      }
+    final normalizedContainerId =
+        containerInventoryItemId == null || containerInventoryItemId.isEmpty
+        ? null
+        : containerInventoryItemId;
 
-      final containerItem = await _readDao.getInventoryItemById(
-        containerInventoryItemId,
-      );
-      if (containerItem == null || containerItem.characterId != id) {
-        throw StateError('Container item not found.');
-      }
-
-      final containerDefinitionId = containerItem.equipmentDefinitionId;
-      final containerDefinition = containerDefinitionId == null
-          ? null
-          : await _readDao.getEquipmentDefinitionById(containerDefinitionId);
-      if (containerDefinition?.isContainer != true) {
-        throw StateError('Target item is not a container.');
-      }
-
-      final inventoryItems = await _readDao.getInventoryByCharacterId(id);
-      final byId = <String, CharacterInventoryData>{
-        for (final item in inventoryItems) item.id: item,
-      };
-      String? cursor = containerInventoryItemId;
-      while (cursor != null) {
-        if (cursor == inventoryItemId) {
-          throw StateError('Container assignment would create a cycle.');
-        }
-        cursor = byId[cursor]?.containerInventoryItemId;
-      }
-    }
+    await _validateContainerAssignment(
+      id,
+      inventoryItemId,
+      normalizedContainerId,
+    );
 
     await _updateInventoryItem(
       id,
       inventoryItemId,
-      containerInventoryItemId: Value(
-        containerInventoryItemId == null || containerInventoryItemId.isEmpty
-            ? null
-            : containerInventoryItemId,
-      ),
+      containerInventoryItemId: Value(normalizedContainerId),
+    );
+  }
+
+  Future<void> _validateContainerAssignment(
+    String characterId,
+    String inventoryItemId,
+    String? containerInventoryItemId,
+  ) async {
+    if (containerInventoryItemId == null) {
+      return;
+    }
+
+    if (inventoryItemId == containerInventoryItemId) {
+      throw const CharacterInventoryValidationError(
+        'invalid_structure',
+        'Item cannot reference itself as a container.',
+      );
+    }
+
+    final inventoryItems = await _readDao.getInventoryByCharacterId(
+      characterId,
+    );
+    final itemById = <String, CharacterInventoryData>{
+      for (final item in inventoryItems) item.id: item,
+    };
+    final inventoryItem = itemById[inventoryItemId];
+    if (inventoryItem == null) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Inventory item not found for this character.',
+      );
+    }
+    final targetContainer = itemById[containerInventoryItemId];
+    if (targetContainer == null) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Container item not found for this character.',
+      );
+    }
+
+    final definitionIds = inventoryItems
+        .map((item) => item.equipmentDefinitionId)
+        .whereType<String>();
+    final definitions = await _readDao.getEquipmentDefinitionsByIds(
+      definitionIds,
+    );
+    final definitionsById = <String, EquipmentDefinition>{
+      for (final definition in definitions) definition.id: definition,
+    };
+
+    final displayNameById = <String, String>{
+      for (final item in inventoryItems)
+        item.id:
+            item.displayNameSnapshot ??
+            definitionsById[item.equipmentDefinitionId]?.name ??
+            item.equipmentDefinitionId ??
+            item.trinketDefinitionId ??
+            'Unknown item',
+    };
+
+    final projectedItems = inventoryItems
+        .map(
+          (item) => CharacterEquipmentItemDomainModel(
+            id: item.id,
+            name: displayNameById[item.id] ?? 'Unknown item',
+            quantity: item.quantity,
+            isEquipped: item.isEquipped,
+            isCarried: item.isCarried,
+            isFavorite: item.isFavorite,
+            weightPerUnit: definitionsById[item.equipmentDefinitionId]?.weight,
+            isContainer:
+                definitionsById[item.equipmentDefinitionId]?.isContainer ??
+                false,
+            chargesCurrent: item.chargesCurrent,
+            chargesMax: item.chargesMax,
+            containerInventoryItemId: item.id == inventoryItemId
+                ? containerInventoryItemId
+                : item.containerInventoryItemId,
+            containerDisplayName: null,
+          ),
+        )
+        .toList(growable: false);
+
+    final report = const CharacterInventoryInvariantEvaluator().evaluate(
+      projectedItems,
+    );
+    final structuralIssues = report.issues.where(
+      (issue) =>
+          issue.code == 'invalid_target' ||
+          issue.code == 'invalid_structure' ||
+          issue.code == 'capacity_exceeded',
+    );
+    if (structuralIssues.isEmpty) {
+      return;
+    }
+
+    final firstIssue = structuralIssues.first;
+    throw CharacterInventoryValidationError(
+      firstIssue.code,
+      firstIssue.message,
     );
   }
 
@@ -160,4 +234,14 @@ class CharacterInventoryService {
       );
     });
   }
+}
+
+class CharacterInventoryValidationError implements Exception {
+  const CharacterInventoryValidationError(this.code, this.message);
+
+  final String code;
+  final String message;
+
+  @override
+  String toString() => 'CharacterInventoryValidationError($code): $message';
 }

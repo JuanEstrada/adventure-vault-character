@@ -612,6 +612,13 @@ Completed since the previous handoff:
   `CharacterInventoryInvariantEvaluator`) so charge-state consistency,
   container-structure validity, and weight-cap capacity checks can be evaluated
   deterministically outside widgets.
+- Container mutation in `CharacterInventoryService` now uses those invariant
+  rules as a validation engine before persistence updates and emits structured
+  policy error codes (`invalid_target`, `invalid_structure`,
+  `capacity_exceeded`) through `CharacterInventoryValidationError`.
+- Drift repository regression coverage now asserts those deterministic container
+  validation codes for non-container targets, weight-cap overflow, and
+  depth-limit violations.
 
 Next-session starting point:
 
@@ -631,6 +638,9 @@ Next-session starting point:
 - Use `CharacterInventoryInvariantEvaluator` from
   `lib/src/features/characters/domain/character_domain_model.dart` as the
   source of truth for Phase 1 invariant validation semantics.
+- Use `CharacterInventoryValidationError` from
+  `lib/src/features/characters/application/character_inventory_service.dart`
+  as the source of truth for policy-level inventory mutation error categories.
 - Use `lib/src/features/settings/data/system_settings_repository.dart` as the
   source of truth for the coin-weight toggle that affects encumbrance behavior.
 - Use the new migration regression tests in

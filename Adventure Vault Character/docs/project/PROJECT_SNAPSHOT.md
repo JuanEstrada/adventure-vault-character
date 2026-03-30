@@ -380,6 +380,11 @@ summary.
   enabling deterministic checks for charge-state consistency, container
   structure validity, and container weight-cap overflow before deeper mutation
   service wiring.
+- Inventory container mutations now run through policy-driven validation before
+  persistence writes and expose stable error codes via
+  `CharacterInventoryValidationError`, with regression tests asserting
+  non-container target rejection, capacity overflow rejection, and nesting-depth
+  rejection.
 
 ## Pending Work
 
@@ -390,7 +395,8 @@ summary.
   capacity-limited container evaluation and richer nested-container behavior
   using the accepted Phase 1 inventory policy as baseline.
 - Wire the new read-side inventory invariants into application mutation
-  services so rejected operations return stable policy-driven error categories.
+  services for additional inventory mutation types beyond container assignment
+  (charges, consumables, and quantity-sensitive actions).
 - Extend the new compendium screen toward future pack-management and import
   workflows without bypassing the existing repository/domain contract.
 - Extend the current XML import flow beyond the currently supported imported
