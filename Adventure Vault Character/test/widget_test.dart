@@ -20,25 +20,25 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Continuar offline'), findsOneWidget);
+    expect(find.text('Continue offline'), findsOneWidget);
 
-    await tester.ensureVisible(find.text('Continuar offline'));
-    await tester.tap(find.text('Continuar offline'));
+    await tester.ensureVisible(find.text('Continue offline'));
+    await tester.tap(find.text('Continue offline'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Compendio'), findsOneWidget);
-    expect(find.text('Crear personaje nuevo'), findsOneWidget);
-    expect(find.text('Compendio activo'), findsOneWidget);
+    expect(find.text('Compendium'), findsOneWidget);
+    expect(find.text('Create character'), findsOneWidget);
+    expect(find.text('Active compendium'), findsOneWidget);
     expect(
       find.textContaining('FightClub XML asset bundle with SRD 5.5e core data'),
       findsOneWidget,
     );
     expect(
-      find.textContaining('Base de reglas: SRD 5.5e FightClub XML'),
+      find.textContaining('Rules baseline: SRD 5.5e FightClub XML'),
       findsOneWidget,
     );
     expect(
-      find.textContaining('Todavia no hay personajes guardados'),
+      find.textContaining('No saved characters are available yet'),
       findsOneWidget,
     );
   });
@@ -59,11 +59,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Continuar offline'));
-    await tester.tap(find.text('Continuar offline'));
+    await tester.ensureVisible(find.text('Continue offline'));
+    await tester.tap(find.text('Continue offline'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Compendio'));
+    await tester.tap(find.text('Compendium'));
     await tester.pumpAndSettle();
 
     expect(find.text('Gestion de contenido'), findsOneWidget);
@@ -71,20 +71,20 @@ void main() {
     expect(find.text('Siempre activa'), findsOneWidget);
     expect(find.text('Packs importados'), findsOneWidget);
     expect(find.text('1 activos'), findsOneWidget);
-    expect(find.text('Importar XML'), findsOneWidget);
-    expect(find.text('Administrar packs'), findsOneWidget);
+    expect(find.text('Import XML'), findsOneWidget);
+    expect(find.text('Manage packs'), findsOneWidget);
 
     await tester.scrollUntilVisible(
-      find.widgetWithText(OutlinedButton, 'Importar XML'),
+      find.widgetWithText(OutlinedButton, 'Import XML'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Importar XML'));
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Import XML'));
     await tester.pumpAndSettle();
     expect(find.text('Registro local de pack'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), _importFixture);
-    await tester.tap(find.widgetWithText(FilledButton, 'Registrar XML'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Register XML'));
     await tester.pumpAndSettle();
 
     expect(
@@ -99,11 +99,11 @@ void main() {
       ),
       findsOneWidget,
     );
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Abrir packs'));
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Open packs'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Administrar packs'), findsOneWidget);
-    expect(find.text('Compendio base'), findsOneWidget);
+    expect(find.text('Manage packs'), findsOneWidget);
+    expect(find.text('Base compendium'), findsOneWidget);
     expect(find.text('Activo fijo'), findsOneWidget);
     expect(find.text('Packs opcionales importados'), findsOneWidget);
     expect(find.text('Activo'), findsNWidgets(2));
@@ -137,11 +137,11 @@ void main() {
     );
 
     await tester.scrollUntilVisible(
-      find.widgetWithText(OutlinedButton, 'Administrar packs'),
+      find.widgetWithText(OutlinedButton, 'Manage packs'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Administrar packs'));
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Manage packs'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byType(Switch).at(1));
@@ -191,12 +191,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Continuar offline'));
-    await tester.tap(find.text('Continuar offline'));
+    await tester.ensureVisible(find.text('Continue offline'));
+    await tester.tap(find.text('Continue offline'));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Crear personaje nuevo'));
-    await tester.tap(find.text('Crear personaje nuevo'));
+    await tester.ensureVisible(find.text('Create character'));
+    await tester.tap(find.text('Create character'));
     await tester.pumpAndSettle();
 
     expect(find.text('Background'), findsWidgets);
@@ -206,11 +206,11 @@ void main() {
 
     await tester.enterText(find.byType(TextFormField).first, 'Aelar');
     await tester.scrollUntilVisible(
-      find.widgetWithText(FilledButton, 'Guardar draft').first,
+      find.widgetWithText(FilledButton, 'Save draft').first,
       400,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.tap(find.widgetWithText(FilledButton, 'Guardar draft'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Save draft'));
     await tester.pumpAndSettle();
 
     expect(find.text('Resumen'), findsOneWidget);
@@ -252,12 +252,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Continuar offline'));
-    await tester.tap(find.text('Continuar offline'));
+    await tester.ensureVisible(find.text('Continue offline'));
+    await tester.tap(find.text('Continue offline'));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Crear personaje nuevo'));
-    await tester.tap(find.text('Crear personaje nuevo'));
+    await tester.ensureVisible(find.text('Create character'));
+    await tester.tap(find.text('Create character'));
     await tester.pumpAndSettle();
 
     final classField = find.byWidgetPredicate(
@@ -285,11 +285,11 @@ void main() {
     expect(find.text('Spellbook spells • 1 / 3 selected'), findsOneWidget);
 
     await tester.scrollUntilVisible(
-      find.widgetWithText(FilledButton, 'Guardar draft').first,
+      find.widgetWithText(FilledButton, 'Save draft').first,
       400,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.tap(find.widgetWithText(FilledButton, 'Guardar draft'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Save draft'));
     await tester.pumpAndSettle();
 
     final summaries = await repository.getCharacterSummaries();
@@ -351,12 +351,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Continuar offline'));
-    await tester.tap(find.text('Continuar offline'));
+    await tester.ensureVisible(find.text('Continue offline'));
+    await tester.tap(find.text('Continue offline'));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Crear personaje nuevo'));
-    await tester.tap(find.text('Crear personaje nuevo'));
+    await tester.ensureVisible(find.text('Create character'));
+    await tester.tap(find.text('Create character'));
     await tester.pumpAndSettle();
 
     final classField = find.byWidgetPredicate(
@@ -403,12 +403,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.ensureVisible(find.text('Continuar offline'));
-      await tester.tap(find.text('Continuar offline'));
+      await tester.ensureVisible(find.text('Continue offline'));
+      await tester.tap(find.text('Continue offline'));
       await tester.pumpAndSettle();
 
-      await tester.ensureVisible(find.text('Crear personaje nuevo'));
-      await tester.tap(find.text('Crear personaje nuevo'));
+      await tester.ensureVisible(find.text('Create character'));
+      await tester.tap(find.text('Create character'));
       await tester.pumpAndSettle();
 
       final classField = find.byWidgetPredicate(
@@ -455,11 +455,11 @@ void main() {
       expect(find.text('Spellbook spells • 1 / 1 selected'), findsOneWidget);
       expect(find.text('Light (Cantrip)'), findsWidgets);
       await tester.scrollUntilVisible(
-        find.widgetWithText(FilledButton, 'Guardar draft').first,
+        find.widgetWithText(FilledButton, 'Save draft').first,
         400,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.tap(find.widgetWithText(FilledButton, 'Guardar draft'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Save draft'));
       await tester.pumpAndSettle();
 
       final summaries = await repository.getCharacterSummaries();
@@ -496,21 +496,21 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Continuar offline'));
-    await tester.tap(find.text('Continuar offline'));
+    await tester.ensureVisible(find.text('Continue offline'));
+    await tester.tap(find.text('Continue offline'));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Crear personaje nuevo'));
-    await tester.tap(find.text('Crear personaje nuevo'));
+    await tester.ensureVisible(find.text('Create character'));
+    await tester.tap(find.text('Create character'));
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField).first, 'Aelar');
     await tester.scrollUntilVisible(
-      find.widgetWithText(FilledButton, 'Guardar draft').first,
+      find.widgetWithText(FilledButton, 'Save draft').first,
       400,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.tap(find.widgetWithText(FilledButton, 'Guardar draft'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Save draft'));
     await tester.pumpAndSettle();
 
     expect(find.text('Aelar'), findsWidgets);
@@ -577,23 +577,23 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.ensureVisible(find.text('Continuar offline'));
-      await tester.tap(find.text('Continuar offline'));
+      await tester.ensureVisible(find.text('Continue offline'));
+      await tester.tap(find.text('Continue offline'));
       await tester.pumpAndSettle();
 
-      await tester.ensureVisible(find.text('Crear personaje nuevo'));
-      await tester.tap(find.text('Crear personaje nuevo'));
+      await tester.ensureVisible(find.text('Create character'));
+      await tester.tap(find.text('Create character'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Compendio incompleto'), findsOneWidget);
+      expect(find.text('Incomplete compendium'), findsOneWidget);
       expect(
         find.textContaining(
-          'faltan datos del compendio para: Race, Background, Class',
+          'compendium data is missing for: Race, Background, Class',
         ),
         findsOneWidget,
       );
       expect(
-        find.widgetWithText(OutlinedButton, 'Volver al menu'),
+        find.widgetWithText(OutlinedButton, 'Back to menu'),
         findsOneWidget,
       );
     },
@@ -792,7 +792,7 @@ const _testCatalog = CompendiumCatalog(
   packStates: <CompendiumPackStateModel>[
     CompendiumPackStateModel(
       id: 'bundled-base-compendium',
-      title: 'Compendio base',
+      title: 'Base compendium',
       description: 'FightClub XML bundled base content',
       kind: 'bundled_base',
       isFixed: true,
