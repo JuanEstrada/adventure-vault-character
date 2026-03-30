@@ -852,7 +852,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
             isEquipped: _looksEquipped(parsed.name),
             isCarried: true,
             isFavorite: false,
-            weightPerUnit: null,
+            weightPerUnit: _defaultWeightFor(parsed.name),
             isContainer: _looksLikeContainer(parsed.name),
             chargesCurrent: null,
             chargesMax: null,
@@ -883,7 +883,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
             isEquipped: _looksEquipped(parsed.name),
             isCarried: true,
             isFavorite: false,
-            weightPerUnit: null,
+            weightPerUnit: _defaultWeightFor(parsed.name),
             isContainer: _looksLikeContainer(parsed.name),
             chargesCurrent: null,
             chargesMax: null,
@@ -966,6 +966,25 @@ class InMemoryCharacterRepository implements CharacterRepository {
         lower.contains('pouch') ||
         lower.contains('bag') ||
         lower.contains('case');
+  }
+
+  int? _defaultWeightFor(String itemName) {
+    const defaultWeightBySlug = <String, int>{
+      'backpack': 5,
+      'bedroll': 7,
+      'rope-hempen-50-feet': 10,
+      'rope-silk-50-feet': 5,
+      'waterskin': 5,
+      'rations-1-day': 2,
+      'torch': 1,
+      'lantern-hooded': 2,
+      'crowbar': 5,
+      'hammer': 3,
+      'piton': 1,
+      'shovel': 5,
+      'tinderbox': 1,
+    };
+    return defaultWeightBySlug[_slugify(itemName)];
   }
 
   String? _containerNameFor(

@@ -1001,6 +1001,84 @@ void main() {
     expect(restoredTorch.chargesCurrent, 5);
     expect(restoredTorch.chargesMax, 5);
   });
+
+  test(
+    'seeded equipment metadata preserves defaults for common gear',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        const CreateCharacterInput(
+          name: 'Rin',
+          raceName: 'Human',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'manualPointAllocation',
+          abilityScoreProvenance: 'method=manualPointAllocation',
+          strength: 10,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 10,
+          wisdom: 14,
+          charisma: 8,
+          className: 'Wizard',
+          level: 2,
+          experience: 300,
+          equipmentLoadoutId: 'wizard-focus',
+          equipmentLoadoutLabel: 'Arcane focus kit',
+          startingMoneySummary: '0 gp',
+          selectedEquipmentItems: <String>['Backpack', '2 Torch'],
+          currentHitPoints: 12,
+          maximumHitPoints: 12,
+          temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.spellbook,
+            selectedSpells: <CharacterSpellSelectionInput>[],
+            slotUsages: <CharacterSpellSlotUsageInput>[],
+          ),
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: '',
+            narrativeNotes: '',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection.empty(NarrativeFieldKey.alignment),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
+        ),
+      );
+
+      final inventoryRows = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final definitionIds = inventoryRows
+          .map((item) => item.equipmentDefinitionId)
+          .whereType<String>()
+          .toSet();
+
+      final definitions = await (database.select(
+        database.equipmentDefinitions,
+      )..where((table) => table.id.isIn(definitionIds))).get();
+      final byName = <String, EquipmentDefinition>{
+        for (final definition in definitions) definition.name: definition,
+      };
+
+      expect(byName['Backpack']?.isContainer, isTrue);
+      expect(byName['Backpack']?.weight, 5);
+      expect(byName['Torch']?.weight, 1);
+      expect(byName['Torch']?.isStackable, isTrue);
+    },
+  );
 }
 
 const _testCatalog = CompendiumCatalog(

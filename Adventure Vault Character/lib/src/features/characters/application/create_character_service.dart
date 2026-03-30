@@ -537,25 +537,42 @@ class CreateCharacterService {
   Future<void> _ensureEquipmentDefinitions(
     List<_InventoryItemSpec> items,
   ) async {
+    final definitionIds = items
+        .map((item) => _equipmentDefinitionId(item.name))
+        .toSet();
+    final existingDefinitions = await (_database.select(
+      _database.equipmentDefinitions,
+    )..where((table) => table.id.isIn(definitionIds))).get();
+    final existingById = <String, EquipmentDefinition>{
+      for (final definition in existingDefinitions) definition.id: definition,
+    };
+
     await _referenceDao.upsertEquipmentDefinitions(
       items
-          .map(
-            (item) => EquipmentDefinitionsCompanion.insert(
-              id: _equipmentDefinitionId(item.name),
+          .map((item) {
+            final definitionId = _equipmentDefinitionId(item.name);
+            final existing = existingById[definitionId];
+            return EquipmentDefinitionsCompanion.insert(
+              id: definitionId,
               key: _slugify(item.name),
               name: item.name,
-              category: _inferEquipmentCategory(item.name),
-              subcategory: const Value(null),
-              weight: const Value(null),
-              costValue: const Value(null),
-              costUnit: const Value(null),
-              isContainer: Value(_looksLikeContainer(item.name)),
-              isStackable: const Value(true),
-              description: const Value(null),
-              weaponPropertiesJson: const Value(null),
-              armorPropertiesJson: const Value(null),
-            ),
-          )
+              category:
+                  existing?.category ?? _inferEquipmentCategory(item.name),
+              subcategory: Value(existing?.subcategory),
+              weight: Value(existing?.weight ?? _defaultWeightFor(item.name)),
+              costValue: Value(existing?.costValue),
+              costUnit: Value(existing?.costUnit),
+              isContainer: Value(
+                existing?.isContainer ?? _looksLikeContainer(item.name),
+              ),
+              isStackable: Value(
+                existing?.isStackable ?? _looksStackable(item.name),
+              ),
+              description: Value(existing?.description),
+              weaponPropertiesJson: Value(existing?.weaponPropertiesJson),
+              armorPropertiesJson: Value(existing?.armorPropertiesJson),
+            );
+          })
           .toList(growable: false),
     );
   }
@@ -782,7 +799,39 @@ class CreateCharacterService {
     final lower = itemName.toLowerCase();
     return lower.contains('pack') ||
         lower.contains('pouch') ||
-        lower.contains('bag');
+        lower.contains('bag') ||
+        lower.contains('case');
+  }
+
+  bool _looksStackable(String itemName) {
+    final lower = itemName.toLowerCase();
+    return lower.contains('torch') ||
+        lower.contains('ration') ||
+        lower.contains('arrow') ||
+        lower.contains('bolt') ||
+        lower.contains('dart') ||
+        lower.contains('coin') ||
+        lower.contains('vial') ||
+        lower.contains('flask');
+  }
+
+  int? _defaultWeightFor(String itemName) {
+    const defaultWeightBySlug = <String, int>{
+      'backpack': 5,
+      'bedroll': 7,
+      'rope-hempen-50-feet': 10,
+      'rope-silk-50-feet': 5,
+      'waterskin': 5,
+      'rations-1-day': 2,
+      'torch': 1,
+      'lantern-hooded': 2,
+      'crowbar': 5,
+      'hammer': 3,
+      'piton': 1,
+      'shovel': 5,
+      'tinderbox': 1,
+    };
+    return defaultWeightBySlug[_slugify(itemName)];
   }
 
   bool _looksEquipped(String itemName) {
