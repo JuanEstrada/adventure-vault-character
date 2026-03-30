@@ -79,7 +79,7 @@ placeholders for future pack/import workflows.
 - The screen shows the active source label and the fallback source label.
 - The screen shows that the bundled base compendium is active.
 - The screen shows persisted local state for bundled-base and optional packs.
-- Tapping `Administrar packs` opens a dedicated screen that keeps the bundled
+- Tapping `Manage packs` opens a dedicated screen that keeps the bundled
   base compendium fixed as active and allows optional pack state to be stored
   locally.
 - Optional pack state affects the effective compendium shown by this screen,
@@ -87,10 +87,10 @@ placeholders for future pack/import workflows.
 - Optional-pack filtering should be driven by explicit compendium metadata
   carried on affected content and source-policy sections, not by UI-local
   heuristics.
-- Tapping `Importar XML` opens a dedicated import screen.
+- Tapping `Import XML` opens a dedicated import screen.
 - The import screen accepts pasted XML, validates a minimal compatible
   structure, and registers the XML as a local optional pack.
-- Successfully registered XML appears in `Administrar packs`.
+- Successfully registered XML appears in `Manage packs`.
 - Active imported packs now contribute supported imported entries to the live
   compendium catalog and annotate affected source-policy sections.
 - The current import slice now also ingests imported background

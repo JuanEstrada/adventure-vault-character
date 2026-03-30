@@ -184,8 +184,8 @@ Verified on 2026-03-28:
   block: the bundled base compendium is shown as always active, imported packs
   are still marked as pending, and the future XML import entry point remains
   visible without executing any import flow.
-- `Administrar packs` now opens a dedicated read-only screen inside the same
-  compendium feature, while `Importar XML` now opens a dedicated offline
+- `Manage packs` now opens a dedicated read-only screen inside the same
+  compendium feature, while `Import XML` now opens a dedicated offline
   registration screen for pasted XML.
 - Compendium pack state is now persisted locally through Drift. The bundled
   base compendium remains fixed as active, optional packs now store local
@@ -496,7 +496,7 @@ Completed since the previous handoff:
   shows active source metadata, coverage counts, and section-by-section source
   inputs from the loaded offline catalog.
 - The compendium screen now also surfaces read-only placeholders for
-  `Importar XML` and `Administrar packs`, keeping the future content-management
+  `Import XML` and `Manage packs`, keeping the future content-management
   direction visible without adding new persistence or import behavior.
 - The first real interaction is now in place: pack management has a dedicated
   route, and XML import now has a dedicated offline registration flow for
@@ -541,6 +541,8 @@ Completed since the previous handoff:
   `packId` on backgrounds, spells, feats, and monsters when packs are inactive.
 - Imported XML background parsing now derives bonus/perk-style fields from XML
   content instead of relying on static placeholder defaults.
+- Project docs, internal operational messages, runtime UI labels, and test
+  assertions are now normalized to English across the repository.
 
 Next-session starting point:
 

@@ -37,7 +37,7 @@ summary.
   state.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- The Drift schema is now at `v15` and includes normalized character-side
+- The Drift schema is now at `v16` and includes normalized character-side
   tables for `ability scores`, `ability score provenance`, `hit points`,
   `finishing details`, `narrative selections`, `equipment loadout`,
   `skills`, `saving throws`, `inventory`, `proficiencies`, and `currency`.
@@ -184,6 +184,8 @@ summary.
   and monsters, not only narrative-option groups.
 - Imported XML backgrounds now derive bonuses and social-perk style values from
   XML fields/traits instead of static placeholder defaults.
+- Project documentation, internal messages, runtime UI strings, and test
+  assertions now use English consistently across the repository.
 - A dedicated `CompendiumRepository` now loads active XML assets directly from
   `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`,
   with JSON fallback preserved.
@@ -255,10 +257,10 @@ summary.
   showing source-policy details and current section coverage from the loaded
   offline catalog.
 - That compendium screen now also shows the first read-only management
-  placeholders for future `Importar XML` and pack-management work while
+  placeholders for future `Import XML` and pack-management work while
   keeping the bundled base compendium explicitly active.
-- `Administrar packs` now opens a dedicated read-only screen, and
-  `Importar XML` now opens a dedicated offline registration screen instead of
+- `Manage packs` now opens a dedicated read-only screen, and
+  `Import XML` now opens a dedicated offline registration screen instead of
   staying purely decorative.
 - The compendium-pack route now also persists and renders local active /
   inactive state for optional packs.

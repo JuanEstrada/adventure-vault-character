@@ -66,11 +66,11 @@ void main() {
     await tester.tap(find.text('Compendium'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Gestion de contenido'), findsOneWidget);
-    expect(find.text('Base empaquetada'), findsOneWidget);
-    expect(find.text('Siempre activa'), findsOneWidget);
-    expect(find.text('Packs importados'), findsOneWidget);
-    expect(find.text('1 activos'), findsOneWidget);
+    expect(find.text('Content management'), findsOneWidget);
+    expect(find.text('Bundled base'), findsOneWidget);
+    expect(find.text('Always active'), findsOneWidget);
+    expect(find.text('Imported packs'), findsOneWidget);
+    expect(find.text('1 active'), findsOneWidget);
     expect(find.text('Import XML'), findsOneWidget);
     expect(find.text('Manage packs'), findsOneWidget);
 
@@ -81,7 +81,7 @@ void main() {
     );
     await tester.tap(find.widgetWithText(OutlinedButton, 'Import XML'));
     await tester.pumpAndSettle();
-    expect(find.text('Registro local de pack'), findsOneWidget);
+    expect(find.text('Local pack registration'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), _importFixture);
     await tester.tap(find.widgetWithText(FilledButton, 'Register XML'));
@@ -89,14 +89,12 @@ void main() {
 
     expect(
       find.text(
-        'XML registrado localmente. Ya puedes gestionarlo como pack opcional.',
+        'XML registered locally. You can now manage it as an optional pack.',
       ),
       findsOneWidget,
     );
     expect(
-      find.text(
-        'Imported Acolyte Expansion • 1 entradas compatibles detectadas',
-      ),
+      find.text('Imported Acolyte Expansion • 1 compatible entries detected'),
       findsOneWidget,
     );
     await tester.tap(find.widgetWithText(OutlinedButton, 'Open packs'));
@@ -104,15 +102,15 @@ void main() {
 
     expect(find.text('Manage packs'), findsOneWidget);
     expect(find.text('Base compendium'), findsOneWidget);
-    expect(find.text('Activo fijo'), findsOneWidget);
+    expect(find.text('Fixed active'), findsOneWidget);
     expect(find.text('Packs opcionales importados'), findsOneWidget);
-    expect(find.text('Activo'), findsNWidgets(2));
+    expect(find.text('Active'), findsNWidgets(2));
     expect(find.text('Imported Acolyte Expansion'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.arrow_back));
     await tester.pumpAndSettle();
 
-    expect(find.text('2 activos'), findsOneWidget);
+    expect(find.text('2 active'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Narrative options'),
       300,
@@ -149,20 +147,20 @@ void main() {
     await tester.tap(find.byType(Switch).at(2));
     await tester.pumpAndSettle();
 
-    expect(find.text('Inactivo'), findsNWidgets(2));
+    expect(find.text('Inactive'), findsNWidgets(2));
 
     await tester.tap(find.byIcon(Icons.arrow_back));
     await tester.pumpAndSettle();
 
-    expect(find.text('0 activos'), findsOneWidget);
+    expect(find.text('0 active'), findsOneWidget);
     expect(find.textContaining('Imported XML packs active:'), findsNothing);
 
     await tester.scrollUntilVisible(
-      find.text('Cobertura actual'),
+      find.text('Current coverage'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('Cobertura actual'), findsOneWidget);
+    expect(find.text('Current coverage'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Narrative options'),
       300,
