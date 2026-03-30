@@ -174,6 +174,10 @@ summary.
   create/edit/persistence/sheet paths.
 - Wizard spell state now uses explicit `spellbook` mode across create/edit,
   persisted selection-kind storage, editable reload, and sheet-facing labels.
+- Wizard create/edit now captures both spellbook choices and prepared subset
+  choices with deterministic subset/limit enforcement.
+- Drift schema is now at `v16`, including expanded spell-selection identity so
+  `spellbook` and `prepared` rows can coexist for a single spell id.
 - Spell-slot tracking now exposes deterministic short-rest/long-rest reset
   actions in create/edit spell state handling.
 - Pack-state filtering now also trims pack-tagged backgrounds, spells, feats,

@@ -166,7 +166,11 @@ class CharacterSpellSelections extends Table {
       integer().named('selected_at_order').withDefault(const Constant(0))();
 
   @override
-  Set<Column<Object>> get primaryKey => {characterId, spellDefinitionId};
+  Set<Column<Object>> get primaryKey => {
+    characterId,
+    spellDefinitionId,
+    selectionKind,
+  };
 }
 
 class CharacterSpellSlotUsages extends Table {
@@ -656,7 +660,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.executor(super.executor);
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -811,6 +815,28 @@ class AppDatabase extends _$AppDatabase {
       if (from < 15) {
         await migrator.createTable(characterSpellSelections);
         await migrator.createTable(characterSpellSlotUsages);
+      }
+      if (from >= 15 && from < 16) {
+        await customStatement(
+          'CREATE TABLE character_spell_selections_v16 ('
+          'character_id TEXT NOT NULL REFERENCES characters(id), '
+          'spell_definition_id TEXT NOT NULL, '
+          'selection_kind TEXT NOT NULL, '
+          'selected_at_order INTEGER NOT NULL DEFAULT 0, '
+          'PRIMARY KEY(character_id, spell_definition_id, selection_kind)'
+          ')',
+        );
+        await customStatement(
+          'INSERT INTO character_spell_selections_v16 '
+          '(character_id, spell_definition_id, selection_kind, selected_at_order) '
+          'SELECT character_id, spell_definition_id, selection_kind, selected_at_order '
+          'FROM character_spell_selections',
+        );
+        await customStatement('DROP TABLE character_spell_selections');
+        await customStatement(
+          'ALTER TABLE character_spell_selections_v16 '
+          'RENAME TO character_spell_selections',
+        );
       }
 
       await _createIndexes();

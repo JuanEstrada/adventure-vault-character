@@ -932,6 +932,21 @@ class CreateCharacterService {
       throw StateError('Spell selection mode does not match the active class.');
     }
 
+    final hasUnsupportedSelectionMode = input.spellState.selectedSpells.any((
+      row,
+    ) {
+      if (expectedMode == CharacterSpellSelectionMode.spellbook) {
+        return row.selectionMode != CharacterSpellSelectionMode.spellbook &&
+            row.selectionMode != CharacterSpellSelectionMode.prepared;
+      }
+      return row.selectionMode != expectedMode;
+    });
+    if (hasUnsupportedSelectionMode) {
+      throw StateError(
+        'Selected spells contain an unsupported selection mode.',
+      );
+    }
+
     final selectionLimit = _characterSpellRules.selectionLimitFor(
       className: className,
       level: level,
@@ -939,7 +954,20 @@ class CreateCharacterService {
         _abilityScoreForKey(input, spellcastingAbilityKey),
       ),
     );
-    if (input.spellState.selectedSpells.length > selectionLimit) {
+    final spellbookSelections = input.spellState.selectedSpells
+        .where((item) => item.selectionMode == expectedMode)
+        .toList(growable: false);
+    final preparedSelections = input.spellState.selectedSpells
+        .where(
+          (item) => item.selectionMode == CharacterSpellSelectionMode.prepared,
+        )
+        .toList(growable: false);
+
+    if (expectedMode == CharacterSpellSelectionMode.spellbook) {
+      if (preparedSelections.length > selectionLimit) {
+        throw StateError('Selected spells exceed the current class limit.');
+      }
+    } else if (input.spellState.selectedSpells.length > selectionLimit) {
       throw StateError('Selected spells exceed the current class limit.');
     }
 
@@ -951,8 +979,9 @@ class CreateCharacterService {
       for (final spell in catalog.spells)
         if (_spellMatchesClass(spell.classes, className)) spell.id: spell,
     };
+
     final seenSpellIds = <String>{};
-    for (final selection in input.spellState.selectedSpells) {
+    for (final selection in spellbookSelections) {
       final spell = availableSpells[selection.spellId];
       if (spell == null) {
         throw StateError('Selected spell does not belong to the active class.');
@@ -962,6 +991,24 @@ class CreateCharacterService {
       }
       if (spell.level > highestSpellLevel) {
         throw StateError('Selected spell is above the current castable level.');
+      }
+    }
+
+    final seenPreparedSpellIds = <String>{};
+    for (final selection in preparedSelections) {
+      final spell = availableSpells[selection.spellId];
+      if (spell == null) {
+        throw StateError('Selected spell does not belong to the active class.');
+      }
+      if (!seenPreparedSpellIds.add(selection.spellId)) {
+        throw StateError('Duplicate selected spells are not allowed.');
+      }
+      if (spell.level > highestSpellLevel) {
+        throw StateError('Selected spell is above the current castable level.');
+      }
+      if (expectedMode == CharacterSpellSelectionMode.spellbook &&
+          !seenSpellIds.contains(selection.spellId)) {
+        throw StateError('Prepared spells must exist in the spellbook set.');
       }
     }
 

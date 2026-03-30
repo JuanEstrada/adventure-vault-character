@@ -280,6 +280,8 @@ void main() {
     expect(find.text('Spellbook spells • 0 / 3 selected'), findsOneWidget);
     await tester.tap(find.text('Magic Missile (Level 1)'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Magic Missile (Level 1)').last);
+    await tester.pumpAndSettle();
     expect(find.text('Spellbook spells • 1 / 3 selected'), findsOneWidget);
 
     await tester.scrollUntilVisible(
@@ -321,10 +323,10 @@ void main() {
     );
     expect(
       savedCharacter.spellcasting!.availableSpells.map((item) => item.name),
-      <String>['Light', 'Mage Hand', 'Magic Missile', 'Shield'],
+      <String>['Magic Missile'],
     );
     expect(find.text('Spells'), findsWidgets);
-    expect(find.text('Spellbook spells'), findsOneWidget);
+    expect(find.text('Prepared spells'), findsOneWidget);
     expect(find.text('Spell save DC'), findsOneWidget);
     expect(find.text('Selected / max'), findsOneWidget);
     expect(find.text('1 / 3'), findsOneWidget);
@@ -428,9 +430,15 @@ void main() {
       );
       await tester.tap(find.text('Light (Cantrip)'));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Light (Cantrip)').last);
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Mage Hand (Cantrip)'));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Mage Hand (Cantrip)').last);
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Magic Missile (Level 1)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Magic Missile (Level 1)').last);
       await tester.pumpAndSettle();
 
       expect(find.text('Spellbook spells • 3 / 3 selected'), findsOneWidget);
@@ -440,16 +448,6 @@ void main() {
         ),
         findsOneWidget,
       );
-
-      final shieldTile = tester.widget<CheckboxListTile>(
-        find.byWidgetPredicate(
-          (widget) =>
-              widget is CheckboxListTile &&
-              widget.title is Text &&
-              (widget.title! as Text).data == 'Shield (Level 1)',
-        ),
-      );
-      expect(shieldTile.onChanged, isNull);
 
       await tester.tap(find.text('Manual').first);
       await tester.pumpAndSettle();

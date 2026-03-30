@@ -454,10 +454,28 @@ class InMemoryCharacterRepository implements CharacterRepository {
     final availableSpellsById = <String, CharacterSpellReferenceDomainModel>{
       for (final spell in availableSpells) spell.id: spell,
     };
-    final selectedSpells = spellState.selectedSpells
+    final expectedMode = _characterSpellRules.selectionModeForClass(className);
+    final spellbookSpells = spellState.selectedSpells
+        .where((selection) => selection.selectionMode == expectedMode)
         .map((selection) => availableSpellsById[selection.spellId])
         .whereType<CharacterSpellReferenceDomainModel>()
         .toList(growable: false);
+    final preparedSpells = spellState.selectedSpells
+        .where(
+          (selection) =>
+              selection.selectionMode == CharacterSpellSelectionMode.prepared,
+        )
+        .map((selection) => availableSpellsById[selection.spellId])
+        .whereType<CharacterSpellReferenceDomainModel>()
+        .toList(growable: false);
+    final selectedSpells = expectedMode == CharacterSpellSelectionMode.spellbook
+        ? preparedSpells
+        : spellbookSpells;
+    final effectiveAvailableSpells =
+        expectedMode == CharacterSpellSelectionMode.spellbook &&
+            spellbookSpells.isNotEmpty
+        ? spellbookSpells
+        : availableSpells;
     final slotProgression = _characterSpellRules.slotProgressionFor(
       className: className,
       level: progression.level,
@@ -472,8 +490,8 @@ class InMemoryCharacterRepository implements CharacterRepository {
       abilityLabel: _spellcastingAbilityLabel(abilityKey),
       abilityScore: abilityScore,
       proficiencyBonus: progression.proficiencyBonus,
-      availableSpells: availableSpells,
-      selectionMode: _characterSpellRules.selectionModeForClass(className),
+      availableSpells: effectiveAvailableSpells,
+      selectionMode: expectedMode,
       selectedSpells: selectedSpells,
       selectionLimit: _characterSpellRules.selectionLimitFor(
         className: className,

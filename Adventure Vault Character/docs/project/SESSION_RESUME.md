@@ -529,6 +529,11 @@ Completed since the previous handoff:
   instead of sharing the generic `prepared` mode.
 - Wizard create/edit persistence, service validation, editable reload mapping,
   and sheet labels now align on `spellbook` mode end-to-end.
+- Wizard spell-state now separates spellbook selection from the prepared subset
+  in create/edit flow, with deterministic validation that prepared spells must
+  be chosen from selected spellbook entries.
+- Drift schema `v16` now allows storing both `spellbook` and `prepared`
+  selection rows for the same spell id per character.
 - Spell-slot tracking now supports deterministic rest actions in the create/edit
   flow: long rest resets all derived slot rows, and short rest currently
   resets warlock pact-magic slots.

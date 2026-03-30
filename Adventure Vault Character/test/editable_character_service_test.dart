@@ -59,6 +59,11 @@ void main() {
                 spellName: 'Magic Missile',
                 selectionMode: CharacterSpellSelectionMode.spellbook,
               ),
+              CharacterSpellSelectionInput(
+                spellId: 'magic-missile',
+                spellName: 'Magic Missile',
+                selectionMode: CharacterSpellSelectionMode.prepared,
+              ),
             ],
             slotUsages: <CharacterSpellSlotUsageInput>[
               CharacterSpellSlotUsageInput(spellLevel: 1, slotsExpended: 1),
@@ -103,9 +108,13 @@ void main() {
         editable.spellState.selectionMode,
         CharacterSpellSelectionMode.spellbook,
       );
+      expect(editable.spellState.selectedSpells, hasLength(2));
       expect(
-        editable.spellState.selectedSpells.single.spellId,
-        'magic-missile',
+        editable.spellState.selectedSpells.map((row) => row.selectionMode),
+        containsAll(<CharacterSpellSelectionMode>[
+          CharacterSpellSelectionMode.spellbook,
+          CharacterSpellSelectionMode.prepared,
+        ]),
       );
       expect(editable.spellState.slotUsages.single.slotsExpended, 1);
       expect(editable.equipment.items[1].name, 'Torch');

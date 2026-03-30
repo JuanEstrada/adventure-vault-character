@@ -3782,7 +3782,11 @@ class $CharacterSpellSelectionsTable extends CharacterSpellSelections
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {characterId, spellDefinitionId};
+  Set<GeneratedColumn> get $primaryKey => {
+    characterId,
+    spellDefinitionId,
+    selectionKind,
+  };
   @override
   CharacterSpellSelection map(
     Map<String, dynamic> data, {

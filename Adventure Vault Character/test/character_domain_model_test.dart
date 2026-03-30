@@ -191,7 +191,7 @@ void main() {
       expect(character.spellcasting!.displayAbilityModifier, '+2');
       expect(character.spellcasting!.spellSaveDc, 13);
       expect(character.spellcasting!.displaySpellAttackBonus, '+5');
-      expect(character.spellcasting!.selectionLabel, 'Spellbook spells');
+      expect(character.spellcasting!.selectionLabel, 'Prepared spells');
       expect(
         character.spellcasting!.slotProgression.single.displaySummary,
         '3 / 4',

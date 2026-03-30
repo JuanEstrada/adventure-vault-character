@@ -72,6 +72,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   int _temporaryHitPoints = 0;
   String? _portraitAssetPath;
   final Set<String> _selectedSpellIds = <String>{};
+  final Set<String> _preparedSpellIds = <String>{};
   final Map<int, int> _spellSlotUsages = <int, int>{};
 
   static const List<String> _abilityOrder = <String>[
@@ -169,10 +170,27 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     _selectedSpellIds
       ..clear()
       ..addAll(
-        initialDraft?.spellState.selectedSpells
-                .map((spell) => spell.spellId)
-                .toList(growable: false) ??
-            const <String>[],
+        _initialSpellIdsByMode(
+          initialDraft,
+          CharacterSpellSelectionMode.spellbook,
+        ),
+      )
+      ..addAll(
+        _initialSpellIdsByMode(initialDraft, CharacterSpellSelectionMode.known),
+      )
+      ..addAll(
+        _initialSpellIdsByMode(
+          initialDraft,
+          CharacterSpellSelectionMode.prepared,
+        ),
+      );
+    _preparedSpellIds
+      ..clear()
+      ..addAll(
+        _initialSpellIdsByMode(
+          initialDraft,
+          CharacterSpellSelectionMode.prepared,
+        ),
       );
     _spellSlotUsages
       ..clear()
@@ -304,6 +322,9 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   CharacterSpellSelectionMode? get _spellSelectionMode =>
       _characterSpellRules.selectionModeForClass(_selectedClass);
 
+  bool get _isWizardSpellbookMode =>
+      _spellSelectionMode == CharacterSpellSelectionMode.spellbook;
+
   bool get _showsSpellSection =>
       _characterSpellRules.supportsPersistentSpellState(_selectedClass);
 
@@ -366,8 +387,9 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     };
   }
 
-  bool get _hasReachedSpellSelectionLimit =>
-      _selectedSpellIds.length >= _spellSelectionLimit;
+  bool get _hasReachedSpellSelectionLimit => _isWizardSpellbookMode
+      ? _preparedSpellIds.length >= _spellSelectionLimit
+      : _selectedSpellIds.length >= _spellSelectionLimit;
 
   void _syncSpellStateForClassLevel() {
     if (!_showsSpellSection) {
@@ -382,7 +404,17 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     _selectedSpellIds.removeWhere(
       (spellId) => !allowedSpellIds.contains(spellId),
     );
-    _trimSelectedSpellsToLimit();
+    _preparedSpellIds.removeWhere(
+      (spellId) =>
+          !_selectedSpellIds.contains(spellId) ||
+          !allowedSpellIds.contains(spellId),
+    );
+    if (_isWizardSpellbookMode) {
+      _trimPreparedSpellsToLimit();
+    } else {
+      _trimSelectedSpellsToLimit();
+      _preparedSpellIds.clear();
+    }
 
     final allowedSlotLevels = _spellSlotProgression
         .map((slot) => slot.spellLevel)
@@ -410,6 +442,77 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     _selectedSpellIds
       ..clear()
       ..addAll(orderedSelectedIds);
+  }
+
+  void _trimPreparedSpellsToLimit() {
+    final selectionLimit = _spellSelectionLimit;
+    if (_preparedSpellIds.length <= selectionLimit) {
+      return;
+    }
+
+    final orderedPreparedIds = _availableSpellOptions
+        .map((spell) => spell.id)
+        .where(_preparedSpellIds.contains)
+        .take(selectionLimit)
+        .toSet();
+    _preparedSpellIds
+      ..clear()
+      ..addAll(orderedPreparedIds);
+  }
+
+  List<String> _initialSpellIdsByMode(
+    CreateCharacterInput? draft,
+    CharacterSpellSelectionMode mode,
+  ) {
+    if (draft == null) {
+      return const <String>[];
+    }
+    return draft.spellState.selectedSpells
+        .where((spell) => spell.selectionMode == mode)
+        .map((spell) => spell.spellId)
+        .toList(growable: false);
+  }
+
+  List<CharacterSpellSelectionInput> _buildSpellSelectionsForSubmit() {
+    final mode = _spellSelectionMode;
+    if (mode == null) {
+      return const <CharacterSpellSelectionInput>[];
+    }
+
+    final byId = <String, CompendiumSpell>{
+      for (final spell in _availableSpellOptions) spell.id: spell,
+    };
+    final spellbookSelections = _availableSpellOptions
+        .where((spell) => _selectedSpellIds.contains(spell.id))
+        .map(
+          (spell) => CharacterSpellSelectionInput(
+            spellId: spell.id,
+            spellName: spell.name,
+            selectionMode: mode,
+          ),
+        )
+        .toList(growable: false);
+
+    if (!_isWizardSpellbookMode) {
+      return spellbookSelections;
+    }
+
+    final preparedSelections = _availableSpellOptions
+        .where((spell) => _preparedSpellIds.contains(spell.id))
+        .where((spell) => byId.containsKey(spell.id))
+        .map(
+          (spell) => CharacterSpellSelectionInput(
+            spellId: spell.id,
+            spellName: spell.name,
+            selectionMode: CharacterSpellSelectionMode.prepared,
+          ),
+        )
+        .toList(growable: false);
+
+    return <CharacterSpellSelectionInput>[
+      ...spellbookSelections,
+      ...preparedSelections,
+    ];
   }
 
   bool get _supportsShortRestSlotRecovery =>
@@ -476,16 +579,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
         temporaryHitPoints: _temporaryHitPoints,
         spellState: CharacterSpellStateInput(
           selectionMode: _spellSelectionMode,
-          selectedSpells: _availableSpellOptions
-              .where((spell) => _selectedSpellIds.contains(spell.id))
-              .map(
-                (spell) => CharacterSpellSelectionInput(
-                  spellId: spell.id,
-                  spellName: spell.name,
-                  selectionMode: _spellSelectionMode!,
-                ),
-              )
-              .toList(growable: false),
+          selectedSpells: _buildSpellSelectionsForSubmit(),
           slotUsages: _spellSlotProgression
               .map(
                 (slot) => CharacterSpellSlotUsageInput(
@@ -898,7 +992,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            '$selectionLabel • ${_selectedSpellIds.length} / $selectionLimit selected',
+            '$selectionLabel • ${_isWizardSpellbookMode ? _preparedSpellIds.length : _selectedSpellIds.length} / $selectionLimit selected',
             style: theme.textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
@@ -918,9 +1012,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           else
             ...availableSpells.map((spell) {
               final isSelected = _selectedSpellIds.contains(spell.id);
-              final isDisabled =
-                  widget.isSaving ||
-                  (!isSelected && _hasReachedSpellSelectionLimit);
+              final isDisabled = widget.isSaving;
               return CheckboxListTile(
                 value: isSelected,
                 contentPadding: EdgeInsets.zero,
@@ -938,11 +1030,53 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                             _selectedSpellIds.add(spell.id);
                           } else {
                             _selectedSpellIds.remove(spell.id);
+                            _preparedSpellIds.remove(spell.id);
                           }
                         });
                       },
               );
             }),
+          if (_isWizardSpellbookMode && _selectedSpellIds.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text('Prepared today', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Text(
+              'Prepared spells • ${_preparedSpellIds.length} / $selectionLimit selected',
+              style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            ...availableSpells
+                .where((spell) => _selectedSpellIds.contains(spell.id))
+                .map((spell) {
+                  final isPrepared = _preparedSpellIds.contains(spell.id);
+                  final isDisabled =
+                      widget.isSaving ||
+                      (!isPrepared && _hasReachedSpellSelectionLimit);
+                  return CheckboxListTile(
+                    value: isPrepared,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      spell.level == 0
+                          ? '${spell.name} (Cantrip)'
+                          : '${spell.name} (Level ${spell.level})',
+                    ),
+                    subtitle: const Text(
+                      'Prepared for current adventuring day',
+                    ),
+                    onChanged: isDisabled
+                        ? null
+                        : (value) {
+                            setState(() {
+                              if (value ?? false) {
+                                _preparedSpellIds.add(spell.id);
+                              } else {
+                                _preparedSpellIds.remove(spell.id);
+                              }
+                            });
+                          },
+                  );
+                }),
+          ],
           const SizedBox(height: 12),
           Text('Spell slots', style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),

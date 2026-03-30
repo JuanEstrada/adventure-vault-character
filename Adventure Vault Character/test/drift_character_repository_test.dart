@@ -58,6 +58,11 @@ void main() {
                 spellName: 'Magic Missile',
                 selectionMode: CharacterSpellSelectionMode.spellbook,
               ),
+              CharacterSpellSelectionInput(
+                spellId: 'magic-missile',
+                spellName: 'Magic Missile',
+                selectionMode: CharacterSpellSelectionMode.prepared,
+              ),
             ],
             slotUsages: <CharacterSpellSlotUsageInput>[
               CharacterSpellSlotUsageInput(spellLevel: 1, slotsExpended: 1),
@@ -133,9 +138,11 @@ void main() {
       expect(equipmentLoadout.loadoutId, 'wizard-focus');
       expect(equipmentLoadout.loadoutLabel, 'Arcane focus kit');
       expect(hitPoints.maximum, 27);
-      expect(spellSelections, hasLength(1));
-      expect(spellSelections.single.spellDefinitionId, 'magic-missile');
-      expect(spellSelections.single.selectionKind, 'spellbook');
+      expect(spellSelections, hasLength(2));
+      expect(
+        spellSelections.map((row) => row.selectionKind),
+        containsAll(<String>['spellbook', 'prepared']),
+      );
       expect(spellSlotUsages, hasLength(1));
       expect(spellSlotUsages.single.spellLevel, 1);
       expect(spellSlotUsages.single.slotsExpended, 1);
@@ -224,6 +231,11 @@ void main() {
                 spellName: 'Magic Missile',
                 selectionMode: CharacterSpellSelectionMode.spellbook,
               ),
+              CharacterSpellSelectionInput(
+                spellId: 'magic-missile',
+                spellName: 'Magic Missile',
+                selectionMode: CharacterSpellSelectionMode.prepared,
+              ),
             ],
             slotUsages: <CharacterSpellSlotUsageInput>[
               CharacterSpellSlotUsageInput(spellLevel: 1, slotsExpended: 1),
@@ -284,6 +296,11 @@ void main() {
                 spellId: 'mage-hand',
                 spellName: 'Mage Hand',
                 selectionMode: CharacterSpellSelectionMode.spellbook,
+              ),
+              CharacterSpellSelectionInput(
+                spellId: 'mage-hand',
+                spellName: 'Mage Hand',
+                selectionMode: CharacterSpellSelectionMode.prepared,
               ),
             ],
             slotUsages: <CharacterSpellSlotUsageInput>[
@@ -368,8 +385,11 @@ void main() {
       expect(equipmentLoadout.loadoutLabel, 'Arcane focus kit');
       expect(hitPoints.maximum, 7);
       expect(hitPoints.current, 7);
-      expect(spellSelections, hasLength(1));
-      expect(spellSelections.single.spellDefinitionId, 'mage-hand');
+      expect(spellSelections, hasLength(2));
+      expect(
+        spellSelections.map((row) => row.selectionKind),
+        containsAll(<String>['spellbook', 'prepared']),
+      );
       expect(spellSlotUsages.single.slotsExpended, 0);
       expect(finishingDetails.alignment, 'Lawful Good');
       expect(finishingDetails.appearanceDetails, 'Short hair');
@@ -445,22 +465,22 @@ void main() {
                 CharacterSpellSelectionInput(
                   spellId: 'light',
                   spellName: 'Light',
-                  selectionMode: CharacterSpellSelectionMode.spellbook,
+                  selectionMode: CharacterSpellSelectionMode.prepared,
                 ),
                 CharacterSpellSelectionInput(
                   spellId: 'mage-hand',
                   spellName: 'Mage Hand',
-                  selectionMode: CharacterSpellSelectionMode.spellbook,
+                  selectionMode: CharacterSpellSelectionMode.prepared,
                 ),
                 CharacterSpellSelectionInput(
                   spellId: 'magic-missile',
                   spellName: 'Magic Missile',
-                  selectionMode: CharacterSpellSelectionMode.spellbook,
+                  selectionMode: CharacterSpellSelectionMode.prepared,
                 ),
                 CharacterSpellSelectionInput(
                   spellId: 'shield',
                   spellName: 'Shield',
-                  selectionMode: CharacterSpellSelectionMode.spellbook,
+                  selectionMode: CharacterSpellSelectionMode.prepared,
                 ),
               ],
               slotUsages: <CharacterSpellSlotUsageInput>[

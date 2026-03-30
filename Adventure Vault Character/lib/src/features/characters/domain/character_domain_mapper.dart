@@ -4,6 +4,7 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/domain/character_record.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_spell_rules.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 
 class CharacterDomainMapper {
   const CharacterDomainMapper({
@@ -215,10 +216,28 @@ class CharacterDomainMapper {
     final availableSpellsById = <String, CharacterSpellReferenceDomainModel>{
       for (final spell in availableSpells) spell.id: spell,
     };
-    final selectedSpells = record.spellSelections
+    final expectedMode = _characterSpellRules.selectionModeForClass(
+      record.row.className,
+    );
+    final spellbookSpells = record.spellSelections
+        .where((row) => row.selectionKind == 'spellbook')
         .map((row) => availableSpellsById[row.spellDefinitionId])
         .whereType<CharacterSpellReferenceDomainModel>()
         .toList(growable: false);
+    final selectedSpells = record.spellSelections
+        .where(
+          (row) => expectedMode == CharacterSpellSelectionMode.spellbook
+              ? row.selectionKind == 'prepared'
+              : row.selectionKind == _modeStorageKey(expectedMode),
+        )
+        .map((row) => availableSpellsById[row.spellDefinitionId])
+        .whereType<CharacterSpellReferenceDomainModel>()
+        .toList(growable: false);
+    final effectiveAvailableSpells =
+        expectedMode == CharacterSpellSelectionMode.spellbook &&
+            spellbookSpells.isNotEmpty
+        ? spellbookSpells
+        : availableSpells;
     final slotProgression = _characterSpellRules.slotProgressionFor(
       className: record.row.className,
       level: record.row.level,
@@ -237,10 +256,8 @@ class CharacterDomainMapper {
       abilityLabel: _spellcastingAbilityLabel(abilityKey),
       abilityScore: abilityScore,
       proficiencyBonus: progression.proficiencyBonus,
-      availableSpells: availableSpells,
-      selectionMode: _characterSpellRules.selectionModeForClass(
-        record.row.className,
-      ),
+      availableSpells: effectiveAvailableSpells,
+      selectionMode: expectedMode,
       selectedSpells: selectedSpells,
       selectionLimit: _characterSpellRules.selectionLimitFor(
         className: record.row.className,
@@ -339,6 +356,15 @@ class CharacterDomainMapper {
       'WIS' => 'Wisdom',
       'CHA' => 'Charisma',
       _ => abilityKey,
+    };
+  }
+
+  String _modeStorageKey(CharacterSpellSelectionMode? mode) {
+    return switch (mode) {
+      CharacterSpellSelectionMode.prepared => 'prepared',
+      CharacterSpellSelectionMode.known => 'known',
+      CharacterSpellSelectionMode.spellbook => 'spellbook',
+      _ => '',
     };
   }
 
