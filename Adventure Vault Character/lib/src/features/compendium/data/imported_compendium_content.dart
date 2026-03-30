@@ -164,6 +164,15 @@ CompendiumCatalog mergeImportedCompendiumContents(
     contents.expand((content) => content.monsters),
     (item) => item.name,
   );
+  final conflictCountsBySection = <String, int>{
+    if (mergedBackgrounds.conflicts > 0)
+      'backgrounds': mergedBackgrounds.conflicts,
+    if (mergedNarrativeOptionGroups.conflicts > 0)
+      'narrative_options': mergedNarrativeOptionGroups.conflicts,
+    if (mergedSpells.conflicts > 0) 'spells': mergedSpells.conflicts,
+    if (mergedFeats.conflicts > 0) 'feats': mergedFeats.conflicts,
+    if (mergedMonsters.conflicts > 0) 'monsters': mergedMonsters.conflicts,
+  };
   final importedPackCount = contents.length;
   final importedLabel = importedPackCount == 1
       ? '1 imported XML pack'
@@ -172,18 +181,24 @@ CompendiumCatalog mergeImportedCompendiumContents(
   return catalog.copyWith(
     races: mergedRaces,
     classes: mergedClasses,
-    backgrounds: mergedBackgrounds,
-    narrativeOptionGroups: mergedNarrativeOptionGroups,
-    spells: mergedSpells,
-    feats: mergedFeats,
-    monsters: mergedMonsters,
+    backgrounds: mergedBackgrounds.values,
+    narrativeOptionGroups: mergedNarrativeOptionGroups.values,
+    spells: mergedSpells.values,
+    feats: mergedFeats.values,
+    monsters: mergedMonsters.values,
     sourcePolicy: CompendiumSourcePolicy(
       activeSourceType: catalog.sourcePolicy.activeSourceType,
       activeSourceLabel:
           '${catalog.sourcePolicy.activeSourceLabel} + $importedLabel',
       fallbackSourceLabel: catalog.sourcePolicy.fallbackSourceLabel,
       sections: catalog.sourcePolicy.sections
-          .map((section) => _appendImportedSourceNote(section, contents))
+          .map(
+            (section) => _appendImportedSourceNote(
+              section,
+              contents,
+              conflictCountsBySection: conflictCountsBySection,
+            ),
+          )
           .toList(growable: false),
     ),
   );
@@ -191,8 +206,9 @@ CompendiumCatalog mergeImportedCompendiumContents(
 
 CompendiumSectionSourcePolicy _appendImportedSourceNote(
   CompendiumSectionSourcePolicy section,
-  List<ImportedCompendiumContent> contents,
-) {
+  List<ImportedCompendiumContent> contents, {
+  required Map<String, int> conflictCountsBySection,
+}) {
   final contributions = contents
       .map((content) {
         final count = content.countForSection(section.sectionKey);
@@ -209,6 +225,13 @@ CompendiumSectionSourcePolicy _appendImportedSourceNote(
 
   final importedNote =
       'Imported XML packs active: ${contributions.join(', ')}.';
+  final conflictCount = conflictCountsBySection[section.sectionKey] ?? 0;
+  final conflictNote = conflictCount == 0
+      ? null
+      : 'Conflicts skipped by base precedence: $conflictCount.';
+  final combinedImportedNote = conflictNote == null
+      ? importedNote
+      : '$importedNote $conflictNote';
   return CompendiumSectionSourcePolicy(
     sectionKey: section.sectionKey,
     sectionLabel: section.sectionLabel,
@@ -217,8 +240,8 @@ CompendiumSectionSourcePolicy _appendImportedSourceNote(
     supplementalSources: section.supplementalSources,
     supplementalPackId: section.supplementalPackId,
     notes: section.notes == null
-        ? importedNote
-        : '${section.notes} $importedNote',
+        ? combinedImportedNote
+        : '${section.notes} $combinedImportedNote',
   );
 }
 
@@ -236,47 +259,73 @@ List<String> _mergeUniqueStrings(
   return List<String>.unmodifiable(merged);
 }
 
-List<CompendiumBackground> _mergeUniqueBackgrounds(
+_MergeResult<CompendiumBackground> _mergeUniqueBackgrounds(
   List<CompendiumBackground> baseValues,
   Iterable<CompendiumBackground> importedValues,
 ) {
   final merged = <CompendiumBackground>[...baseValues];
   final knownIds = baseValues.map((item) => item.id).toSet();
+  var conflicts = 0;
   for (final value in importedValues) {
-    if (knownIds.add(value.id)) {
-      merged.add(value);
+    if (!knownIds.add(value.id)) {
+      conflicts += 1;
+      continue;
     }
+    merged.add(value);
   }
-  return List<CompendiumBackground>.unmodifiable(merged);
+  return _MergeResult<CompendiumBackground>(
+    values: List<CompendiumBackground>.unmodifiable(merged),
+    conflicts: conflicts,
+  );
 }
 
-List<CompendiumNarrativeOptionGroup> _mergeUniqueNarrativeGroups(
+_MergeResult<CompendiumNarrativeOptionGroup> _mergeUniqueNarrativeGroups(
   List<CompendiumNarrativeOptionGroup> baseValues,
   Iterable<CompendiumNarrativeOptionGroup> importedValues,
 ) {
   final merged = <CompendiumNarrativeOptionGroup>[...baseValues];
   final knownIds = baseValues.map((item) => item.id).toSet();
+  var conflicts = 0;
   for (final value in importedValues) {
-    if (knownIds.add(value.id)) {
-      merged.add(value);
+    if (!knownIds.add(value.id)) {
+      conflicts += 1;
+      continue;
     }
+    merged.add(value);
   }
-  return List<CompendiumNarrativeOptionGroup>.unmodifiable(merged);
+  return _MergeResult<CompendiumNarrativeOptionGroup>(
+    values: List<CompendiumNarrativeOptionGroup>.unmodifiable(merged),
+    conflicts: conflicts,
+  );
 }
 
-List<T> _mergeUniqueByName<T>(
+_MergeResult<T> _mergeUniqueByName<T>(
   List<T> baseValues,
   Iterable<T> importedValues,
   String Function(T value) nameSelector,
 ) {
   final merged = <T>[...baseValues];
   final knownNames = baseValues.map(nameSelector).toSet();
+  var conflicts = 0;
   for (final value in importedValues) {
-    if (knownNames.add(nameSelector(value))) {
-      merged.add(value);
+    final name = nameSelector(value);
+    if (!knownNames.add(name)) {
+      conflicts += 1;
+      continue;
     }
+    merged.add(value);
   }
-  return List<T>.unmodifiable(merged);
+  return _MergeResult<T>(
+    values: List<T>.unmodifiable(merged),
+    conflicts: conflicts,
+  );
+}
+
+class _MergeResult<T> {
+  const _MergeResult({required this.values, required this.conflicts});
+
+  final List<T> values;
+  final int conflicts;
 }
 
 CompendiumBackground? _parseBackground(

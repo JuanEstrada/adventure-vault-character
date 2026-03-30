@@ -1,5 +1,6 @@
 import 'package:adventure_vault_character/src/features/characters/application/finishing_details_service.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_rest_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_spell_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
@@ -39,6 +40,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   final _narrativeNotesController = TextEditingController();
   final _finishingDetailsService = const FinishingDetailsService();
   final _characterSpellRules = const CharacterSpellRules();
+  final _characterRestRules = const CharacterRestRules();
   final Map<String, int> _generatedAssignments = <String, int>{
     'Strength': 15,
     'Dexterity': 14,
@@ -460,6 +462,26 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
       ..addAll(orderedPreparedIds);
   }
 
+  void _prepareAllSpellsToLimit() {
+    final selectionLimit = _spellSelectionLimit;
+    final orderedSpellbookIds = _availableSpellOptions
+        .map((spell) => spell.id)
+        .where(_selectedSpellIds.contains)
+        .take(selectionLimit)
+        .toSet();
+    setState(() {
+      _preparedSpellIds
+        ..clear()
+        ..addAll(orderedSpellbookIds);
+    });
+  }
+
+  void _clearPreparedSpells() {
+    setState(() {
+      _preparedSpellIds.clear();
+    });
+  }
+
   List<String> _initialSpellIdsByMode(
     CreateCharacterInput? draft,
     CharacterSpellSelectionMode mode,
@@ -519,27 +541,37 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
       _selectedClass.trim().toLowerCase() == 'warlock';
 
   void _applyShortRestRecovery() {
-    final reset = _characterSpellRules.resetSlotUsagesForShortRest(
+    final result = _characterRestRules.applyShortRest(
       className: _selectedClass,
       level: _selectedLevel,
-      currentUsages: _spellSlotUsages,
+      currentHitPoints: _currentHitPoints,
+      maximumHitPoints: _maximumHitPoints,
+      temporaryHitPoints: _temporaryHitPoints,
+      slotUsagesByLevel: _spellSlotUsages,
     );
     setState(() {
+      _currentHitPoints = result.currentHitPoints;
+      _maximumHitPoints = result.maximumHitPoints;
+      _temporaryHitPoints = result.temporaryHitPoints;
       _spellSlotUsages
         ..clear()
-        ..addAll(reset);
+        ..addAll(result.slotUsagesByLevel);
     });
   }
 
   void _applyLongRestRecovery() {
-    final reset = _characterSpellRules.resetSlotUsagesForLongRest(
+    final result = _characterRestRules.applyLongRest(
       className: _selectedClass,
       level: _selectedLevel,
+      maximumHitPoints: _maximumHitPoints,
     );
     setState(() {
+      _currentHitPoints = result.currentHitPoints;
+      _maximumHitPoints = result.maximumHitPoints;
+      _temporaryHitPoints = result.temporaryHitPoints;
       _spellSlotUsages
         ..clear()
-        ..addAll(reset);
+        ..addAll(result.slotUsagesByLevel);
     });
   }
 
@@ -944,8 +976,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           const SizedBox(height: 16),
           Text(
             _selectedAbilityMethod == 'generatedSetAssignment'
-                ? 'Asignacion visible del set 15, 14, 13, 12, 10, 8.'
-                : 'Asignacion manual inicial con valores editables por habilidad.',
+                ? 'Visible assignment of the 15, 14, 13, 12, 10, 8 set.'
+                : 'Initial manual assignment with editable values per ability.',
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
@@ -995,6 +1027,13 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
             '$selectionLabel • ${_isWizardSpellbookMode ? _preparedSpellIds.length : _selectedSpellIds.length} / $selectionLimit selected',
             style: theme.textTheme.titleMedium,
           ),
+          if (_isWizardSpellbookMode) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Spellbook entries selected: ${_selectedSpellIds.length}',
+              style: theme.textTheme.bodySmall,
+            ),
+          ],
           const SizedBox(height: 8),
           if (_hasReachedSpellSelectionLimit && availableSpells.isNotEmpty)
             Padding(
@@ -1043,6 +1082,23 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
             Text(
               'Prepared spells • ${_preparedSpellIds.length} / $selectionLimit selected',
               style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton(
+                  onPressed: widget.isSaving ? null : _prepareAllSpellsToLimit,
+                  child: const Text('Prepare all valid'),
+                ),
+                OutlinedButton(
+                  onPressed: widget.isSaving || _preparedSpellIds.isEmpty
+                      ? null
+                      : _clearPreparedSpells,
+                  child: const Text('Clear prepared'),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             ...availableSpells

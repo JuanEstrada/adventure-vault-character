@@ -278,6 +278,14 @@ void main() {
     expect(find.text('Spellbook spells • 0 / 3 selected'), findsOneWidget);
     await tester.tap(find.text('Magic Missile (Level 1)'));
     await tester.pumpAndSettle();
+    expect(find.text('Prepare all valid'), findsOneWidget);
+    expect(find.text('Clear prepared'), findsOneWidget);
+    await tester.tap(find.text('Prepare all valid'));
+    await tester.pumpAndSettle();
+    expect(find.text('Prepared spells • 1 / 3 selected'), findsOneWidget);
+    await tester.tap(find.text('Clear prepared'));
+    await tester.pumpAndSettle();
+    expect(find.text('Prepared spells • 0 / 3 selected'), findsOneWidget);
     await tester.tap(find.text('Magic Missile (Level 1)').last);
     await tester.pumpAndSettle();
     expect(find.text('Spellbook spells • 1 / 3 selected'), findsOneWidget);
@@ -502,6 +510,16 @@ void main() {
     await tester.tap(find.text('Create character'));
     await tester.pumpAndSettle();
 
+    final classField = find.byWidgetPredicate(
+      (widget) =>
+          widget is DropdownButtonFormField<String> &&
+          widget.decoration.labelText == 'Clase',
+    );
+    await tester.tap(classField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Wizard').last);
+    await tester.pumpAndSettle();
+
     await tester.enterText(find.byType(TextFormField).first, 'Aelar');
     await tester.scrollUntilVisible(
       find.widgetWithText(FilledButton, 'Save draft').first,
@@ -518,6 +536,22 @@ void main() {
 
     expect(find.widgetWithText(FilledButton, 'Save changes'), findsOneWidget);
     await tester.enterText(find.byType(TextFormField).first, 'Meris');
+    await tester.scrollUntilVisible(
+      find.text('Spells'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    final expendedField = find.byWidgetPredicate(
+      (widget) =>
+          widget is DropdownButtonFormField<int> &&
+          widget.decoration.labelText == 'Expended / 2',
+    );
+    await tester.tap(expendedField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('1').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Apply long rest'));
+    await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.widgetWithText(FilledButton, 'Save changes').first,
       400,
@@ -541,6 +575,7 @@ void main() {
 
     expect(find.text('Meris'), findsWidgets);
     expect(find.text('Aelar'), findsNothing);
+    expect(find.text('Level 1 slots'), findsOneWidget);
   });
 
   testWidgets(
