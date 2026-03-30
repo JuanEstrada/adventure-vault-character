@@ -23,7 +23,7 @@ class CompendiumPacksScreen extends StatelessWidget {
           onPressed: onBack,
           icon: const Icon(Icons.arrow_back),
         ),
-        title: const Text('Administrar packs'),
+        title: const Text('Manage packs'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(24),
@@ -39,16 +39,16 @@ class CompendiumPacksScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Estado actual',
+                  'Current state',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'La activacion se guarda localmente. Los XML registrados '
-                  'aparecen aqui como packs opcionales mientras la ingestion '
-                  'real del contenido sigue en expansion.',
+                  'Activation is stored locally. Registered XML sources '
+                  'appear here as optional packs while full content ingestion '
+                  'continues to expand.',
                   style: theme.textTheme.bodyLarge,
                 ),
               ],
@@ -69,16 +69,15 @@ class CompendiumPacksScreen extends StatelessWidget {
           else ...[
             const SizedBox(height: 24),
             Text(
-              'Siguiente paso previsto',
+              'Planned next step',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'La siguiente iteracion debe conectar este estado persistido con '
-              'un flujo real de importacion XML y con el filtrado del contenido '
-              'activo del compendio.',
+              'The next iteration should connect this persisted state to '
+              'a full XML import flow and to active compendium-content filtering.',
               style: theme.textTheme.bodyMedium,
             ),
           ],
@@ -146,7 +145,7 @@ class _PackStateCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(packState.description, style: theme.textTheme.bodyMedium),
           const SizedBox(height: 8),
-          Text('Tipo: ${packState.kind}', style: theme.textTheme.bodySmall),
+          Text('Type: ${packState.kind}', style: theme.textTheme.bodySmall),
         ],
       ),
     );
@@ -154,9 +153,9 @@ class _PackStateCard extends StatelessWidget {
 
   String _statusLabel(CompendiumPackStateModel packState) {
     if (packState.isFixed) {
-      return 'Activo fijo';
+      return 'Fixed active';
     }
-    return packState.isActive ? 'Activo' : 'Inactivo';
+    return packState.isActive ? 'Active' : 'Inactive';
   }
 }
 
@@ -173,7 +172,7 @@ class _EmptyPackStateCard extends StatelessWidget {
         border: Border.all(color: const Color(0xFFD8C8B0)),
       ),
       child: const Text(
-        'Todavia no hay estado persistido de packs disponible para este catalogo.',
+        'No persisted pack state is available for this catalog yet.',
       ),
     );
   }

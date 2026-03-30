@@ -97,7 +97,7 @@ class CompendiumCatalog {
         const EquipmentSummaryViewData(
           statusLabel: 'MVP minimal',
           description:
-              'Equipment sigue como panel controlado mientras el flujo de seleccion y persistencia se expande.',
+              'Equipment remains a controlled panel while selection and persistence flows expand.',
           highlightItems: <String>['Equipment mapping pending'],
         );
   }

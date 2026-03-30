@@ -38,7 +38,7 @@ class _CompendiumImportScreenState extends State<CompendiumImportScreen> {
           onPressed: widget.onBack,
           icon: const Icon(Icons.arrow_back),
         ),
-        title: const Text('Importar XML'),
+        title: const Text('Import XML'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(24),
@@ -54,16 +54,16 @@ class _CompendiumImportScreenState extends State<CompendiumImportScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Registro local de pack',
+                  'Local pack registration',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Pega un XML FightClub compatible para registrarlo como pack opcional local. '
-                  'Esta iteracion valida la estructura, persiste el pack en Administrar packs, '
-                  'e ingiere entradas compatibles en el catalogo activo cuando el pack queda encendido.',
+                  'Paste FightClub-compatible XML to register it as an optional local pack. '
+                  'This iteration validates structure, persists the pack in Manage packs, '
+                  'and ingests compatible entries into the active catalog when the pack is enabled.',
                   style: theme.textTheme.bodyMedium,
                 ),
               ],
@@ -75,7 +75,7 @@ class _CompendiumImportScreenState extends State<CompendiumImportScreen> {
             minLines: 14,
             maxLines: 20,
             decoration: const InputDecoration(
-              labelText: 'Contenido XML',
+              labelText: 'XML content',
               alignLabelWithHint: true,
               border: OutlineInputBorder(),
               hintText:
@@ -106,20 +106,20 @@ class _CompendiumImportScreenState extends State<CompendiumImportScreen> {
             children: [
               FilledButton(
                 onPressed: _isImporting ? null : _handleImport,
-                child: Text(_isImporting ? 'Registrando...' : 'Registrar XML'),
+                child: Text(_isImporting ? 'Registering...' : 'Register XML'),
               ),
               OutlinedButton(
                 onPressed: _importedPreview == null
                     ? null
                     : widget.onOpenCompendiumPacks,
-                child: const Text('Abrir packs'),
+                child: const Text('Open packs'),
               ),
             ],
           ),
           if (_importedPreview != null) ...[
             const SizedBox(height: 20),
             Text(
-              'Ultimo registro',
+              'Latest registration',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
@@ -154,7 +154,7 @@ class _CompendiumImportScreenState extends State<CompendiumImportScreen> {
       final preview = _buildPreview(_xmlController.text);
       _importedPreview = preview;
       _statusMessage =
-          'XML registrado localmente. Ya puedes gestionarlo como pack opcional.';
+          'XML registered locally. You can now manage it as an optional pack.';
     });
   }
 
@@ -172,6 +172,6 @@ class _CompendiumImportScreenState extends State<CompendiumImportScreen> {
     final resolvedTitle = title == null || title.isEmpty
         ? 'Imported XML pack'
         : title;
-    return '$resolvedTitle • $supportedElementCount entradas compatibles detectadas';
+    return '$resolvedTitle • $supportedElementCount compatible entries detected';
   }
 }

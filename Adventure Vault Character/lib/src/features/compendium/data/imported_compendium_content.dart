@@ -118,7 +118,7 @@ ImportedCompendiumContent parseImportedCompendiumContent({
   );
   if (content.supportedEntryCount == 0) {
     throw const FormatException(
-      'El XML no contiene entradas compatibles de backgrounds, races, classes, spells, feats o monsters.',
+      'XML content does not contain compatible background, race, class, spell, feat, or monster entries.',
     );
   }
 

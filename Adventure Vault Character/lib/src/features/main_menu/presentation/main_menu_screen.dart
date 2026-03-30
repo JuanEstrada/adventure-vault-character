@@ -27,8 +27,8 @@ class MainMenuScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Adventure Vault Character'),
         actions: [
-          _TopAction(label: 'Compendio', onPressed: onOpenCompendium),
-          const _TopAction(label: 'Reglas'),
+          _TopAction(label: 'Compendium', onPressed: onOpenCompendium),
+          const _TopAction(label: 'Rules'),
           const _TopAction(label: 'Settings'),
         ],
       ),
@@ -47,15 +47,15 @@ class MainMenuScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Personajes',
+                    'Characters',
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Entrada local para hoja de personaje, creacion guiada y '
-                    'futuro flujo XML.',
+                    'Local entry point for character sheets, guided creation, '
+                    'and the future XML flow.',
                     style: theme.textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 16),
@@ -65,7 +65,7 @@ class MainMenuScreen extends StatelessWidget {
                     children: [
                       FilledButton(
                         onPressed: onCreateCharacter,
-                        child: const Text('Crear personaje nuevo'),
+                        child: const Text('Create character'),
                       ),
                       OutlinedButton(
                         onPressed: () {},
@@ -83,8 +83,8 @@ class MainMenuScreen extends StatelessWidget {
               child: characterSummaries.isEmpty
                   ? Center(
                       child: Text(
-                        'Todavia no hay personajes guardados. '
-                        'Crear personaje nuevo debe permanecer visible.',
+                        'No saved characters are available yet. '
+                        'Create character should remain visible.',
                         style: theme.textTheme.bodyLarge,
                         textAlign: TextAlign.center,
                       ),
@@ -146,7 +146,7 @@ class _CompendiumStatusCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Compendio activo',
+            'Active compendium',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
@@ -171,8 +171,8 @@ class _CompendiumStatusCard extends StatelessWidget {
   List<String> _buildRows(CompendiumSourcePolicy policy) {
     if (policy.activeSourceType == 'fallback_json') {
       return <String>[
-        'Modo fallback: ${policy.fallbackSourceLabel}',
-        'Cobertura reducida: el catalogo usa el JSON compacto empaquetado.',
+        'Fallback mode: ${policy.fallbackSourceLabel}',
+        'Reduced coverage: the catalog is using bundled compact JSON.',
       ];
     }
 
@@ -188,10 +188,10 @@ class _CompendiumStatusCard extends StatelessWidget {
 
     return <String>[
       if (buildSections.isNotEmpty)
-        'Base de reglas: SRD 5.5e FightClub XML para ${buildSections.join(', ')}.',
+        'Rules baseline: SRD 5.5e FightClub XML for ${buildSections.join(', ')}.',
       if (narrative != null)
-        'Narrativa: ${narrative.primarySources.length + narrative.supplementalSources.length} fuentes XML heredadas para traits, ideals, bonds, flaws y faction.',
-      'Fallback disponible: ${policy.fallbackSourceLabel}',
+        'Narrative: ${narrative.primarySources.length + narrative.supplementalSources.length} legacy XML sources for traits, ideals, bonds, flaws, and faction.',
+      'Fallback available: ${policy.fallbackSourceLabel}',
     ];
   }
 }

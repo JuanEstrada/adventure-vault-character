@@ -33,8 +33,8 @@ class AccessScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Acceso a personaje offline con espacio reservado para '
-                      'cuenta online futura.',
+                      'Offline character access with reserved space for '
+                      'future online account integration.',
                       style: theme.textTheme.bodyLarge,
                       textAlign: TextAlign.center,
                     ),
@@ -53,16 +53,16 @@ class AccessScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Placeholder visible para una futura integracion '
-                              'de cuenta. No bloquea el MVP offline.',
+                              'Visible placeholder for future account '
+                              'integration. It does not block the offline MVP.',
                               style: theme.textTheme.bodyMedium,
                             ),
                             const SizedBox(height: 16),
                             const TextField(
                               enabled: false,
                               decoration: InputDecoration(
-                                labelText: 'Correo',
-                                hintText: 'proximamente',
+                                labelText: 'Email',
+                                hintText: 'coming soon',
                               ),
                             ),
                             const SizedBox(height: 12),
@@ -70,8 +70,8 @@ class AccessScreen extends StatelessWidget {
                               enabled: false,
                               obscureText: true,
                               decoration: InputDecoration(
-                                labelText: 'Contrasena',
-                                hintText: 'proximamente',
+                                labelText: 'Password',
+                                hintText: 'coming soon',
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -86,7 +86,7 @@ class AccessScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     FilledButton(
                       onPressed: onContinueOffline,
-                      child: const Text('Continuar offline'),
+                      child: const Text('Continue offline'),
                     ),
                   ],
                 ),

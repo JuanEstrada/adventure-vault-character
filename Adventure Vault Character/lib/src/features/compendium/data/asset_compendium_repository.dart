@@ -1998,7 +1998,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
     final packStates = <CompendiumPackStateModel>[
       CompendiumPackStateModel(
         id: 'bundled-base-compendium',
-        title: 'Compendio base',
+        title: 'Base compendium',
         description: sourcePolicy.activeSourceLabel,
         kind: 'bundled_base',
         isFixed: true,
@@ -2054,7 +2054,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
     ).allMatches(normalizedXml).length;
     if (supportedElementCount == 0) {
       throw const FormatException(
-        'El XML no contiene entradas compatibles de backgrounds, races, classes, spells, feats o monsters.',
+        'XML content does not contain compatible background, race, class, spell, feat, or monster entries.',
       );
     }
 

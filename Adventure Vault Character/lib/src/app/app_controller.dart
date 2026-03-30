@@ -287,7 +287,7 @@ class AppController extends ChangeNotifier {
 
       if (character == null) {
         _state = _state.copyWith(
-          errorMessage: 'El personaje seleccionado ya no existe.',
+          errorMessage: 'The selected character no longer exists.',
         );
       } else {
         _disposeCharacterEditorController();

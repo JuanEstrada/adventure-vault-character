@@ -14,8 +14,8 @@ class CreateCharacterScreen extends StatefulWidget {
     required this.onCancel,
     required this.onSave,
     this.initialDraft,
-    this.screenTitle = 'Crear personaje',
-    this.submitLabel = 'Guardar draft',
+    this.screenTitle = 'Create character',
+    this.submitLabel = 'Save draft',
     super.key,
   });
 
@@ -612,7 +612,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
       final missingSections = _missingCatalogSections.join(', ');
       final blockedMessage =
           widget.errorMessage ??
-          'No se puede abrir la creacion guiada porque faltan datos del compendio para: '
+          'Guided creation cannot be opened because compendium data is missing for: '
               '$missingSections.';
       return Scaffold(
         appBar: AppBar(
@@ -635,7 +635,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Compendio incompleto',
+                        'Incomplete compendium',
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -645,7 +645,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                       const SizedBox(height: 20),
                       OutlinedButton(
                         onPressed: widget.onCancel,
-                        child: const Text('Volver al menu'),
+                        child: const Text('Back to menu'),
                       ),
                     ],
                   ),
@@ -757,7 +757,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
             controller: _nameController,
             enabled: !widget.isSaving,
             decoration: const InputDecoration(
-              labelText: 'Nombre del personaje',
+              labelText: 'Character name',
               border: OutlineInputBorder(),
             ),
             validator: (value) {
@@ -1170,7 +1170,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Selecciona un loadout inicial basado en la clase actual.',
+            'Select an initial loadout based on the current class.',
             style: theme.textTheme.bodyLarge,
           ),
           const SizedBox(height: 12),
@@ -1207,7 +1207,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           if (!_hasSupportedEquipmentSelection) ...[
             const SizedBox(height: 12),
             Text(
-              'Esta clase todavia no tiene un loadout de equipo persistible. Selecciona una clase con equipo real.',
+              'This class does not yet have a persistable equipment loadout. Select a class with real equipment data.',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.error,
                 fontWeight: FontWeight.w600,
@@ -1264,7 +1264,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
             decoration: const InputDecoration(
               labelText: 'Notes',
               border: OutlineInputBorder(),
-              hintText: 'Notas libres de compatibilidad para la hoja actual.',
+              hintText: 'Optional compatibility notes for the current sheet.',
             ),
           ),
         ],
@@ -1552,7 +1552,7 @@ class _NarrativeFieldEditor extends StatelessWidget {
           if (groups.isEmpty) ...[
             const SizedBox(height: 12),
             Text(
-              'No hay opciones oficiales cargadas para este campo con el background actual.',
+              'No official options are loaded for this field with the current background.',
               style: theme.textTheme.bodyMedium,
             ),
           ] else ...[

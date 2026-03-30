@@ -26,7 +26,7 @@ class CompendiumScreen extends StatelessWidget {
           onPressed: onBack,
           icon: const Icon(Icons.arrow_back),
         ),
-        title: const Text('Compendio'),
+        title: const Text('Compendium'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(24),
@@ -40,7 +40,7 @@ class CompendiumScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'Cobertura actual',
+            'Current coverage',
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
             ),
@@ -73,7 +73,7 @@ class CompendiumScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'Politica de fuentes',
+            'Source policy',
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
             ),
@@ -115,7 +115,7 @@ class _SummaryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Fuente activa',
+            'Active source',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
@@ -124,7 +124,7 @@ class _SummaryCard extends StatelessWidget {
           Text(policy.activeSourceLabel, style: theme.textTheme.bodyLarge),
           const SizedBox(height: 12),
           Text(
-            'Fallback disponible: ${policy.fallbackSourceLabel}',
+            'Fallback available: ${policy.fallbackSourceLabel}',
             style: theme.textTheme.bodyMedium,
           ),
         ],
@@ -155,8 +155,8 @@ class _ManagementCard extends StatelessWidget {
         .where((packState) => packState.isActive)
         .length;
     final importedPacksStatus = configurablePacks.isEmpty
-        ? 'Sin packs configurables'
-        : '$activeConfigurablePackCount activos';
+        ? 'No configurable packs'
+        : '$activeConfigurablePackCount active';
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -169,36 +169,36 @@ class _ManagementCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Gestion de contenido',
+            'Content management',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 12),
           _StatusRow(
-            label: 'Base empaquetada',
-            value: 'Siempre activa',
+            label: 'Bundled base',
+            value: 'Always active',
             description: policy.activeSourceLabel,
           ),
           const SizedBox(height: 12),
           _StatusRow(
-            label: 'Packs importados',
+            label: 'Imported packs',
             value: importedPacksStatus,
             description: configurablePacks.isEmpty
-                ? 'Todavia no hay packs opcionales persistidos para este catalogo.'
-                : 'La activacion local ya se guarda y puede revisarse en Administrar packs.',
+                ? 'No optional persisted packs are available for this catalog yet.'
+                : 'Local activation is persisted and can be reviewed in Manage packs.',
           ),
           const SizedBox(height: 16),
           Text(
-            'Importacion XML',
+            'XML import',
             style: theme.textTheme.labelLarge?.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
           Text(
-            'El flujo ya permite registrar XML pegado como pack local opcional. '
-            'La ingestion real del contenido todavia sigue diferida.',
+            'The flow already allows pasted XML registration as an optional local pack. '
+            'Full content ingestion is still deferred.',
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 12),
@@ -207,13 +207,13 @@ class _ManagementCard extends StatelessWidget {
             runSpacing: 12,
             children: [
               _ActionChipButton(
-                label: 'Importar XML',
+                label: 'Import XML',
                 detail: 'Registrar pack',
                 onPressed: onOpenCompendiumImport,
               ),
               _ActionChipButton(
-                label: 'Administrar packs',
-                detail: 'Pendiente',
+                label: 'Manage packs',
+                detail: 'Pending',
                 onPressed: onOpenCompendiumPacks,
               ),
             ],
@@ -427,7 +427,7 @@ class _EmptyPolicyCard extends StatelessWidget {
         border: Border.all(color: const Color(0xFFD8C8B0)),
       ),
       child: const Text(
-        'El compendio actual no publica secciones detalladas de origen.',
+        'The current compendium does not publish detailed source sections.',
       ),
     );
   }

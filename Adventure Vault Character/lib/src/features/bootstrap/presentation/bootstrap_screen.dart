@@ -38,21 +38,21 @@ class BootstrapScreen extends StatelessWidget {
                     const CircularProgressIndicator(),
                     const SizedBox(height: 16),
                     Text(
-                      'Inicializando configuracion local, personajes guardados '
-                      'e indice XML.',
+                      'Initializing local configuration, saved characters, '
+                      'and XML index.',
                       style: theme.textTheme.bodyLarge,
                       textAlign: TextAlign.center,
                     ),
                   ] else ...[
                     Text(
-                      errorMessage ?? 'No se pudo completar el arranque.',
+                      errorMessage ?? 'Startup could not be completed.',
                       style: theme.textTheme.bodyLarge,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
                     FilledButton(
                       onPressed: onRetry,
-                      child: const Text('Reintentar'),
+                      child: const Text('Retry'),
                     ),
                   ],
                 ],
