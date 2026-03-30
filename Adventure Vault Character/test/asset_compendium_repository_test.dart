@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('loads catalog from FightClub SRD 5.5e assets', () async {
     final database = AppDatabase.executor(NativeDatabase.memory());
     addTearDown(database.close);
@@ -104,6 +106,18 @@ void main() {
         'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml',
       ]),
     );
+    expect(
+      catalog.sourcePolicyForSection('spells')?.primarySources,
+      contains(
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_optionalfeatures_5.5e.xml',
+      ),
+    );
+    expect(
+      catalog.sourcePolicyForSection('feats')?.primarySources,
+      contains(
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_optionalfeatures_5.5e.xml',
+      ),
+    );
     expect(catalog.packStates, hasLength(2));
     expect(catalog.packStateById('bundled-base-compendium')?.isFixed, isTrue);
     expect(
@@ -174,6 +188,57 @@ void main() {
           .firstWhere((row) => row.id == 'legacy-narrative-supplements')
           .isActive,
       isFalse,
+    );
+  });
+
+  test('loads strict 2024 SRD baseline with expected counts', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final repository = AssetCompendiumRepository(database: database);
+    final catalog = await repository.loadCatalog();
+
+    expect(catalog.backgrounds, hasLength(4));
+    expect(catalog.races, hasLength(14));
+    expect(catalog.classes, hasLength(12));
+    expect(catalog.spells, hasLength(374));
+    expect(catalog.feats, hasLength(21));
+    expect(catalog.monsters, hasLength(332));
+
+    expect(
+      catalog.spells.map((item) => item.name),
+      containsAll(<String>[
+        'Invocation: Agonizing Blast',
+        'Invocation: Pact of the Blade',
+        'Metamagic: Quickened Spell',
+      ]),
+    );
+    expect(
+      catalog.feats.map((item) => item.name),
+      containsAll(<String>[
+        'Boon of Combat Prowess',
+        'Fighting Style: Archery',
+        'Fighting Style: Two-Weapon Fighting',
+      ]),
+    );
+
+    final spellSources =
+        catalog.sourcePolicyForSection('spells')?.primarySources ??
+        const <String>[];
+    final featSources =
+        catalog.sourcePolicyForSection('feats')?.primarySources ??
+        const <String>[];
+    expect(
+      spellSources,
+      contains(
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_optionalfeatures_5.5e.xml',
+      ),
+    );
+    expect(
+      featSources,
+      contains(
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_optionalfeatures_5.5e.xml',
+      ),
     );
   });
 
@@ -276,6 +341,10 @@ void main() {
       expect(
         importedCatalog.sourcePolicyForSection('narrative_options')?.notes,
         contains('Imported XML packs active: Imported Acolyte Expansion (1).'),
+      );
+      expect(
+        importedCatalog.sourcePolicyForSection('spells')?.notes,
+        contains('Conflicts skipped by base precedence: 1.'),
       );
 
       final reloadedRepository = AssetCompendiumRepository(
@@ -750,6 +819,17 @@ const _importFixture = '''
     <duration>Instantaneous</duration>
     <classes>Wizard, Sorcerer</classes>
     <text>Imported spell text.</text>
+  </spell>
+  <spell>
+    <name>Light</name>
+    <level>0</level>
+    <school>Evocation</school>
+    <time>1 action</time>
+    <range>Touch</range>
+    <components>V, M</components>
+    <duration>1 hour</duration>
+    <classes>Wizard</classes>
+    <text>Imported duplicate test entry.</text>
   </spell>
   <feat>
     <name>Imported Adept</name>
