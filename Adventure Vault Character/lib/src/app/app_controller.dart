@@ -122,7 +122,7 @@ class AppController extends ChangeNotifier {
     } catch (_) {
       _state = _state.copyWith(
         isInitializing: false,
-        errorMessage: 'No se pudo cargar el estado local de la app.',
+        errorMessage: 'Failed to load local app state.',
       );
     }
 
@@ -211,7 +211,7 @@ class AppController extends ChangeNotifier {
       );
     } catch (_) {
       _state = _state.copyWith(
-        errorMessage: 'No se pudo actualizar el estado local del pack.',
+        errorMessage: 'Failed to update local pack state.',
       );
     }
 
@@ -233,7 +233,7 @@ class AppController extends ChangeNotifier {
       notifyListeners();
       return message;
     } catch (_) {
-      const message = 'No se pudo registrar el XML localmente.';
+      const message = 'Failed to register XML content locally.';
       _state = _state.copyWith(errorMessage: message);
       notifyListeners();
       return message;
@@ -272,7 +272,7 @@ class AppController extends ChangeNotifier {
     } catch (_) {
       _state = _state.copyWith(
         isSavingCharacter: false,
-        errorMessage: 'No se pudo guardar el personaje localmente.',
+        errorMessage: 'Failed to save the character locally.',
       );
     }
 
@@ -302,7 +302,7 @@ class AppController extends ChangeNotifier {
       }
     } catch (_) {
       _state = _state.copyWith(
-        errorMessage: 'No se pudo abrir el personaje seleccionado.',
+        errorMessage: 'Failed to open the selected character.',
       );
     }
 

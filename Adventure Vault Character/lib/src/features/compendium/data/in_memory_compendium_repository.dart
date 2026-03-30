@@ -59,14 +59,16 @@ class InMemoryCompendiumRepository implements CompendiumRepository {
   ) {
     final normalizedXml = rawXml.trim();
     if (normalizedXml.isEmpty) {
-      throw const FormatException('Pega un XML antes de intentar importarlo.');
+      throw const FormatException(
+        'Paste XML content before attempting import.',
+      );
     }
     if (!RegExp(
       r'<(compendium|collection)\b',
       caseSensitive: false,
     ).hasMatch(normalizedXml)) {
       throw const FormatException(
-        'El XML debe incluir una raiz compendium o collection.',
+        'XML content must include a compendium or collection root node.',
       );
     }
     final supportedElementCount = RegExp(
