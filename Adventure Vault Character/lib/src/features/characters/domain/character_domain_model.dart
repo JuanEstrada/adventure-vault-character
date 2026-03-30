@@ -482,6 +482,9 @@ class CharacterEquipmentDomainModel {
 
   List<String> get visibleItems =>
       items.map((item) => item.displayLabel).toList(growable: false);
+
+  CharacterInventoryInvariantReport get inventoryInvariantReport =>
+      const CharacterInventoryInvariantEvaluator().evaluate(items);
 }
 
 @immutable
@@ -525,12 +528,66 @@ class CharacterEquipmentItemDomainModel {
   final String? containerInventoryItemId;
   final String? containerDisplayName;
 
-  int get totalWeight => (weightPerUnit ?? 0) * quantity;
+  int get safeQuantity => quantity.clamp(0, 9999).toInt();
+
+  int get totalWeight => (weightPerUnit ?? 0) * safeQuantity;
+
+  int? get containerMaxWeight {
+    if (!isContainer) {
+      return null;
+    }
+    final normalized = _normalizedName;
+    return switch (normalized) {
+      'backpack' => 30,
+      'scholar pack' => 25,
+      'explorer pack' => 30,
+      'priest pack' => 25,
+      'burglar pack' => 30,
+      'dungeoneer pack' => 30,
+      'component pouch' => 5,
+      'pouch' => 6,
+      _ => null,
+    };
+  }
 
   bool get hasCharges => chargesMax != null;
 
   int get safeChargesCurrent =>
       (chargesCurrent ?? 0).clamp(0, chargesMax ?? 0).toInt();
+
+  bool get hasValidChargeState {
+    if (chargesMax == null) {
+      return chargesCurrent == null;
+    }
+    if (chargesMax! < 0 || chargesMax! > 9999) {
+      return false;
+    }
+    if (chargesCurrent == null) {
+      return false;
+    }
+    return chargesCurrent! >= 0 && chargesCurrent! <= chargesMax!;
+  }
+
+  bool get isAmmunition {
+    final normalized = _normalizedName;
+    return normalized.contains('arrow') ||
+        normalized.contains('bolt') ||
+        normalized.contains('dart') ||
+        normalized.contains('bullet') ||
+        normalized.contains('sling stone');
+  }
+
+  bool get isConsumable {
+    final normalized = _normalizedName;
+    return normalized.contains('ration') ||
+        normalized.contains('potion') ||
+        normalized.contains('vial') ||
+        normalized.contains('flask') ||
+        normalized.contains('oil') ||
+        normalized.contains('waterskin') ||
+        normalized.contains('torch') ||
+        normalized.contains('ammunition');
+  }
 
   String get chargesLabel {
     final max = chargesMax;
@@ -551,11 +608,13 @@ class CharacterEquipmentItemDomainModel {
   }
 
   String get displayLabel {
-    final quantityLabel = quantity > 1 ? ' x$quantity' : '';
+    final quantityLabel = safeQuantity > 1 ? ' x$safeQuantity' : '';
     final equippedLabel = isEquipped ? ' (equipped)' : '';
     final carriedLabel = isCarried ? '' : ' (stowed)';
     return '$name$quantityLabel$equippedLabel$carriedLabel';
   }
+
+  String get _normalizedName => name.trim().toLowerCase();
 }
 
 @immutable
@@ -585,4 +644,235 @@ class CharacterCarryingDomainModel {
   final String tierDescription;
 
   String get coinWeightLabel => includeCoinWeight ? 'Included' : 'Excluded';
+}
+
+@immutable
+class CharacterInventoryPolicyDomainModel {
+  const CharacterInventoryPolicyDomainModel({
+    required this.maxContainerNestingDepth,
+    required this.maxItemQuantity,
+    required this.maxChargeCount,
+  });
+
+  static const CharacterInventoryPolicyDomainModel phase1Defaults =
+      CharacterInventoryPolicyDomainModel(
+        maxContainerNestingDepth: 5,
+        maxItemQuantity: 9999,
+        maxChargeCount: 9999,
+      );
+
+  final int maxContainerNestingDepth;
+  final int maxItemQuantity;
+  final int maxChargeCount;
+}
+
+@immutable
+class CharacterInventoryInvariantIssue {
+  const CharacterInventoryInvariantIssue({
+    required this.code,
+    required this.itemId,
+    required this.message,
+  });
+
+  final String code;
+  final String itemId;
+  final String message;
+}
+
+@immutable
+class CharacterInventoryInvariantReport {
+  const CharacterInventoryInvariantReport({required this.issues});
+
+  final List<CharacterInventoryInvariantIssue> issues;
+
+  bool get isValid => issues.isEmpty;
+}
+
+class CharacterInventoryInvariantEvaluator {
+  const CharacterInventoryInvariantEvaluator({
+    this.policy = CharacterInventoryPolicyDomainModel.phase1Defaults,
+  });
+
+  final CharacterInventoryPolicyDomainModel policy;
+
+  CharacterInventoryInvariantReport evaluate(
+    List<CharacterEquipmentItemDomainModel> items,
+  ) {
+    final issues = <CharacterInventoryInvariantIssue>[];
+    final byId = <String, CharacterEquipmentItemDomainModel>{
+      for (final item in items) item.id: item,
+    };
+
+    for (final item in items) {
+      if (item.safeQuantity != item.quantity) {
+        issues.add(
+          CharacterInventoryInvariantIssue(
+            code: 'invalid_quantity',
+            itemId: item.id,
+            message: 'Quantity is outside the allowed range.',
+          ),
+        );
+      }
+
+      if (!item.hasValidChargeState &&
+          (item.hasCharges || item.chargesCurrent != null)) {
+        issues.add(
+          CharacterInventoryInvariantIssue(
+            code: 'invalid_charge_state',
+            itemId: item.id,
+            message:
+                'Charge state must be within 0..max and tracked consistently.',
+          ),
+        );
+      }
+
+      final parentId = item.containerInventoryItemId;
+      if (parentId == null) {
+        continue;
+      }
+      if (parentId == item.id) {
+        issues.add(
+          CharacterInventoryInvariantIssue(
+            code: 'invalid_structure',
+            itemId: item.id,
+            message: 'Item cannot reference itself as container.',
+          ),
+        );
+        continue;
+      }
+
+      final parent = byId[parentId];
+      if (parent == null) {
+        issues.add(
+          CharacterInventoryInvariantIssue(
+            code: 'invalid_target',
+            itemId: item.id,
+            message: 'Container reference does not exist in current inventory.',
+          ),
+        );
+        continue;
+      }
+      if (!parent.isContainer) {
+        issues.add(
+          CharacterInventoryInvariantIssue(
+            code: 'invalid_target',
+            itemId: item.id,
+            message: 'Target container item is not container-capable.',
+          ),
+        );
+      }
+
+      final depth = _containerDepthFor(item, byId);
+      if (depth > policy.maxContainerNestingDepth) {
+        issues.add(
+          CharacterInventoryInvariantIssue(
+            code: 'invalid_structure',
+            itemId: item.id,
+            message: 'Container nesting depth exceeds phase-1 policy.',
+          ),
+        );
+      }
+      if (_hasCycle(item, byId)) {
+        issues.add(
+          CharacterInventoryInvariantIssue(
+            code: 'invalid_structure',
+            itemId: item.id,
+            message: 'Container assignment creates a cycle.',
+          ),
+        );
+      }
+    }
+
+    for (final container in items.where((item) => item.isContainer)) {
+      final maxWeight = container.containerMaxWeight;
+      if (maxWeight == null) {
+        continue;
+      }
+      final contentWeight = _contentWeightFor(container, byId);
+      if (contentWeight > maxWeight) {
+        issues.add(
+          CharacterInventoryInvariantIssue(
+            code: 'capacity_exceeded',
+            itemId: container.id,
+            message: 'Contained weight exceeds container capacity.',
+          ),
+        );
+      }
+    }
+
+    return CharacterInventoryInvariantReport(issues: issues);
+  }
+
+  int _containerDepthFor(
+    CharacterEquipmentItemDomainModel item,
+    Map<String, CharacterEquipmentItemDomainModel> byId,
+  ) {
+    var depth = 0;
+    final visited = <String>{item.id};
+    String? parentId = item.containerInventoryItemId;
+    while (parentId != null) {
+      final parent = byId[parentId];
+      if (parent == null || !visited.add(parent.id)) {
+        break;
+      }
+      depth += 1;
+      parentId = parent.containerInventoryItemId;
+    }
+    return depth;
+  }
+
+  bool _hasCycle(
+    CharacterEquipmentItemDomainModel item,
+    Map<String, CharacterEquipmentItemDomainModel> byId,
+  ) {
+    final visited = <String>{item.id};
+    String? parentId = item.containerInventoryItemId;
+    while (parentId != null) {
+      final parent = byId[parentId];
+      if (parent == null) {
+        return false;
+      }
+      if (!visited.add(parent.id)) {
+        return true;
+      }
+      parentId = parent.containerInventoryItemId;
+    }
+    return false;
+  }
+
+  int _contentWeightFor(
+    CharacterEquipmentItemDomainModel container,
+    Map<String, CharacterEquipmentItemDomainModel> byId,
+  ) {
+    var total = 0;
+    for (final item in byId.values) {
+      if (item.id == container.id) {
+        continue;
+      }
+      if (_isDescendantOf(item: item, ancestorId: container.id, byId: byId)) {
+        total += item.totalWeight;
+      }
+    }
+    return total;
+  }
+
+  bool _isDescendantOf({
+    required CharacterEquipmentItemDomainModel item,
+    required String ancestorId,
+    required Map<String, CharacterEquipmentItemDomainModel> byId,
+  }) {
+    final visited = <String>{item.id};
+    String? parentId = item.containerInventoryItemId;
+    while (parentId != null) {
+      if (parentId == ancestorId) {
+        return true;
+      }
+      final parent = byId[parentId];
+      if (parent == null || !visited.add(parent.id)) {
+        return false;
+      }
+      parentId = parent.containerInventoryItemId;
+    }
+    return false;
+  }
 }

@@ -376,6 +376,10 @@ summary.
   `docs/specs/inventory-rules-phase1.md`, defining weight-cap-only container
   capacity, nesting limits, effective carried-load semantics, and deterministic
   mutation error categories for the next implementation tickets.
+- The read-side domain now includes explicit inventory invariant value objects,
+  enabling deterministic checks for charge-state consistency, container
+  structure validity, and container weight-cap overflow before deeper mutation
+  service wiring.
 
 ## Pending Work
 
@@ -385,6 +389,8 @@ summary.
 - Extend the current container-aware encumbrance behavior with explicit
   capacity-limited container evaluation and richer nested-container behavior
   using the accepted Phase 1 inventory policy as baseline.
+- Wire the new read-side inventory invariants into application mutation
+  services so rejected operations return stable policy-driven error categories.
 - Extend the new compendium screen toward future pack-management and import
   workflows without bypassing the existing repository/domain contract.
 - Extend the current XML import flow beyond the currently supported imported

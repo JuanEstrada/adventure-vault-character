@@ -235,6 +235,65 @@ void main() {
         'Quarterstaff (equipped)',
         'Torch x3',
       ]);
+      expect(character.equipment.items[1].isConsumable, isTrue);
+      expect(character.equipment.items[1].isAmmunition, isFalse);
+      expect(character.equipment.inventoryInvariantReport.isValid, isTrue);
     },
   );
+
+  test('inventory invariants flag invalid charge and container states', () {
+    const items = <CharacterEquipmentItemDomainModel>[
+      CharacterEquipmentItemDomainModel(
+        id: 'backpack',
+        name: 'Backpack',
+        quantity: 1,
+        isEquipped: false,
+        isCarried: true,
+        isFavorite: false,
+        weightPerUnit: 5,
+        isContainer: true,
+        chargesCurrent: null,
+        chargesMax: null,
+        containerInventoryItemId: 'torch',
+        containerDisplayName: 'Torch',
+      ),
+      CharacterEquipmentItemDomainModel(
+        id: 'torch',
+        name: 'Torch',
+        quantity: 2,
+        isEquipped: false,
+        isCarried: true,
+        isFavorite: false,
+        weightPerUnit: 1,
+        isContainer: false,
+        chargesCurrent: null,
+        chargesMax: 3,
+        containerInventoryItemId: 'backpack',
+        containerDisplayName: 'Backpack',
+      ),
+      CharacterEquipmentItemDomainModel(
+        id: 'anvil',
+        name: 'Anvil',
+        quantity: 1,
+        isEquipped: false,
+        isCarried: true,
+        isFavorite: false,
+        weightPerUnit: 50,
+        isContainer: false,
+        chargesCurrent: null,
+        chargesMax: null,
+        containerInventoryItemId: 'backpack',
+        containerDisplayName: 'Backpack',
+      ),
+    ];
+
+    const evaluator = CharacterInventoryInvariantEvaluator();
+    final report = evaluator.evaluate(items);
+    final codes = report.issues.map((issue) => issue.code).toSet();
+
+    expect(report.isValid, isFalse);
+    expect(codes, contains('invalid_charge_state'));
+    expect(codes, contains('invalid_structure'));
+    expect(codes, contains('capacity_exceeded'));
+  });
 }

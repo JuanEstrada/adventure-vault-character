@@ -607,6 +607,11 @@ Completed since the previous handoff:
   `docs/specs/inventory-rules-phase1.md`, locking weight-cap-only container
   capacity, max nesting depth, effective carried-load semantics, and mutation
   error categories before deeper implementation tickets.
+- The read-side character domain now includes explicit Phase 1 inventory policy
+  and invariant value objects (`CharacterInventoryPolicyDomainModel` plus
+  `CharacterInventoryInvariantEvaluator`) so charge-state consistency,
+  container-structure validity, and weight-cap capacity checks can be evaluated
+  deterministically outside widgets.
 
 Next-session starting point:
 
@@ -623,6 +628,9 @@ Next-session starting point:
   `quantity`, `charges`, and `container assignment`).
 - Use `docs/specs/inventory-rules-phase1.md` as the policy source of truth for
   Phase 1 container/charge/consumable semantics before extending those rules.
+- Use `CharacterInventoryInvariantEvaluator` from
+  `lib/src/features/characters/domain/character_domain_model.dart` as the
+  source of truth for Phase 1 invariant validation semantics.
 - Use `lib/src/features/settings/data/system_settings_repository.dart` as the
   source of truth for the coin-weight toggle that affects encumbrance behavior.
 - Use the new migration regression tests in
