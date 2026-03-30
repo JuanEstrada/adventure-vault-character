@@ -609,6 +609,69 @@ void main() {
     expect(find.textContaining('via Manual'), findsWidgets);
   });
 
+  testWidgets('sheet inventory charge controls persist tracked values', (
+    WidgetTester tester,
+  ) async {
+    final compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
+    final repository = InMemoryCharacterRepository.empty(
+      compendiumRepository: compendiumRepository,
+    );
+    await tester.binding.setSurfaceSize(const Size(1200, 4200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      AdventureVaultApp(
+        characterRepository: repository,
+        compendiumRepository: compendiumRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Continue offline'));
+    await tester.tap(find.text('Continue offline'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Create character'));
+    await tester.tap(find.text('Create character'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).first, 'Iriel');
+    final classField = find.byWidgetPredicate(
+      (widget) =>
+          widget is DropdownButtonFormField<String> &&
+          widget.decoration.labelText == 'Clase',
+    );
+    await tester.tap(classField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Wizard').last);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.widgetWithText(FilledButton, 'Save draft').first,
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Save draft'));
+    await tester.pumpAndSettle();
+
+    final trackChargesChip = find.widgetWithText(ActionChip, 'Track charges');
+    expect(trackChargesChip, findsWidgets);
+    await tester.tap(trackChargesChip.first);
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(ActionChip, 'Clear charges'), findsWidgets);
+    expect(find.byType(LinearProgressIndicator), findsWidgets);
+
+    final summaries = await repository.getCharacterSummaries();
+    final sheet = await repository.getCharacterSheetById(summaries.single.id);
+    expect(sheet, isNotNull);
+    expect(
+      sheet!.equipment.items.any((item) => item.chargesCurrent == 1),
+      isTrue,
+    );
+    expect(sheet.equipment.items.any((item) => item.chargesMax == 1), isTrue);
+  });
+
   testWidgets('open edit save and reopen keeps updated character data', (
     WidgetTester tester,
   ) async {

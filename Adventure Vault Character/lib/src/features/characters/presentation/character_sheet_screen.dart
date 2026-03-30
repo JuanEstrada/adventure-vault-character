@@ -1004,6 +1004,14 @@ class _InventoryItemRow extends StatelessWidget {
               ],
             ],
           ),
+          if (item.hasCharges) ...[
+            const SizedBox(height: 6),
+            LinearProgressIndicator(
+              value: item.chargesMax == null || item.chargesMax == 0
+                  ? 0
+                  : item.safeChargesCurrent / item.chargesMax!,
+            ),
+          ],
           if (!item.isContainer) ...[
             const SizedBox(height: 8),
             DropdownButtonFormField<String?>(
@@ -1030,6 +1038,22 @@ class _InventoryItemRow extends StatelessWidget {
                       onSetContainer(value);
                     },
             ),
+            if (containers.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  'No container items available.',
+                  style: theme.textTheme.bodySmall,
+                ),
+              )
+            else if (item.containerDisplayName != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  item.containerLabel,
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
           ] else ...[
             const SizedBox(height: 8),
             Text(item.containerLabel),

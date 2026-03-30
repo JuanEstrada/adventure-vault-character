@@ -587,6 +587,22 @@ Completed since the previous handoff:
 - Regression coverage now includes mixed scenarios with base SRD + optional
   legacy narrative pack + imported XML packs, asserting deterministic
   precedence behavior and pack-state effects across multiple sections.
+- Character-sheet inventory now starts a deeper equipment slice: items can be
+  assigned into container items and can opt into persisted charge tracking,
+  with both states flowing through repository/application services and reopening
+  from Drift-backed sheet reads.
+- Long-rest recovery now also refills tracked inventory charges to their stored
+  maximum, keeping item-resource state deterministic with other persisted rest
+  recovery systems.
+- Character creation/in-memory fallback now seeds better baseline equipment
+  metadata for common gear (container flags, stackability hints, and initial
+  weight values) so early encumbrance output has fewer null-weight gaps.
+- Encumbrance now treats container assignment as part of effective carried
+  weight: contained items only count when their full container chain is
+  currently carried.
+- The sheet equipment panel now includes small UX hardening for inventory
+  charges and containers (charge progress bar plus container availability/state
+  hints), backed by widget regression coverage.
 
 Next-session starting point:
 
@@ -600,7 +616,7 @@ Next-session starting point:
 - Use `lib/src/features/characters/application/character_inventory_service.dart`
   and `lib/src/features/characters/data/character_repository.dart` as the
   source of truth for inventory mutation contracts (`equipped`, `carried`,
-  `quantity`).
+  `quantity`, `charges`, and `container assignment`).
 - Use `lib/src/features/settings/data/system_settings_repository.dart` as the
   source of truth for the coin-weight toggle that affects encumbrance behavior.
 - Use the new migration regression tests in

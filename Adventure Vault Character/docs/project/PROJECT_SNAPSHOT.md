@@ -360,14 +360,26 @@ summary.
   `CompendiumCatalog`, reducing duplicated helper logic in presentation code.
 - Regression coverage now includes mixed base+legacy+imported scenarios to
   protect precedence behavior and pack-state filtering across sections.
+- Inventory behavior now includes a first post-baseline depth slice: sheet-side
+  equipment items can persist optional charge tracking and container assignment
+  state through the same repository/application contracts used for other
+  inventory mutations.
+- Long-rest recovery now also refills tracked inventory charges to their
+  persisted maximum, aligning item-resource recovery with existing deterministic
+  rest-state updates.
+- Encumbrance derivation now treats container assignment as effective carried
+  state, so nested item weight only counts when the full container chain is
+  currently carried.
+- Character-sheet equipment UX now includes charge progress and container-state
+  hints, with widget coverage for persisted charge control behavior.
 
 ## Pending Work
 
 - Expand the edit flow beyond the current guided MVP fields and decide how
   later post-creation inventory or combat editing should interact with the
   same aggregate now that sheet-side inventory mutation controls are live.
-- Wire the new system setting `Count coin weight in carried load` into the
-  upcoming encumbrance implementation so the toggle affects derived load state.
+- Extend the current container-aware encumbrance behavior with explicit
+  capacity limits and richer nested-container policy decisions.
 - Extend the new compendium screen toward future pack-management and import
   workflows without bypassing the existing repository/domain contract.
 - Extend the current XML import flow beyond the currently supported imported
@@ -434,7 +446,8 @@ summary.
    spell-slot + initial class-resource rest actions (broader class coverage,
    rest cadence details, and richer sheet-visible recovery summaries).
 4. Expand inventory/equipment modeling depth beyond the current mutation and
-   encumbrance baseline (containers, charges, richer weight coverage).
+   encumbrance baseline into richer containment semantics, container capacity,
+   and compendium-aware charge defaults.
 5. Continue improving equipment definition quality so weight-aware
    encumbrance reflects more compendium items without fallback gaps.
 6. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
