@@ -190,6 +190,22 @@ class CharacterWriteDao {
         .insertOnConflictUpdate(companion);
   }
 
+  Future<void> insertClassResources(
+    List<CharacterClassResourcesCompanion> companions,
+  ) async {
+    if (companions.isEmpty) {
+      return;
+    }
+
+    await _database.batch((Batch batch) {
+      batch.insertAll(
+        _database.characterClassResources,
+        companions,
+        mode: InsertMode.insertOrReplace,
+      );
+    });
+  }
+
   Future<void> insertInventory(
     List<CharacterInventoryCompanion> companions,
   ) async {
@@ -241,6 +257,12 @@ class CharacterWriteDao {
   Future<void> deleteSpellSlotUsagesByCharacterId(String characterId) {
     return (_database.delete(
       _database.characterSpellSlotUsages,
+    )..where((table) => table.characterId.equals(characterId))).go();
+  }
+
+  Future<void> deleteClassResourcesByCharacterId(String characterId) {
+    return (_database.delete(
+      _database.characterClassResources,
     )..where((table) => table.characterId.equals(characterId))).go();
   }
 }

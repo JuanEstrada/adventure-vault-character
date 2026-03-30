@@ -5,18 +5,33 @@ import 'package:flutter/material.dart';
 class CharacterSheetScreen extends StatelessWidget {
   const CharacterSheetScreen({
     required this.character,
+    required this.isApplyingRest,
     required this.onBack,
     required this.onEdit,
+    required this.onApplyShortRest,
+    required this.onApplyLongRest,
+    required this.onSetClassResourceUses,
     super.key,
   });
 
   final CharacterDomainModel character;
+  final bool isApplyingRest;
   final VoidCallback onBack;
   final VoidCallback onEdit;
+  final Future<void> Function() onApplyShortRest;
+  final Future<void> Function() onApplyLongRest;
+  final Future<void> Function(String resourceKey, int currentUses)
+  onSetClassResourceUses;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final supportsShortRestSlotRecovery =
+        character.identity.className.trim().toLowerCase() == 'warlock';
+    final supportsShortRestResourceRecovery = character.combat.classResources
+        .any((resource) => resource.recoversOnShortRest);
+    final supportsShortRestRecovery =
+        supportsShortRestSlotRecovery || supportsShortRestResourceRecovery;
 
     return Scaffold(
       appBar: AppBar(
@@ -78,7 +93,15 @@ class CharacterSheetScreen extends StatelessWidget {
                     Expanded(
                       child: Column(
                         children: [
-                          _CombatPanel(character: character),
+                          _CombatPanel(
+                            character: character,
+                            isApplyingRest: isApplyingRest,
+                            supportsShortRestRecovery:
+                                supportsShortRestRecovery,
+                            onApplyShortRest: onApplyShortRest,
+                            onApplyLongRest: onApplyLongRest,
+                            onSetClassResourceUses: onSetClassResourceUses,
+                          ),
                           const SizedBox(height: 16),
                           _AbilitiesPanel(character: character),
                           const SizedBox(height: 16),
@@ -100,7 +123,14 @@ class CharacterSheetScreen extends StatelessWidget {
                 children: [
                   _IdentityPanel(character: character),
                   const SizedBox(height: 16),
-                  _CombatPanel(character: character),
+                  _CombatPanel(
+                    character: character,
+                    isApplyingRest: isApplyingRest,
+                    supportsShortRestRecovery: supportsShortRestRecovery,
+                    onApplyShortRest: onApplyShortRest,
+                    onApplyLongRest: onApplyLongRest,
+                    onSetClassResourceUses: onSetClassResourceUses,
+                  ),
                   const SizedBox(height: 16),
                   _AbilitiesPanel(character: character),
                   const SizedBox(height: 16),
@@ -199,10 +229,98 @@ class _FactRow extends StatelessWidget {
   }
 }
 
+class _ClassResourceRow extends StatelessWidget {
+  const _ClassResourceRow({
+    required this.resource,
+    required this.isUpdating,
+    required this.onDecrease,
+    required this.onIncrease,
+  });
+
+  final CharacterClassResourceDomainModel resource;
+  final bool isUpdating;
+  final VoidCallback onDecrease;
+  final VoidCallback onIncrease;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  resource.label,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Recovers on ${resource.recoveryLabel}',
+                  style: theme.textTheme.bodySmall,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Last changed: ${_formatTimestamp(resource.lastChangedAt)} via ${resource.lastChangedSourceLabel}',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: isUpdating || resource.currentUses <= 0
+                ? null
+                : onDecrease,
+            icon: const Icon(Icons.remove_circle_outline),
+            tooltip: 'Spend use',
+          ),
+          Text(resource.usageSummary, style: theme.textTheme.bodyLarge),
+          IconButton(
+            onPressed:
+                isUpdating || resource.currentUses >= resource.maximumUses
+                ? null
+                : onIncrease,
+            icon: const Icon(Icons.add_circle_outline),
+            tooltip: 'Restore use',
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatTimestamp(DateTime value) {
+    final year = value.year.toString().padLeft(4, '0');
+    final month = value.month.toString().padLeft(2, '0');
+    final day = value.day.toString().padLeft(2, '0');
+    final hour = value.hour.toString().padLeft(2, '0');
+    final minute = value.minute.toString().padLeft(2, '0');
+    return '$year-$month-$day $hour:$minute';
+  }
+}
+
 class _CombatPanel extends StatelessWidget {
-  const _CombatPanel({required this.character});
+  const _CombatPanel({
+    required this.character,
+    required this.isApplyingRest,
+    required this.supportsShortRestRecovery,
+    required this.onApplyShortRest,
+    required this.onApplyLongRest,
+    required this.onSetClassResourceUses,
+  });
 
   final CharacterDomainModel character;
+  final bool isApplyingRest;
+  final bool supportsShortRestRecovery;
+  final Future<void> Function() onApplyShortRest;
+  final Future<void> Function() onApplyLongRest;
+  final Future<void> Function(String resourceKey, int currentUses)
+  onSetClassResourceUses;
 
   @override
   Widget build(BuildContext context) {
@@ -233,6 +351,64 @@ class _CombatPanel extends StatelessWidget {
               label: 'Temp HP',
               value: '${character.combat.hitPoints.temporary}',
             ),
+            const SizedBox(height: 8),
+            Text('Recovery', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: isApplyingRest || !supportsShortRestRecovery
+                      ? null
+                      : () {
+                          onApplyShortRest();
+                        },
+                  icon: const Icon(Icons.timer_outlined),
+                  label: const Text('Apply short rest'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: isApplyingRest
+                      ? null
+                      : () {
+                          onApplyLongRest();
+                        },
+                  icon: const Icon(Icons.bed_outlined),
+                  label: const Text('Apply long rest'),
+                ),
+              ],
+            ),
+            if (!supportsShortRestRecovery)
+              Padding(
+                padding: const EdgeInsets.only(top: 6, bottom: 2),
+                child: Text(
+                  'Short rest recovery currently applies only to pact magic and short-rest class resources.',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
+            if (character.combat.classResources.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text('Class resources', style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              ...character.combat.classResources.map(
+                (resource) => _ClassResourceRow(
+                  resource: resource,
+                  isUpdating: isApplyingRest,
+                  onDecrease: () {
+                    onSetClassResourceUses(
+                      resource.resourceKey,
+                      resource.currentUses - 1,
+                    );
+                  },
+                  onIncrease: () {
+                    onSetClassResourceUses(
+                      resource.resourceKey,
+                      resource.currentUses + 1,
+                    );
+                  },
+                ),
+              ),
+            ],
             if (character.combat.savingThrows.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text('Saving Throws', style: theme.textTheme.titleMedium),

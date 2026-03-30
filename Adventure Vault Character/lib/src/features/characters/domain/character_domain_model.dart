@@ -61,10 +61,12 @@ class CharacterCombatDomainModel {
   const CharacterCombatDomainModel({
     required this.hitPoints,
     required this.savingThrows,
+    required this.classResources,
   });
 
   final CharacterHitPointsDomainModel hitPoints;
   final List<CharacterSavingThrowDomainModel> savingThrows;
+  final List<CharacterClassResourceDomainModel> classResources;
 }
 
 @immutable
@@ -101,6 +103,42 @@ class CharacterSavingThrowDomainModel {
     }
 
     return raw[0].toUpperCase() + raw.substring(1);
+  }
+}
+
+@immutable
+class CharacterClassResourceDomainModel {
+  const CharacterClassResourceDomainModel({
+    required this.resourceKey,
+    required this.label,
+    required this.currentUses,
+    required this.maximumUses,
+    required this.recoversOnShortRest,
+    required this.lastChangedSource,
+    required this.lastChangedAt,
+  });
+
+  final String resourceKey;
+  final String label;
+  final int currentUses;
+  final int maximumUses;
+  final bool recoversOnShortRest;
+  final String lastChangedSource;
+  final DateTime lastChangedAt;
+
+  String get recoveryLabel =>
+      recoversOnShortRest ? 'Short/Long Rest' : 'Long Rest';
+
+  String get usageSummary => '$currentUses / $maximumUses';
+
+  String get lastChangedSourceLabel {
+    return switch (lastChangedSource) {
+      'short-rest' => 'Short Rest',
+      'long-rest' => 'Long Rest',
+      'manual-adjustment' => 'Manual',
+      'seed' => 'Initial',
+      _ => 'Unknown',
+    };
   }
 }
 

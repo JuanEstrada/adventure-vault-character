@@ -16,6 +16,10 @@ import 'package:adventure_vault_character/src/features/compendium/presentation/c
 import 'package:adventure_vault_character/src/features/compendium/presentation/compendium_packs_screen.dart';
 import 'package:adventure_vault_character/src/features/compendium/presentation/compendium_screen.dart';
 import 'package:adventure_vault_character/src/features/main_menu/presentation/main_menu_screen.dart';
+import 'package:adventure_vault_character/src/features/settings/data/drift_system_settings_repository.dart';
+import 'package:adventure_vault_character/src/features/settings/data/in_memory_system_settings_repository.dart';
+import 'package:adventure_vault_character/src/features/settings/data/system_settings_repository.dart';
+import 'package:adventure_vault_character/src/features/settings/presentation/system_settings_screen.dart';
 import 'package:flutter/material.dart';
 
 class AdventureVaultApp extends StatefulWidget {
@@ -23,10 +27,12 @@ class AdventureVaultApp extends StatefulWidget {
     super.key,
     this.characterRepository,
     this.compendiumRepository,
+    this.systemSettingsRepository,
   });
 
   final CharacterRepository? characterRepository;
   final CompendiumRepository? compendiumRepository;
+  final SystemSettingsRepository? systemSettingsRepository;
 
   @override
   State<AdventureVaultApp> createState() => _AdventureVaultAppState();
@@ -47,9 +53,15 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
     final repository =
         widget.characterRepository ??
         _createDefaultRepository(database!, compendiumRepository);
+    final systemSettingsRepository =
+        widget.systemSettingsRepository ??
+        (database == null
+            ? InMemorySystemSettingsRepository()
+            : DriftSystemSettingsRepository(database: database));
     _controller = AppController(
       characterRepository: repository,
       compendiumRepository: compendiumRepository,
+      systemSettingsRepository: systemSettingsRepository,
     );
     _controller.initialize();
   }
@@ -104,8 +116,17 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
               characterSummaries: state.characterSummaries,
               compendiumCatalog: state.compendiumCatalog!,
               onOpenCompendium: _controller.openCompendium,
+              onOpenSettings: _controller.openSettings,
               onCreateCharacter: _controller.openCreateCharacter,
               onOpenCharacter: _controller.openCharacter,
+            ),
+            AppScreen.settings => SystemSettingsScreen(
+              includeCoinWeightInEncumbrance:
+                  state.includeCoinWeightInEncumbrance,
+              isSaving: state.isSavingSettings,
+              onBack: _controller.openMainMenu,
+              onToggleIncludeCoinWeight:
+                  _controller.setIncludeCoinWeightInEncumbrance,
             ),
             AppScreen.compendium => CompendiumScreen(
               catalog: state.compendiumCatalog!,
@@ -132,10 +153,15 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
             ),
             AppScreen.characterSheet => CharacterSheetScreen(
               character: state.selectedCharacterSheet!,
+              isApplyingRest: state.isSavingCharacter,
               onBack: _controller.openMainMenu,
               onEdit: () => _controller.loadEditableCharacter(
                 state.selectedCharacterSheet!.id,
               ),
+              onApplyShortRest: _controller.applyShortRestToSelectedCharacter,
+              onApplyLongRest: _controller.applyLongRestToSelectedCharacter,
+              onSetClassResourceUses:
+                  _controller.setSelectedCharacterClassResourceUses,
             ),
             AppScreen.editCharacter => EditCharacterScreen(
               controller: state.characterEditorController!,

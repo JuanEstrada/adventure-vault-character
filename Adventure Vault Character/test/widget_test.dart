@@ -3,6 +3,7 @@ import 'package:adventure_vault_character/src/features/characters/data/in_memory
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/in_memory_compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
+import 'package:adventure_vault_character/src/features/settings/data/in_memory_system_settings_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -173,6 +174,49 @@ void main() {
     );
     expect(find.textContaining('backgrounds-phb.xml'), findsNothing);
     expect(find.textContaining('backgrounds-scag.xml'), findsNothing);
+  });
+
+  testWidgets('settings toggles coin weight preference', (
+    WidgetTester tester,
+  ) async {
+    final settingsRepository = InMemorySystemSettingsRepository();
+
+    await tester.pumpWidget(
+      AdventureVaultApp(
+        characterRepository: InMemoryCharacterRepository.empty(
+          compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+        ),
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+        systemSettingsRepository: settingsRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Continue offline'));
+    await tester.tap(find.text('Continue offline'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('System rules'), findsOneWidget);
+    expect(find.text('Count coin weight in carried load'), findsOneWidget);
+    expect(
+      find.text('Current default: coin weight is excluded.'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byType(SwitchListTile).first);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Current default: coin weight is included.'),
+      findsOneWidget,
+    );
+    expect(
+      await settingsRepository.getIncludeCoinWeightInEncumbrance(),
+      isTrue,
+    );
   });
 
   testWidgets('create flow saves character and opens sheet', (
@@ -488,6 +532,83 @@ void main() {
     },
   );
 
+  testWidgets('sheet class resource controls update persisted uses', (
+    WidgetTester tester,
+  ) async {
+    final catalog = _testCatalog.copyWith(
+      equipmentLoadoutsByClass: <String, List<CompendiumEquipmentLoadout>>{
+        ..._testCatalog.equipmentLoadoutsByClass,
+        'Cleric': <CompendiumEquipmentLoadout>[
+          const CompendiumEquipmentLoadout(
+            id: 'cleric-mace-shield',
+            label: 'Temple duty kit',
+            startingMoneySummary: 'Class kit with cleric essentials',
+            selectedItems: <String>['Mace', 'Shield', 'Priest pack'],
+          ),
+        ],
+      },
+    );
+    final compendiumRepository = InMemoryCompendiumRepository(catalog);
+    final repository = InMemoryCharacterRepository.empty(
+      compendiumRepository: compendiumRepository,
+    );
+    await tester.binding.setSurfaceSize(const Size(1200, 4200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      AdventureVaultApp(
+        characterRepository: repository,
+        compendiumRepository: compendiumRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Continue offline'));
+    await tester.tap(find.text('Continue offline'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Create character'));
+    await tester.tap(find.text('Create character'));
+    await tester.pumpAndSettle();
+
+    final classField = find.byWidgetPredicate(
+      (widget) =>
+          widget is DropdownButtonFormField<String> &&
+          widget.decoration.labelText == 'Clase',
+    );
+    await tester.enterText(find.byType(TextFormField).first, 'Seren');
+    await tester.tap(classField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cleric').last);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.widgetWithText(FilledButton, 'Save draft').first,
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Save draft'));
+    await tester.pumpAndSettle();
+
+    final summaries = await repository.getCharacterSummaries();
+    final sheet = await repository.getCharacterSheetById(summaries.single.id);
+    expect(sheet, isNotNull);
+    expect(sheet!.combat.classResources, hasLength(1));
+    expect(sheet.combat.classResources.single.resourceKey, 'channel-divinity');
+    expect(find.textContaining('Last changed:'), findsWidgets);
+    expect(find.textContaining('via Initial'), findsWidgets);
+
+    await tester.tap(find.byTooltip('Spend use').first);
+    await tester.pumpAndSettle();
+
+    final updatedSheet = await repository.getCharacterSheetById(
+      summaries.single.id,
+    );
+    expect(updatedSheet, isNotNull);
+    expect(updatedSheet!.combat.classResources.single.currentUses, 0);
+    expect(find.textContaining('via Manual'), findsWidgets);
+  });
+
   testWidgets('open edit save and reopen keeps updated character data', (
     WidgetTester tester,
   ) async {
@@ -580,6 +701,12 @@ void main() {
     expect(find.text('Meris'), findsWidgets);
     expect(find.text('Aelar'), findsNothing);
     expect(find.text('Level 1 slots'), findsOneWidget);
+    expect(find.text('Apply short rest'), findsOneWidget);
+    expect(find.text('Apply long rest'), findsOneWidget);
+    final shortRestButton = tester.widget<OutlinedButton>(
+      find.widgetWithText(OutlinedButton, 'Apply short rest'),
+    );
+    expect(shortRestButton.onPressed, isNull);
   });
 
   testWidgets(

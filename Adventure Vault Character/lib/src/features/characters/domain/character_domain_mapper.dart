@@ -1,5 +1,6 @@
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_class_resource_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_record.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
@@ -9,9 +10,13 @@ import 'package:adventure_vault_character/src/features/characters/domain/create_
 class CharacterDomainMapper {
   const CharacterDomainMapper({
     CharacterSpellRules characterSpellRules = const CharacterSpellRules(),
-  }) : _characterSpellRules = characterSpellRules;
+    CharacterClassResourceRules characterClassResourceRules =
+        const CharacterClassResourceRules(),
+  }) : _characterSpellRules = characterSpellRules,
+       _characterClassResourceRules = characterClassResourceRules;
 
   final CharacterSpellRules _characterSpellRules;
+  final CharacterClassResourceRules _characterClassResourceRules;
 
   CharacterDomainModel map(CharacterRecord record) {
     final row = record.row;
@@ -77,6 +82,7 @@ class CharacterDomainMapper {
               ),
             )
             .toList(growable: false),
+        classResources: _mapClassResources(record),
       ),
       abilities: CharacterAbilitiesDomainModel(
         methodKey: record.abilityScoreProvenance?.methodKey,
@@ -306,6 +312,50 @@ class CharacterDomainMapper {
       quantity: item.quantity,
       isEquipped: item.isEquipped,
     );
+  }
+
+  List<CharacterClassResourceDomainModel> _mapClassResources(
+    CharacterRecord record,
+  ) {
+    final definitions = _characterClassResourceRules.resourcesFor(
+      className: record.row.className,
+      level: record.row.level,
+    );
+    if (definitions.isEmpty) {
+      return const <CharacterClassResourceDomainModel>[];
+    }
+
+    final persistedByKey = <String, int>{
+      for (final row in record.classResources) row.resourceKey: row.currentUses,
+    };
+    final persistedSourceByKey = <String, String>{
+      for (final row in record.classResources)
+        row.resourceKey: row.lastChangedSource,
+    };
+    final persistedChangedAtByKey = <String, DateTime>{
+      for (final row in record.classResources)
+        row.resourceKey: row.lastChangedAt,
+    };
+    return definitions
+        .map(
+          (definition) => CharacterClassResourceDomainModel(
+            resourceKey: definition.resourceKey,
+            label: definition.label,
+            currentUses:
+                (persistedByKey[definition.resourceKey] ??
+                        definition.maximumUses)
+                    .clamp(0, definition.maximumUses)
+                    .toInt(),
+            maximumUses: definition.maximumUses,
+            recoversOnShortRest: definition.recoversOnShortRest,
+            lastChangedSource:
+                persistedSourceByKey[definition.resourceKey] ?? 'seed',
+            lastChangedAt:
+                persistedChangedAtByKey[definition.resourceKey] ??
+                record.row.updatedAt,
+          ),
+        )
+        .toList(growable: false);
   }
 
   String? _currencySummary(CharacterCurrencyData? currency) {

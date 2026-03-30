@@ -1,6 +1,7 @@
 import 'package:adventure_vault_character/src/features/characters/application/character_sheet_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/create_character_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/editable_character_service.dart';
+import 'package:adventure_vault_character/src/features/characters/application/character_recovery_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/character_record_loader.dart';
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
@@ -42,6 +43,11 @@ class DriftCharacterRepository implements CharacterRepository {
            readDao: CharacterReadDao(database),
            compendiumRepository: compendiumRepository,
          ),
+       ),
+       _characterRecoveryService = CharacterRecoveryService(
+         database: database,
+         readDao: CharacterReadDao(database),
+         writeDao: CharacterWriteDao(database),
        );
 
   final CharacterReadDao _readDao;
@@ -50,6 +56,7 @@ class DriftCharacterRepository implements CharacterRepository {
   final CreateCharacterService _createCharacterService;
   final CharacterSheetService _characterSheetService;
   final EditableCharacterService _editableCharacterService;
+  final CharacterRecoveryService _characterRecoveryService;
 
   @override
   Future<List<CharacterSummary>> getCharacterSummaries() async {
@@ -109,6 +116,29 @@ class DriftCharacterRepository implements CharacterRepository {
     return _characterSummaryMapper.fromCharacterRow(
       row,
       finishingDetails: finishingDetails,
+    );
+  }
+
+  @override
+  Future<void> applyShortRest(String id) {
+    return _characterRecoveryService.applyShortRest(id);
+  }
+
+  @override
+  Future<void> applyLongRest(String id) {
+    return _characterRecoveryService.applyLongRest(id);
+  }
+
+  @override
+  Future<void> setClassResourceUses(
+    String id,
+    String resourceKey,
+    int currentUses,
+  ) {
+    return _characterRecoveryService.setClassResourceUses(
+      id,
+      resourceKey,
+      currentUses,
     );
   }
 

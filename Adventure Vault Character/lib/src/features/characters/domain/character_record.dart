@@ -17,6 +17,7 @@ class CharacterRecord {
     required this.equipmentLoadout,
     required this.spellSelections,
     required this.spellSlotUsages,
+    required this.classResources,
     required this.currency,
     required this.inventory,
     required this.savingThrows,
@@ -37,6 +38,7 @@ class CharacterRecord {
   final CharacterEquipmentLoadout? equipmentLoadout;
   final List<CharacterSpellSelection> spellSelections;
   final List<CharacterSpellSlotUsage> spellSlotUsages;
+  final List<CharacterClassResource> classResources;
   final CharacterCurrencyData? currency;
   final List<CharacterInventoryData> inventory;
   final List<CharacterSavingThrow> savingThrows;

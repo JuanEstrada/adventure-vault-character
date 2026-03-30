@@ -557,6 +557,16 @@ Completed since the previous handoff:
   and limit constraints deterministic.
 - Character rest behavior now flows through `CharacterRestRules`, and edit
   flows use the same long-rest/short-rest deterministic rule path as create.
+- Character sheet now exposes direct `Apply short rest` / `Apply long rest`
+  actions routed through repository/application services instead of widget-local
+  rule execution, with short rest enabled when the class has pact-slot or
+  short-rest class-resource recovery.
+- Rest recovery now also persists deterministic class-resource counters for an
+  initial rules set (`Rage`, `Ki points`, `Channel Divinity`, `Wild Shape`) and
+  surfaces those counters in the sheet `Combat` panel with recovery cadence.
+- The app now includes a first persisted `Settings` screen toggle for
+  `Count coin weight in carried load` (default `off`) so future encumbrance
+  behavior can be configured at system level.
 - The baseline compendium now ingests SRD 5.5e `default_optionalfeatures` for
   spells and feats, completing strict 2024 SRD baseline parity in runtime
   counts (`spells: 374`, `feats: 21`).

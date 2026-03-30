@@ -8,6 +8,7 @@ class MainMenuScreen extends StatelessWidget {
     required this.characterSummaries,
     required this.compendiumCatalog,
     required this.onOpenCompendium,
+    required this.onOpenSettings,
     required this.onCreateCharacter,
     required this.onOpenCharacter,
     super.key,
@@ -16,6 +17,7 @@ class MainMenuScreen extends StatelessWidget {
   final List<CharacterSummary> characterSummaries;
   final CompendiumCatalog compendiumCatalog;
   final VoidCallback onOpenCompendium;
+  final VoidCallback onOpenSettings;
   final VoidCallback onCreateCharacter;
   final ValueChanged<String> onOpenCharacter;
 
@@ -29,7 +31,7 @@ class MainMenuScreen extends StatelessWidget {
         actions: [
           _TopAction(label: 'Compendium', onPressed: onOpenCompendium),
           const _TopAction(label: 'Rules'),
-          const _TopAction(label: 'Settings'),
+          _TopAction(label: 'Settings', onPressed: onOpenSettings),
         ],
       ),
       body: Padding(

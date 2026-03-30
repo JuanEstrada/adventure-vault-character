@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_class_resource_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_rest_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_spell_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
@@ -17,6 +19,9 @@ class InMemoryCharacterRepository implements CharacterRepository {
     required CompendiumRepository compendiumRepository,
   }) : _summaries = <CharacterSummary>[],
        _createdInputsById = <String, CreateCharacterInput>{},
+       _classResourcesByCharacterId = <String, Map<String, int>>{},
+       _classResourceMetaByCharacterId =
+           <String, Map<String, _InMemoryClassResourceMeta>>{},
        _compendiumRepository = compendiumRepository;
 
   InMemoryCharacterRepository.seeded(
@@ -24,14 +29,23 @@ class InMemoryCharacterRepository implements CharacterRepository {
     required CompendiumRepository compendiumRepository,
   }) : _summaries = List<CharacterSummary>.from(summaries),
        _createdInputsById = <String, CreateCharacterInput>{},
+       _classResourcesByCharacterId = <String, Map<String, int>>{},
+       _classResourceMetaByCharacterId =
+           <String, Map<String, _InMemoryClassResourceMeta>>{},
        _compendiumRepository = compendiumRepository;
 
   final List<CharacterSummary> _summaries;
   final Map<String, CreateCharacterInput> _createdInputsById;
+  final Map<String, Map<String, int>> _classResourcesByCharacterId;
+  final Map<String, Map<String, _InMemoryClassResourceMeta>>
+  _classResourceMetaByCharacterId;
   final CompendiumRepository _compendiumRepository;
   final CharacterSummaryMapper _characterSummaryMapper =
       const CharacterSummaryMapper();
   final CharacterSpellRules _characterSpellRules = const CharacterSpellRules();
+  final CharacterRestRules _characterRestRules = const CharacterRestRules();
+  final CharacterClassResourceRules _characterClassResourceRules =
+      const CharacterClassResourceRules();
   final StreamController<void> _changes = StreamController<void>.broadcast();
 
   @override
@@ -59,6 +73,17 @@ class InMemoryCharacterRepository implements CharacterRepository {
     );
     _summaries.insert(0, summary);
     _createdInputsById[id] = input;
+    _classResourcesByCharacterId[id] = _initialClassResourcesFor(
+      className: input.className,
+      level: input.level,
+    );
+    _classResourceMetaByCharacterId[id] = _resourceMetaFor(
+      className: input.className,
+      level: input.level,
+      source: 'seed',
+      changedAt: DateTime.now(),
+      existing: const <String, _InMemoryClassResourceMeta>{},
+    );
     _changes.add(null);
     return summary;
   }
@@ -79,6 +104,20 @@ class InMemoryCharacterRepository implements CharacterRepository {
     );
     _summaries[existingIndex] = summary;
     _createdInputsById[id] = input;
+    _classResourcesByCharacterId[id] = _clampClassResourcesFor(
+      className: input.className,
+      level: input.level,
+      current: _classResourcesByCharacterId[id] ?? const <String, int>{},
+    );
+    _classResourceMetaByCharacterId[id] = _resourceMetaFor(
+      className: input.className,
+      level: input.level,
+      source: 'manual-adjustment',
+      changedAt: DateTime.now(),
+      existing:
+          _classResourceMetaByCharacterId[id] ??
+          const <String, _InMemoryClassResourceMeta>{},
+    );
     _changes.add(null);
     return summary;
   }
@@ -91,6 +130,73 @@ class InMemoryCharacterRepository implements CharacterRepository {
       }
     }
     return null;
+  }
+
+  @override
+  Future<void> applyShortRest(String id) async {
+    await _applyRest(id, isLongRest: false);
+  }
+
+  @override
+  Future<void> applyLongRest(String id) async {
+    await _applyRest(id, isLongRest: true);
+  }
+
+  @override
+  Future<void> setClassResourceUses(
+    String id,
+    String resourceKey,
+    int currentUses,
+  ) async {
+    final summary = await getCharacterSummaryById(id);
+    if (summary == null) {
+      throw StateError('Character not found.');
+    }
+
+    final createdInput = _createdInputsById[id];
+    if (createdInput == null) {
+      throw StateError('Character data unavailable for class resources.');
+    }
+
+    final definitions = _characterClassResourceRules.resourcesFor(
+      className: createdInput.className,
+      level: createdInput.level,
+    );
+    final matchingResource = definitions.where(
+      (resource) => resource.resourceKey == resourceKey,
+    );
+    if (matchingResource.isEmpty) {
+      throw StateError('Class resource not found.');
+    }
+
+    final currentMap =
+        _classResourcesByCharacterId[id] ??
+        _initialClassResourcesFor(
+          className: createdInput.className,
+          level: createdInput.level,
+        );
+    _classResourcesByCharacterId[id] = <String, int>{
+      for (final definition in definitions)
+        definition.resourceKey:
+            (definition.resourceKey == resourceKey
+                    ? currentUses
+                    : (currentMap[definition.resourceKey] ??
+                          definition.maximumUses))
+                .clamp(0, definition.maximumUses)
+                .toInt(),
+    };
+    _classResourceMetaByCharacterId[id] = _resourceMetaFor(
+      className: createdInput.className,
+      level: createdInput.level,
+      source: 'manual-adjustment',
+      changedAt: DateTime.now(),
+      existing:
+          _classResourceMetaByCharacterId[id] ??
+          const <String, _InMemoryClassResourceMeta>{},
+      changedResourceKey: resourceKey,
+    );
+
+    _changes.add(null);
   }
 
   @override
@@ -109,10 +215,21 @@ class InMemoryCharacterRepository implements CharacterRepository {
     final equipmentLoadout = catalog.equipmentLoadoutsForClass(className).first;
     final constitutionScore = createdInput?.constitution ?? 13;
     final level = createdInput?.level ?? summary.level;
-    final hitPoints = CharacterRules.startingHitPoints(
+    final computedHitPoints = CharacterRules.startingHitPoints(
       hitDie: _hitDieForClass(className),
       constitutionScore: constitutionScore,
       level: level,
+    );
+    final maximumHitPoints =
+        createdInput?.maximumHitPoints ?? computedHitPoints;
+    final currentHitPoints =
+        (createdInput?.currentHitPoints ?? maximumHitPoints).clamp(
+          0,
+          maximumHitPoints,
+        );
+    final temporaryHitPoints = (createdInput?.temporaryHitPoints ?? 0).clamp(
+      0,
+      9999,
     );
     final selectedItems =
         createdInput?.selectedEquipmentItems ?? equipmentLoadout.selectedItems;
@@ -136,6 +253,15 @@ class InMemoryCharacterRepository implements CharacterRepository {
       wisdom: createdInput?.wisdom ?? 10,
       charisma: createdInput?.charisma ?? 8,
     );
+    final classResourceDefinitions = _characterClassResourceRules.resourcesFor(
+      className: className,
+      level: level,
+    );
+    final persistedClassResources =
+        _classResourcesByCharacterId[id] ?? const <String, int>{};
+    final classResourceMetaByKey =
+        _classResourceMetaByCharacterId[id] ??
+        const <String, _InMemoryClassResourceMeta>{};
 
     return CharacterDomainModel(
       id: summary.id,
@@ -147,11 +273,32 @@ class InMemoryCharacterRepository implements CharacterRepository {
       ),
       combat: CharacterCombatDomainModel(
         hitPoints: CharacterHitPointsDomainModel(
-          current: hitPoints,
-          maximum: hitPoints,
-          temporary: 0,
+          current: currentHitPoints,
+          maximum: maximumHitPoints,
+          temporary: temporaryHitPoints,
         ),
         savingThrows: const <CharacterSavingThrowDomainModel>[],
+        classResources: classResourceDefinitions
+            .map(
+              (resource) => CharacterClassResourceDomainModel(
+                resourceKey: resource.resourceKey,
+                label: resource.label,
+                currentUses:
+                    (persistedClassResources[resource.resourceKey] ??
+                            resource.maximumUses)
+                        .clamp(0, resource.maximumUses)
+                        .toInt(),
+                maximumUses: resource.maximumUses,
+                recoversOnShortRest: resource.recoversOnShortRest,
+                lastChangedSource:
+                    classResourceMetaByKey[resource.resourceKey]?.source ??
+                    'seed',
+                lastChangedAt:
+                    classResourceMetaByKey[resource.resourceKey]?.changedAt ??
+                    DateTime.now(),
+              ),
+            )
+            .toList(growable: false),
       ),
       abilities: CharacterAbilitiesDomainModel(
         methodKey: createdInput?.abilityScoreMethod,
@@ -334,6 +481,163 @@ class InMemoryCharacterRepository implements CharacterRepository {
 
   CharacterAbilityScoreDomainModel _abilityRow(String label, int score) {
     return CharacterAbilityScoreDomainModel(label: label, score: score);
+  }
+
+  Future<void> _applyRest(String id, {required bool isLongRest}) async {
+    final summary = await getCharacterSummaryById(id);
+    if (summary == null) {
+      throw StateError('Character not found.');
+    }
+
+    final createdInput = _createdInputsById[id];
+    if (createdInput == null) {
+      throw StateError('Character data unavailable for recovery.');
+    }
+
+    final slotUsagesByLevel = <int, int>{
+      for (final usage in createdInput.spellState.slotUsages)
+        usage.spellLevel: usage.slotsExpended,
+    };
+    final result = isLongRest
+        ? _characterRestRules.applyLongRest(
+            className: summary.className,
+            level: summary.level,
+            maximumHitPoints: createdInput.maximumHitPoints,
+          )
+        : _characterRestRules.applyShortRest(
+            className: summary.className,
+            level: summary.level,
+            currentHitPoints: createdInput.currentHitPoints,
+            maximumHitPoints: createdInput.maximumHitPoints,
+            temporaryHitPoints: createdInput.temporaryHitPoints,
+            slotUsagesByLevel: slotUsagesByLevel,
+          );
+
+    _createdInputsById[id] = CreateCharacterInput(
+      name: createdInput.name,
+      raceName: createdInput.raceName,
+      backgroundId: createdInput.backgroundId,
+      backgroundName: createdInput.backgroundName,
+      backgroundSummary: createdInput.backgroundSummary,
+      abilityScoreMethod: createdInput.abilityScoreMethod,
+      abilityScoreProvenance: createdInput.abilityScoreProvenance,
+      strength: createdInput.strength,
+      dexterity: createdInput.dexterity,
+      constitution: createdInput.constitution,
+      intelligence: createdInput.intelligence,
+      wisdom: createdInput.wisdom,
+      charisma: createdInput.charisma,
+      className: createdInput.className,
+      level: createdInput.level,
+      experience: createdInput.experience,
+      equipmentLoadoutId: createdInput.equipmentLoadoutId,
+      equipmentLoadoutLabel: createdInput.equipmentLoadoutLabel,
+      startingMoneySummary: createdInput.startingMoneySummary,
+      selectedEquipmentItems: createdInput.selectedEquipmentItems,
+      currentHitPoints: result.currentHitPoints,
+      maximumHitPoints: result.maximumHitPoints,
+      temporaryHitPoints: result.temporaryHitPoints,
+      spellState: CharacterSpellStateInput(
+        selectionMode: createdInput.spellState.selectionMode,
+        selectedSpells: createdInput.spellState.selectedSpells,
+        slotUsages: result.slotUsagesByLevel.entries
+            .map(
+              (entry) => CharacterSpellSlotUsageInput(
+                spellLevel: entry.key,
+                slotsExpended: entry.value,
+              ),
+            )
+            .toList(growable: false),
+      ),
+      finishingDetails: createdInput.finishingDetails,
+    );
+    final resourceDefinitions = _characterClassResourceRules.resourcesFor(
+      className: createdInput.className,
+      level: createdInput.level,
+    );
+    final currentResourceMap =
+        _classResourcesByCharacterId[id] ??
+        _initialClassResourcesFor(
+          className: createdInput.className,
+          level: createdInput.level,
+        );
+    _classResourcesByCharacterId[id] = <String, int>{
+      for (final resource in resourceDefinitions)
+        resource.resourceKey:
+            (isLongRest || resource.recoversOnShortRest
+                    ? resource.maximumUses
+                    : (currentResourceMap[resource.resourceKey] ??
+                              resource.maximumUses)
+                          .clamp(0, resource.maximumUses))
+                .toInt(),
+    };
+    _classResourceMetaByCharacterId[id] = _resourceMetaFor(
+      className: createdInput.className,
+      level: createdInput.level,
+      source: isLongRest ? 'long-rest' : 'short-rest',
+      changedAt: DateTime.now(),
+      existing:
+          _classResourceMetaByCharacterId[id] ??
+          const <String, _InMemoryClassResourceMeta>{},
+    );
+    _changes.add(null);
+  }
+
+  Map<String, int> _initialClassResourcesFor({
+    required String className,
+    required int level,
+  }) {
+    return <String, int>{
+      for (final resource in _characterClassResourceRules.resourcesFor(
+        className: className,
+        level: level,
+      ))
+        resource.resourceKey: resource.maximumUses,
+    };
+  }
+
+  Map<String, int> _clampClassResourcesFor({
+    required String className,
+    required int level,
+    required Map<String, int> current,
+  }) {
+    final definitions = _characterClassResourceRules.resourcesFor(
+      className: className,
+      level: level,
+    );
+    return <String, int>{
+      for (final definition in definitions)
+        definition.resourceKey:
+            (current[definition.resourceKey] ?? definition.maximumUses)
+                .clamp(0, definition.maximumUses)
+                .toInt(),
+    };
+  }
+
+  Map<String, _InMemoryClassResourceMeta> _resourceMetaFor({
+    required String className,
+    required int level,
+    required String source,
+    required DateTime changedAt,
+    required Map<String, _InMemoryClassResourceMeta> existing,
+    String? changedResourceKey,
+  }) {
+    final definitions = _characterClassResourceRules.resourcesFor(
+      className: className,
+      level: level,
+    );
+    return <String, _InMemoryClassResourceMeta>{
+      for (final definition in definitions)
+        definition.resourceKey:
+            (changedResourceKey == null ||
+                changedResourceKey == definition.resourceKey)
+            ? _InMemoryClassResourceMeta(source: source, changedAt: changedAt)
+            : (existing[definition.resourceKey] ??
+                  _InMemoryClassResourceMeta(
+                    source: 'seed',
+                    changedAt: changedAt,
+                  )),
+    };
   }
 
   CharacterBackgroundEntryDomainModel _mapBackgroundEntry(String raw) {
@@ -603,4 +907,14 @@ class _InventoryItemSpec {
 
   final String name;
   final int quantity;
+}
+
+class _InMemoryClassResourceMeta {
+  const _InMemoryClassResourceMeta({
+    required this.source,
+    required this.changedAt,
+  });
+
+  final String source;
+  final DateTime changedAt;
 }

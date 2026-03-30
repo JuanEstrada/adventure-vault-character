@@ -371,6 +371,38 @@ class CharacterCurrency extends Table {
   Set<Column<Object>> get primaryKey => {characterId};
 }
 
+class CharacterClassResources extends Table {
+  TextColumn get characterId => text().references(Characters, #id)();
+
+  TextColumn get resourceKey => text().named('resource_key')();
+
+  IntColumn get currentUses =>
+      integer().named('current_uses').withDefault(const Constant(0))();
+
+  TextColumn get lastChangedSource =>
+      text().named('last_changed_source').withDefault(const Constant('seed'))();
+
+  DateTimeColumn get lastChangedAt =>
+      dateTime().named('last_changed_at').withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column<Object>> get primaryKey => {characterId, resourceKey};
+}
+
+class SystemPreferences extends Table {
+  IntColumn get id => integer()();
+
+  BoolColumn get includeCoinWeightInEncumbrance => boolean()
+      .named('include_coin_weight_in_encumbrance')
+      .withDefault(const Constant(false))();
+
+  DateTimeColumn get updatedAt =>
+      dateTime().named('updated_at').withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 class ClassDefinitions extends Table {
   TextColumn get id => text()();
 
@@ -632,6 +664,8 @@ class TrinketDefinitions extends Table {
     CharacterInventory,
     CharacterProficiencies,
     CharacterCurrency,
+    CharacterClassResources,
+    SystemPreferences,
     ClassDefinitions,
     CharacterAdvancementDefinitions,
     ClassStandardArrayRecommendations,
@@ -660,7 +694,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.executor(super.executor);
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -838,6 +872,20 @@ class AppDatabase extends _$AppDatabase {
           'RENAME TO character_spell_selections',
         );
       }
+      if (from < 17) {
+        await migrator.createTable(characterClassResources);
+      }
+      if (from >= 17 && from < 18) {
+        await customStatement(
+          "ALTER TABLE character_class_resources ADD COLUMN last_changed_source TEXT NOT NULL DEFAULT 'seed'",
+        );
+        await customStatement(
+          "ALTER TABLE character_class_resources ADD COLUMN last_changed_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))",
+        );
+      }
+      if (from < 19) {
+        await migrator.createTable(systemPreferences);
+      }
 
       await _createIndexes();
     },
@@ -895,6 +943,10 @@ class AppDatabase extends _$AppDatabase {
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_character_inventory_container '
       'ON character_inventory (container_inventory_item_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_character_class_resources_character '
+      'ON character_class_resources (character_id)',
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_character_proficiencies_character '

@@ -366,6 +366,8 @@ summary.
 - Expand the edit flow beyond the current guided MVP fields and decide how
   later post-creation inventory or combat editing should interact with the
   same aggregate.
+- Wire the new system setting `Count coin weight in carried load` into the
+  upcoming encumbrance implementation so the toggle affects derived load state.
 - Extend the new compendium screen toward future pack-management and import
   workflows without bypassing the existing repository/domain contract.
 - Extend the current XML import flow beyond the currently supported imported
@@ -428,10 +430,13 @@ summary.
    deterministic application/domain services.
 2. Expand compendium ingestion from strict 2024 SRD baseline into broader
    official 2024 sources with explicit precedence and conflict reporting.
-3. Expand deterministic resource recovery beyond spell slots (class resources,
-   rest cadence, and sheet-visible recovery summaries).
+3. Expand deterministic resource recovery beyond the now-implemented HP +
+   spell-slot + initial class-resource rest actions (broader class coverage,
+   rest cadence details, and richer sheet-visible recovery summaries).
 4. Expand the inventory/equipment model beyond starter loadouts.
-5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
+5. Apply the persisted coin-weight setting to encumbrance derivation and
+   surface the active rule in sheet summaries.
+6. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
 ## Next Session Guardrail
 

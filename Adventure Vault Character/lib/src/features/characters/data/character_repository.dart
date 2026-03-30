@@ -17,6 +17,16 @@ abstract interface class CharacterRepository {
 
   Future<CharacterSummary?> getCharacterSummaryById(String id);
 
+  Future<void> applyShortRest(String id);
+
+  Future<void> applyLongRest(String id);
+
+  Future<void> setClassResourceUses(
+    String id,
+    String resourceKey,
+    int currentUses,
+  );
+
   Future<CharacterDomainModel?> getCharacterSheetById(String id);
 
   Stream<CharacterDomainModel?> watchCharacterSheetById(String id);

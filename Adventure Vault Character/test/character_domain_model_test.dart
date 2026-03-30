@@ -32,6 +32,7 @@ void main() {
               isProficient: true,
             ),
           ],
+          classResources: <CharacterClassResourceDomainModel>[],
         ),
         abilities: CharacterAbilitiesDomainModel(
           methodKey: 'generatedSetAssignment',

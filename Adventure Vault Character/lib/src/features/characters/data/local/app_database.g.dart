@@ -8458,6 +8458,685 @@ class CharacterCurrencyCompanion
   }
 }
 
+class $CharacterClassResourcesTable extends CharacterClassResources
+    with TableInfo<$CharacterClassResourcesTable, CharacterClassResource> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CharacterClassResourcesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _characterIdMeta = const VerificationMeta(
+    'characterId',
+  );
+  @override
+  late final GeneratedColumn<String> characterId = GeneratedColumn<String>(
+    'character_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES characters (id)',
+    ),
+  );
+  static const VerificationMeta _resourceKeyMeta = const VerificationMeta(
+    'resourceKey',
+  );
+  @override
+  late final GeneratedColumn<String> resourceKey = GeneratedColumn<String>(
+    'resource_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _currentUsesMeta = const VerificationMeta(
+    'currentUses',
+  );
+  @override
+  late final GeneratedColumn<int> currentUses = GeneratedColumn<int>(
+    'current_uses',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _lastChangedSourceMeta = const VerificationMeta(
+    'lastChangedSource',
+  );
+  @override
+  late final GeneratedColumn<String> lastChangedSource =
+      GeneratedColumn<String>(
+        'last_changed_source',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('seed'),
+      );
+  static const VerificationMeta _lastChangedAtMeta = const VerificationMeta(
+    'lastChangedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastChangedAt =
+      GeneratedColumn<DateTime>(
+        'last_changed_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: currentDateAndTime,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    characterId,
+    resourceKey,
+    currentUses,
+    lastChangedSource,
+    lastChangedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'character_class_resources';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CharacterClassResource> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('character_id')) {
+      context.handle(
+        _characterIdMeta,
+        characterId.isAcceptableOrUnknown(
+          data['character_id']!,
+          _characterIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_characterIdMeta);
+    }
+    if (data.containsKey('resource_key')) {
+      context.handle(
+        _resourceKeyMeta,
+        resourceKey.isAcceptableOrUnknown(
+          data['resource_key']!,
+          _resourceKeyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_resourceKeyMeta);
+    }
+    if (data.containsKey('current_uses')) {
+      context.handle(
+        _currentUsesMeta,
+        currentUses.isAcceptableOrUnknown(
+          data['current_uses']!,
+          _currentUsesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_changed_source')) {
+      context.handle(
+        _lastChangedSourceMeta,
+        lastChangedSource.isAcceptableOrUnknown(
+          data['last_changed_source']!,
+          _lastChangedSourceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_changed_at')) {
+      context.handle(
+        _lastChangedAtMeta,
+        lastChangedAt.isAcceptableOrUnknown(
+          data['last_changed_at']!,
+          _lastChangedAtMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {characterId, resourceKey};
+  @override
+  CharacterClassResource map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CharacterClassResource(
+      characterId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}character_id'],
+      )!,
+      resourceKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}resource_key'],
+      )!,
+      currentUses: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}current_uses'],
+      )!,
+      lastChangedSource: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_changed_source'],
+      )!,
+      lastChangedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_changed_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CharacterClassResourcesTable createAlias(String alias) {
+    return $CharacterClassResourcesTable(attachedDatabase, alias);
+  }
+}
+
+class CharacterClassResource extends DataClass
+    implements Insertable<CharacterClassResource> {
+  final String characterId;
+  final String resourceKey;
+  final int currentUses;
+  final String lastChangedSource;
+  final DateTime lastChangedAt;
+  const CharacterClassResource({
+    required this.characterId,
+    required this.resourceKey,
+    required this.currentUses,
+    required this.lastChangedSource,
+    required this.lastChangedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['character_id'] = Variable<String>(characterId);
+    map['resource_key'] = Variable<String>(resourceKey);
+    map['current_uses'] = Variable<int>(currentUses);
+    map['last_changed_source'] = Variable<String>(lastChangedSource);
+    map['last_changed_at'] = Variable<DateTime>(lastChangedAt);
+    return map;
+  }
+
+  CharacterClassResourcesCompanion toCompanion(bool nullToAbsent) {
+    return CharacterClassResourcesCompanion(
+      characterId: Value(characterId),
+      resourceKey: Value(resourceKey),
+      currentUses: Value(currentUses),
+      lastChangedSource: Value(lastChangedSource),
+      lastChangedAt: Value(lastChangedAt),
+    );
+  }
+
+  factory CharacterClassResource.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CharacterClassResource(
+      characterId: serializer.fromJson<String>(json['characterId']),
+      resourceKey: serializer.fromJson<String>(json['resourceKey']),
+      currentUses: serializer.fromJson<int>(json['currentUses']),
+      lastChangedSource: serializer.fromJson<String>(json['lastChangedSource']),
+      lastChangedAt: serializer.fromJson<DateTime>(json['lastChangedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'characterId': serializer.toJson<String>(characterId),
+      'resourceKey': serializer.toJson<String>(resourceKey),
+      'currentUses': serializer.toJson<int>(currentUses),
+      'lastChangedSource': serializer.toJson<String>(lastChangedSource),
+      'lastChangedAt': serializer.toJson<DateTime>(lastChangedAt),
+    };
+  }
+
+  CharacterClassResource copyWith({
+    String? characterId,
+    String? resourceKey,
+    int? currentUses,
+    String? lastChangedSource,
+    DateTime? lastChangedAt,
+  }) => CharacterClassResource(
+    characterId: characterId ?? this.characterId,
+    resourceKey: resourceKey ?? this.resourceKey,
+    currentUses: currentUses ?? this.currentUses,
+    lastChangedSource: lastChangedSource ?? this.lastChangedSource,
+    lastChangedAt: lastChangedAt ?? this.lastChangedAt,
+  );
+  CharacterClassResource copyWithCompanion(
+    CharacterClassResourcesCompanion data,
+  ) {
+    return CharacterClassResource(
+      characterId: data.characterId.present
+          ? data.characterId.value
+          : this.characterId,
+      resourceKey: data.resourceKey.present
+          ? data.resourceKey.value
+          : this.resourceKey,
+      currentUses: data.currentUses.present
+          ? data.currentUses.value
+          : this.currentUses,
+      lastChangedSource: data.lastChangedSource.present
+          ? data.lastChangedSource.value
+          : this.lastChangedSource,
+      lastChangedAt: data.lastChangedAt.present
+          ? data.lastChangedAt.value
+          : this.lastChangedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterClassResource(')
+          ..write('characterId: $characterId, ')
+          ..write('resourceKey: $resourceKey, ')
+          ..write('currentUses: $currentUses, ')
+          ..write('lastChangedSource: $lastChangedSource, ')
+          ..write('lastChangedAt: $lastChangedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    characterId,
+    resourceKey,
+    currentUses,
+    lastChangedSource,
+    lastChangedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CharacterClassResource &&
+          other.characterId == this.characterId &&
+          other.resourceKey == this.resourceKey &&
+          other.currentUses == this.currentUses &&
+          other.lastChangedSource == this.lastChangedSource &&
+          other.lastChangedAt == this.lastChangedAt);
+}
+
+class CharacterClassResourcesCompanion
+    extends UpdateCompanion<CharacterClassResource> {
+  final Value<String> characterId;
+  final Value<String> resourceKey;
+  final Value<int> currentUses;
+  final Value<String> lastChangedSource;
+  final Value<DateTime> lastChangedAt;
+  final Value<int> rowid;
+  const CharacterClassResourcesCompanion({
+    this.characterId = const Value.absent(),
+    this.resourceKey = const Value.absent(),
+    this.currentUses = const Value.absent(),
+    this.lastChangedSource = const Value.absent(),
+    this.lastChangedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CharacterClassResourcesCompanion.insert({
+    required String characterId,
+    required String resourceKey,
+    this.currentUses = const Value.absent(),
+    this.lastChangedSource = const Value.absent(),
+    this.lastChangedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : characterId = Value(characterId),
+       resourceKey = Value(resourceKey);
+  static Insertable<CharacterClassResource> custom({
+    Expression<String>? characterId,
+    Expression<String>? resourceKey,
+    Expression<int>? currentUses,
+    Expression<String>? lastChangedSource,
+    Expression<DateTime>? lastChangedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (characterId != null) 'character_id': characterId,
+      if (resourceKey != null) 'resource_key': resourceKey,
+      if (currentUses != null) 'current_uses': currentUses,
+      if (lastChangedSource != null) 'last_changed_source': lastChangedSource,
+      if (lastChangedAt != null) 'last_changed_at': lastChangedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CharacterClassResourcesCompanion copyWith({
+    Value<String>? characterId,
+    Value<String>? resourceKey,
+    Value<int>? currentUses,
+    Value<String>? lastChangedSource,
+    Value<DateTime>? lastChangedAt,
+    Value<int>? rowid,
+  }) {
+    return CharacterClassResourcesCompanion(
+      characterId: characterId ?? this.characterId,
+      resourceKey: resourceKey ?? this.resourceKey,
+      currentUses: currentUses ?? this.currentUses,
+      lastChangedSource: lastChangedSource ?? this.lastChangedSource,
+      lastChangedAt: lastChangedAt ?? this.lastChangedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (characterId.present) {
+      map['character_id'] = Variable<String>(characterId.value);
+    }
+    if (resourceKey.present) {
+      map['resource_key'] = Variable<String>(resourceKey.value);
+    }
+    if (currentUses.present) {
+      map['current_uses'] = Variable<int>(currentUses.value);
+    }
+    if (lastChangedSource.present) {
+      map['last_changed_source'] = Variable<String>(lastChangedSource.value);
+    }
+    if (lastChangedAt.present) {
+      map['last_changed_at'] = Variable<DateTime>(lastChangedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterClassResourcesCompanion(')
+          ..write('characterId: $characterId, ')
+          ..write('resourceKey: $resourceKey, ')
+          ..write('currentUses: $currentUses, ')
+          ..write('lastChangedSource: $lastChangedSource, ')
+          ..write('lastChangedAt: $lastChangedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SystemPreferencesTable extends SystemPreferences
+    with TableInfo<$SystemPreferencesTable, SystemPreference> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SystemPreferencesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _includeCoinWeightInEncumbranceMeta =
+      const VerificationMeta('includeCoinWeightInEncumbrance');
+  @override
+  late final GeneratedColumn<bool> includeCoinWeightInEncumbrance =
+      GeneratedColumn<bool>(
+        'include_coin_weight_in_encumbrance',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("include_coin_weight_in_encumbrance" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    includeCoinWeightInEncumbrance,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'system_preferences';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SystemPreference> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('include_coin_weight_in_encumbrance')) {
+      context.handle(
+        _includeCoinWeightInEncumbranceMeta,
+        includeCoinWeightInEncumbrance.isAcceptableOrUnknown(
+          data['include_coin_weight_in_encumbrance']!,
+          _includeCoinWeightInEncumbranceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SystemPreference map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SystemPreference(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      includeCoinWeightInEncumbrance: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}include_coin_weight_in_encumbrance'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SystemPreferencesTable createAlias(String alias) {
+    return $SystemPreferencesTable(attachedDatabase, alias);
+  }
+}
+
+class SystemPreference extends DataClass
+    implements Insertable<SystemPreference> {
+  final int id;
+  final bool includeCoinWeightInEncumbrance;
+  final DateTime updatedAt;
+  const SystemPreference({
+    required this.id,
+    required this.includeCoinWeightInEncumbrance,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['include_coin_weight_in_encumbrance'] = Variable<bool>(
+      includeCoinWeightInEncumbrance,
+    );
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  SystemPreferencesCompanion toCompanion(bool nullToAbsent) {
+    return SystemPreferencesCompanion(
+      id: Value(id),
+      includeCoinWeightInEncumbrance: Value(includeCoinWeightInEncumbrance),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory SystemPreference.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SystemPreference(
+      id: serializer.fromJson<int>(json['id']),
+      includeCoinWeightInEncumbrance: serializer.fromJson<bool>(
+        json['includeCoinWeightInEncumbrance'],
+      ),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'includeCoinWeightInEncumbrance': serializer.toJson<bool>(
+        includeCoinWeightInEncumbrance,
+      ),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  SystemPreference copyWith({
+    int? id,
+    bool? includeCoinWeightInEncumbrance,
+    DateTime? updatedAt,
+  }) => SystemPreference(
+    id: id ?? this.id,
+    includeCoinWeightInEncumbrance:
+        includeCoinWeightInEncumbrance ?? this.includeCoinWeightInEncumbrance,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  SystemPreference copyWithCompanion(SystemPreferencesCompanion data) {
+    return SystemPreference(
+      id: data.id.present ? data.id.value : this.id,
+      includeCoinWeightInEncumbrance:
+          data.includeCoinWeightInEncumbrance.present
+          ? data.includeCoinWeightInEncumbrance.value
+          : this.includeCoinWeightInEncumbrance,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SystemPreference(')
+          ..write('id: $id, ')
+          ..write(
+            'includeCoinWeightInEncumbrance: $includeCoinWeightInEncumbrance, ',
+          )
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, includeCoinWeightInEncumbrance, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SystemPreference &&
+          other.id == this.id &&
+          other.includeCoinWeightInEncumbrance ==
+              this.includeCoinWeightInEncumbrance &&
+          other.updatedAt == this.updatedAt);
+}
+
+class SystemPreferencesCompanion extends UpdateCompanion<SystemPreference> {
+  final Value<int> id;
+  final Value<bool> includeCoinWeightInEncumbrance;
+  final Value<DateTime> updatedAt;
+  const SystemPreferencesCompanion({
+    this.id = const Value.absent(),
+    this.includeCoinWeightInEncumbrance = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  SystemPreferencesCompanion.insert({
+    this.id = const Value.absent(),
+    this.includeCoinWeightInEncumbrance = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  static Insertable<SystemPreference> custom({
+    Expression<int>? id,
+    Expression<bool>? includeCoinWeightInEncumbrance,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (includeCoinWeightInEncumbrance != null)
+        'include_coin_weight_in_encumbrance': includeCoinWeightInEncumbrance,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  SystemPreferencesCompanion copyWith({
+    Value<int>? id,
+    Value<bool>? includeCoinWeightInEncumbrance,
+    Value<DateTime>? updatedAt,
+  }) {
+    return SystemPreferencesCompanion(
+      id: id ?? this.id,
+      includeCoinWeightInEncumbrance:
+          includeCoinWeightInEncumbrance ?? this.includeCoinWeightInEncumbrance,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (includeCoinWeightInEncumbrance.present) {
+      map['include_coin_weight_in_encumbrance'] = Variable<bool>(
+        includeCoinWeightInEncumbrance.value,
+      );
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SystemPreferencesCompanion(')
+          ..write('id: $id, ')
+          ..write(
+            'includeCoinWeightInEncumbrance: $includeCoinWeightInEncumbrance, ',
+          )
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $ClassDefinitionsTable extends ClassDefinitions
     with TableInfo<$ClassDefinitionsTable, ClassDefinition> {
   @override
@@ -13225,6 +13904,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $CharacterProficienciesTable(this);
   late final $CharacterCurrencyTable characterCurrency =
       $CharacterCurrencyTable(this);
+  late final $CharacterClassResourcesTable characterClassResources =
+      $CharacterClassResourcesTable(this);
+  late final $SystemPreferencesTable systemPreferences =
+      $SystemPreferencesTable(this);
   late final $ClassDefinitionsTable classDefinitions = $ClassDefinitionsTable(
     this,
   );
@@ -13270,6 +13953,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     characterInventory,
     characterProficiencies,
     characterCurrency,
+    characterClassResources,
+    systemPreferences,
     classDefinitions,
     characterAdvancementDefinitions,
     classStandardArrayRecommendations,
@@ -13662,6 +14347,34 @@ final class $$CharactersTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _characterCurrencyRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $CharacterClassResourcesTable,
+    List<CharacterClassResource>
+  >
+  _characterClassResourcesRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.characterClassResources,
+        aliasName: $_aliasNameGenerator(
+          db.characters.id,
+          db.characterClassResources.characterId,
+        ),
+      );
+
+  $$CharacterClassResourcesTableProcessedTableManager
+  get characterClassResourcesRefs {
+    final manager = $$CharacterClassResourcesTableTableManager(
+      $_db,
+      $_db.characterClassResources,
+    ).filter((f) => f.characterId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _characterClassResourcesRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -14069,6 +14782,32 @@ class $$CharactersTableFilterComposer
                 $removeJoinBuilderFromRootComposer,
           ),
     );
+    return f(composer);
+  }
+
+  Expression<bool> characterClassResourcesRefs(
+    Expression<bool> Function($$CharacterClassResourcesTableFilterComposer f) f,
+  ) {
+    final $$CharacterClassResourcesTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.characterClassResources,
+          getReferencedColumn: (t) => t.characterId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$CharacterClassResourcesTableFilterComposer(
+                $db: $db,
+                $table: $db.characterClassResources,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
@@ -14526,6 +15265,33 @@ class $$CharactersTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> characterClassResourcesRefs<T extends Object>(
+    Expression<T> Function($$CharacterClassResourcesTableAnnotationComposer a)
+    f,
+  ) {
+    final $$CharacterClassResourcesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.characterClassResources,
+          getReferencedColumn: (t) => t.characterId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$CharacterClassResourcesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.characterClassResources,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$CharactersTableTableManager
@@ -14555,6 +15321,7 @@ class $$CharactersTableTableManager
             bool characterInventoryRefs,
             bool characterProficienciesRefs,
             bool characterCurrencyRefs,
+            bool characterClassResourcesRefs,
           })
         > {
   $$CharactersTableTableManager(_$AppDatabase db, $CharactersTable table)
@@ -14643,6 +15410,7 @@ class $$CharactersTableTableManager
                 characterInventoryRefs = false,
                 characterProficienciesRefs = false,
                 characterCurrencyRefs = false,
+                characterClassResourcesRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -14666,6 +15434,7 @@ class $$CharactersTableTableManager
                     if (characterInventoryRefs) db.characterInventory,
                     if (characterProficienciesRefs) db.characterProficiencies,
                     if (characterCurrencyRefs) db.characterCurrency,
+                    if (characterClassResourcesRefs) db.characterClassResources,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -14943,6 +15712,27 @@ class $$CharactersTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (characterClassResourcesRefs)
+                        await $_getPrefetchedData<
+                          Character,
+                          $CharactersTable,
+                          CharacterClassResource
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CharactersTableReferences
+                              ._characterClassResourcesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CharactersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).characterClassResourcesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.characterId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -14977,6 +15767,7 @@ typedef $$CharactersTableProcessedTableManager =
         bool characterInventoryRefs,
         bool characterProficienciesRefs,
         bool characterCurrencyRefs,
+        bool characterClassResourcesRefs,
       })
     >;
 typedef $$CharacterAbilityScoresTableCreateCompanionBuilder =
@@ -21345,6 +22136,533 @@ typedef $$CharacterCurrencyTableProcessedTableManager =
       CharacterCurrencyData,
       PrefetchHooks Function({bool characterId})
     >;
+typedef $$CharacterClassResourcesTableCreateCompanionBuilder =
+    CharacterClassResourcesCompanion Function({
+      required String characterId,
+      required String resourceKey,
+      Value<int> currentUses,
+      Value<String> lastChangedSource,
+      Value<DateTime> lastChangedAt,
+      Value<int> rowid,
+    });
+typedef $$CharacterClassResourcesTableUpdateCompanionBuilder =
+    CharacterClassResourcesCompanion Function({
+      Value<String> characterId,
+      Value<String> resourceKey,
+      Value<int> currentUses,
+      Value<String> lastChangedSource,
+      Value<DateTime> lastChangedAt,
+      Value<int> rowid,
+    });
+
+final class $$CharacterClassResourcesTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $CharacterClassResourcesTable,
+          CharacterClassResource
+        > {
+  $$CharacterClassResourcesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CharactersTable _characterIdTable(_$AppDatabase db) =>
+      db.characters.createAlias(
+        $_aliasNameGenerator(
+          db.characterClassResources.characterId,
+          db.characters.id,
+        ),
+      );
+
+  $$CharactersTableProcessedTableManager get characterId {
+    final $_column = $_itemColumn<String>('character_id')!;
+
+    final manager = $$CharactersTableTableManager(
+      $_db,
+      $_db.characters,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_characterIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CharacterClassResourcesTableFilterComposer
+    extends Composer<_$AppDatabase, $CharacterClassResourcesTable> {
+  $$CharacterClassResourcesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get resourceKey => $composableBuilder(
+    column: $table.resourceKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get currentUses => $composableBuilder(
+    column: $table.currentUses,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastChangedSource => $composableBuilder(
+    column: $table.lastChangedSource,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastChangedAt => $composableBuilder(
+    column: $table.lastChangedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CharactersTableFilterComposer get characterId {
+    final $$CharactersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableFilterComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterClassResourcesTableOrderingComposer
+    extends Composer<_$AppDatabase, $CharacterClassResourcesTable> {
+  $$CharacterClassResourcesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get resourceKey => $composableBuilder(
+    column: $table.resourceKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get currentUses => $composableBuilder(
+    column: $table.currentUses,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastChangedSource => $composableBuilder(
+    column: $table.lastChangedSource,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastChangedAt => $composableBuilder(
+    column: $table.lastChangedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CharactersTableOrderingComposer get characterId {
+    final $$CharactersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableOrderingComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterClassResourcesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CharacterClassResourcesTable> {
+  $$CharacterClassResourcesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get resourceKey => $composableBuilder(
+    column: $table.resourceKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get currentUses => $composableBuilder(
+    column: $table.currentUses,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastChangedSource => $composableBuilder(
+    column: $table.lastChangedSource,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastChangedAt => $composableBuilder(
+    column: $table.lastChangedAt,
+    builder: (column) => column,
+  );
+
+  $$CharactersTableAnnotationComposer get characterId {
+    final $$CharactersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterClassResourcesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CharacterClassResourcesTable,
+          CharacterClassResource,
+          $$CharacterClassResourcesTableFilterComposer,
+          $$CharacterClassResourcesTableOrderingComposer,
+          $$CharacterClassResourcesTableAnnotationComposer,
+          $$CharacterClassResourcesTableCreateCompanionBuilder,
+          $$CharacterClassResourcesTableUpdateCompanionBuilder,
+          (CharacterClassResource, $$CharacterClassResourcesTableReferences),
+          CharacterClassResource,
+          PrefetchHooks Function({bool characterId})
+        > {
+  $$CharacterClassResourcesTableTableManager(
+    _$AppDatabase db,
+    $CharacterClassResourcesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CharacterClassResourcesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$CharacterClassResourcesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$CharacterClassResourcesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> characterId = const Value.absent(),
+                Value<String> resourceKey = const Value.absent(),
+                Value<int> currentUses = const Value.absent(),
+                Value<String> lastChangedSource = const Value.absent(),
+                Value<DateTime> lastChangedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterClassResourcesCompanion(
+                characterId: characterId,
+                resourceKey: resourceKey,
+                currentUses: currentUses,
+                lastChangedSource: lastChangedSource,
+                lastChangedAt: lastChangedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String characterId,
+                required String resourceKey,
+                Value<int> currentUses = const Value.absent(),
+                Value<String> lastChangedSource = const Value.absent(),
+                Value<DateTime> lastChangedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterClassResourcesCompanion.insert(
+                characterId: characterId,
+                resourceKey: resourceKey,
+                currentUses: currentUses,
+                lastChangedSource: lastChangedSource,
+                lastChangedAt: lastChangedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CharacterClassResourcesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({characterId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (characterId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.characterId,
+                                referencedTable:
+                                    $$CharacterClassResourcesTableReferences
+                                        ._characterIdTable(db),
+                                referencedColumn:
+                                    $$CharacterClassResourcesTableReferences
+                                        ._characterIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CharacterClassResourcesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CharacterClassResourcesTable,
+      CharacterClassResource,
+      $$CharacterClassResourcesTableFilterComposer,
+      $$CharacterClassResourcesTableOrderingComposer,
+      $$CharacterClassResourcesTableAnnotationComposer,
+      $$CharacterClassResourcesTableCreateCompanionBuilder,
+      $$CharacterClassResourcesTableUpdateCompanionBuilder,
+      (CharacterClassResource, $$CharacterClassResourcesTableReferences),
+      CharacterClassResource,
+      PrefetchHooks Function({bool characterId})
+    >;
+typedef $$SystemPreferencesTableCreateCompanionBuilder =
+    SystemPreferencesCompanion Function({
+      Value<int> id,
+      Value<bool> includeCoinWeightInEncumbrance,
+      Value<DateTime> updatedAt,
+    });
+typedef $$SystemPreferencesTableUpdateCompanionBuilder =
+    SystemPreferencesCompanion Function({
+      Value<int> id,
+      Value<bool> includeCoinWeightInEncumbrance,
+      Value<DateTime> updatedAt,
+    });
+
+class $$SystemPreferencesTableFilterComposer
+    extends Composer<_$AppDatabase, $SystemPreferencesTable> {
+  $$SystemPreferencesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get includeCoinWeightInEncumbrance => $composableBuilder(
+    column: $table.includeCoinWeightInEncumbrance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SystemPreferencesTableOrderingComposer
+    extends Composer<_$AppDatabase, $SystemPreferencesTable> {
+  $$SystemPreferencesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get includeCoinWeightInEncumbrance =>
+      $composableBuilder(
+        column: $table.includeCoinWeightInEncumbrance,
+        builder: (column) => ColumnOrderings(column),
+      );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SystemPreferencesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SystemPreferencesTable> {
+  $$SystemPreferencesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<bool> get includeCoinWeightInEncumbrance =>
+      $composableBuilder(
+        column: $table.includeCoinWeightInEncumbrance,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$SystemPreferencesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SystemPreferencesTable,
+          SystemPreference,
+          $$SystemPreferencesTableFilterComposer,
+          $$SystemPreferencesTableOrderingComposer,
+          $$SystemPreferencesTableAnnotationComposer,
+          $$SystemPreferencesTableCreateCompanionBuilder,
+          $$SystemPreferencesTableUpdateCompanionBuilder,
+          (
+            SystemPreference,
+            BaseReferences<
+              _$AppDatabase,
+              $SystemPreferencesTable,
+              SystemPreference
+            >,
+          ),
+          SystemPreference,
+          PrefetchHooks Function()
+        > {
+  $$SystemPreferencesTableTableManager(
+    _$AppDatabase db,
+    $SystemPreferencesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SystemPreferencesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SystemPreferencesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SystemPreferencesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<bool> includeCoinWeightInEncumbrance =
+                    const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => SystemPreferencesCompanion(
+                id: id,
+                includeCoinWeightInEncumbrance: includeCoinWeightInEncumbrance,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<bool> includeCoinWeightInEncumbrance =
+                    const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => SystemPreferencesCompanion.insert(
+                id: id,
+                includeCoinWeightInEncumbrance: includeCoinWeightInEncumbrance,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SystemPreferencesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SystemPreferencesTable,
+      SystemPreference,
+      $$SystemPreferencesTableFilterComposer,
+      $$SystemPreferencesTableOrderingComposer,
+      $$SystemPreferencesTableAnnotationComposer,
+      $$SystemPreferencesTableCreateCompanionBuilder,
+      $$SystemPreferencesTableUpdateCompanionBuilder,
+      (
+        SystemPreference,
+        BaseReferences<
+          _$AppDatabase,
+          $SystemPreferencesTable,
+          SystemPreference
+        >,
+      ),
+      SystemPreference,
+      PrefetchHooks Function()
+    >;
 typedef $$ClassDefinitionsTableCreateCompanionBuilder =
     ClassDefinitionsCompanion Function({
       required String id,
@@ -24103,6 +25421,13 @@ class $AppDatabaseManager {
       );
   $$CharacterCurrencyTableTableManager get characterCurrency =>
       $$CharacterCurrencyTableTableManager(_db, _db.characterCurrency);
+  $$CharacterClassResourcesTableTableManager get characterClassResources =>
+      $$CharacterClassResourcesTableTableManager(
+        _db,
+        _db.characterClassResources,
+      );
+  $$SystemPreferencesTableTableManager get systemPreferences =>
+      $$SystemPreferencesTableTableManager(_db, _db.systemPreferences);
   $$ClassDefinitionsTableTableManager get classDefinitions =>
       $$ClassDefinitionsTableTableManager(_db, _db.classDefinitions);
   $$CharacterAdvancementDefinitionsTableTableManager

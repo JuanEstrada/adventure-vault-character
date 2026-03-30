@@ -81,6 +81,16 @@ class CharacterSheetService {
             )
             .listen((_) => emitCurrent()),
         _database
+            .tableUpdates(
+              TableUpdateQuery.onTable(_database.characterSpellSlotUsages),
+            )
+            .listen((_) => emitCurrent()),
+        _database
+            .tableUpdates(
+              TableUpdateQuery.onTable(_database.characterClassResources),
+            )
+            .listen((_) => emitCurrent()),
+        _database
             .tableUpdates(TableUpdateQuery.onTable(_database.skillDefinitions))
             .listen((_) => emitCurrent()),
         _database

@@ -101,6 +101,14 @@ class CharacterReadDao {
     )..where((table) => table.characterId.equals(id))).getSingleOrNull();
   }
 
+  Future<List<CharacterClassResource>> getClassResourcesByCharacterId(
+    String id,
+  ) {
+    return (_database.select(
+      _database.characterClassResources,
+    )..where((table) => table.characterId.equals(id))).get();
+  }
+
   Future<List<CharacterInventoryData>> getInventoryByCharacterId(String id) {
     return (_database.select(
       _database.characterInventory,

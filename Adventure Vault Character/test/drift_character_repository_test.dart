@@ -5,7 +5,7 @@ import 'package:adventure_vault_character/src/features/characters/domain/equipme
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/in_memory_compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
-import 'package:drift/drift.dart' show Variable;
+import 'package:drift/drift.dart' show Value, Variable;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -592,6 +592,195 @@ void main() {
       );
     },
   );
+  test('rest actions persist recovery state and refresh sheet values', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final repository = DriftCharacterRepository(
+      database: database,
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+
+    final summary = await repository.createCharacter(
+      const CreateCharacterInput(
+        name: 'Nim',
+        raceName: 'Elf',
+        backgroundId: 'acolyte',
+        backgroundName: 'Acolyte',
+        backgroundSummary: 'Temple acolyte',
+        abilityScoreMethod: 'generatedSetAssignment',
+        abilityScoreProvenance:
+            'method=generatedSetAssignment;Strength=8;Dexterity=12;Constitution=13;Intelligence=14;Wisdom=10;Charisma=15',
+        strength: 8,
+        dexterity: 12,
+        constitution: 13,
+        intelligence: 14,
+        wisdom: 10,
+        charisma: 15,
+        className: 'Warlock',
+        level: 5,
+        experience: 6500,
+        equipmentLoadoutId: 'wizard-focus',
+        equipmentLoadoutLabel: 'Arcane focus kit',
+        startingMoneySummary: '15 gp, 4 sp',
+        selectedEquipmentItems: <String>['Quarterstaff'],
+        currentHitPoints: 12,
+        maximumHitPoints: 26,
+        temporaryHitPoints: 4,
+        spellState: CharacterSpellStateInput(
+          selectionMode: CharacterSpellSelectionMode.known,
+          selectedSpells: <CharacterSpellSelectionInput>[
+            CharacterSpellSelectionInput(
+              spellId: 'light',
+              spellName: 'Light',
+              selectionMode: CharacterSpellSelectionMode.known,
+            ),
+          ],
+          slotUsages: <CharacterSpellSlotUsageInput>[
+            CharacterSpellSlotUsageInput(spellLevel: 3, slotsExpended: 2),
+          ],
+        ),
+        finishingDetails: CharacterFinishingDetailsInput(
+          appearanceDetails: '',
+          narrativeNotes: '',
+          narrativeSelections: <NarrativeSelection>[
+            NarrativeSelection.empty(NarrativeFieldKey.alignment),
+            NarrativeSelection.empty(NarrativeFieldKey.faction),
+            NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+            NarrativeSelection.empty(NarrativeFieldKey.ideals),
+            NarrativeSelection.empty(NarrativeFieldKey.bonds),
+            NarrativeSelection.empty(NarrativeFieldKey.flaws),
+          ],
+        ),
+      ),
+    );
+
+    final beforeShortRest = await repository.getCharacterSheetById(summary.id);
+    expect(beforeShortRest, isNotNull);
+
+    await repository.applyShortRest(summary.id);
+
+    var sheet = await repository.getCharacterSheetById(summary.id);
+    expect(sheet, isNotNull);
+    expect(
+      sheet!.combat.hitPoints.current,
+      beforeShortRest!.combat.hitPoints.current,
+    );
+    expect(
+      sheet.combat.hitPoints.maximum,
+      beforeShortRest.combat.hitPoints.maximum,
+    );
+    expect(
+      sheet.combat.hitPoints.temporary,
+      beforeShortRest.combat.hitPoints.temporary,
+    );
+    expect(sheet.spellcasting, isNotNull);
+    expect(sheet.spellcasting!.slotProgression.single.displaySummary, '2 / 2');
+
+    await repository.applyLongRest(summary.id);
+
+    sheet = await repository.getCharacterSheetById(summary.id);
+    expect(sheet, isNotNull);
+    expect(sheet!.combat.hitPoints.current, sheet.combat.hitPoints.maximum);
+    expect(
+      sheet.combat.hitPoints.maximum,
+      beforeShortRest.combat.hitPoints.maximum,
+    );
+    expect(sheet.combat.hitPoints.temporary, 0);
+    expect(sheet.spellcasting, isNotNull);
+    expect(sheet.spellcasting!.slotProgression.single.displaySummary, '2 / 2');
+
+    final slotRows = await (database.select(
+      database.characterSpellSlotUsages,
+    )..where((table) => table.characterId.equals(summary.id))).get();
+    expect(slotRows, hasLength(1));
+    expect(slotRows.single.spellLevel, 3);
+    expect(slotRows.single.slotsExpended, 0);
+  });
+
+  test('short rest restores short-rest class resources', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final repository = DriftCharacterRepository(
+      database: database,
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+
+    final summary = await repository.createCharacter(
+      const CreateCharacterInput(
+        name: 'Tarin',
+        raceName: 'Elf',
+        backgroundId: 'acolyte',
+        backgroundName: 'Acolyte',
+        backgroundSummary: 'Temple acolyte',
+        abilityScoreMethod: 'generatedSetAssignment',
+        abilityScoreProvenance:
+            'method=generatedSetAssignment;Strength=8;Dexterity=15;Constitution=13;Intelligence=12;Wisdom=14;Charisma=10',
+        strength: 8,
+        dexterity: 15,
+        constitution: 13,
+        intelligence: 12,
+        wisdom: 14,
+        charisma: 10,
+        className: 'Monk',
+        level: 5,
+        experience: 6500,
+        equipmentLoadoutId: 'wizard-focus',
+        equipmentLoadoutLabel: 'Arcane focus kit',
+        startingMoneySummary: '15 gp, 4 sp',
+        selectedEquipmentItems: <String>['Quarterstaff'],
+        currentHitPoints: 24,
+        maximumHitPoints: 24,
+        temporaryHitPoints: 0,
+        spellState: CharacterSpellStateInput.empty(),
+        finishingDetails: CharacterFinishingDetailsInput(
+          appearanceDetails: '',
+          narrativeNotes: '',
+          narrativeSelections: <NarrativeSelection>[
+            NarrativeSelection.empty(NarrativeFieldKey.alignment),
+            NarrativeSelection.empty(NarrativeFieldKey.faction),
+            NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+            NarrativeSelection.empty(NarrativeFieldKey.ideals),
+            NarrativeSelection.empty(NarrativeFieldKey.bonds),
+            NarrativeSelection.empty(NarrativeFieldKey.flaws),
+          ],
+        ),
+      ),
+    );
+
+    await database
+        .into(database.characterClassResources)
+        .insert(
+          CharacterClassResourcesCompanion.insert(
+            characterId: summary.id,
+            resourceKey: 'ki-points',
+            currentUses: const Value(1),
+          ),
+        );
+
+    await repository.applyShortRest(summary.id);
+
+    final resourceRows = await (database.select(
+      database.characterClassResources,
+    )..where((table) => table.characterId.equals(summary.id))).get();
+    expect(resourceRows, hasLength(1));
+    expect(resourceRows.single.resourceKey, 'ki-points');
+    expect(resourceRows.single.currentUses, 5);
+    expect(resourceRows.single.lastChangedSource, 'short-rest');
+
+    await repository.setClassResourceUses(summary.id, 'ki-points', 2);
+
+    final updatedSheet = await repository.getCharacterSheetById(summary.id);
+    expect(updatedSheet, isNotNull);
+    expect(updatedSheet!.combat.classResources, hasLength(1));
+    expect(updatedSheet.combat.classResources.single.resourceKey, 'ki-points');
+    expect(updatedSheet.combat.classResources.single.currentUses, 2);
+    expect(
+      updatedSheet.combat.classResources.single.lastChangedSource,
+      'manual-adjustment',
+    );
+  });
 }
 
 const _testCatalog = CompendiumCatalog(

@@ -10,6 +10,7 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/presentation/character_editor_controller.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
+import 'package:adventure_vault_character/src/features/settings/data/system_settings_repository.dart';
 import 'package:flutter/foundation.dart';
 
 @immutable
@@ -23,6 +24,8 @@ class AppState {
     required this.selectedCharacterSheet,
     required this.selectedEditableCharacter,
     required this.characterEditorController,
+    required this.isSavingSettings,
+    required this.includeCoinWeightInEncumbrance,
     this.errorMessage,
   });
 
@@ -35,6 +38,8 @@ class AppState {
       selectedCharacterSheet = null,
       selectedEditableCharacter = null,
       characterEditorController = null,
+      isSavingSettings = false,
+      includeCoinWeightInEncumbrance = false,
       errorMessage = null;
 
   final AppScreen screen;
@@ -45,6 +50,8 @@ class AppState {
   final CharacterDomainModel? selectedCharacterSheet;
   final EditableCharacter? selectedEditableCharacter;
   final CharacterEditorController? characterEditorController;
+  final bool isSavingSettings;
+  final bool includeCoinWeightInEncumbrance;
   final String? errorMessage;
 
   AppState copyWith({
@@ -56,6 +63,8 @@ class AppState {
     CharacterDomainModel? selectedCharacterSheet,
     EditableCharacter? selectedEditableCharacter,
     CharacterEditorController? characterEditorController,
+    bool? isSavingSettings,
+    bool? includeCoinWeightInEncumbrance,
     String? errorMessage,
     bool clearSelectedCharacter = false,
     bool clearSelectedEditableCharacter = false,
@@ -77,6 +86,9 @@ class AppState {
       characterEditorController: clearCharacterEditorController
           ? null
           : characterEditorController ?? this.characterEditorController,
+      isSavingSettings: isSavingSettings ?? this.isSavingSettings,
+      includeCoinWeightInEncumbrance:
+          includeCoinWeightInEncumbrance ?? this.includeCoinWeightInEncumbrance,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     );
   }
@@ -86,14 +98,17 @@ class AppController extends ChangeNotifier {
   AppController({
     required CharacterRepository characterRepository,
     required CompendiumRepository compendiumRepository,
+    required SystemSettingsRepository systemSettingsRepository,
     CharacterDraftValidator characterDraftValidator =
         const CharacterDraftValidator(),
   }) : _characterRepository = characterRepository,
        _compendiumRepository = compendiumRepository,
+       _systemSettingsRepository = systemSettingsRepository,
        _characterDraftValidator = characterDraftValidator;
 
   final CharacterRepository _characterRepository;
   final CompendiumRepository _compendiumRepository;
+  final SystemSettingsRepository _systemSettingsRepository;
   final CharacterDraftValidator _characterDraftValidator;
   StreamSubscription<List<CharacterSummary>>? _characterSummariesSubscription;
   StreamSubscription<CharacterDomainModel?>? _selectedCharacterSubscription;
@@ -108,6 +123,8 @@ class AppController extends ChangeNotifier {
 
     try {
       final compendiumCatalog = await _compendiumRepository.loadCatalog();
+      final includeCoinWeightInEncumbrance = await _systemSettingsRepository
+          .getIncludeCoinWeightInEncumbrance();
       final summaries = await _characterRepository
           .watchCharacterSummaries()
           .first;
@@ -117,6 +134,7 @@ class AppController extends ChangeNotifier {
         isInitializing: false,
         characterSummaries: summaries,
         compendiumCatalog: compendiumCatalog,
+        includeCoinWeightInEncumbrance: includeCoinWeightInEncumbrance,
         clearError: true,
       );
     } catch (_) {
@@ -138,6 +156,18 @@ class AppController extends ChangeNotifier {
     _disposeCharacterEditorController();
     _state = _state.copyWith(
       screen: AppScreen.compendium,
+      clearSelectedCharacter: true,
+      clearSelectedEditableCharacter: true,
+      clearCharacterEditorController: true,
+      clearError: true,
+    );
+    notifyListeners();
+  }
+
+  void openSettings() {
+    _disposeCharacterEditorController();
+    _state = _state.copyWith(
+      screen: AppScreen.settings,
       clearSelectedCharacter: true,
       clearSelectedEditableCharacter: true,
       clearCharacterEditorController: true,
@@ -395,6 +425,112 @@ class AppController extends ChangeNotifier {
       _state = _state.copyWith(
         isSavingCharacter: false,
         errorMessage: 'The character could not be updated locally.',
+      );
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> applyShortRestToSelectedCharacter() async {
+    final selected = _state.selectedCharacterSheet;
+    if (selected == null) {
+      _state = _state.copyWith(
+        errorMessage: 'No character is currently selected.',
+      );
+      notifyListeners();
+      return;
+    }
+
+    _state = _state.copyWith(isSavingCharacter: true, clearError: true);
+    notifyListeners();
+
+    try {
+      await _characterRepository.applyShortRest(selected.id);
+      _state = _state.copyWith(isSavingCharacter: false, clearError: true);
+    } catch (_) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: 'Failed to apply short rest recovery.',
+      );
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> applyLongRestToSelectedCharacter() async {
+    final selected = _state.selectedCharacterSheet;
+    if (selected == null) {
+      _state = _state.copyWith(
+        errorMessage: 'No character is currently selected.',
+      );
+      notifyListeners();
+      return;
+    }
+
+    _state = _state.copyWith(isSavingCharacter: true, clearError: true);
+    notifyListeners();
+
+    try {
+      await _characterRepository.applyLongRest(selected.id);
+      _state = _state.copyWith(isSavingCharacter: false, clearError: true);
+    } catch (_) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: 'Failed to apply long rest recovery.',
+      );
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> setSelectedCharacterClassResourceUses(
+    String resourceKey,
+    int currentUses,
+  ) async {
+    final selected = _state.selectedCharacterSheet;
+    if (selected == null) {
+      _state = _state.copyWith(
+        errorMessage: 'No character is currently selected.',
+      );
+      notifyListeners();
+      return;
+    }
+
+    _state = _state.copyWith(isSavingCharacter: true, clearError: true);
+    notifyListeners();
+
+    try {
+      await _characterRepository.setClassResourceUses(
+        selected.id,
+        resourceKey,
+        currentUses,
+      );
+      _state = _state.copyWith(isSavingCharacter: false, clearError: true);
+    } catch (_) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: 'Failed to update class resource usage.',
+      );
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> setIncludeCoinWeightInEncumbrance(bool value) async {
+    _state = _state.copyWith(isSavingSettings: true, clearError: true);
+    notifyListeners();
+
+    try {
+      await _systemSettingsRepository.setIncludeCoinWeightInEncumbrance(value);
+      _state = _state.copyWith(
+        isSavingSettings: false,
+        includeCoinWeightInEncumbrance: value,
+        clearError: true,
+      );
+    } catch (_) {
+      _state = _state.copyWith(
+        isSavingSettings: false,
+        errorMessage: 'Failed to update system settings.',
       );
     }
 
