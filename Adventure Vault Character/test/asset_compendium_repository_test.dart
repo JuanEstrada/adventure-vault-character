@@ -439,6 +439,104 @@ void main() {
   );
 
   test(
+    'mixed legacy and imported pack state keeps precedence deterministic across sections',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final bundle = _FakeAssetBundle({
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_backgrounds_5.5e.xml':
+            _backgroundsFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_races_5.5e.xml':
+            _racesFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_classes_5.5e.xml':
+            _classesFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_spells_5.5e.xml':
+            _spellsFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_feats_5.5e.xml':
+            _featsFixture,
+        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_bestiary_5.5e.xml':
+            _monstersFixture,
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/01_Core/01_Players_Handbook/backgrounds-phb.xml':
+            _phbNarrativeFixture,
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Sword_Coast_Adventurers_Guide/backgrounds-scag.xml':
+            _scagNarrativeFixture,
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Planescape_Adventures_in_the_Multiverse/backgrounds-pam.xml':
+            _pamNarrativeFixture,
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Guildmasters_Guide_to_Ravnica/backgrounds-ggr.xml':
+            _ggrNarrativeFixture,
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml':
+            _erlwNarrativeFixture,
+        'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{}),
+      });
+      final repository = AssetCompendiumRepository(
+        database: database,
+        bundle: bundle,
+      );
+
+      final importedCatalog = await repository.importXmlPack(
+        _importCollisionFixture,
+      );
+
+      expect(
+        importedCatalog.backgrounds.map((background) => background.name),
+        contains('Imported Sailor'),
+      );
+      expect(
+        importedCatalog.spells.map((spell) => spell.name),
+        contains('Imported Spark'),
+      );
+      expect(
+        importedCatalog.feats.map((feat) => feat.name),
+        contains('Imported Veteran'),
+      );
+      expect(
+        importedCatalog.sourcePolicyForSection('backgrounds')?.notes,
+        contains('Conflicts skipped by base precedence: 1.'),
+      );
+      expect(
+        importedCatalog.sourcePolicyForSection('spells')?.notes,
+        contains('Conflicts skipped by base precedence: 1.'),
+      );
+      expect(
+        importedCatalog.sourcePolicyForSection('feats')?.notes,
+        contains('Conflicts skipped by base precedence: 1.'),
+      );
+      expect(
+        importedCatalog.sourcePolicyForSection('narrative_options')?.notes,
+        contains('Accepted after precedence: 2.'),
+      );
+
+      final legacyInactiveCatalog = await repository.setPackActive(
+        'legacy-narrative-supplements',
+        false,
+      );
+
+      expect(legacyInactiveCatalog.narrativeGroupsForField('faction'), isEmpty);
+      expect(
+        legacyInactiveCatalog
+            .narrativeGroupsForBackground('imported_sailor', 'ideals')
+            .single
+            .options
+            .map((option) => option.text),
+        contains('Duty. The crew always comes first.'),
+      );
+      expect(
+        legacyInactiveCatalog
+            .sourcePolicyForSection('narrative_options')
+            ?.supplementalSources,
+        isEmpty,
+      );
+      expect(
+        legacyInactiveCatalog
+            .sourcePolicyForSection('narrative_options')
+            ?.notes,
+        contains('Legacy narrative pack is currently inactive.'),
+      );
+    },
+  );
+
+  test(
     'falls back to bundled json catalog when core XML assets fail',
     () async {
       final repository = AssetCompendiumRepository(
@@ -868,5 +966,67 @@ const _importFixture = '''
     <trait><name>Alert</name></trait>
     <action><name>Arc Slam</name></action>
   </monster>
+</compendium>
+''';
+
+const _importCollisionFixture = '''
+<compendium version="5" auto_indent="NO">
+  <background>
+    <name>Acolyte</name>
+    <source>Imported Collision Source</source>
+    <trait>
+      <name>Description</name>
+      <text>Imported duplicate background to exercise precedence.</text>
+    </trait>
+    <trait>
+      <name>Suggested Characteristics</name>
+      <text>d6 | Ideal
+1 | Tradition. Preserve old rites.</text>
+    </trait>
+  </background>
+  <background>
+    <name>Imported Sailor</name>
+    <source>Imported Collision Source</source>
+    <trait>
+      <name>Description</name>
+      <text>Imported unique background.</text>
+    </trait>
+    <trait>
+      <name>Suggested Characteristics</name>
+      <text>d6 | Ideal
+1 | Duty. The crew always comes first.</text>
+    </trait>
+  </background>
+  <spell>
+    <name>Magic Missile</name>
+    <level>1</level>
+    <school>EV</school>
+    <time>Action</time>
+    <range>120 feet</range>
+    <components>V, S</components>
+    <duration>Instantaneous</duration>
+    <classes>Wizard [5.5e]</classes>
+    <text>Duplicate spell to trigger precedence conflict.</text>
+  </spell>
+  <spell>
+    <name>Imported Spark</name>
+    <level>0</level>
+    <school>EV</school>
+    <time>Action</time>
+    <range>Touch</range>
+    <components>V, S</components>
+    <duration>Instantaneous</duration>
+    <classes>Wizard [5.5e]</classes>
+    <text>Unique imported spell.</text>
+  </spell>
+  <feat>
+    <name>Ability Score Improvement</name>
+    <prerequisite>Level 4+</prerequisite>
+    <text>Duplicate feat to trigger precedence conflict.</text>
+  </feat>
+  <feat>
+    <name>Imported Veteran</name>
+    <text>Unique imported feat.</text>
+  </feat>
 </compendium>
 ''';
