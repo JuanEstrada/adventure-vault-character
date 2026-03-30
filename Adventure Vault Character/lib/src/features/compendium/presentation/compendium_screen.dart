@@ -148,15 +148,9 @@ class _ManagementCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final policy = catalog.sourcePolicy;
-    final configurablePacks = catalog.packStates
-        .where((packState) => !packState.isFixed)
-        .toList(growable: false);
-    final activeConfigurablePackCount = configurablePacks
-        .where((packState) => packState.isActive)
-        .length;
-    final optionalPacksStatus = configurablePacks.isEmpty
+    final optionalPacksStatus = !catalog.hasOptionalPacks
         ? 'No configurable packs'
-        : '$activeConfigurablePackCount active';
+        : '${catalog.activeOptionalPackCount} active';
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -184,7 +178,7 @@ class _ManagementCard extends StatelessWidget {
           _StatusRow(
             label: 'Optional packs',
             value: optionalPacksStatus,
-            description: configurablePacks.isEmpty
+            description: !catalog.hasOptionalPacks
                 ? 'No optional persisted packs are available for this catalog yet.'
                 : 'Local activation is persisted and immediately affects active catalog sections.',
           ),

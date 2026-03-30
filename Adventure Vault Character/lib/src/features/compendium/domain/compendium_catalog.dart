@@ -157,11 +157,57 @@ class CompendiumCatalog {
     return packState?.isActive ?? defaultValue;
   }
 
-  CompendiumCatalog applyPackStateEffects() {
-    final inactivePackIds = packStates
+  List<CompendiumPackStateModel> get optionalPackStates {
+    return List<CompendiumPackStateModel>.unmodifiable(
+      packStates.where((packState) => !packState.isFixed),
+    );
+  }
+
+  bool get hasOptionalPacks => optionalPackStates.isNotEmpty;
+
+  int get activeOptionalPackCount =>
+      optionalPackStates.where((packState) => packState.isActive).length;
+
+  Set<String> get inactiveOptionalPackIds {
+    return packStates
         .where((packState) => !packState.isFixed && !packState.isActive)
         .map((packState) => packState.id)
         .toSet();
+  }
+
+  String packDisplayLabel(String packId) {
+    final packTitle = packStateById(packId)?.title;
+    if (packTitle != null && packTitle.isNotEmpty) {
+      return packTitle;
+    }
+    return packId.replaceAll('-', ' ');
+  }
+
+  CompendiumSectionSourcePolicy sectionWithPackActivity(
+    CompendiumSectionSourcePolicy section,
+  ) {
+    final supplementalPackId = section.supplementalPackId;
+    if (supplementalPackId == null ||
+        !inactiveOptionalPackIds.contains(supplementalPackId)) {
+      return section;
+    }
+    final inactiveNote =
+        '${packDisplayLabel(supplementalPackId)} is currently inactive.';
+    return CompendiumSectionSourcePolicy(
+      sectionKey: section.sectionKey,
+      sectionLabel: section.sectionLabel,
+      sourceType: section.sourceType,
+      primarySources: section.primarySources,
+      supplementalSources: const <String>[],
+      supplementalPackId: supplementalPackId,
+      notes: section.notes == null
+          ? inactiveNote
+          : '${section.notes} $inactiveNote',
+    );
+  }
+
+  CompendiumCatalog applyPackStateEffects() {
+    final inactivePackIds = inactiveOptionalPackIds;
     if (inactivePackIds.isEmpty) {
       return this;
     }
@@ -200,28 +246,7 @@ class CompendiumCatalog {
         .toList(growable: false);
 
     final filteredSections = sourcePolicy.sections
-        .map((section) {
-          final supplementalPackId = section.supplementalPackId;
-          if (supplementalPackId == null ||
-              !inactivePackIds.contains(supplementalPackId)) {
-            return section;
-          }
-          final packTitle =
-              packStateById(supplementalPackId)?.title ??
-              supplementalPackId.replaceAll('-', ' ');
-          final inactiveNote = '$packTitle is currently inactive.';
-          return CompendiumSectionSourcePolicy(
-            sectionKey: section.sectionKey,
-            sectionLabel: section.sectionLabel,
-            sourceType: section.sourceType,
-            primarySources: section.primarySources,
-            supplementalSources: const <String>[],
-            supplementalPackId: supplementalPackId,
-            notes: section.notes == null
-                ? inactiveNote
-                : '${section.notes} $inactiveNote',
-          );
-        })
+        .map(sectionWithPackActivity)
         .toList(growable: false);
 
     return copyWith(
