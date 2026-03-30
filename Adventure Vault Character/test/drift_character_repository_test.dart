@@ -1079,6 +1079,95 @@ void main() {
       expect(byName['Torch']?.isStackable, isTrue);
     },
   );
+
+  test(
+    'encumbrance excludes contained item weight when container not carried',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        const CreateCharacterInput(
+          name: 'Thom',
+          raceName: 'Human',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'manualPointAllocation',
+          abilityScoreProvenance: 'method=manualPointAllocation',
+          strength: 10,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 10,
+          wisdom: 14,
+          charisma: 8,
+          className: 'Wizard',
+          level: 2,
+          experience: 300,
+          equipmentLoadoutId: 'wizard-focus',
+          equipmentLoadoutLabel: 'Arcane focus kit',
+          startingMoneySummary: '0 gp',
+          selectedEquipmentItems: <String>['Backpack', 'Anvil'],
+          currentHitPoints: 12,
+          maximumHitPoints: 12,
+          temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.spellbook,
+            selectedSpells: <CharacterSpellSelectionInput>[],
+            slotUsages: <CharacterSpellSlotUsageInput>[],
+          ),
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: '',
+            narrativeNotes: '',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection.empty(NarrativeFieldKey.alignment),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
+        ),
+      );
+
+      await (database.update(database.equipmentDefinitions)
+            ..where((table) => table.id.equals('equipment-anvil')))
+          .write(const EquipmentDefinitionsCompanion(weight: Value(50)));
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final backpack = sheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Backpack',
+      );
+      final anvil = sheet.equipment.items.firstWhere(
+        (item) => item.name == 'Anvil',
+      );
+      expect(sheet.equipment.carrying.totalWeight, 55);
+
+      await repository.setInventoryItemContainer(
+        summary.id,
+        anvil.id,
+        backpack.id,
+      );
+      await repository.setInventoryItemCarried(summary.id, backpack.id, false);
+
+      sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      expect(sheet!.equipment.carrying.totalWeight, 0);
+
+      await repository.setInventoryItemCarried(summary.id, backpack.id, true);
+
+      sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      expect(sheet!.equipment.carrying.totalWeight, 55);
+    },
+  );
 }
 
 const _testCatalog = CompendiumCatalog(

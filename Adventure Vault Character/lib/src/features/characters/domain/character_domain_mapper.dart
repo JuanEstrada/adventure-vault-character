@@ -92,10 +92,16 @@ class CharacterDomainMapper {
       level: row.level,
       experience: row.experience ?? 0,
     );
+    final equipmentItemsById = <String, CharacterEquipmentItemDomainModel>{
+      for (final item in equipmentItems) item.id: item,
+    };
     final encumbranceResult = _characterEncumbranceRules.evaluate(
       strengthScore: resolvedAbilityScores.strengthScore,
       carriedItemWeight: equipmentItems
-          .where((item) => item.isCarried)
+          .where(
+            (item) =>
+                _isEffectivelyCarried(item, itemsById: equipmentItemsById),
+          )
           .map((item) => item.totalWeight)
           .fold(0, (total, weight) => total + weight),
       totalCoinCount: _totalCoinCount(record.currency),
@@ -397,6 +403,32 @@ class CharacterDomainMapper {
         item.equipmentDefinitionId ??
         item.trinketDefinitionId ??
         'Unknown item';
+  }
+
+  bool _isEffectivelyCarried(
+    CharacterEquipmentItemDomainModel item, {
+    required Map<String, CharacterEquipmentItemDomainModel> itemsById,
+  }) {
+    if (!item.isCarried) {
+      return false;
+    }
+
+    final visitedIds = <String>{item.id};
+    String? containerId = item.containerInventoryItemId;
+    while (containerId != null) {
+      final container = itemsById[containerId];
+      if (container == null) {
+        return true;
+      }
+      if (!container.isCarried) {
+        return false;
+      }
+      if (!visitedIds.add(container.id)) {
+        return false;
+      }
+      containerId = container.containerInventoryItemId;
+    }
+    return true;
   }
 
   List<CharacterClassResourceDomainModel> _mapClassResources(

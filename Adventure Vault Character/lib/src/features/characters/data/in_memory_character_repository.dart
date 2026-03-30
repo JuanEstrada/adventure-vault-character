@@ -334,10 +334,15 @@ class InMemoryCharacterRepository implements CharacterRepository {
     final inventoryItems =
         _inventoryByCharacterId[id] ??
         _inventoryFromSelectedItems(id, selectedItems);
+    final inventoryById = <String, _InMemoryInventoryItem>{
+      for (final item in inventoryItems) item.id: item,
+    };
     final encumbrance = _characterEncumbranceRules.evaluate(
       strengthScore: createdInput?.strength ?? 15,
       carriedItemWeight: inventoryItems
-          .where((item) => item.isCarried)
+          .where(
+            (item) => _isEffectivelyCarried(item, inventoryById: inventoryById),
+          )
           .map((item) => item.totalWeight)
           .fold(0, (sum, weight) => sum + weight),
       totalCoinCount: 0,
@@ -985,6 +990,32 @@ class InMemoryCharacterRepository implements CharacterRepository {
       'tinderbox': 1,
     };
     return defaultWeightBySlug[_slugify(itemName)];
+  }
+
+  bool _isEffectivelyCarried(
+    _InMemoryInventoryItem item, {
+    required Map<String, _InMemoryInventoryItem> inventoryById,
+  }) {
+    if (!item.isCarried) {
+      return false;
+    }
+
+    final visitedIds = <String>{item.id};
+    String? containerId = item.containerInventoryItemId;
+    while (containerId != null) {
+      final container = inventoryById[containerId];
+      if (container == null) {
+        return true;
+      }
+      if (!container.isCarried) {
+        return false;
+      }
+      if (!visitedIds.add(container.id)) {
+        return false;
+      }
+      containerId = container.containerInventoryItemId;
+    }
+    return true;
   }
 
   String? _containerNameFor(
