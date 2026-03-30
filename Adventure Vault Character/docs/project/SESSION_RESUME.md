@@ -462,13 +462,12 @@ Resolved MVP decision:
 The next logical session should build on the current shell instead of
 restructuring it again:
 
-1. Extend deterministic character rules beyond the first persisted spell-state
-   slice, including class-specific limits and special-case spellcasting models.
-2. Keep reducing static SRD defaults by deriving more gameplay data directly
-   from the FightClub source set through the compendium boundary.
-3. Extend the current pack-based filtering beyond narrative supplements and
-   connect it to future XML import, still without bypassing the existing
-   `CompendiumCatalog` contract.
+1. Expand inventory/equipment modeling depth beyond the current mutation and
+   encumbrance baseline, starting with containers and charge-tracked items.
+2. Improve equipment-definition quality so weight-aware encumbrance has fewer
+   fallback gaps and reflects more compendium items deterministically.
+3. Continue extending deterministic class-resource recovery coverage while
+   preserving service-first rule execution and repository-backed sheet updates.
 
 Completed since the previous handoff:
 
@@ -596,6 +595,14 @@ Next-session starting point:
   repository in `lib/src/features/characters/data/drift_character_repository.dart`.
 - Use `lib/src/features/characters/domain/character_domain_model.dart` as the
   source of truth for current character-sheet rendering behavior.
+- Use `lib/src/features/characters/domain/character_encumbrance_rules.dart` as
+  the source of truth for carried-load and tier derivation logic.
+- Use `lib/src/features/characters/application/character_inventory_service.dart`
+  and `lib/src/features/characters/data/character_repository.dart` as the
+  source of truth for inventory mutation contracts (`equipped`, `carried`,
+  `quantity`).
+- Use `lib/src/features/settings/data/system_settings_repository.dart` as the
+  source of truth for the coin-weight toggle that affects encumbrance behavior.
 - Use the new migration regression tests in
   `test/app_database_migration_test.dart` as the safety net before changing the
   schema again.
