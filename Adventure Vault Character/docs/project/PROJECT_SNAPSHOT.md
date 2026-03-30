@@ -186,6 +186,20 @@ summary.
   XML fields/traits instead of static placeholder defaults.
 - Project documentation, internal messages, runtime UI strings, and test
   assertions now use English consistently across the repository.
+- Wizard spell UX now exposes spellbook-entry count separately from prepared
+  daily count in the creation flow.
+- Rest processing now runs through explicit domain rest rules, including
+  deterministic long-rest HP restoration and temporary-HP clearing.
+- Source-policy section notes now include explicit conflict reporting when
+  imported content is skipped due to base-precedence collisions.
+- Wizard spell UX now includes explicit helper actions for prepared-list
+  management (`Prepare all valid`, `Clear prepared`).
+- Shared rest rules are now encapsulated in `CharacterRestRules` and applied by
+  create/edit spell-state handling.
+- The baseline SRD 5.5e compendium now includes optional-features spell/feat
+  ingestion, reaching strict 2024 SRD runtime parity for those sections.
+- Source-policy metadata for `spells` and `feats` now includes the optional
+  features XML source path used by the baseline loader.
 - A dedicated `CompendiumRepository` now loads active XML assets directly from
   `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`,
   with JSON fallback preserved.

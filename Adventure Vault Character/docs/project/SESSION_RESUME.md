@@ -543,6 +543,22 @@ Completed since the previous handoff:
   content instead of relying on static placeholder defaults.
 - Project docs, internal operational messages, runtime UI labels, and test
   assertions are now normalized to English across the repository.
+- Wizard creation flow now surfaces spellbook size separately from prepared
+  daily count, clarifying the spellbook-vs-prepared workflow.
+- Rest handling now uses explicit domain rules (`CharacterRestRules`) that
+  apply deterministic long-rest HP recovery plus existing slot recovery logic.
+- Imported compendium merge now appends explicit conflict notes to source
+  policy sections when imported content collides with base entries.
+- Wizard spell flow now includes explicit helper actions to fill or clear the
+  prepared subset (`Prepare all valid`, `Clear prepared`) while keeping subset
+  and limit constraints deterministic.
+- Character rest behavior now flows through `CharacterRestRules`, and edit
+  flows use the same long-rest/short-rest deterministic rule path as create.
+- The baseline compendium now ingests SRD 5.5e `default_optionalfeatures` for
+  spells and feats, completing strict 2024 SRD baseline parity in runtime
+  counts (`spells: 374`, `feats: 21`).
+- Source policy metadata for `spells` and `feats` now explicitly includes the
+  optional-features XML source path.
 
 Next-session starting point:
 
