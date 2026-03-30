@@ -562,6 +562,16 @@ Completed since the previous handoff:
   counts (`spells: 374`, `feats: 21`).
 - Source policy metadata for `spells` and `feats` now explicitly includes the
   optional-features XML source path.
+- Imported XML source-policy notes now include deterministic precedence
+  diagnostics per section (`processed`, `accepted`, and conflict totals where
+  applicable).
+- `CompendiumCatalog` now centralizes optional-pack policy helpers
+  (`optionalPackStates`, active-count helpers, and section-level supplemental
+  source filtering behavior), reducing policy interpretation duplication in UI
+  and repository-adjacent code.
+- Regression coverage now includes mixed scenarios with base SRD + optional
+  legacy narrative pack + imported XML packs, asserting deterministic
+  precedence behavior and pack-state effects across multiple sections.
 
 Next-session starting point:
 
@@ -593,14 +603,9 @@ Next-session starting point:
   serves as the cleaner section-level SRD reference tree.
 - Use `local-assets/local-rule-bases/README.md` as the source of truth for the
   current local rule-source inventory before extracting new option catalogs.
-- Use `local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/01_Core/01_Players_Handbook/backgrounds-phb.xml`
-  as the current primary narrative-option source for `personality traits`,
-  `ideals`, `bonds`, and `flaws`.
-- Use `local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Sword_Coast_Adventurers_Guide/backgrounds-scag.xml`,
-  `.../Planescape_Adventures_in_the_Multiverse/backgrounds-pam.xml`,
-  `.../Guildmasters_Guide_to_Ravnica/backgrounds-ggr.xml`, and
-  `.../Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml` as the current
-  supplemental faction-oriented narrative sources.
+- Use SRD alignment reference data as the always-on narrative core baseline,
+  and treat `local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/`
+  narrative XML files as optional legacy-pack inputs managed via pack state.
 - Treat `local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/`
   as the canonical structured source for app logic and compendium ingestion,
   and use the markdown corpora as supporting semantic references.

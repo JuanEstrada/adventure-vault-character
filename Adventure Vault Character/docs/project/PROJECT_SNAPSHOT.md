@@ -353,6 +353,13 @@ summary.
 - The compendium area now also persists local pack state through Drift, and the
   legacy narrative pack policy is explicit: SRD-aligned core remains fixed while
   legacy PHB/setting narrative catalogs are optional-pack content.
+- Imported compendium source-policy notes now include deterministic precedence
+  diagnostics per section (`processed`, `accepted`, and conflict totals when
+  collisions occur).
+- Optional-pack policy interpretation is now centralized in
+  `CompendiumCatalog`, reducing duplicated helper logic in presentation code.
+- Regression coverage now includes mixed base+legacy+imported scenarios to
+  protect precedence behavior and pack-state filtering across sections.
 
 ## Pending Work
 
@@ -366,6 +373,8 @@ summary.
   compendium areas.
 - Expand pack-state effects and precedence reporting across additional
   compendium concerns beyond the current narrative-catalog model.
+- Expand precedence diagnostics from aggregate section notes into richer
+  per-pack conflict visibility if UI/readability remains acceptable.
 - Decide whether any additional reshaping is still needed in
   `local-assets/por ordenar/srd_55e_source_from_markdown/` before treating it
   as the stable long-term section reference tree.
