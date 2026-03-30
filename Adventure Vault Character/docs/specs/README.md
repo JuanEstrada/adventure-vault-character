@@ -35,6 +35,9 @@ between high-level architecture and the roadmap.
 - [Initial Character Domain Model](initial-character-domain-model.md):
   proposed first character aggregate, ability score model, equipment model,
   and persistence boundaries for MVP implementation.
+- [Inventory Rules Phase 1](inventory-rules-phase1.md): accepted policy freeze
+  for container capacity, carried-load semantics, tracked charges, and
+  consumable/ammo mutation contracts.
 - [Initial Navigation Flow](initial-navigation-flow.md): canonical route flow
   from app launch to stable destination screens.
 - [Feature Template](feature-template.md): structure for future feature specs.

@@ -603,6 +603,10 @@ Completed since the previous handoff:
 - The sheet equipment panel now includes small UX hardening for inventory
   charges and containers (charge progress bar plus container availability/state
   hints), backed by widget regression coverage.
+- Inventory behavior now has an explicit Phase 1 policy-freeze spec in
+  `docs/specs/inventory-rules-phase1.md`, locking weight-cap-only container
+  capacity, max nesting depth, effective carried-load semantics, and mutation
+  error categories before deeper implementation tickets.
 
 Next-session starting point:
 
@@ -617,6 +621,8 @@ Next-session starting point:
   and `lib/src/features/characters/data/character_repository.dart` as the
   source of truth for inventory mutation contracts (`equipped`, `carried`,
   `quantity`, `charges`, and `container assignment`).
+- Use `docs/specs/inventory-rules-phase1.md` as the policy source of truth for
+  Phase 1 container/charge/consumable semantics before extending those rules.
 - Use `lib/src/features/settings/data/system_settings_repository.dart` as the
   source of truth for the coin-weight toggle that affects encumbrance behavior.
 - Use the new migration regression tests in

@@ -372,6 +372,10 @@ summary.
   currently carried.
 - Character-sheet equipment UX now includes charge progress and container-state
   hints, with widget coverage for persisted charge control behavior.
+- Inventory rules now have a dedicated accepted policy-freeze spec at
+  `docs/specs/inventory-rules-phase1.md`, defining weight-cap-only container
+  capacity, nesting limits, effective carried-load semantics, and deterministic
+  mutation error categories for the next implementation tickets.
 
 ## Pending Work
 
@@ -379,7 +383,8 @@ summary.
   later post-creation inventory or combat editing should interact with the
   same aggregate now that sheet-side inventory mutation controls are live.
 - Extend the current container-aware encumbrance behavior with explicit
-  capacity limits and richer nested-container policy decisions.
+  capacity-limited container evaluation and richer nested-container behavior
+  using the accepted Phase 1 inventory policy as baseline.
 - Extend the new compendium screen toward future pack-management and import
   workflows without bypassing the existing repository/domain contract.
 - Extend the current XML import flow beyond the currently supported imported
