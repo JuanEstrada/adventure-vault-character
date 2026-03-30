@@ -41,6 +41,12 @@ class CharacterRecordLoader {
     final classResources = await _readDao.getClassResourcesByCharacterId(id);
     final currency = await _readDao.getCurrencyByCharacterId(id);
     final inventory = await _readDao.getInventoryByCharacterId(id);
+    final inventoryEquipmentDefinitionIds = inventory
+        .map((item) => item.equipmentDefinitionId)
+        .whereType<String>()
+        .toSet();
+    final inventoryEquipmentDefinitions = await _readDao
+        .getEquipmentDefinitionsByIds(inventoryEquipmentDefinitionIds);
     final savingThrows = await _readDao.getSavingThrowsByCharacterId(id);
     final skills = await _readDao.getSkillsByCharacterId(id);
     final skillDefinitions = await _readDao.getSkillDefinitions();
@@ -62,6 +68,7 @@ class CharacterRecordLoader {
       classResources: classResources,
       currency: currency,
       inventory: inventory,
+      inventoryEquipmentDefinitions: inventoryEquipmentDefinitions,
       savingThrows: savingThrows,
       skills: skills,
       skillDefinitions: skillDefinitions,

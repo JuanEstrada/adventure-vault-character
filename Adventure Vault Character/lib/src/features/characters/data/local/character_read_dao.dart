@@ -115,6 +115,27 @@ class CharacterReadDao {
     )..where((table) => table.characterId.equals(id))).get();
   }
 
+  Future<CharacterInventoryData?> getInventoryItemById(String id) {
+    return (_database.select(
+      _database.characterInventory,
+    )..where((table) => table.id.equals(id))).getSingleOrNull();
+  }
+
+  Future<List<EquipmentDefinition>> getEquipmentDefinitionsByIds(
+    Iterable<String> ids,
+  ) {
+    final normalizedIds = ids.where((id) => id.isNotEmpty).toSet();
+    if (normalizedIds.isEmpty) {
+      return Future<List<EquipmentDefinition>>.value(
+        const <EquipmentDefinition>[],
+      );
+    }
+
+    return (_database.select(
+      _database.equipmentDefinitions,
+    )..where((table) => table.id.isIn(normalizedIds))).get();
+  }
+
   Future<List<CharacterSavingThrow>> getSavingThrowsByCharacterId(String id) {
     return (_database.select(
       _database.characterSavingThrows,

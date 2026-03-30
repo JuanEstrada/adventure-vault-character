@@ -471,12 +471,14 @@ class CharacterEquipmentDomainModel {
     required this.selectedEquipmentLabel,
     required this.money,
     required this.items,
+    required this.carrying,
   });
 
   final EquipmentSummaryViewData equipmentSummary;
   final String selectedEquipmentLabel;
   final CharacterMoneySummaryDomainModel money;
   final List<CharacterEquipmentItemDomainModel> items;
+  final CharacterCarryingDomainModel carrying;
 
   List<String> get visibleItems =>
       items.map((item) => item.displayLabel).toList(growable: false);
@@ -496,18 +498,58 @@ class CharacterMoneySummaryDomainModel {
 @immutable
 class CharacterEquipmentItemDomainModel {
   const CharacterEquipmentItemDomainModel({
+    required this.id,
     required this.name,
     required this.quantity,
     required this.isEquipped,
+    required this.isCarried,
+    required this.isFavorite,
+    required this.weightPerUnit,
   });
 
+  final String id;
   final String name;
   final int quantity;
   final bool isEquipped;
+  final bool isCarried;
+  final bool isFavorite;
+  final int? weightPerUnit;
+
+  int get totalWeight => (weightPerUnit ?? 0) * quantity;
 
   String get displayLabel {
     final quantityLabel = quantity > 1 ? ' x$quantity' : '';
     final equippedLabel = isEquipped ? ' (equipped)' : '';
-    return '$name$quantityLabel$equippedLabel';
+    final carriedLabel = isCarried ? '' : ' (stowed)';
+    return '$name$quantityLabel$equippedLabel$carriedLabel';
   }
+}
+
+@immutable
+class CharacterCarryingDomainModel {
+  const CharacterCarryingDomainModel({
+    required this.carriedWeight,
+    required this.coinWeight,
+    required this.totalWeight,
+    required this.capacity,
+    required this.encumberedThreshold,
+    required this.heavilyEncumberedThreshold,
+    required this.includeCoinWeight,
+    required this.tier,
+    required this.tierLabel,
+    required this.tierDescription,
+  });
+
+  final int carriedWeight;
+  final int coinWeight;
+  final int totalWeight;
+  final int capacity;
+  final int encumberedThreshold;
+  final int heavilyEncumberedThreshold;
+  final bool includeCoinWeight;
+  final String tier;
+  final String tierLabel;
+  final String tierDescription;
+
+  String get coinWeightLabel => includeCoinWeight ? 'Included' : 'Excluded';
 }

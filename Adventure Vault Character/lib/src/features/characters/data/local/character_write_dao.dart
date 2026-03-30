@@ -218,6 +218,15 @@ class CharacterWriteDao {
     });
   }
 
+  Future<void> updateInventoryItem(
+    String id,
+    CharacterInventoryCompanion companion,
+  ) {
+    return (_database.update(
+      _database.characterInventory,
+    )..where((table) => table.id.equals(id))).write(companion);
+  }
+
   Future<void> deleteSkillsByCharacterId(String characterId) {
     return (_database.delete(
       _database.characterSkills,

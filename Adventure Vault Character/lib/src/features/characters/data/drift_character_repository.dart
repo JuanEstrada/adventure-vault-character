@@ -1,6 +1,7 @@
 import 'package:adventure_vault_character/src/features/characters/application/character_sheet_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/create_character_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/editable_character_service.dart';
+import 'package:adventure_vault_character/src/features/characters/application/character_inventory_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/character_recovery_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/character_record_loader.dart';
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
@@ -48,6 +49,11 @@ class DriftCharacterRepository implements CharacterRepository {
          database: database,
          readDao: CharacterReadDao(database),
          writeDao: CharacterWriteDao(database),
+       ),
+       _characterInventoryService = CharacterInventoryService(
+         database: database,
+         readDao: CharacterReadDao(database),
+         writeDao: CharacterWriteDao(database),
        );
 
   final CharacterReadDao _readDao;
@@ -57,6 +63,7 @@ class DriftCharacterRepository implements CharacterRepository {
   final CharacterSheetService _characterSheetService;
   final EditableCharacterService _editableCharacterService;
   final CharacterRecoveryService _characterRecoveryService;
+  final CharacterInventoryService _characterInventoryService;
 
   @override
   Future<List<CharacterSummary>> getCharacterSummaries() async {
@@ -139,6 +146,45 @@ class DriftCharacterRepository implements CharacterRepository {
       id,
       resourceKey,
       currentUses,
+    );
+  }
+
+  @override
+  Future<void> setInventoryItemEquipped(
+    String id,
+    String inventoryItemId,
+    bool isEquipped,
+  ) {
+    return _characterInventoryService.setInventoryItemEquipped(
+      id,
+      inventoryItemId,
+      isEquipped,
+    );
+  }
+
+  @override
+  Future<void> setInventoryItemCarried(
+    String id,
+    String inventoryItemId,
+    bool isCarried,
+  ) {
+    return _characterInventoryService.setInventoryItemCarried(
+      id,
+      inventoryItemId,
+      isCarried,
+    );
+  }
+
+  @override
+  Future<void> setInventoryItemQuantity(
+    String id,
+    String inventoryItemId,
+    int quantity,
+  ) {
+    return _characterInventoryService.setInventoryItemQuantity(
+      id,
+      inventoryItemId,
+      quantity,
     );
   }
 

@@ -516,6 +516,48 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> setSelectedCharacterInventoryItemEquipped(
+    String inventoryItemId,
+    bool isEquipped,
+  ) async {
+    await _updateSelectedCharacterInventory(
+      inventoryItemId,
+      (id) => _characterRepository.setInventoryItemEquipped(
+        id,
+        inventoryItemId,
+        isEquipped,
+      ),
+    );
+  }
+
+  Future<void> setSelectedCharacterInventoryItemCarried(
+    String inventoryItemId,
+    bool isCarried,
+  ) async {
+    await _updateSelectedCharacterInventory(
+      inventoryItemId,
+      (id) => _characterRepository.setInventoryItemCarried(
+        id,
+        inventoryItemId,
+        isCarried,
+      ),
+    );
+  }
+
+  Future<void> setSelectedCharacterInventoryItemQuantity(
+    String inventoryItemId,
+    int quantity,
+  ) async {
+    await _updateSelectedCharacterInventory(
+      inventoryItemId,
+      (id) => _characterRepository.setInventoryItemQuantity(
+        id,
+        inventoryItemId,
+        quantity,
+      ),
+    );
+  }
+
   Future<void> setIncludeCoinWeightInEncumbrance(bool value) async {
     _state = _state.copyWith(isSavingSettings: true, clearError: true);
     notifyListeners();
@@ -531,6 +573,35 @@ class AppController extends ChangeNotifier {
       _state = _state.copyWith(
         isSavingSettings: false,
         errorMessage: 'Failed to update system settings.',
+      );
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> _updateSelectedCharacterInventory(
+    String inventoryItemId,
+    Future<void> Function(String characterId) update,
+  ) async {
+    final selected = _state.selectedCharacterSheet;
+    if (selected == null) {
+      _state = _state.copyWith(
+        errorMessage: 'No character is currently selected.',
+      );
+      notifyListeners();
+      return;
+    }
+
+    _state = _state.copyWith(isSavingCharacter: true, clearError: true);
+    notifyListeners();
+
+    try {
+      await update(selected.id);
+      _state = _state.copyWith(isSavingCharacter: false, clearError: true);
+    } catch (_) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: 'Failed to update inventory item: $inventoryItemId.',
       );
     }
 

@@ -27,6 +27,24 @@ abstract interface class CharacterRepository {
     int currentUses,
   );
 
+  Future<void> setInventoryItemEquipped(
+    String id,
+    String inventoryItemId,
+    bool isEquipped,
+  );
+
+  Future<void> setInventoryItemCarried(
+    String id,
+    String inventoryItemId,
+    bool isCarried,
+  );
+
+  Future<void> setInventoryItemQuantity(
+    String id,
+    String inventoryItemId,
+    int quantity,
+  );
+
   Future<CharacterDomainModel?> getCharacterSheetById(String id);
 
   Stream<CharacterDomainModel?> watchCharacterSheetById(String id);

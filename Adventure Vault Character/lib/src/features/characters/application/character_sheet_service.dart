@@ -91,6 +91,9 @@ class CharacterSheetService {
             )
             .listen((_) => emitCurrent()),
         _database
+            .tableUpdates(TableUpdateQuery.onTable(_database.systemPreferences))
+            .listen((_) => emitCurrent()),
+        _database
             .tableUpdates(TableUpdateQuery.onTable(_database.skillDefinitions))
             .listen((_) => emitCurrent()),
         _database
@@ -116,6 +119,16 @@ class CharacterSheetService {
       return null;
     }
 
-    return _characterDomainMapper.map(record);
+    return _characterDomainMapper.map(
+      record,
+      includeCoinWeightInEncumbrance: await _includeCoinWeightInEncumbrance(),
+    );
+  }
+
+  Future<bool> _includeCoinWeightInEncumbrance() async {
+    final preference = await (_database.select(
+      _database.systemPreferences,
+    )..where((table) => table.id.equals(1))).getSingleOrNull();
+    return preference?.includeCoinWeightInEncumbrance ?? false;
   }
 }

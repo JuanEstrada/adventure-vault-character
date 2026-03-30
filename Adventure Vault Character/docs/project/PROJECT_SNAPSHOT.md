@@ -365,7 +365,7 @@ summary.
 
 - Expand the edit flow beyond the current guided MVP fields and decide how
   later post-creation inventory or combat editing should interact with the
-  same aggregate.
+  same aggregate now that sheet-side inventory mutation controls are live.
 - Wire the new system setting `Count coin weight in carried load` into the
   upcoming encumbrance implementation so the toggle affects derived load state.
 - Extend the new compendium screen toward future pack-management and import
@@ -433,9 +433,10 @@ summary.
 3. Expand deterministic resource recovery beyond the now-implemented HP +
    spell-slot + initial class-resource rest actions (broader class coverage,
    rest cadence details, and richer sheet-visible recovery summaries).
-4. Expand the inventory/equipment model beyond starter loadouts.
-5. Apply the persisted coin-weight setting to encumbrance derivation and
-   surface the active rule in sheet summaries.
+4. Expand inventory/equipment modeling depth beyond the current mutation and
+   encumbrance baseline (containers, charges, richer weight coverage).
+5. Continue improving equipment definition quality so weight-aware
+   encumbrance reflects more compendium items without fallback gaps.
 6. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
 ## Next Session Guardrail

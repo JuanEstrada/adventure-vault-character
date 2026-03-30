@@ -14,7 +14,10 @@ class EditableCharacterMapper {
   final CharacterDomainMapper _characterDomainMapper;
 
   EditableCharacter map(CharacterRecord record) {
-    final character = _characterDomainMapper.map(record);
+    final character = _characterDomainMapper.map(
+      record,
+      includeCoinWeightInEncumbrance: false,
+    );
     final row = record.row;
     final provenance = _mapAbilityScoreProvenance(record);
 

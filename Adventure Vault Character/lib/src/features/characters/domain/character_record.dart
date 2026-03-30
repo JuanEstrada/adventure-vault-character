@@ -20,6 +20,7 @@ class CharacterRecord {
     required this.classResources,
     required this.currency,
     required this.inventory,
+    required this.inventoryEquipmentDefinitions,
     required this.savingThrows,
     required this.skills,
     required this.skillDefinitions,
@@ -41,6 +42,7 @@ class CharacterRecord {
   final List<CharacterClassResource> classResources;
   final CharacterCurrencyData? currency;
   final List<CharacterInventoryData> inventory;
+  final List<EquipmentDefinition> inventoryEquipmentDefinitions;
   final List<CharacterSavingThrow> savingThrows;
   final List<CharacterSkill> skills;
   final List<SkillDefinition> skillDefinitions;

@@ -162,6 +162,12 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
               onApplyLongRest: _controller.applyLongRestToSelectedCharacter,
               onSetClassResourceUses:
                   _controller.setSelectedCharacterClassResourceUses,
+              onSetInventoryItemEquipped:
+                  _controller.setSelectedCharacterInventoryItemEquipped,
+              onSetInventoryItemCarried:
+                  _controller.setSelectedCharacterInventoryItemCarried,
+              onSetInventoryItemQuantity:
+                  _controller.setSelectedCharacterInventoryItemQuantity,
             ),
             AppScreen.editCharacter => EditCharacterScreen(
               controller: state.characterEditorController!,

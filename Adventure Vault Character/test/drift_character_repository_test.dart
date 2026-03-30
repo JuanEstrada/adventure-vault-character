@@ -781,6 +781,122 @@ void main() {
       'manual-adjustment',
     );
   });
+
+  test(
+    'encumbrance respects coin-weight setting and inventory updates',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        const CreateCharacterInput(
+          name: 'Borin',
+          raceName: 'Human',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'manualPointAllocation',
+          abilityScoreProvenance: 'method=manualPointAllocation',
+          strength: 10,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 10,
+          wisdom: 14,
+          charisma: 8,
+          className: 'Wizard',
+          level: 2,
+          experience: 300,
+          equipmentLoadoutId: 'wizard-focus',
+          equipmentLoadoutLabel: 'Arcane focus kit',
+          startingMoneySummary: '0 gp',
+          selectedEquipmentItems: <String>['Anvil'],
+          currentHitPoints: 12,
+          maximumHitPoints: 12,
+          temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.spellbook,
+            selectedSpells: <CharacterSpellSelectionInput>[],
+            slotUsages: <CharacterSpellSlotUsageInput>[],
+          ),
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: '',
+            narrativeNotes: '',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection.empty(NarrativeFieldKey.alignment),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
+        ),
+      );
+
+      await (database.update(database.equipmentDefinitions)
+            ..where((table) => table.id.equals('equipment-anvil')))
+          .write(const EquipmentDefinitionsCompanion(weight: Value(50)));
+      await (database.update(
+        database.characterCurrency,
+      )..where((table) => table.characterId.equals(summary.id))).write(
+        const CharacterCurrencyCompanion(
+          copper: Value(0),
+          silver: Value(0),
+          electrum: Value(0),
+          gold: Value(500),
+          platinum: Value(0),
+        ),
+      );
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      expect(sheet!.equipment.carrying.includeCoinWeight, isFalse);
+      expect(sheet.equipment.carrying.totalWeight, 50);
+      expect(sheet.equipment.carrying.tier, 'normal');
+
+      await database
+          .into(database.systemPreferences)
+          .insert(
+            SystemPreferencesCompanion.insert(
+              id: const Value(1),
+              includeCoinWeightInEncumbrance: const Value(true),
+            ),
+          );
+
+      sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      expect(sheet!.equipment.carrying.includeCoinWeight, isTrue);
+      expect(sheet.equipment.carrying.coinWeight, 10);
+      expect(sheet.equipment.carrying.totalWeight, 60);
+      expect(sheet.equipment.carrying.tier, 'encumbered');
+
+      final inventoryItemId = sheet.equipment.items.single.id;
+      await repository.setInventoryItemQuantity(summary.id, inventoryItemId, 2);
+
+      sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      expect(sheet!.equipment.items.single.quantity, 2);
+      expect(sheet.equipment.carrying.totalWeight, 110);
+      expect(sheet.equipment.carrying.tier, 'heavily_encumbered');
+
+      await repository.setInventoryItemCarried(
+        summary.id,
+        inventoryItemId,
+        false,
+      );
+
+      sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      expect(sheet!.equipment.items.single.isCarried, isFalse);
+      expect(sheet.equipment.carrying.totalWeight, 10);
+      expect(sheet.equipment.carrying.tier, 'normal');
+    },
+  );
 }
 
 const _testCatalog = CompendiumCatalog(

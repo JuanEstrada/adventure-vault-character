@@ -567,6 +567,12 @@ Completed since the previous handoff:
 - The app now includes a first persisted `Settings` screen toggle for
   `Count coin weight in carried load` (default `off`) so future encumbrance
   behavior can be configured at system level.
+- Character sheet equipment now supports direct inventory mutations
+  (`equipped`, `carried`, and `quantity`) through repository/application
+  services, and no longer treats inventory as a static display-only list.
+- Encumbrance is now derived deterministically from carried item weight plus
+  optional coin weight, using system settings to decide whether coin load is
+  included.
 - The baseline compendium now ingests SRD 5.5e `default_optionalfeatures` for
   spells and feats, completing strict 2024 SRD baseline parity in runtime
   counts (`spells: 374`, `feats: 21`).

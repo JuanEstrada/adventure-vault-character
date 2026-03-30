@@ -11,6 +11,9 @@ class CharacterSheetScreen extends StatelessWidget {
     required this.onApplyShortRest,
     required this.onApplyLongRest,
     required this.onSetClassResourceUses,
+    required this.onSetInventoryItemEquipped,
+    required this.onSetInventoryItemCarried,
+    required this.onSetInventoryItemQuantity,
     super.key,
   });
 
@@ -22,6 +25,12 @@ class CharacterSheetScreen extends StatelessWidget {
   final Future<void> Function() onApplyLongRest;
   final Future<void> Function(String resourceKey, int currentUses)
   onSetClassResourceUses;
+  final Future<void> Function(String inventoryItemId, bool isEquipped)
+  onSetInventoryItemEquipped;
+  final Future<void> Function(String inventoryItemId, bool isCarried)
+  onSetInventoryItemCarried;
+  final Future<void> Function(String inventoryItemId, int quantity)
+  onSetInventoryItemQuantity;
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +120,16 @@ class CharacterSheetScreen extends StatelessWidget {
                           ],
                           _FeaturesNotesPanel(character: character),
                           const SizedBox(height: 16),
-                          _EquipmentPanel(character: character),
+                          _EquipmentPanel(
+                            character: character,
+                            isUpdating: isApplyingRest,
+                            onSetInventoryItemEquipped:
+                                onSetInventoryItemEquipped,
+                            onSetInventoryItemCarried:
+                                onSetInventoryItemCarried,
+                            onSetInventoryItemQuantity:
+                                onSetInventoryItemQuantity,
+                          ),
                         ],
                       ),
                     ),
@@ -140,7 +158,13 @@ class CharacterSheetScreen extends StatelessWidget {
                   ],
                   _FeaturesNotesPanel(character: character),
                   const SizedBox(height: 16),
-                  _EquipmentPanel(character: character),
+                  _EquipmentPanel(
+                    character: character,
+                    isUpdating: isApplyingRest,
+                    onSetInventoryItemEquipped: onSetInventoryItemEquipped,
+                    onSetInventoryItemCarried: onSetInventoryItemCarried,
+                    onSetInventoryItemQuantity: onSetInventoryItemQuantity,
+                  ),
                 ],
               );
             },
@@ -707,9 +731,22 @@ class _SpellsPanel extends StatelessWidget {
 }
 
 class _EquipmentPanel extends StatelessWidget {
-  const _EquipmentPanel({required this.character});
+  const _EquipmentPanel({
+    required this.character,
+    required this.isUpdating,
+    required this.onSetInventoryItemEquipped,
+    required this.onSetInventoryItemCarried,
+    required this.onSetInventoryItemQuantity,
+  });
 
   final CharacterDomainModel character;
+  final bool isUpdating;
+  final Future<void> Function(String inventoryItemId, bool isEquipped)
+  onSetInventoryItemEquipped;
+  final Future<void> Function(String inventoryItemId, bool isCarried)
+  onSetInventoryItemCarried;
+  final Future<void> Function(String inventoryItemId, int quantity)
+  onSetInventoryItemQuantity;
 
   @override
   Widget build(BuildContext context) {
@@ -739,15 +776,122 @@ class _EquipmentPanel extends StatelessWidget {
               label: 'Starting money',
               value: character.equipment.money.currencySummary,
             ),
+            _FactRow(
+              label: 'Total load',
+              value:
+                  '${character.equipment.carrying.totalWeight} lb / ${character.equipment.carrying.capacity} lb',
+            ),
+            _FactRow(
+              label: 'Encumbrance',
+              value: character.equipment.carrying.tierLabel,
+            ),
+            _FactRow(
+              label: 'Coins',
+              value:
+                  '${character.equipment.carrying.coinWeightLabel} (${character.equipment.carrying.coinWeight} lb)',
+            ),
             const SizedBox(height: 4),
             Text(
               character.equipment.equipmentSummary.description,
               style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 12),
-            ...character.equipment.visibleItems.map((item) => Text('• $item')),
+            Text(
+              character.equipment.carrying.tierDescription,
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 10),
+            ...character.equipment.items.map(
+              (item) => _InventoryItemRow(
+                item: item,
+                isUpdating: isUpdating,
+                onSetEquipped: (value) {
+                  onSetInventoryItemEquipped(item.id, value);
+                },
+                onSetCarried: (value) {
+                  onSetInventoryItemCarried(item.id, value);
+                },
+                onIncreaseQuantity: () {
+                  onSetInventoryItemQuantity(item.id, item.quantity + 1);
+                },
+                onDecreaseQuantity: () {
+                  onSetInventoryItemQuantity(item.id, item.quantity - 1);
+                },
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _InventoryItemRow extends StatelessWidget {
+  const _InventoryItemRow({
+    required this.item,
+    required this.isUpdating,
+    required this.onSetEquipped,
+    required this.onSetCarried,
+    required this.onIncreaseQuantity,
+    required this.onDecreaseQuantity,
+  });
+
+  final CharacterEquipmentItemDomainModel item;
+  final bool isUpdating;
+  final ValueChanged<bool> onSetEquipped;
+  final ValueChanged<bool> onSetCarried;
+  final VoidCallback onIncreaseQuantity;
+  final VoidCallback onDecreaseQuantity;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            item.name,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              IconButton(
+                onPressed: isUpdating || item.quantity <= 0
+                    ? null
+                    : onDecreaseQuantity,
+                icon: const Icon(Icons.remove_circle_outline),
+              ),
+              Text('Qty ${item.quantity}'),
+              IconButton(
+                onPressed: isUpdating ? null : onIncreaseQuantity,
+                icon: const Icon(Icons.add_circle_outline),
+              ),
+              const SizedBox(width: 12),
+              Text('Weight ${item.totalWeight} lb'),
+            ],
+          ),
+          Wrap(
+            spacing: 10,
+            runSpacing: 4,
+            children: [
+              FilterChip(
+                label: const Text('Equipped'),
+                selected: item.isEquipped,
+                onSelected: isUpdating ? null : onSetEquipped,
+              ),
+              FilterChip(
+                label: const Text('Carried'),
+                selected: item.isCarried,
+                onSelected: isUpdating ? null : onSetCarried,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

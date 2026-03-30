@@ -1,4 +1,5 @@
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_encumbrance_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_class_resource_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
@@ -12,13 +13,20 @@ class CharacterDomainMapper {
     CharacterSpellRules characterSpellRules = const CharacterSpellRules(),
     CharacterClassResourceRules characterClassResourceRules =
         const CharacterClassResourceRules(),
+    CharacterEncumbranceRules characterEncumbranceRules =
+        const CharacterEncumbranceRules(),
   }) : _characterSpellRules = characterSpellRules,
-       _characterClassResourceRules = characterClassResourceRules;
+       _characterClassResourceRules = characterClassResourceRules,
+       _characterEncumbranceRules = characterEncumbranceRules;
 
   final CharacterSpellRules _characterSpellRules;
   final CharacterClassResourceRules _characterClassResourceRules;
+  final CharacterEncumbranceRules _characterEncumbranceRules;
 
-  CharacterDomainModel map(CharacterRecord record) {
+  CharacterDomainModel map(
+    CharacterRecord record, {
+    required bool includeCoinWeightInEncumbrance,
+  }) {
     final row = record.row;
     final catalog = record.catalog;
     final background = row.backgroundDefinitionRefId == null
@@ -28,17 +36,30 @@ class CharacterDomainMapper {
     final fallbackLoadout = catalog
         .equipmentLoadoutsForClass(row.className)
         .first;
+    final equipmentDefinitionsById = <String, EquipmentDefinition>{
+      for (final definition in record.inventoryEquipmentDefinitions)
+        definition.id: definition,
+    };
     final persistedEquipmentItems = record.inventory
-        .map(_mapEquipmentItem)
+        .map(
+          (item) => _mapEquipmentItem(
+            item,
+            equipmentDefinitionsById: equipmentDefinitionsById,
+          ),
+        )
         .toList(growable: false);
     final equipmentItems = persistedEquipmentItems.isNotEmpty
         ? persistedEquipmentItems
         : fallbackLoadout.selectedItems
               .map(
                 (item) => CharacterEquipmentItemDomainModel(
+                  id: 'fallback-${item.hashCode}',
                   name: item,
                   quantity: 1,
                   isEquipped: false,
+                  isCarried: true,
+                  isFavorite: false,
+                  weightPerUnit: null,
                 ),
               )
               .toList(growable: false);
@@ -57,6 +78,15 @@ class CharacterDomainMapper {
     final progression = CharacterProgressionDomainModel(
       level: row.level,
       experience: row.experience ?? 0,
+    );
+    final encumbranceResult = _characterEncumbranceRules.evaluate(
+      strengthScore: resolvedAbilityScores.strengthScore,
+      carriedItemWeight: equipmentItems
+          .where((item) => item.isCarried)
+          .map((item) => item.totalWeight)
+          .fold(0, (total, weight) => total + weight),
+      totalCoinCount: _totalCoinCount(record.currency),
+      includeCoinWeight: includeCoinWeightInEncumbrance,
     );
 
     return CharacterDomainModel(
@@ -173,6 +203,19 @@ class CharacterDomainMapper {
           startingMoneySummary: startingMoneySummary,
         ),
         items: equipmentItems,
+        carrying: CharacterCarryingDomainModel(
+          carriedWeight: encumbranceResult.carriedWeight,
+          coinWeight: encumbranceResult.coinWeight,
+          totalWeight: encumbranceResult.totalWeight,
+          capacity: encumbranceResult.capacity,
+          encumberedThreshold: encumbranceResult.encumberedThreshold,
+          heavilyEncumberedThreshold:
+              encumbranceResult.heavilyEncumberedThreshold,
+          includeCoinWeight: includeCoinWeightInEncumbrance,
+          tier: encumbranceResult.tier,
+          tierLabel: encumbranceResult.tierLabel,
+          tierDescription: encumbranceResult.tierDescription,
+        ),
       ),
     );
   }
@@ -301,16 +344,25 @@ class CharacterDomainMapper {
   }
 
   CharacterEquipmentItemDomainModel _mapEquipmentItem(
-    CharacterInventoryData item,
-  ) {
+    CharacterInventoryData item, {
+    required Map<String, EquipmentDefinition> equipmentDefinitionsById,
+  }) {
+    final equipmentDefinition = item.equipmentDefinitionId == null
+        ? null
+        : equipmentDefinitionsById[item.equipmentDefinitionId!];
     return CharacterEquipmentItemDomainModel(
+      id: item.id,
       name:
           item.displayNameSnapshot ??
+          equipmentDefinition?.name ??
           item.equipmentDefinitionId ??
           item.trinketDefinitionId ??
           'Unknown item',
-      quantity: item.quantity,
+      quantity: item.quantity.clamp(0, 9999).toInt(),
       isEquipped: item.isEquipped,
+      isCarried: item.isCarried,
+      isFavorite: item.isFavorite,
+      weightPerUnit: equipmentDefinition?.weight,
     );
   }
 
@@ -376,6 +428,18 @@ class CharacterDomainMapper {
     }
 
     return currency.summarySnapshot;
+  }
+
+  int _totalCoinCount(CharacterCurrencyData? currency) {
+    if (currency == null) {
+      return 0;
+    }
+
+    return currency.copper +
+        currency.silver +
+        currency.electrum +
+        currency.gold +
+        currency.platinum;
   }
 
   int _abilityScoreForKey({

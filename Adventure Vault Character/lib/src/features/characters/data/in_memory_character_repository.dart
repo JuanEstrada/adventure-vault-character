@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_class_resource_rules.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_encumbrance_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rest_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
@@ -19,6 +20,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
     required CompendiumRepository compendiumRepository,
   }) : _summaries = <CharacterSummary>[],
        _createdInputsById = <String, CreateCharacterInput>{},
+       _inventoryByCharacterId = <String, List<_InMemoryInventoryItem>>{},
        _classResourcesByCharacterId = <String, Map<String, int>>{},
        _classResourceMetaByCharacterId =
            <String, Map<String, _InMemoryClassResourceMeta>>{},
@@ -29,6 +31,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
     required CompendiumRepository compendiumRepository,
   }) : _summaries = List<CharacterSummary>.from(summaries),
        _createdInputsById = <String, CreateCharacterInput>{},
+       _inventoryByCharacterId = <String, List<_InMemoryInventoryItem>>{},
        _classResourcesByCharacterId = <String, Map<String, int>>{},
        _classResourceMetaByCharacterId =
            <String, Map<String, _InMemoryClassResourceMeta>>{},
@@ -36,6 +39,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
 
   final List<CharacterSummary> _summaries;
   final Map<String, CreateCharacterInput> _createdInputsById;
+  final Map<String, List<_InMemoryInventoryItem>> _inventoryByCharacterId;
   final Map<String, Map<String, int>> _classResourcesByCharacterId;
   final Map<String, Map<String, _InMemoryClassResourceMeta>>
   _classResourceMetaByCharacterId;
@@ -46,6 +50,8 @@ class InMemoryCharacterRepository implements CharacterRepository {
   final CharacterRestRules _characterRestRules = const CharacterRestRules();
   final CharacterClassResourceRules _characterClassResourceRules =
       const CharacterClassResourceRules();
+  final CharacterEncumbranceRules _characterEncumbranceRules =
+      const CharacterEncumbranceRules();
   final StreamController<void> _changes = StreamController<void>.broadcast();
 
   @override
@@ -73,6 +79,10 @@ class InMemoryCharacterRepository implements CharacterRepository {
     );
     _summaries.insert(0, summary);
     _createdInputsById[id] = input;
+    _inventoryByCharacterId[id] = _inventoryFromSelectedItems(
+      id,
+      input.selectedEquipmentItems,
+    );
     _classResourcesByCharacterId[id] = _initialClassResourcesFor(
       className: input.className,
       level: input.level,
@@ -104,6 +114,11 @@ class InMemoryCharacterRepository implements CharacterRepository {
     );
     _summaries[existingIndex] = summary;
     _createdInputsById[id] = input;
+    _inventoryByCharacterId[id] = _mergeInventoryWithSelectedItems(
+      id,
+      selectedItems: input.selectedEquipmentItems,
+      existing: _inventoryByCharacterId[id] ?? const <_InMemoryInventoryItem>[],
+    );
     _classResourcesByCharacterId[id] = _clampClassResourcesFor(
       className: input.className,
       level: input.level,
@@ -200,6 +215,33 @@ class InMemoryCharacterRepository implements CharacterRepository {
   }
 
   @override
+  Future<void> setInventoryItemEquipped(
+    String id,
+    String inventoryItemId,
+    bool isEquipped,
+  ) async {
+    await _updateInventoryItem(id, inventoryItemId, isEquipped: isEquipped);
+  }
+
+  @override
+  Future<void> setInventoryItemCarried(
+    String id,
+    String inventoryItemId,
+    bool isCarried,
+  ) async {
+    await _updateInventoryItem(id, inventoryItemId, isCarried: isCarried);
+  }
+
+  @override
+  Future<void> setInventoryItemQuantity(
+    String id,
+    String inventoryItemId,
+    int quantity,
+  ) async {
+    await _updateInventoryItem(id, inventoryItemId, quantity: quantity);
+  }
+
+  @override
   Future<CharacterDomainModel?> getCharacterSheetById(String id) async {
     final summary = await getCharacterSummaryById(id);
     if (summary == null) {
@@ -233,9 +275,18 @@ class InMemoryCharacterRepository implements CharacterRepository {
     );
     final selectedItems =
         createdInput?.selectedEquipmentItems ?? equipmentLoadout.selectedItems;
-    final inventoryItems = selectedItems
-        .map(_parseInventoryItemSpec)
-        .toList(growable: false);
+    final inventoryItems =
+        _inventoryByCharacterId[id] ??
+        _inventoryFromSelectedItems(id, selectedItems);
+    final encumbrance = _characterEncumbranceRules.evaluate(
+      strengthScore: createdInput?.strength ?? 15,
+      carriedItemWeight: inventoryItems
+          .where((item) => item.isCarried)
+          .map((item) => item.totalWeight)
+          .fold(0, (sum, weight) => sum + weight),
+      totalCoinCount: 0,
+      includeCoinWeight: false,
+    );
     final progression = CharacterProgressionDomainModel(
       level: summary.level,
       experience: createdInput?.experience ?? 0,
@@ -379,12 +430,28 @@ class InMemoryCharacterRepository implements CharacterRepository {
         items: inventoryItems
             .map(
               (item) => CharacterEquipmentItemDomainModel(
+                id: item.id,
                 name: item.name,
                 quantity: item.quantity,
-                isEquipped: _looksEquipped(item.name),
+                isEquipped: item.isEquipped,
+                isCarried: item.isCarried,
+                isFavorite: item.isFavorite,
+                weightPerUnit: item.weightPerUnit,
               ),
             )
             .toList(growable: false),
+        carrying: CharacterCarryingDomainModel(
+          carriedWeight: encumbrance.carriedWeight,
+          coinWeight: encumbrance.coinWeight,
+          totalWeight: encumbrance.totalWeight,
+          capacity: encumbrance.capacity,
+          encumberedThreshold: encumbrance.encumberedThreshold,
+          heavilyEncumberedThreshold: encumbrance.heavilyEncumberedThreshold,
+          includeCoinWeight: false,
+          tier: encumbrance.tier,
+          tierLabel: encumbrance.tierLabel,
+          tierDescription: encumbrance.tierDescription,
+        ),
       ),
       spellcasting: spellcasting,
     );
@@ -686,6 +753,98 @@ class InMemoryCharacterRepository implements CharacterRepository {
     return _InventoryItemSpec(name: name, quantity: quantity);
   }
 
+  List<_InMemoryInventoryItem> _inventoryFromSelectedItems(
+    String characterId,
+    List<String> selectedItems,
+  ) {
+    return selectedItems
+        .asMap()
+        .entries
+        .map((entry) {
+          final parsed = _parseInventoryItemSpec(entry.value);
+          final itemId = '$characterId-inventory-${entry.key + 1}';
+          return _InMemoryInventoryItem(
+            id: itemId,
+            name: parsed.name,
+            quantity: parsed.quantity.clamp(0, 9999).toInt(),
+            isEquipped: _looksEquipped(parsed.name),
+            isCarried: true,
+            isFavorite: false,
+            weightPerUnit: null,
+          );
+        })
+        .toList(growable: false);
+  }
+
+  List<_InMemoryInventoryItem> _mergeInventoryWithSelectedItems(
+    String characterId, {
+    required List<String> selectedItems,
+    required List<_InMemoryInventoryItem> existing,
+  }) {
+    final existingByName = <String, _InMemoryInventoryItem>{
+      for (final item in existing) item.name.toLowerCase(): item,
+    };
+    return selectedItems
+        .asMap()
+        .entries
+        .map((entry) {
+          final parsed = _parseInventoryItemSpec(entry.value);
+          final existingItem = existingByName[parsed.name.toLowerCase()];
+          final fallback = _InMemoryInventoryItem(
+            id: '$characterId-inventory-${entry.key + 1}',
+            name: parsed.name,
+            quantity: parsed.quantity.clamp(0, 9999).toInt(),
+            isEquipped: _looksEquipped(parsed.name),
+            isCarried: true,
+            isFavorite: false,
+            weightPerUnit: null,
+          );
+          return existingItem == null
+              ? fallback
+              : existingItem.copyWith(
+                  name: parsed.name,
+                  quantity: parsed.quantity.clamp(0, 9999).toInt(),
+                );
+        })
+        .toList(growable: false);
+  }
+
+  Future<void> _updateInventoryItem(
+    String characterId,
+    String inventoryItemId, {
+    bool? isEquipped,
+    bool? isCarried,
+    int? quantity,
+  }) async {
+    final summary = await getCharacterSummaryById(characterId);
+    if (summary == null) {
+      throw StateError('Character not found.');
+    }
+
+    final inventory = _inventoryByCharacterId[characterId];
+    if (inventory == null) {
+      throw StateError('Inventory not found.');
+    }
+
+    final index = inventory.indexWhere((item) => item.id == inventoryItemId);
+    if (index < 0) {
+      throw StateError('Inventory item not found.');
+    }
+
+    final existing = inventory[index];
+    final updated = existing.copyWith(
+      isEquipped: isEquipped,
+      isCarried: isCarried,
+      quantity: quantity?.clamp(0, 9999).toInt(),
+    );
+    _inventoryByCharacterId[characterId] = <_InMemoryInventoryItem>[
+      ...inventory.sublist(0, index),
+      updated,
+      ...inventory.sublist(index + 1),
+    ];
+    _changes.add(null);
+  }
+
   bool _looksEquipped(String itemName) {
     final lower = itemName.toLowerCase();
     return lower.contains('mail') ||
@@ -907,6 +1066,48 @@ class _InventoryItemSpec {
 
   final String name;
   final int quantity;
+}
+
+class _InMemoryInventoryItem {
+  const _InMemoryInventoryItem({
+    required this.id,
+    required this.name,
+    required this.quantity,
+    required this.isEquipped,
+    required this.isCarried,
+    required this.isFavorite,
+    required this.weightPerUnit,
+  });
+
+  final String id;
+  final String name;
+  final int quantity;
+  final bool isEquipped;
+  final bool isCarried;
+  final bool isFavorite;
+  final int? weightPerUnit;
+
+  int get totalWeight => (weightPerUnit ?? 0) * quantity;
+
+  _InMemoryInventoryItem copyWith({
+    String? id,
+    String? name,
+    int? quantity,
+    bool? isEquipped,
+    bool? isCarried,
+    bool? isFavorite,
+    int? weightPerUnit,
+  }) {
+    return _InMemoryInventoryItem(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      quantity: quantity ?? this.quantity,
+      isEquipped: isEquipped ?? this.isEquipped,
+      isCarried: isCarried ?? this.isCarried,
+      isFavorite: isFavorite ?? this.isFavorite,
+      weightPerUnit: weightPerUnit ?? this.weightPerUnit,
+    );
+  }
 }
 
 class _InMemoryClassResourceMeta {
