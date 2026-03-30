@@ -385,6 +385,9 @@ summary.
   `CharacterInventoryValidationError`, with regression tests asserting
   non-container target rejection, capacity overflow rejection, and nesting-depth
   rejection.
+- Inventory charge handling now includes explicit lifecycle operations for
+  spend/restore mutations with deterministic defaults for initial tracked state
+  and stable error categories for invalid charge transitions.
 
 ## Pending Work
 
@@ -396,7 +399,7 @@ summary.
   using the accepted Phase 1 inventory policy as baseline.
 - Wire the new read-side inventory invariants into application mutation
   services for additional inventory mutation types beyond container assignment
-  (charges, consumables, and quantity-sensitive actions).
+  (consumables and quantity-sensitive actions).
 - Extend the new compendium screen toward future pack-management and import
   workflows without bypassing the existing repository/domain contract.
 - Extend the current XML import flow beyond the currently supported imported

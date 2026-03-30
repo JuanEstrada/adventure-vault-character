@@ -619,6 +619,10 @@ Completed since the previous handoff:
 - Drift repository regression coverage now asserts those deterministic container
   validation codes for non-container targets, weight-cap overflow, and
   depth-limit violations.
+- Inventory charge handling now includes explicit lifecycle mutation operations
+  (`spendInventoryItemCharges`, `restoreInventoryItemCharges`) plus deterministic
+  tracked-state defaults and validation (`invalid_charge_state`,
+  `insufficient_charges`) in both Drift and in-memory repositories.
 
 Next-session starting point:
 
@@ -639,7 +643,7 @@ Next-session starting point:
   `lib/src/features/characters/domain/character_domain_model.dart` as the
   source of truth for Phase 1 invariant validation semantics.
 - Use `CharacterInventoryValidationError` from
-  `lib/src/features/characters/application/character_inventory_service.dart`
+  `lib/src/features/characters/domain/character_inventory_validation_error.dart`
   as the source of truth for policy-level inventory mutation error categories.
 - Use `lib/src/features/settings/data/system_settings_repository.dart` as the
   source of truth for the coin-weight toggle that affects encumbrance behavior.

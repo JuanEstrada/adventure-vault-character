@@ -1,6 +1,6 @@
-import 'package:adventure_vault_character/src/features/characters/application/character_inventory_service.dart';
 import 'package:adventure_vault_character/src/features/characters/data/drift_character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_validation_error.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
@@ -1002,6 +1002,129 @@ void main() {
     expect(restoredTorch.chargesCurrent, 5);
     expect(restoredTorch.chargesMax, 5);
   });
+
+  test(
+    'inventory charge lifecycle enforces deterministic spend and restore',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        const CreateCharacterInput(
+          name: 'Mira',
+          raceName: 'Human',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'manualPointAllocation',
+          abilityScoreProvenance: 'method=manualPointAllocation',
+          strength: 10,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 10,
+          wisdom: 14,
+          charisma: 8,
+          className: 'Wizard',
+          level: 2,
+          experience: 300,
+          equipmentLoadoutId: 'wizard-focus',
+          equipmentLoadoutLabel: 'Arcane focus kit',
+          startingMoneySummary: '0 gp',
+          selectedEquipmentItems: <String>['Torch'],
+          currentHitPoints: 12,
+          maximumHitPoints: 12,
+          temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.spellbook,
+            selectedSpells: <CharacterSpellSelectionInput>[],
+            slotUsages: <CharacterSpellSlotUsageInput>[],
+          ),
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: '',
+            narrativeNotes: '',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection.empty(NarrativeFieldKey.alignment),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
+        ),
+      );
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final torch = sheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+
+      await repository.setInventoryItemCharges(
+        summary.id,
+        torch.id,
+        chargesMax: 4,
+      );
+
+      sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final chargedTorch = sheet!.equipment.items.firstWhere(
+        (item) => item.id == torch.id,
+      );
+      expect(chargedTorch.chargesCurrent, 4);
+      expect(chargedTorch.chargesMax, 4);
+
+      await repository.spendInventoryItemCharges(
+        summary.id,
+        torch.id,
+        amount: 2,
+      );
+      await repository.restoreInventoryItemCharges(
+        summary.id,
+        torch.id,
+        amount: 1,
+      );
+
+      sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final updatedTorch = sheet!.equipment.items.firstWhere(
+        (item) => item.id == torch.id,
+      );
+      expect(updatedTorch.chargesCurrent, 3);
+      expect(updatedTorch.chargesMax, 4);
+
+      await expectLater(
+        repository.spendInventoryItemCharges(summary.id, torch.id, amount: 4),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'insufficient_charges',
+          ),
+        ),
+      );
+
+      await expectLater(
+        repository.setInventoryItemCharges(
+          summary.id,
+          torch.id,
+          chargesCurrent: 1,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_charge_state',
+          ),
+        ),
+      );
+    },
+  );
 
   test('inventory container validation returns policy error codes', () async {
     final database = AppDatabase.executor(NativeDatabase.memory());

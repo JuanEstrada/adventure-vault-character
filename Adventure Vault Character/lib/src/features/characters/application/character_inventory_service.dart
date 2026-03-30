@@ -1,6 +1,7 @@
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_read_dao.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_write_dao.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_validation_error.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:drift/drift.dart';
 
@@ -58,17 +59,104 @@ class CharacterInventoryService {
     String inventoryItemId, {
     int? chargesCurrent,
     int? chargesMax,
-  }) {
+  }) async {
+    if (chargesMax == null && chargesCurrent != null) {
+      throw const CharacterInventoryValidationError(
+        'invalid_charge_state',
+        'Cannot set current charges without maximum charges.',
+      );
+    }
+
     final normalizedMax = chargesMax?.clamp(0, 9999).toInt();
     final normalizedCurrent = normalizedMax == null
         ? null
-        : chargesCurrent?.clamp(0, normalizedMax).toInt();
-    return _updateInventoryItem(
+        : (chargesCurrent ?? normalizedMax).clamp(0, normalizedMax).toInt();
+    await _updateInventoryItem(
       id,
       inventoryItemId,
       chargesCurrent: Value(normalizedCurrent),
       chargesMax: Value(normalizedMax),
     );
+  }
+
+  Future<void> spendInventoryItemCharges(
+    String id,
+    String inventoryItemId, {
+    int amount = 1,
+  }) async {
+    if (amount <= 0) {
+      throw const CharacterInventoryValidationError(
+        'invalid_charge_state',
+        'Charge spend amount must be greater than zero.',
+      );
+    }
+
+    final item = await _requireInventoryItem(id, inventoryItemId);
+    final max = item.chargesMax;
+    final current = item.chargesCurrent;
+    if (max == null || current == null) {
+      throw const CharacterInventoryValidationError(
+        'invalid_charge_state',
+        'Item is not configured for charge tracking.',
+      );
+    }
+    if (current < amount) {
+      throw const CharacterInventoryValidationError(
+        'insufficient_charges',
+        'Item does not have enough charges for this action.',
+      );
+    }
+
+    await _updateInventoryItem(
+      id,
+      inventoryItemId,
+      chargesCurrent: Value((current - amount).clamp(0, max).toInt()),
+      chargesMax: Value(max),
+    );
+  }
+
+  Future<void> restoreInventoryItemCharges(
+    String id,
+    String inventoryItemId, {
+    int amount = 1,
+  }) async {
+    if (amount <= 0) {
+      throw const CharacterInventoryValidationError(
+        'invalid_charge_state',
+        'Charge restore amount must be greater than zero.',
+      );
+    }
+
+    final item = await _requireInventoryItem(id, inventoryItemId);
+    final max = item.chargesMax;
+    final current = item.chargesCurrent;
+    if (max == null || current == null) {
+      throw const CharacterInventoryValidationError(
+        'invalid_charge_state',
+        'Item is not configured for charge tracking.',
+      );
+    }
+
+    await _updateInventoryItem(
+      id,
+      inventoryItemId,
+      chargesCurrent: Value((current + amount).clamp(0, max).toInt()),
+      chargesMax: Value(max),
+    );
+  }
+
+  Future<CharacterInventoryData> _requireInventoryItem(
+    String characterId,
+    String inventoryItemId,
+  ) async {
+    final item = await _readDao.getInventoryItemById(inventoryItemId);
+    if (item == null || item.characterId != characterId) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Inventory item not found for this character.',
+      );
+    }
+    return item;
   }
 
   Future<void> setInventoryItemContainer(
@@ -234,14 +322,4 @@ class CharacterInventoryService {
       );
     });
   }
-}
-
-class CharacterInventoryValidationError implements Exception {
-  const CharacterInventoryValidationError(this.code, this.message);
-
-  final String code;
-  final String message;
-
-  @override
-  String toString() => 'CharacterInventoryValidationError($code): $message';
 }

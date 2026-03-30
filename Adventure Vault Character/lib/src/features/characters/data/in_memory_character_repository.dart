@@ -5,6 +5,7 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/domain/character_class_resource_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_encumbrance_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_validation_error.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rest_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_spell_rules.dart';
@@ -248,15 +249,92 @@ class InMemoryCharacterRepository implements CharacterRepository {
     int? chargesCurrent,
     int? chargesMax,
   }) async {
+    if (chargesMax == null && chargesCurrent != null) {
+      throw const CharacterInventoryValidationError(
+        'invalid_charge_state',
+        'Cannot set current charges without maximum charges.',
+      );
+    }
+
     final normalizedMax = chargesMax?.clamp(0, 9999).toInt();
     final normalizedCurrent = normalizedMax == null
         ? null
-        : chargesCurrent?.clamp(0, normalizedMax).toInt();
+        : (chargesCurrent ?? normalizedMax).clamp(0, normalizedMax).toInt();
     await _updateInventoryItem(
       id,
       inventoryItemId,
       chargesCurrent: normalizedCurrent,
       chargesMax: normalizedMax,
+      updateCharges: true,
+    );
+  }
+
+  @override
+  Future<void> spendInventoryItemCharges(
+    String id,
+    String inventoryItemId, {
+    int amount = 1,
+  }) async {
+    if (amount <= 0) {
+      throw const CharacterInventoryValidationError(
+        'invalid_charge_state',
+        'Charge spend amount must be greater than zero.',
+      );
+    }
+
+    final existing = _inventoryItemById(id, inventoryItemId);
+    final max = existing.chargesMax;
+    final current = existing.chargesCurrent;
+    if (max == null || current == null) {
+      throw const CharacterInventoryValidationError(
+        'invalid_charge_state',
+        'Item is not configured for charge tracking.',
+      );
+    }
+    if (current < amount) {
+      throw const CharacterInventoryValidationError(
+        'insufficient_charges',
+        'Item does not have enough charges for this action.',
+      );
+    }
+
+    await _updateInventoryItem(
+      id,
+      inventoryItemId,
+      chargesCurrent: (current - amount).clamp(0, max).toInt(),
+      chargesMax: max,
+      updateCharges: true,
+    );
+  }
+
+  @override
+  Future<void> restoreInventoryItemCharges(
+    String id,
+    String inventoryItemId, {
+    int amount = 1,
+  }) async {
+    if (amount <= 0) {
+      throw const CharacterInventoryValidationError(
+        'invalid_charge_state',
+        'Charge restore amount must be greater than zero.',
+      );
+    }
+
+    final existing = _inventoryItemById(id, inventoryItemId);
+    final max = existing.chargesMax;
+    final current = existing.chargesCurrent;
+    if (max == null || current == null) {
+      throw const CharacterInventoryValidationError(
+        'invalid_charge_state',
+        'Item is not configured for charge tracking.',
+      );
+    }
+
+    await _updateInventoryItem(
+      id,
+      inventoryItemId,
+      chargesCurrent: (current + amount).clamp(0, max).toInt(),
+      chargesMax: max,
       updateCharges: true,
     );
   }
@@ -902,6 +980,24 @@ class InMemoryCharacterRepository implements CharacterRepository {
                 );
         })
         .toList(growable: false);
+  }
+
+  _InMemoryInventoryItem _inventoryItemById(String characterId, String itemId) {
+    final inventory = _inventoryByCharacterId[characterId];
+    if (inventory == null) {
+      throw StateError('Inventory not found.');
+    }
+
+    for (final item in inventory) {
+      if (item.id == itemId) {
+        return item;
+      }
+    }
+
+    throw const CharacterInventoryValidationError(
+      'invalid_target',
+      'Inventory item not found for this character.',
+    );
   }
 
   Future<void> _updateInventoryItem(
