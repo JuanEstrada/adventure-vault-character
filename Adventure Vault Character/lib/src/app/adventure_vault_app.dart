@@ -168,6 +168,10 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
                   _controller.setSelectedCharacterInventoryItemCarried,
               onSetInventoryItemQuantity:
                   _controller.setSelectedCharacterInventoryItemQuantity,
+              onSetInventoryItemCharges:
+                  _controller.setSelectedCharacterInventoryItemCharges,
+              onSetInventoryItemContainer:
+                  _controller.setSelectedCharacterInventoryItemContainer,
             ),
             AppScreen.editCharacter => EditCharacterScreen(
               controller: state.characterEditorController!,

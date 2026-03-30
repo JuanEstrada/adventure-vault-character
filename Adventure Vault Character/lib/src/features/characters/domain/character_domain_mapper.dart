@@ -40,11 +40,19 @@ class CharacterDomainMapper {
       for (final definition in record.inventoryEquipmentDefinitions)
         definition.id: definition,
     };
+    final inventoryDisplayNameById = <String, String>{
+      for (final item in record.inventory)
+        item.id: _resolveInventoryItemName(
+          item,
+          equipmentDefinitionsById: equipmentDefinitionsById,
+        ),
+    };
     final persistedEquipmentItems = record.inventory
         .map(
           (item) => _mapEquipmentItem(
             item,
             equipmentDefinitionsById: equipmentDefinitionsById,
+            inventoryDisplayNameById: inventoryDisplayNameById,
           ),
         )
         .toList(growable: false);
@@ -60,6 +68,11 @@ class CharacterDomainMapper {
                   isCarried: true,
                   isFavorite: false,
                   weightPerUnit: null,
+                  isContainer: false,
+                  chargesCurrent: null,
+                  chargesMax: null,
+                  containerInventoryItemId: null,
+                  containerDisplayName: null,
                 ),
               )
               .toList(growable: false);
@@ -346,24 +359,44 @@ class CharacterDomainMapper {
   CharacterEquipmentItemDomainModel _mapEquipmentItem(
     CharacterInventoryData item, {
     required Map<String, EquipmentDefinition> equipmentDefinitionsById,
+    required Map<String, String> inventoryDisplayNameById,
   }) {
     final equipmentDefinition = item.equipmentDefinitionId == null
         ? null
         : equipmentDefinitionsById[item.equipmentDefinitionId!];
     return CharacterEquipmentItemDomainModel(
       id: item.id,
-      name:
-          item.displayNameSnapshot ??
-          equipmentDefinition?.name ??
-          item.equipmentDefinitionId ??
-          item.trinketDefinitionId ??
-          'Unknown item',
+      name: _resolveInventoryItemName(
+        item,
+        equipmentDefinitionsById: equipmentDefinitionsById,
+      ),
       quantity: item.quantity.clamp(0, 9999).toInt(),
       isEquipped: item.isEquipped,
       isCarried: item.isCarried,
       isFavorite: item.isFavorite,
       weightPerUnit: equipmentDefinition?.weight,
+      isContainer: equipmentDefinition?.isContainer ?? false,
+      chargesCurrent: item.chargesCurrent,
+      chargesMax: item.chargesMax,
+      containerInventoryItemId: item.containerInventoryItemId,
+      containerDisplayName: item.containerInventoryItemId == null
+          ? null
+          : inventoryDisplayNameById[item.containerInventoryItemId],
     );
+  }
+
+  String _resolveInventoryItemName(
+    CharacterInventoryData item, {
+    required Map<String, EquipmentDefinition> equipmentDefinitionsById,
+  }) {
+    final equipmentDefinition = item.equipmentDefinitionId == null
+        ? null
+        : equipmentDefinitionsById[item.equipmentDefinitionId!];
+    return item.displayNameSnapshot ??
+        equipmentDefinition?.name ??
+        item.equipmentDefinitionId ??
+        item.trinketDefinitionId ??
+        'Unknown item';
   }
 
   List<CharacterClassResourceDomainModel> _mapClassResources(

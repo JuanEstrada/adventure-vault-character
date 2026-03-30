@@ -897,6 +897,94 @@ void main() {
       expect(sheet.equipment.carrying.tier, 'normal');
     },
   );
+
+  test('inventory supports container assignment and charge tracking', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final repository = DriftCharacterRepository(
+      database: database,
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+
+    final summary = await repository.createCharacter(
+      const CreateCharacterInput(
+        name: 'Lia',
+        raceName: 'Human',
+        backgroundId: 'acolyte',
+        backgroundName: 'Acolyte',
+        backgroundSummary: 'Temple acolyte',
+        abilityScoreMethod: 'manualPointAllocation',
+        abilityScoreProvenance: 'method=manualPointAllocation',
+        strength: 10,
+        dexterity: 12,
+        constitution: 13,
+        intelligence: 10,
+        wisdom: 14,
+        charisma: 8,
+        className: 'Wizard',
+        level: 2,
+        experience: 300,
+        equipmentLoadoutId: 'wizard-focus',
+        equipmentLoadoutLabel: 'Arcane focus kit',
+        startingMoneySummary: '0 gp',
+        selectedEquipmentItems: <String>['Backpack', 'Torch'],
+        currentHitPoints: 12,
+        maximumHitPoints: 12,
+        temporaryHitPoints: 0,
+        spellState: CharacterSpellStateInput(
+          selectionMode: CharacterSpellSelectionMode.spellbook,
+          selectedSpells: <CharacterSpellSelectionInput>[],
+          slotUsages: <CharacterSpellSlotUsageInput>[],
+        ),
+        finishingDetails: CharacterFinishingDetailsInput(
+          appearanceDetails: '',
+          narrativeNotes: '',
+          narrativeSelections: <NarrativeSelection>[
+            NarrativeSelection.empty(NarrativeFieldKey.alignment),
+            NarrativeSelection.empty(NarrativeFieldKey.faction),
+            NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+            NarrativeSelection.empty(NarrativeFieldKey.ideals),
+            NarrativeSelection.empty(NarrativeFieldKey.bonds),
+            NarrativeSelection.empty(NarrativeFieldKey.flaws),
+          ],
+        ),
+      ),
+    );
+
+    var sheet = await repository.getCharacterSheetById(summary.id);
+    expect(sheet, isNotNull);
+    final backpack = sheet!.equipment.items.firstWhere(
+      (item) => item.name == 'Backpack',
+    );
+    final torch = sheet.equipment.items.firstWhere(
+      (item) => item.name == 'Torch',
+    );
+    expect(backpack.isContainer, isTrue);
+    expect(torch.isContainer, isFalse);
+
+    await repository.setInventoryItemCharges(
+      summary.id,
+      torch.id,
+      chargesCurrent: 3,
+      chargesMax: 5,
+    );
+    await repository.setInventoryItemContainer(
+      summary.id,
+      torch.id,
+      backpack.id,
+    );
+
+    sheet = await repository.getCharacterSheetById(summary.id);
+    expect(sheet, isNotNull);
+    final updatedTorch = sheet!.equipment.items.firstWhere(
+      (item) => item.name == 'Torch',
+    );
+    expect(updatedTorch.chargesCurrent, 3);
+    expect(updatedTorch.chargesMax, 5);
+    expect(updatedTorch.containerInventoryItemId, backpack.id);
+    expect(updatedTorch.containerDisplayName, 'Backpack');
+  });
 }
 
 const _testCatalog = CompendiumCatalog(

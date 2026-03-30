@@ -117,6 +117,11 @@ void main() {
               isCarried: true,
               isFavorite: false,
               weightPerUnit: 4,
+              isContainer: false,
+              chargesCurrent: null,
+              chargesMax: null,
+              containerInventoryItemId: null,
+              containerDisplayName: null,
             ),
             CharacterEquipmentItemDomainModel(
               id: 'item-2',
@@ -126,6 +131,11 @@ void main() {
               isCarried: true,
               isFavorite: false,
               weightPerUnit: 1,
+              isContainer: false,
+              chargesCurrent: null,
+              chargesMax: null,
+              containerInventoryItemId: null,
+              containerDisplayName: null,
             ),
           ],
           carrying: CharacterCarryingDomainModel(

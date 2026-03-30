@@ -14,6 +14,8 @@ class CharacterSheetScreen extends StatelessWidget {
     required this.onSetInventoryItemEquipped,
     required this.onSetInventoryItemCarried,
     required this.onSetInventoryItemQuantity,
+    required this.onSetInventoryItemCharges,
+    required this.onSetInventoryItemContainer,
     super.key,
   });
 
@@ -31,6 +33,17 @@ class CharacterSheetScreen extends StatelessWidget {
   onSetInventoryItemCarried;
   final Future<void> Function(String inventoryItemId, int quantity)
   onSetInventoryItemQuantity;
+  final Future<void> Function(
+    String inventoryItemId, {
+    int? chargesCurrent,
+    int? chargesMax,
+  })
+  onSetInventoryItemCharges;
+  final Future<void> Function(
+    String inventoryItemId,
+    String? containerInventoryItemId,
+  )
+  onSetInventoryItemContainer;
 
   @override
   Widget build(BuildContext context) {
@@ -129,6 +142,10 @@ class CharacterSheetScreen extends StatelessWidget {
                                 onSetInventoryItemCarried,
                             onSetInventoryItemQuantity:
                                 onSetInventoryItemQuantity,
+                            onSetInventoryItemCharges:
+                                onSetInventoryItemCharges,
+                            onSetInventoryItemContainer:
+                                onSetInventoryItemContainer,
                           ),
                         ],
                       ),
@@ -164,6 +181,8 @@ class CharacterSheetScreen extends StatelessWidget {
                     onSetInventoryItemEquipped: onSetInventoryItemEquipped,
                     onSetInventoryItemCarried: onSetInventoryItemCarried,
                     onSetInventoryItemQuantity: onSetInventoryItemQuantity,
+                    onSetInventoryItemCharges: onSetInventoryItemCharges,
+                    onSetInventoryItemContainer: onSetInventoryItemContainer,
                   ),
                 ],
               );
@@ -737,6 +756,8 @@ class _EquipmentPanel extends StatelessWidget {
     required this.onSetInventoryItemEquipped,
     required this.onSetInventoryItemCarried,
     required this.onSetInventoryItemQuantity,
+    required this.onSetInventoryItemCharges,
+    required this.onSetInventoryItemContainer,
   });
 
   final CharacterDomainModel character;
@@ -747,6 +768,17 @@ class _EquipmentPanel extends StatelessWidget {
   onSetInventoryItemCarried;
   final Future<void> Function(String inventoryItemId, int quantity)
   onSetInventoryItemQuantity;
+  final Future<void> Function(
+    String inventoryItemId, {
+    int? chargesCurrent,
+    int? chargesMax,
+  })
+  onSetInventoryItemCharges;
+  final Future<void> Function(
+    String inventoryItemId,
+    String? containerInventoryItemId,
+  )
+  onSetInventoryItemContainer;
 
   @override
   Widget build(BuildContext context) {
@@ -817,6 +849,23 @@ class _EquipmentPanel extends StatelessWidget {
                 onDecreaseQuantity: () {
                   onSetInventoryItemQuantity(item.id, item.quantity - 1);
                 },
+                onSetCharges: ({chargesCurrent, chargesMax}) {
+                  return onSetInventoryItemCharges(
+                    item.id,
+                    chargesCurrent: chargesCurrent,
+                    chargesMax: chargesMax,
+                  );
+                },
+                containers: character.equipment.items
+                    .where((candidate) => candidate.id != item.id)
+                    .where((candidate) => candidate.isContainer)
+                    .toList(growable: false),
+                onSetContainer: (containerInventoryItemId) {
+                  return onSetInventoryItemContainer(
+                    item.id,
+                    containerInventoryItemId,
+                  );
+                },
               ),
             ),
           ],
@@ -834,6 +883,9 @@ class _InventoryItemRow extends StatelessWidget {
     required this.onSetCarried,
     required this.onIncreaseQuantity,
     required this.onDecreaseQuantity,
+    required this.onSetCharges,
+    required this.containers,
+    required this.onSetContainer,
   });
 
   final CharacterEquipmentItemDomainModel item;
@@ -842,10 +894,20 @@ class _InventoryItemRow extends StatelessWidget {
   final ValueChanged<bool> onSetCarried;
   final VoidCallback onIncreaseQuantity;
   final VoidCallback onDecreaseQuantity;
+  final Future<void> Function({int? chargesCurrent, int? chargesMax})
+  onSetCharges;
+  final List<CharacterEquipmentItemDomainModel> containers;
+  final Future<void> Function(String? containerInventoryItemId) onSetContainer;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final hasSelectedContainer = containers.any(
+      (container) => container.id == item.containerInventoryItemId,
+    );
+    final selectedContainerId = hasSelectedContainer
+        ? item.containerInventoryItemId
+        : null;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -889,8 +951,89 @@ class _InventoryItemRow extends StatelessWidget {
                 selected: item.isCarried,
                 onSelected: isUpdating ? null : onSetCarried,
               ),
+              if (item.hasCharges)
+                ActionChip(
+                  label: const Text('Clear charges'),
+                  onPressed: isUpdating
+                      ? null
+                      : () {
+                          onSetCharges(chargesCurrent: null, chargesMax: null);
+                        },
+                )
+              else
+                ActionChip(
+                  label: const Text('Track charges'),
+                  onPressed: isUpdating
+                      ? null
+                      : () {
+                          onSetCharges(chargesCurrent: 1, chargesMax: 1);
+                        },
+                ),
             ],
           ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Text('Charges: ${item.chargesLabel}'),
+              if (item.hasCharges) ...[
+                IconButton(
+                  onPressed: isUpdating || item.safeChargesCurrent <= 0
+                      ? null
+                      : () {
+                          onSetCharges(
+                            chargesCurrent: item.safeChargesCurrent - 1,
+                            chargesMax: item.chargesMax,
+                          );
+                        },
+                  icon: const Icon(Icons.remove_circle_outline),
+                ),
+                IconButton(
+                  onPressed:
+                      isUpdating ||
+                          item.chargesMax == null ||
+                          item.safeChargesCurrent >= item.chargesMax!
+                      ? null
+                      : () {
+                          onSetCharges(
+                            chargesCurrent: item.safeChargesCurrent + 1,
+                            chargesMax: item.chargesMax,
+                          );
+                        },
+                  icon: const Icon(Icons.add_circle_outline),
+                ),
+              ],
+            ],
+          ),
+          if (!item.isContainer) ...[
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String?>(
+              initialValue: selectedContainerId,
+              decoration: const InputDecoration(
+                labelText: 'Container',
+                isDense: true,
+              ),
+              items: <DropdownMenuItem<String?>>[
+                const DropdownMenuItem<String?>(
+                  value: null,
+                  child: Text('None'),
+                ),
+                ...containers.map(
+                  (container) => DropdownMenuItem<String?>(
+                    value: container.id,
+                    child: Text(container.name),
+                  ),
+                ),
+              ],
+              onChanged: isUpdating
+                  ? null
+                  : (value) {
+                      onSetContainer(value);
+                    },
+            ),
+          ] else ...[
+            const SizedBox(height: 8),
+            Text(item.containerLabel),
+          ],
         ],
       ),
     );

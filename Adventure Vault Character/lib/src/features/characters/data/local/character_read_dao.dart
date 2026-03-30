@@ -136,6 +136,12 @@ class CharacterReadDao {
     )..where((table) => table.id.isIn(normalizedIds))).get();
   }
 
+  Future<EquipmentDefinition?> getEquipmentDefinitionById(String id) {
+    return (_database.select(
+      _database.equipmentDefinitions,
+    )..where((table) => table.id.equals(id))).getSingleOrNull();
+  }
+
   Future<List<CharacterSavingThrow>> getSavingThrowsByCharacterId(String id) {
     return (_database.select(
       _database.characterSavingThrows,

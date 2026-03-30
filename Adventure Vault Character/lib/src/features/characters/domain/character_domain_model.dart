@@ -505,6 +505,11 @@ class CharacterEquipmentItemDomainModel {
     required this.isCarried,
     required this.isFavorite,
     required this.weightPerUnit,
+    required this.isContainer,
+    required this.chargesCurrent,
+    required this.chargesMax,
+    required this.containerInventoryItemId,
+    required this.containerDisplayName,
   });
 
   final String id;
@@ -514,8 +519,36 @@ class CharacterEquipmentItemDomainModel {
   final bool isCarried;
   final bool isFavorite;
   final int? weightPerUnit;
+  final bool isContainer;
+  final int? chargesCurrent;
+  final int? chargesMax;
+  final String? containerInventoryItemId;
+  final String? containerDisplayName;
 
   int get totalWeight => (weightPerUnit ?? 0) * quantity;
+
+  bool get hasCharges => chargesMax != null;
+
+  int get safeChargesCurrent =>
+      (chargesCurrent ?? 0).clamp(0, chargesMax ?? 0).toInt();
+
+  String get chargesLabel {
+    final max = chargesMax;
+    if (max == null) {
+      return 'Not tracked';
+    }
+    return '$safeChargesCurrent / $max';
+  }
+
+  String get containerLabel {
+    if (isContainer) {
+      return 'Container item';
+    }
+    if (containerDisplayName == null || containerDisplayName!.isEmpty) {
+      return 'Not stored in container';
+    }
+    return 'Stored in $containerDisplayName';
+  }
 
   String get displayLabel {
     final quantityLabel = quantity > 1 ? ' x$quantity' : '';

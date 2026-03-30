@@ -558,6 +558,36 @@ class AppController extends ChangeNotifier {
     );
   }
 
+  Future<void> setSelectedCharacterInventoryItemCharges(
+    String inventoryItemId, {
+    int? chargesCurrent,
+    int? chargesMax,
+  }) async {
+    await _updateSelectedCharacterInventory(
+      inventoryItemId,
+      (id) => _characterRepository.setInventoryItemCharges(
+        id,
+        inventoryItemId,
+        chargesCurrent: chargesCurrent,
+        chargesMax: chargesMax,
+      ),
+    );
+  }
+
+  Future<void> setSelectedCharacterInventoryItemContainer(
+    String inventoryItemId,
+    String? containerInventoryItemId,
+  ) async {
+    await _updateSelectedCharacterInventory(
+      inventoryItemId,
+      (id) => _characterRepository.setInventoryItemContainer(
+        id,
+        inventoryItemId,
+        containerInventoryItemId,
+      ),
+    );
+  }
+
   Future<void> setIncludeCoinWeightInEncumbrance(bool value) async {
     _state = _state.copyWith(isSavingSettings: true, clearError: true);
     notifyListeners();

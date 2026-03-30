@@ -242,6 +242,62 @@ class InMemoryCharacterRepository implements CharacterRepository {
   }
 
   @override
+  Future<void> setInventoryItemCharges(
+    String id,
+    String inventoryItemId, {
+    int? chargesCurrent,
+    int? chargesMax,
+  }) async {
+    final normalizedMax = chargesMax?.clamp(0, 9999).toInt();
+    final normalizedCurrent = normalizedMax == null
+        ? null
+        : chargesCurrent?.clamp(0, normalizedMax).toInt();
+    await _updateInventoryItem(
+      id,
+      inventoryItemId,
+      chargesCurrent: normalizedCurrent,
+      chargesMax: normalizedMax,
+      updateCharges: true,
+    );
+  }
+
+  @override
+  Future<void> setInventoryItemContainer(
+    String id,
+    String inventoryItemId,
+    String? containerInventoryItemId,
+  ) async {
+    if (containerInventoryItemId == inventoryItemId) {
+      throw StateError('Item cannot contain itself.');
+    }
+
+    final inventory = _inventoryByCharacterId[id];
+    if (inventory == null) {
+      throw StateError('Inventory not found.');
+    }
+
+    if (containerInventoryItemId != null &&
+        containerInventoryItemId.isNotEmpty) {
+      final targetContainer = inventory.where(
+        (item) => item.id == containerInventoryItemId,
+      );
+      if (targetContainer.isEmpty || !targetContainer.first.isContainer) {
+        throw StateError('Target item is not a container.');
+      }
+    }
+
+    await _updateInventoryItem(
+      id,
+      inventoryItemId,
+      containerInventoryItemId:
+          containerInventoryItemId == null || containerInventoryItemId.isEmpty
+          ? null
+          : containerInventoryItemId,
+      updateContainer: true,
+    );
+  }
+
+  @override
   Future<CharacterDomainModel?> getCharacterSheetById(String id) async {
     final summary = await getCharacterSummaryById(id);
     if (summary == null) {
@@ -428,8 +484,12 @@ class InMemoryCharacterRepository implements CharacterRepository {
               equipmentLoadout.startingMoneySummary,
         ),
         items: inventoryItems
-            .map(
-              (item) => CharacterEquipmentItemDomainModel(
+            .map((item) {
+              final containerDisplayName = _containerNameFor(
+                item.containerInventoryItemId,
+                inventoryItems,
+              );
+              return CharacterEquipmentItemDomainModel(
                 id: item.id,
                 name: item.name,
                 quantity: item.quantity,
@@ -437,8 +497,13 @@ class InMemoryCharacterRepository implements CharacterRepository {
                 isCarried: item.isCarried,
                 isFavorite: item.isFavorite,
                 weightPerUnit: item.weightPerUnit,
-              ),
-            )
+                isContainer: item.isContainer,
+                chargesCurrent: item.chargesCurrent,
+                chargesMax: item.chargesMax,
+                containerInventoryItemId: item.containerInventoryItemId,
+                containerDisplayName: containerDisplayName,
+              );
+            })
             .toList(growable: false),
         carrying: CharacterCarryingDomainModel(
           carriedWeight: encumbrance.carriedWeight,
@@ -771,6 +836,10 @@ class InMemoryCharacterRepository implements CharacterRepository {
             isCarried: true,
             isFavorite: false,
             weightPerUnit: null,
+            isContainer: _looksLikeContainer(parsed.name),
+            chargesCurrent: null,
+            chargesMax: null,
+            containerInventoryItemId: null,
           );
         })
         .toList(growable: false);
@@ -798,6 +867,10 @@ class InMemoryCharacterRepository implements CharacterRepository {
             isCarried: true,
             isFavorite: false,
             weightPerUnit: null,
+            isContainer: _looksLikeContainer(parsed.name),
+            chargesCurrent: null,
+            chargesMax: null,
+            containerInventoryItemId: null,
           );
           return existingItem == null
               ? fallback
@@ -815,6 +888,11 @@ class InMemoryCharacterRepository implements CharacterRepository {
     bool? isEquipped,
     bool? isCarried,
     int? quantity,
+    int? chargesCurrent,
+    int? chargesMax,
+    String? containerInventoryItemId,
+    bool updateCharges = false,
+    bool updateContainer = false,
   }) async {
     final summary = await getCharacterSummaryById(characterId);
     if (summary == null) {
@@ -836,6 +914,11 @@ class InMemoryCharacterRepository implements CharacterRepository {
       isEquipped: isEquipped,
       isCarried: isCarried,
       quantity: quantity?.clamp(0, 9999).toInt(),
+      chargesCurrent: updateCharges ? chargesCurrent : existing.chargesCurrent,
+      chargesMax: updateCharges ? chargesMax : existing.chargesMax,
+      containerInventoryItemId: updateContainer
+          ? containerInventoryItemId
+          : existing.containerInventoryItemId,
     );
     _inventoryByCharacterId[characterId] = <_InMemoryInventoryItem>[
       ...inventory.sublist(0, index),
@@ -858,6 +941,30 @@ class InMemoryCharacterRepository implements CharacterRepository {
 
   bool _isPlaceholderEquipmentItem(String itemName) {
     return itemName.trim().toLowerCase().contains('pending');
+  }
+
+  bool _looksLikeContainer(String itemName) {
+    final lower = itemName.toLowerCase();
+    return lower.contains('pack') ||
+        lower.contains('pouch') ||
+        lower.contains('bag') ||
+        lower.contains('case');
+  }
+
+  String? _containerNameFor(
+    String? containerInventoryItemId,
+    List<_InMemoryInventoryItem> inventory,
+  ) {
+    if (containerInventoryItemId == null || containerInventoryItemId.isEmpty) {
+      return null;
+    }
+
+    for (final item in inventory) {
+      if (item.id == containerInventoryItemId) {
+        return item.name;
+      }
+    }
+    return null;
   }
 
   CharacterSpellcastingDomainModel? _buildSpellcastingSummary({
@@ -1077,6 +1184,10 @@ class _InMemoryInventoryItem {
     required this.isCarried,
     required this.isFavorite,
     required this.weightPerUnit,
+    required this.isContainer,
+    required this.chargesCurrent,
+    required this.chargesMax,
+    required this.containerInventoryItemId,
   });
 
   final String id;
@@ -1086,6 +1197,10 @@ class _InMemoryInventoryItem {
   final bool isCarried;
   final bool isFavorite;
   final int? weightPerUnit;
+  final bool isContainer;
+  final int? chargesCurrent;
+  final int? chargesMax;
+  final String? containerInventoryItemId;
 
   int get totalWeight => (weightPerUnit ?? 0) * quantity;
 
@@ -1097,6 +1212,10 @@ class _InMemoryInventoryItem {
     bool? isCarried,
     bool? isFavorite,
     int? weightPerUnit,
+    bool? isContainer,
+    int? chargesCurrent,
+    int? chargesMax,
+    String? containerInventoryItemId,
   }) {
     return _InMemoryInventoryItem(
       id: id ?? this.id,
@@ -1106,6 +1225,11 @@ class _InMemoryInventoryItem {
       isCarried: isCarried ?? this.isCarried,
       isFavorite: isFavorite ?? this.isFavorite,
       weightPerUnit: weightPerUnit ?? this.weightPerUnit,
+      isContainer: isContainer ?? this.isContainer,
+      chargesCurrent: chargesCurrent ?? this.chargesCurrent,
+      chargesMax: chargesMax ?? this.chargesMax,
+      containerInventoryItemId:
+          containerInventoryItemId ?? this.containerInventoryItemId,
     );
   }
 }

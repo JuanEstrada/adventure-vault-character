@@ -52,12 +52,83 @@ class CharacterInventoryService {
     );
   }
 
+  Future<void> setInventoryItemCharges(
+    String id,
+    String inventoryItemId, {
+    int? chargesCurrent,
+    int? chargesMax,
+  }) {
+    final normalizedMax = chargesMax?.clamp(0, 9999).toInt();
+    final normalizedCurrent = normalizedMax == null
+        ? null
+        : chargesCurrent?.clamp(0, normalizedMax).toInt();
+    return _updateInventoryItem(
+      id,
+      inventoryItemId,
+      chargesCurrent: Value(normalizedCurrent),
+      chargesMax: Value(normalizedMax),
+    );
+  }
+
+  Future<void> setInventoryItemContainer(
+    String id,
+    String inventoryItemId,
+    String? containerInventoryItemId,
+  ) async {
+    if (containerInventoryItemId != null &&
+        containerInventoryItemId.isNotEmpty) {
+      if (containerInventoryItemId == inventoryItemId) {
+        throw StateError('Item cannot contain itself.');
+      }
+
+      final containerItem = await _readDao.getInventoryItemById(
+        containerInventoryItemId,
+      );
+      if (containerItem == null || containerItem.characterId != id) {
+        throw StateError('Container item not found.');
+      }
+
+      final containerDefinitionId = containerItem.equipmentDefinitionId;
+      final containerDefinition = containerDefinitionId == null
+          ? null
+          : await _readDao.getEquipmentDefinitionById(containerDefinitionId);
+      if (containerDefinition?.isContainer != true) {
+        throw StateError('Target item is not a container.');
+      }
+
+      final inventoryItems = await _readDao.getInventoryByCharacterId(id);
+      final byId = <String, CharacterInventoryData>{
+        for (final item in inventoryItems) item.id: item,
+      };
+      String? cursor = containerInventoryItemId;
+      while (cursor != null) {
+        if (cursor == inventoryItemId) {
+          throw StateError('Container assignment would create a cycle.');
+        }
+        cursor = byId[cursor]?.containerInventoryItemId;
+      }
+    }
+
+    await _updateInventoryItem(
+      id,
+      inventoryItemId,
+      containerInventoryItemId: Value(
+        containerInventoryItemId == null || containerInventoryItemId.isEmpty
+            ? null
+            : containerInventoryItemId,
+      ),
+    );
+  }
+
   Future<void> _updateInventoryItem(
     String id,
     String inventoryItemId, {
     Value<bool> isEquipped = const Value.absent(),
     Value<bool> isCarried = const Value.absent(),
     Value<int> quantity = const Value.absent(),
+    Value<int?> chargesCurrent = const Value.absent(),
+    Value<int?> chargesMax = const Value.absent(),
+    Value<String?> containerInventoryItemId = const Value.absent(),
   }) async {
     final character = await _readDao.getCharacterRowById(id);
     if (character == null) {
@@ -82,6 +153,9 @@ class CharacterInventoryService {
           isEquipped: isEquipped,
           isCarried: isCarried,
           quantity: quantity,
+          chargesCurrent: chargesCurrent,
+          chargesMax: chargesMax,
+          containerInventoryItemId: containerInventoryItemId,
         ),
       );
     });
