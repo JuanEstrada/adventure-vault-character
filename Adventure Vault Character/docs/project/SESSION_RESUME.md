@@ -56,7 +56,7 @@ Verified on 2026-03-28:
   SQLite database.
 - The previous single-table character persistence has now been extended into a
   normalized Drift schema.
-- The Drift schema is now at `v15` and includes dedicated character-side tables
+- The Drift schema is now at `v16` and includes dedicated character-side tables
   for `ability scores`, `ability score provenance`, `hit points`,
   `finishing details`, `narrative selections`, `equipment loadout`, `skills`,
   `saving throws`, `inventory`, `proficiencies`, and `currency`, plus
@@ -250,23 +250,18 @@ Verified on 2026-03-28:
 - The XML parser now reads FightClub `background`, `race`, `class`, `spell`,
   `feat`, and `monster` entries directly instead of depending on the previous
   curated runtime compendium XML set.
-- The parsed compendium seed now also includes the full
-  `Character Advancement` table, the `Standard Array by Class` table, a small
-  spell seed spanning levels `0-9`, three feats, and three monsters, with the
-  progression defaults kept as static SRD-aligned rules.
+- The parsed compendium now includes the full
+  `Character Advancement` table and the `Standard Array by Class` table, plus
+  strict 2024 SRD baseline coverage for `spells`, `feats`, and `monsters`.
 - `local-assets/runtime/compendium/` has been removed; active app XML now
   lives under `FightClub5eXML-master/`, and deleted asset paths are tracked in
   `local-assets/reference/removed_assets/`.
 - The repository root now includes a project `LICENSE` plus
   `THIRD_PARTY_LICENSES.md` so the bundled FightClub5eXML MIT notice ships
   with the project.
-- `local-assets/por ordenar/srd_rules/` now also has a reproducible
-  normalization pipeline driven by the canonical PDF source
+- The repo now includes `tool/normalize_srd_rules.py` for reproducible SRD
+  markdown normalization from the canonical PDF source
   `local-assets/por ordenar/SRD_CC_v5.2.1.pdf`.
-- The repo now includes `tool/normalize_srd_rules.py`, which extracts section
-  text from the SRD PDF with `pypdf`, rewrites the markdown corpus in document
-  order, and regenerates the local `srd_rules/README.md` index from the
-  normalized files.
 - The repo now also includes `tool/extract_srd_markdown_source.py`, which
   splits the clean third-party markdown corpus under
   `local-assets/dnd-5e-srd-markdown-master/` into a section-based tree under
@@ -333,10 +328,11 @@ as repository content.
 
 The project has moved from documentation-only preparation into a real app
 shell. The startup path, access screen, main menu shell, and character-summary
-repository boundary now exist in code. In parallel, the local SRD now has a
-reproducible normalized PDF-derived corpus in `srd_rules/` and a cleaner
-section-based reference tree in `srd_55e_source_from_markdown/` derived from a
-clean markdown source corpus. The next step is to keep the app work moving
+ repository boundary now exist in code. In parallel, the local SRD now has a
+ reproducible normalized PDF-derived corpus and a cleaner section-based
+ reference tree in `local-assets/por ordenar/srd_55e_source_from_markdown/`
+ derived from a clean markdown source corpus. The next step is to keep the app
+ work moving
 while using these sources to formalize deterministic rules and compendium
 contracts instead of spending more time on PDF cleanup.
 
@@ -582,10 +578,8 @@ Next-session starting point:
   as the canonical structured source for `backgrounds`, `races`, `classes`,
   `spells`, `feats`, and `monsters`, with `assets/compendium/catalog.json`
   retained only as fallback mode.
-- Use `tool/normalize_srd_rules.py` when refreshing
-  `local-assets/por ordenar/srd_rules/`; the PDF
-  `local-assets/por ordenar/SRD_CC_v5.2.1.pdf` is the source of truth for that
-  markdown corpus, not the previous OCR-derived markdown text.
+- Use `tool/normalize_srd_rules.py` when refreshing the local normalized SRD
+  markdown corpus from `local-assets/por ordenar/SRD_CC_v5.2.1.pdf`.
 - Use `tool/extract_srd_markdown_source.py` when refreshing
   `local-assets/por ordenar/srd_55e_source_from_markdown/`; that split corpus
   is derived from `local-assets/dnd-5e-srd-markdown-master/` and currently

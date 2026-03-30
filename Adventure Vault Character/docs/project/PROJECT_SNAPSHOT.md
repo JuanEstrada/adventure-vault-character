@@ -212,20 +212,18 @@ summary.
 - The compendium parser now reads FightClub SRD 5.5e `background`,
   `race`, `class`, `spell`, `feat`, and `monster` entries directly rather than
   depending on the previous curated runtime compendium XML set.
-- The compendium seed now also exposes `Character Advancement`,
-  `Standard Array by Class`, a compact spell sample across levels `0-9`,
-  three feats, and three monsters sourced from the FightClub SRD files plus
-  static SRD progression defaults.
+- The compendium now exposes `Character Advancement`,
+  `Standard Array by Class`, and strict 2024 SRD baseline coverage for
+  `spells`, `feats`, and `monsters` from FightClub SRD 5.5e sources.
 - `local-assets/runtime/compendium/` has been removed to avoid duplicated
   sources of truth; active XML now lives under `FightClub5eXML-master/`, while
   removals are tracked under `local-assets/reference/removed_assets/`.
 - The repository root now includes `LICENSE` and
   `THIRD_PARTY_LICENSES.md` so the project license and the bundled
   FightClub5eXML MIT notice are kept with the source tree.
-- The local SRD markdown corpus under `local-assets/por ordenar/srd_rules/`
-  now has a dedicated regeneration tool,
-  `tool/normalize_srd_rules.py`, which rebuilds the files from
-  `local-assets/por ordenar/SRD_CC_v5.2.1.pdf` and refreshes the local index.
+- The local SRD markdown corpus now has a dedicated regeneration tool,
+  `tool/normalize_srd_rules.py`, which rebuilds from
+  `local-assets/por ordenar/SRD_CC_v5.2.1.pdf`.
 - The local assets area now also includes
   `local-assets/dnd-5e-srd-markdown-master/`, a cleaner third-party markdown
   SRD corpus used as a semantic reference source.
@@ -424,9 +422,8 @@ summary.
    and broader official Wizards XML.
 2. Continue translating the available rules sources into explicit
    deterministic application/domain services.
-3. Extend the new spellcasting foundation beyond the new class-specific limit
-   enforcement into remaining special cases such as full wizard prepared-list
-   workflows and rest-based resource recovery.
+3. Expand compendium ingestion from strict 2024 SRD baseline into broader
+   official 2024 sources with explicit precedence and conflict reporting.
 4. Expand deterministic resource recovery beyond spell slots (class resources,
    rest cadence, and sheet-visible recovery summaries).
 5. Expand the inventory/equipment model beyond starter loadouts.

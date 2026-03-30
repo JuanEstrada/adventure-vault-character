@@ -5,7 +5,7 @@ reconstructing app state from scratch.
 
 ## Verification Date
 
-- 2026-03-29, aligned with post-normalization `v15` state
+- 2026-03-29, aligned with post-normalization `v16` state
 
 ## Sources of Truth
 
