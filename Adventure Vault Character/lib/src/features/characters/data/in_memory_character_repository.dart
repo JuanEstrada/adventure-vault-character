@@ -712,6 +712,23 @@ class InMemoryCharacterRepository implements CharacterRepository {
           _classResourceMetaByCharacterId[id] ??
           const <String, _InMemoryClassResourceMeta>{},
     );
+
+    if (isLongRest) {
+      final inventory = _inventoryByCharacterId[id];
+      if (inventory != null) {
+        _inventoryByCharacterId[id] = inventory
+            .map(
+              (item) => item.chargesMax == null
+                  ? item
+                  : item.copyWith(
+                      chargesCurrent: item.chargesMax,
+                      chargesMax: item.chargesMax,
+                    ),
+            )
+            .toList(growable: false);
+      }
+    }
+
     _changes.add(null);
   }
 

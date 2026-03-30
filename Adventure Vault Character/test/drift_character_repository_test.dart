@@ -984,6 +984,22 @@ void main() {
     expect(updatedTorch.chargesMax, 5);
     expect(updatedTorch.containerInventoryItemId, backpack.id);
     expect(updatedTorch.containerDisplayName, 'Backpack');
+
+    await repository.setInventoryItemCharges(
+      summary.id,
+      torch.id,
+      chargesCurrent: 1,
+      chargesMax: 5,
+    );
+    await repository.applyLongRest(summary.id);
+
+    sheet = await repository.getCharacterSheetById(summary.id);
+    expect(sheet, isNotNull);
+    final restoredTorch = sheet!.equipment.items.firstWhere(
+      (item) => item.name == 'Torch',
+    );
+    expect(restoredTorch.chargesCurrent, 5);
+    expect(restoredTorch.chargesMax, 5);
   });
 }
 

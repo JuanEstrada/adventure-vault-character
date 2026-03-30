@@ -98,6 +98,7 @@ class CharacterRecoveryService {
     final hitPoints = await _readDao.getHitPointsByCharacterId(id);
     final slotUsages = await _readDao.getSpellSlotUsagesByCharacterId(id);
     final classResources = await _readDao.getClassResourcesByCharacterId(id);
+    final inventory = await _readDao.getInventoryByCharacterId(id);
     final slotUsagesByLevel = <int, int>{
       for (final slot in slotUsages) slot.spellLevel: slot.slotsExpended,
     };
@@ -184,6 +185,23 @@ class CharacterRecoveryService {
           })
           .toList(growable: false);
       await _writeDao.insertClassResources(resourceCompanions);
+
+      if (isLongRest) {
+        for (final item in inventory) {
+          final chargesMax = item.chargesMax;
+          if (chargesMax == null) {
+            continue;
+          }
+
+          await _writeDao.updateInventoryItem(
+            item.id,
+            CharacterInventoryCompanion(
+              chargesCurrent: Value(chargesMax.clamp(0, 9999).toInt()),
+              chargesMax: Value(chargesMax.clamp(0, 9999).toInt()),
+            ),
+          );
+        }
+      }
     });
   }
 }
