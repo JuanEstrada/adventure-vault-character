@@ -7,7 +7,7 @@ Draft
 ## Summary
 
 The compendium screen is the first dedicated destination behind the
-`Compendio` main-menu action. It exposes the active compendium source policy,
+`Compendium` main-menu action. It exposes the active compendium source policy,
 section-by-section source coverage, a compact summary of what local
 content is currently available offline, and the first read-only management
 placeholders for future pack/import workflows.
@@ -42,7 +42,7 @@ placeholders for future pack/import workflows.
 
 ## Entry Conditions
 
-- The user is in the main menu and chooses `Compendio`.
+- The user is in the main menu and chooses `Compendium`.
 
 ## Exit Paths
 
@@ -74,7 +74,7 @@ placeholders for future pack/import workflows.
 
 ## Acceptance Criteria
 
-- Tapping `Compendio` in the main menu opens this screen.
+- Tapping `Compendium` in the main menu opens this screen.
 - The screen works fully offline from the already loaded local catalog.
 - The screen shows the active source label and the fallback source label.
 - The screen shows that the bundled base compendium is active.

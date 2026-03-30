@@ -15,11 +15,11 @@ internal messages, runtime UI strings, and test assertions.
 
 ## Glossary Baseline
 
-- `Compendium` (not `Compendio`)
-- `Create character` (not `Crear personaje nuevo`)
-- `Back to menu` (not `Volver al menu`)
-- `Incomplete compendium` (not `Compendio incompleto`)
-- `Rules` (not `Reglas`)
+- `Compendium`
+- `Create character`
+- `Back to menu`
+- `Incomplete compendium`
+- `Rules`
 
 ## Execution Phases
 

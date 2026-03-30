@@ -18,7 +18,7 @@ or advancing into the guided creation path.
 
 For terminology consistency, XML-based content loading and future uploaded XML
 packs should be treated as part of the app's `Compendium Import System`, and
-the imported rules set should be referred to as the `Compendio`.
+the imported rules set should be referred to as the `Compendium`.
 
 ## Goals
 

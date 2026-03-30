@@ -18,7 +18,7 @@ or `data pack`, which makes boundaries less clear as the import surface grows.
 
 ## Decision
 
-Use `Compendio` as the project term for the imported and queryable game
+Use `Compendium` as the project term for the imported and queryable game
 content set used by the app.
 
 Use `Compendium Import System` as the project term for the subsystem that
@@ -31,7 +31,7 @@ Treat future uploaded XML files that add or modify rules content as
 ## Consequences
 
 Documentation, architecture discussions, and implementation naming should
-prefer `Compendio`, `Compendium Import System`, and `compendium pack` over
+prefer `Compendium`, `Compendium Import System`, and `compendium pack` over
 looser alternatives when referring to these responsibilities.
 
 Future XML ingestion work should remain behind the compendium import boundary

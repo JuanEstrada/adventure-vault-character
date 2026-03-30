@@ -40,11 +40,11 @@ character, and character sheet behavior.
   is still running.
 - If initialization fails, the app stays in a startup recovery state.
 - If initialization succeeds, route to the access screen.
-- The access screen shows a dummy online login plus `Continuar offline`.
-- Choosing `Continuar offline` routes to the main menu.
-- The main menu always shows `Compendio`, `Reglas`, and `Settings` in the
+- The access screen shows a dummy online login plus `Continue offline`.
+- Choosing `Continue offline` routes to the main menu.
+- The main menu always shows `Compendium`, `Rules`, and `Settings` in the
   upper area.
-- The main menu always shows `Crear personaje nuevo`.
+- The main menu always shows `Create character`.
 - If characters exist, the main menu also shows character cards.
 - If the user selects a character card, route to that character sheet.
 - If the user creates a character successfully, route to the new character

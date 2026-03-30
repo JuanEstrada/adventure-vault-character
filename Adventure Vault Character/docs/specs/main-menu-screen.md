@@ -22,7 +22,7 @@ rules, settings, existing character cards, and character creation.
 - Read-only summary of the active compendium source policy
 - Navigation into the first read-only compendium screen
 - Character cards for existing local characters
-- Persistent `Crear personaje nuevo` entry point
+- Persistent `Create character` entry point
 - Navigation to character sheet from character cards
 - Entry into character import from XML through the builder flow
 
@@ -35,7 +35,7 @@ rules, settings, existing character cards, and character creation.
 
 ## Entry Conditions
 
-- The user chooses `Continuar offline` from the access screen.
+- The user chooses `Continue offline` from the access screen.
 - The user returns from a character screen or creation flow.
 
 ## Exit Paths
@@ -71,13 +71,13 @@ specification, not full character-detail payloads.
 
 ## Acceptance Criteria
 
-- `Compendio`, `Reglas`, and `Settings` are visible in the upper section of
+- `Compendium`, `Rules`, and `Settings` are visible in the upper section of
   the screen.
 - The screen shows which compendium source policy is active, including whether
   the app is running from the FightClub XML bundle or the bundled JSON
   fallback.
-- Tapping `Compendio` opens the current read-only compendium screen.
-- `Crear personaje nuevo` is always visible, even when characters already
+- Tapping `Compendium` opens the current read-only compendium screen.
+- `Create character` is always visible, even when characters already
   exist.
 - Tapping a character card opens that character's sheet directly.
 - Character cards show the minimum saved-character summary needed for quick

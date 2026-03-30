@@ -20,11 +20,11 @@ Define the first implementation slice of Adventure Vault Character.
 
 - Splash or bootstrap startup flow
 - Local startup loading for config, saved characters, and XML content index
-- Access screen with dummy online login and visible `Continuar offline`
+- Access screen with dummy online login and visible `Continue offline`
 - Main menu screen
-- Top-level main menu entries for `Compendio`, `Reglas`, and `Settings`
+- Top-level main menu entries for `Compendium`, `Rules`, and `Settings`
 - Character cards for existing local characters
-- Always-visible `Crear personaje nuevo` entry point
+- Always-visible `Create character` entry point
 - Guided create-character flow
 - Character builder overview with XML load action
 - Race selection from compendium data
@@ -72,9 +72,9 @@ Define the first implementation slice of Adventure Vault Character.
    index.
 4. Splash remains visible for at least 2 seconds.
 5. App routes to the access screen.
-6. User chooses `Continuar offline`.
+6. User chooses `Continue offline`.
 7. App routes to the main menu.
-8. User chooses `Crear personaje nuevo`.
+8. User chooses `Create character`.
 9. App shows the builder overview with creation sections and a visible XML
    load action.
 10. The XML load action exists as a documented entry point, but full import
@@ -89,7 +89,7 @@ Define the first implementation slice of Adventure Vault Character.
 
 1. User opens the app.
 2. App completes splash startup work.
-3. User chooses `Continuar offline`.
+3. User chooses `Continue offline`.
 4. Main menu shows existing character cards.
 5. User selects a character card.
 6. App opens that character's sheet.
@@ -99,9 +99,9 @@ Define the first implementation slice of Adventure Vault Character.
 - The app is usable end to end without network access.
 - Startup always begins with splash or bootstrap.
 - Startup loads only the XML index, not the full XML content body.
-- `Continuar offline` is visible on the access screen.
-- Main menu always shows `Compendio`, `Reglas`, `Settings`, and
-  `Crear personaje nuevo`.
+- `Continue offline` is visible on the access screen.
+- Main menu always shows `Compendium`, `Rules`, `Settings`, and
+  `Create character`.
 - The builder entry exposes a visible XML load action from its overview
   screen.
 - The visible XML load action does not require full MVP XML import support.

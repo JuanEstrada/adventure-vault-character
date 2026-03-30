@@ -19,7 +19,7 @@ placeholder while preserving the supported MVP path: local offline access.
 ## In Scope
 
 - Dummy online login fields or controls
-- A visible `Continuar offline` action
+- A visible `Continue offline` action
 - Navigation from access screen to the main menu
 
 ## Out of Scope
@@ -41,7 +41,7 @@ placeholder while preserving the supported MVP path: local offline access.
 ## Primary Actions
 
 - View online login placeholder
-- Choose `Continuar offline`
+- Choose `Continue offline`
 
 ## Required Data
 
@@ -55,7 +55,7 @@ placeholder while preserving the supported MVP path: local offline access.
 ## Acceptance Criteria
 
 - The screen appears after splash for the MVP startup path.
-- A visible `Continuar offline` action is always present.
+- A visible `Continue offline` action is always present.
 - Offline continuation does not require network access.
 - The online login area is clearly a placeholder and does not block MVP use.
 

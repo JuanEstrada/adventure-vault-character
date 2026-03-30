@@ -175,9 +175,9 @@ Verified on 2026-03-28:
   tables still come from legacy 5e supplement XML, and when the bundled JSON
   fallback is active.
 - The main menu now surfaces that `sourcePolicy` in a read-only
-  `Compendio activo` card so the loaded rules basis is visible before entering
+  `Active compendium` card so the loaded rules basis is visible before entering
   character creation.
-- The app now also exposes a first dedicated `Compendio` screen from that
+- The app now also exposes a first dedicated `Compendium` screen from that
   main-menu entry, showing the active source policy plus section-by-section
   coverage details from the loaded offline catalog.
 - That compendium screen now also exposes a first read-only content-management
@@ -303,7 +303,7 @@ Verified on 2026-03-28:
   sources that records what is already usable and what still needs extraction
   or normalization.
 - Project terminology now treats the imported rules dataset as the
-  `Compendio`, and the XML ingestion subsystem as the
+  `Compendium`, and the XML ingestion subsystem as the
   `Compendium Import System`.
 - Future compendium management should include a content selector so the player
   can review installed compendium packs and control which optional packs are
@@ -350,10 +350,10 @@ Canonical MVP flow:
 1. App launch
 2. Bootstrap startup
 3. Access screen
-4. `Continuar offline`
+4. `Continue offline`
 5. Main menu
 6. Character cards visible when saved characters exist
-7. `Crear personaje nuevo`
+7. `Create character`
 8. Builder overview
 9. Optional visible `LOAD XML` entry point from main menu
 10. Guided creation: `Race + name`
@@ -380,9 +380,9 @@ Primary references:
 - Startup always begins in bootstrap.
 - Startup loads the local compendium catalog and saved character summaries.
 - The access screen keeps a dummy online login but must expose
-  `Continuar offline`.
-- The main menu must expose `Compendio`, `Reglas`, `Settings`, and
-  `Crear personaje nuevo`.
+  `Continue offline`.
+- The main menu must expose `Compendium`, `Rules`, `Settings`, and
+  `Create character`.
 - The main menu uses character cards as the saved-character entry point.
 - Character creation is guided, not a free-form advanced builder.
 - The main menu exposes a visible `LOAD XML` entry for future XML import work.
@@ -454,7 +454,7 @@ Resolved MVP decision:
 - Future uploaded XML files that add or modify classes, races, spells,
   equipment, and similar rules content are considered `compendium packs` and
   belong to the `Compendium Import System`.
-- A future `Compendio` screen should expose a content selector for installed
+- A future `Compendium` screen should expose a content selector for installed
   compendium packs, with the bundled base compendium fixed as active and
   imported packs treated as optional content sources.
 - The first character sheet contents and the first domain-model proposal are
@@ -490,9 +490,9 @@ Completed since the previous handoff:
   FightClub XML path and the bundled JSON fallback path.
 - Repository tests now cover both the explicit source-policy metadata and the
   fallback-to-JSON catalog path.
-- The main menu now surfaces a read-only `Compendio activo` card so the
+- The main menu now surfaces a read-only `Active compendium` card so the
   loaded rules basis is visible before entering character creation.
-- The app now also routes `Compendio` into a dedicated read-only screen that
+- The app now also routes `Compendium` into a dedicated read-only screen that
   shows active source metadata, coverage counts, and section-by-section source
   inputs from the loaded offline catalog.
 - The compendium screen now also surfaces read-only placeholders for

@@ -11,7 +11,7 @@
   the primary source for application behavior.
 - **D20 mechanics**: rules involving twenty-sided dice rolls, modifiers, and
   related outcome calculations.
-- **Compendio**: the imported and queryable set of game content used by the
+- **Compendium**: the imported and queryable set of game content used by the
   app, including official SRD data and future custom content packs.
 - **Compendium Import System**: the subsystem responsible for validating,
   parsing, mapping, and storing compendium content from XML files.

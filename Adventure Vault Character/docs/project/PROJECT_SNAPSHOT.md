@@ -248,10 +248,10 @@ summary.
   active catalog, including the current split between SRD 5.5e structured
   FightClub XML, legacy 5e narrative supplement XML, and bundled JSON
   fallback mode.
-- The main menu now renders a read-only `Compendio activo` summary card from
+- The main menu now renders a read-only `Active compendium` summary card from
   that source-policy metadata, making the loaded rules basis visible in the
   offline home flow.
-- The app now also exposes a dedicated `Compendio` screen from the main menu,
+- The app now also exposes a dedicated `Compendium` screen from the main menu,
   showing source-policy details and current section coverage from the loaded
   offline catalog.
 - That compendium screen now also shows the first read-only management
@@ -386,7 +386,7 @@ summary.
 
 ## Newly Confirmed Naming Decision
 
-- The project term for the imported rules/content dataset is `Compendio`.
+- The project term for the imported rules/content dataset is `Compendium`.
 - The project term for the XML ingestion subsystem is
   `Compendium Import System`.
 - Future XML files uploaded to add or modify classes, races, spells,
@@ -396,7 +396,7 @@ summary.
 
 ## Newly Confirmed Future Direction
 
-- A future `Compendio` management screen should include a content selector for
+- A future `Compendium` management screen should include a content selector for
   installed compendium packs.
 - The bundled base compendium should remain always active.
 - Future imported compendium packs should be manageable as optional active /
