@@ -69,7 +69,7 @@ void main() {
     expect(find.text('Content management'), findsOneWidget);
     expect(find.text('Bundled base'), findsOneWidget);
     expect(find.text('Always active'), findsOneWidget);
-    expect(find.text('Imported packs'), findsOneWidget);
+    expect(find.text('Optional packs'), findsOneWidget);
     expect(find.text('1 active'), findsOneWidget);
     expect(find.text('Import XML'), findsOneWidget);
     expect(find.text('Manage packs'), findsOneWidget);
@@ -167,7 +167,11 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('Narrative options'), findsOneWidget);
-    expect(find.textContaining('backgrounds-phb.xml'), findsOneWidget);
+    expect(
+      find.textContaining('SRD alignment reference (core rules)'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('backgrounds-phb.xml'), findsNothing);
     expect(find.textContaining('backgrounds-scag.xml'), findsNothing);
   });
 
@@ -843,7 +847,7 @@ const _testCatalog = CompendiumCatalog(
   sourcePolicy: CompendiumSourcePolicy(
     activeSourceType: 'fightclub_xml',
     activeSourceLabel:
-        'FightClub XML asset bundle with SRD 5.5e core data and legacy 5e narrative supplements',
+        'FightClub XML asset bundle with SRD 5.5e core data plus optional legacy narrative packs',
     fallbackSourceLabel: 'assets/compendium/catalog.json',
     sections: <CompendiumSectionSourcePolicy>[
       CompendiumSectionSourcePolicy(
@@ -885,9 +889,10 @@ const _testCatalog = CompendiumCatalog(
       CompendiumSectionSourcePolicy(
         sectionKey: 'narrative_options',
         sectionLabel: 'Narrative options',
-        sourceType: 'legacy_5e_xml_supplements',
-        primarySources: <String>['backgrounds-phb.xml'],
+        sourceType: 'srd_core_plus_optional_legacy_pack',
+        primarySources: <String>['SRD alignment reference (core rules)'],
         supplementalSources: <String>[
+          'backgrounds-phb.xml',
           'backgrounds-scag.xml',
           'backgrounds-pam.xml',
           'backgrounds-ggr.xml',

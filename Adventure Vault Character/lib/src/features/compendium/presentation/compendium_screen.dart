@@ -154,7 +154,7 @@ class _ManagementCard extends StatelessWidget {
     final activeConfigurablePackCount = configurablePacks
         .where((packState) => packState.isActive)
         .length;
-    final importedPacksStatus = configurablePacks.isEmpty
+    final optionalPacksStatus = configurablePacks.isEmpty
         ? 'No configurable packs'
         : '$activeConfigurablePackCount active';
 
@@ -182,11 +182,11 @@ class _ManagementCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _StatusRow(
-            label: 'Imported packs',
-            value: importedPacksStatus,
+            label: 'Optional packs',
+            value: optionalPacksStatus,
             description: configurablePacks.isEmpty
                 ? 'No optional persisted packs are available for this catalog yet.'
-                : 'Local activation is persisted and can be reviewed in Manage packs.',
+                : 'Local activation is persisted and immediately affects active catalog sections.',
           ),
           const SizedBox(height: 16),
           Text(
@@ -197,8 +197,8 @@ class _ManagementCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'The flow already allows pasted XML registration as an optional local pack. '
-            'Full content ingestion is still deferred.',
+            'The flow supports pasted XML registration and active-pack ingestion for currently '
+            'supported sections. Broader section coverage remains a future iteration.',
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 12),
@@ -208,12 +208,12 @@ class _ManagementCard extends StatelessWidget {
             children: [
               _ActionChipButton(
                 label: 'Import XML',
-                detail: 'Registrar pack',
+                detail: 'Register pack',
                 onPressed: onOpenCompendiumImport,
               ),
               _ActionChipButton(
                 label: 'Manage packs',
-                detail: 'Pending',
+                detail: 'Configure',
                 onPressed: onOpenCompendiumPacks,
               ),
             ],

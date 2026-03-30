@@ -1,7 +1,7 @@
 # Adventure Vault Character - Project Snapshot
 
 ## Last Update
-2026-03-29
+2026-03-30
 
 ## Role of This Document
 
@@ -260,8 +260,8 @@ summary.
   longer warn about a missing `CupertinoIcons` font family.
 - `CompendiumCatalog` now exposes explicit source-policy metadata for the
   active catalog, including the current split between SRD 5.5e structured
-  FightClub XML, legacy 5e narrative supplement XML, and bundled JSON
-  fallback mode.
+  FightClub XML and bundled JSON fallback mode, with legacy narrative XML now
+  modeled as optional pack-managed supplemental input.
 - The main menu now renders a read-only `Active compendium` summary card from
   that source-policy metadata, making the loaded rules basis visible in the
   offline home flow.
@@ -269,8 +269,8 @@ summary.
   showing source-policy details and current section coverage from the loaded
   offline catalog.
 - That compendium screen now also shows the first read-only management
-  placeholders for future `Import XML` and pack-management work while
-  keeping the bundled base compendium explicitly active.
+  entry points for `Import XML` and pack-management work while keeping the
+  bundled base compendium explicitly active.
 - `Manage packs` now opens a dedicated read-only screen, and
   `Import XML` now opens a dedicated offline registration screen instead of
   staying purely decorative.
@@ -347,28 +347,25 @@ summary.
 - The compendium source-policy work now has a first dedicated UI route instead
   of living only as a home-screen summary card.
 - The compendium route now also exposes the first visible management/import
-  preparation block without changing repository or persistence contracts.
+  management block with persisted activation controls and ingestion visibility.
 - The compendium area now also has its first real management interaction,
-  still constrained to presentation-only behavior.
-- The compendium area now also persists local pack state through Drift, even
-  though that state currently only filters the narrative-supplement portion of
-  the loaded catalog content.
+  now wired to active catalog filtering behavior.
+- The compendium area now also persists local pack state through Drift, and the
+  legacy narrative pack policy is explicit: SRD-aligned core remains fixed while
+  legacy PHB/setting narrative catalogs are optional-pack content.
 
 ## Pending Work
 
 - Expand the edit flow beyond the current guided MVP fields and decide how
   later post-creation inventory or combat editing should interact with the
   same aggregate.
-- Decide the source-of-truth policy between runtime SRD 5.5e XML and the
-  broader official `DND_5e/WizardsOfTheCoast` background corpus for narrative
-  option catalogs.
 - Extend the new compendium screen toward future pack-management and import
   workflows without bypassing the existing repository/domain contract.
 - Extend the current XML import flow beyond the currently supported imported
   catalog sections and first imported narrative-option slice into deeper
   compendium areas.
-- Decide how far persisted pack state should affect loaded catalog content
-  beyond the current narrative-supplement filtering.
+- Expand pack-state effects and precedence reporting across additional
+  compendium concerns beyond the current narrative-catalog model.
 - Decide whether any additional reshaping is still needed in
   `local-assets/por ordenar/srd_55e_source_from_markdown/` before treating it
   as the stable long-term section reference tree.
@@ -418,16 +415,14 @@ summary.
 
 ## Next Recommended Steps
 
-1. Build the source-of-truth policy for narrative option catalogs across SRD
-   and broader official Wizards XML.
-2. Continue translating the available rules sources into explicit
+1. Continue translating the available rules sources into explicit
    deterministic application/domain services.
-3. Expand compendium ingestion from strict 2024 SRD baseline into broader
+2. Expand compendium ingestion from strict 2024 SRD baseline into broader
    official 2024 sources with explicit precedence and conflict reporting.
-4. Expand deterministic resource recovery beyond spell slots (class resources,
+3. Expand deterministic resource recovery beyond spell slots (class resources,
    rest cadence, and sheet-visible recovery summaries).
-5. Expand the inventory/equipment model beyond starter loadouts.
-6. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
+4. Expand the inventory/equipment model beyond starter loadouts.
+5. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
 ## Next Session Guardrail
 
@@ -447,9 +442,9 @@ summary.
 - The app still needs a deliberate source-of-truth policy for each rules
   concern: FightClub XML for structured data, markdown corpora for semantic
   reference, and the PDF for source validation.
-- The best local official sources for finishing-detail narrative options are
-  currently outside the active SRD 5.5e runtime corpus, which introduces a
-  product and ingestion boundary that still needs a deliberate policy.
+- Narrative-option precedence is now policy-driven, but imported-pack conflict
+  handling should still expand with richer diagnostics as more sections become
+  pack-aware.
 - Future sync and network features remain out of implementation scope.
 - Legal and content-boundary constraints for D&D-related material may still
   need refinement later.

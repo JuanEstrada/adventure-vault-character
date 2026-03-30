@@ -47,8 +47,8 @@ class CompendiumPacksScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   'Activation is stored locally. Registered XML sources '
-                  'appear here as optional packs while full content ingestion '
-                  'continues to expand.',
+                  'appear here as optional packs, and active packs '
+                  'immediately affect the loaded compendium catalog.',
                   style: theme.textTheme.bodyLarge,
                 ),
               ],
@@ -76,8 +76,9 @@ class CompendiumPacksScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'The next iteration should connect this persisted state to '
-              'a full XML import flow and to active compendium-content filtering.',
+              'Next iterations should expand ingestion depth and precedence '
+              'rules across more compendium sections while preserving this '
+              'pack-driven activation model.',
               style: theme.textTheme.bodyMedium,
             ),
           ],

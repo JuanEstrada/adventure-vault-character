@@ -8,6 +8,8 @@ import 'package:adventure_vault_character/src/features/compendium/domain/compend
 import 'package:drift/drift.dart';
 import 'package:flutter/services.dart';
 
+const _legacyNarrativeSupplementsPackId = 'legacy-narrative-supplements';
+
 class AssetCompendiumRepository implements CompendiumRepository {
   AssetCompendiumRepository({
     AssetBundle? bundle,
@@ -498,11 +500,12 @@ class AssetCompendiumRepository implements CompendiumRepository {
       pamBackgroundsXml: pamBackgroundsXml,
       ggrBackgroundsXml: ggrBackgroundsXml,
       erlwBackgroundsXml: erlwBackgroundsXml,
+      legacyNarrativePackId: _legacyNarrativeSupplementsPackId,
     );
     final sourcePolicy = CompendiumSourcePolicy(
       activeSourceType: 'fightclub_xml',
       activeSourceLabel:
-          'FightClub XML asset bundle with SRD 5.5e core data and legacy 5e narrative supplements',
+          'FightClub XML asset bundle with SRD 5.5e core data plus optional legacy narrative packs',
       fallbackSourceLabel: _fallbackCatalogAssetPath,
       sections: <CompendiumSectionSourcePolicy>[
         CompendiumSectionSourcePolicy(
@@ -553,17 +556,20 @@ class AssetCompendiumRepository implements CompendiumRepository {
         CompendiumSectionSourcePolicy(
           sectionKey: 'narrative_options',
           sectionLabel: 'Narrative options',
-          sourceType: 'legacy_5e_xml_supplements',
-          primarySources: <String>[_phbBackgroundsAssetPath],
+          sourceType: 'srd_core_plus_optional_legacy_pack',
+          primarySources: const <String>[
+            'SRD alignment reference (core rules)',
+          ],
           supplementalSources: <String>[
+            _phbBackgroundsAssetPath,
             _scagBackgroundsAssetPath,
             _pamBackgroundsAssetPath,
             _ggrBackgroundsAssetPath,
             _erlwBackgroundsAssetPath,
           ],
-          supplementalPackId: 'legacy-narrative-supplements',
+          supplementalPackId: _legacyNarrativeSupplementsPackId,
           notes:
-              'Narrative tables currently mix the Player\'s Handbook (2014) plus setting books while SRD 5.5e remains the canonical source for structured character-build data.',
+              'Alignment remains always available from SRD core rules. Legacy 2014 narrative tables from PHB and setting books are exposed as an optional pack.',
         ),
       ],
     );
@@ -1256,14 +1262,30 @@ class AssetCompendiumRepository implements CompendiumRepository {
     required String pamBackgroundsXml,
     required String ggrBackgroundsXml,
     required String erlwBackgroundsXml,
+    required String legacyNarrativePackId,
   }) {
     return <CompendiumNarrativeOptionGroup>[
       _buildAlignmentNarrativeGroup(),
-      ..._parsePhbBackgroundNarrativeGroups(phbBackgroundsXml),
-      ..._parseScagFactionGroups(scagBackgroundsXml),
-      ..._parsePamFactionGroups(pamBackgroundsXml),
-      ..._parseGgrFactionGroups(ggrBackgroundsXml),
-      ..._parseErlwFactionGroups(erlwBackgroundsXml),
+      ..._parsePhbBackgroundNarrativeGroups(
+        phbBackgroundsXml,
+        packId: legacyNarrativePackId,
+      ),
+      ..._parseScagFactionGroups(
+        scagBackgroundsXml,
+        packId: legacyNarrativePackId,
+      ),
+      ..._parsePamFactionGroups(
+        pamBackgroundsXml,
+        packId: legacyNarrativePackId,
+      ),
+      ..._parseGgrFactionGroups(
+        ggrBackgroundsXml,
+        packId: legacyNarrativePackId,
+      ),
+      ..._parseErlwFactionGroups(
+        erlwBackgroundsXml,
+        packId: legacyNarrativePackId,
+      ),
     ];
   }
 
@@ -1292,8 +1314,9 @@ class AssetCompendiumRepository implements CompendiumRepository {
   }
 
   List<CompendiumNarrativeOptionGroup> _parsePhbBackgroundNarrativeGroups(
-    String xml,
-  ) {
+    String xml, {
+    required String packId,
+  }) {
     if (xml.isEmpty) {
       return const <CompendiumNarrativeOptionGroup>[];
     }
@@ -1342,6 +1365,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
             id: 'narrative-$backgroundId-${field.fieldKey}',
             fieldKey: field.fieldKey,
             sourceType: 'background',
+            packId: packId,
             sourceId: backgroundId,
             sourceName: backgroundName,
             backgroundId: backgroundId,
@@ -1371,7 +1395,10 @@ class AssetCompendiumRepository implements CompendiumRepository {
     return List<CompendiumNarrativeOptionGroup>.unmodifiable(groups);
   }
 
-  List<CompendiumNarrativeOptionGroup> _parseScagFactionGroups(String xml) {
+  List<CompendiumNarrativeOptionGroup> _parseScagFactionGroups(
+    String xml, {
+    required String packId,
+  }) {
     if (xml.isEmpty) {
       return const <CompendiumNarrativeOptionGroup>[];
     }
@@ -1429,7 +1456,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
         id: 'narrative-sword-coast-factions',
         fieldKey: 'faction',
         sourceType: 'setting',
-        packId: 'legacy-narrative-supplements',
+        packId: packId,
         sourceId: 'sword_coast',
         sourceName: 'Sword Coast Factions',
         backgroundId: 'faction_agent',
@@ -1441,7 +1468,10 @@ class AssetCompendiumRepository implements CompendiumRepository {
     ];
   }
 
-  List<CompendiumNarrativeOptionGroup> _parsePamFactionGroups(String xml) {
+  List<CompendiumNarrativeOptionGroup> _parsePamFactionGroups(
+    String xml, {
+    required String packId,
+  }) {
     if (xml.isEmpty) {
       return const <CompendiumNarrativeOptionGroup>[];
     }
@@ -1497,7 +1527,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
         id: 'narrative-sigil-factions',
         fieldKey: 'faction',
         sourceType: 'setting',
-        packId: 'legacy-narrative-supplements',
+        packId: packId,
         sourceId: 'sigil',
         sourceName: 'Factions of Sigil',
         backgroundId: 'planar_philosopher',
@@ -1509,7 +1539,10 @@ class AssetCompendiumRepository implements CompendiumRepository {
     ];
   }
 
-  List<CompendiumNarrativeOptionGroup> _parseGgrFactionGroups(String xml) {
+  List<CompendiumNarrativeOptionGroup> _parseGgrFactionGroups(
+    String xml, {
+    required String packId,
+  }) {
     if (xml.isEmpty) {
       return const <CompendiumNarrativeOptionGroup>[];
     }
@@ -1533,7 +1566,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
         id: 'narrative-ravnica-guilds',
         fieldKey: 'faction',
         sourceType: 'setting',
-        packId: 'legacy-narrative-supplements',
+        packId: packId,
         sourceId: 'ravnica',
         sourceName: 'Guilds of Ravnica',
         title: 'Guilds of Ravnica',
@@ -1554,7 +1587,10 @@ class AssetCompendiumRepository implements CompendiumRepository {
     ];
   }
 
-  List<CompendiumNarrativeOptionGroup> _parseErlwFactionGroups(String xml) {
+  List<CompendiumNarrativeOptionGroup> _parseErlwFactionGroups(
+    String xml, {
+    required String packId,
+  }) {
     if (xml.isEmpty) {
       return const <CompendiumNarrativeOptionGroup>[];
     }
@@ -1593,7 +1629,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
         id: 'narrative-eberron-houses',
         fieldKey: 'faction',
         sourceType: 'setting',
-        packId: 'legacy-narrative-supplements',
+        packId: packId,
         sourceId: 'eberron',
         sourceName: 'Dragonmarked Houses',
         backgroundId: 'house_agent',
@@ -2028,10 +2064,10 @@ class AssetCompendiumRepository implements CompendiumRepository {
     if (narrativePolicy != null) {
       packStates.add(
         const CompendiumPackStateModel(
-          id: 'legacy-narrative-supplements',
-          title: 'Narrative supplements',
+          id: _legacyNarrativeSupplementsPackId,
+          title: 'Legacy narrative pack',
           description:
-              'Legacy supplemental narrative tables for faction and background flavor.',
+              'Optional legacy narrative catalogs from PHB and setting books.',
           kind: 'optional_bundle',
           isFixed: false,
           isActive: true,

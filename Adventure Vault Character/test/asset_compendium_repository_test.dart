@@ -93,13 +93,12 @@ void main() {
     );
     expect(
       catalog.sourcePolicyForSection('narrative_options')?.primarySources,
-      contains(
-        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/01_Core/01_Players_Handbook/backgrounds-phb.xml',
-      ),
+      contains('SRD alignment reference (core rules)'),
     );
     expect(
       catalog.sourcePolicyForSection('narrative_options')?.supplementalSources,
       containsAll(<String>[
+        'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/01_Core/01_Players_Handbook/backgrounds-phb.xml',
         'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Sword_Coast_Adventurers_Guide/backgrounds-scag.xml',
         'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Planescape_Adventures_in_the_Multiverse/backgrounds-pam.xml',
         'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Guildmasters_Guide_to_Ravnica/backgrounds-ggr.xml',
@@ -157,6 +156,12 @@ void main() {
           .packId,
       'legacy-narrative-supplements',
     );
+    expect(
+      narrativeGroupRows
+          .firstWhere((row) => row.id == 'narrative-acolyte-ideals')
+          .packId,
+      'legacy-narrative-supplements',
+    );
 
     final updatedCatalog = await repository.setPackActive(
       'legacy-narrative-supplements',
@@ -167,6 +172,7 @@ void main() {
       isFalse,
     );
     expect(updatedCatalog.narrativeGroupsForField('faction'), isEmpty);
+    expect(updatedCatalog.narrativeGroupsForField('ideals'), isEmpty);
     expect(
       updatedCatalog
           .sourcePolicyForSection('narrative_options')
@@ -339,12 +345,24 @@ void main() {
         contains('Imported XML packs active: Imported Acolyte Expansion (1).'),
       );
       expect(
+        importedCatalog.sourcePolicyForSection('backgrounds')?.notes,
+        contains('Accepted after precedence: 1.'),
+      );
+      expect(
         importedCatalog.sourcePolicyForSection('narrative_options')?.notes,
         contains('Imported XML packs active: Imported Acolyte Expansion (1).'),
       );
       expect(
+        importedCatalog.sourcePolicyForSection('narrative_options')?.notes,
+        contains('Accepted after precedence: 1.'),
+      );
+      expect(
         importedCatalog.sourcePolicyForSection('spells')?.notes,
         contains('Conflicts skipped by base precedence: 1.'),
+      );
+      expect(
+        importedCatalog.sourcePolicyForSection('spells')?.notes,
+        contains('Accepted after precedence: 1.'),
       );
 
       final reloadedRepository = AssetCompendiumRepository(

@@ -165,6 +165,8 @@ CompendiumCatalog mergeImportedCompendiumContents(
     (item) => item.name,
   );
   final conflictCountsBySection = <String, int>{
+    if (mergedRaces.conflicts > 0) 'races': mergedRaces.conflicts,
+    if (mergedClasses.conflicts > 0) 'classes': mergedClasses.conflicts,
     if (mergedBackgrounds.conflicts > 0)
       'backgrounds': mergedBackgrounds.conflicts,
     if (mergedNarrativeOptionGroups.conflicts > 0)
@@ -173,14 +175,32 @@ CompendiumCatalog mergeImportedCompendiumContents(
     if (mergedFeats.conflicts > 0) 'feats': mergedFeats.conflicts,
     if (mergedMonsters.conflicts > 0) 'monsters': mergedMonsters.conflicts,
   };
+  final attemptedCountsBySection = <String, int>{
+    'races': mergedRaces.attempted,
+    'classes': mergedClasses.attempted,
+    'backgrounds': mergedBackgrounds.attempted,
+    'narrative_options': mergedNarrativeOptionGroups.attempted,
+    'spells': mergedSpells.attempted,
+    'feats': mergedFeats.attempted,
+    'monsters': mergedMonsters.attempted,
+  };
+  final acceptedCountsBySection = <String, int>{
+    'races': mergedRaces.accepted,
+    'classes': mergedClasses.accepted,
+    'backgrounds': mergedBackgrounds.accepted,
+    'narrative_options': mergedNarrativeOptionGroups.accepted,
+    'spells': mergedSpells.accepted,
+    'feats': mergedFeats.accepted,
+    'monsters': mergedMonsters.accepted,
+  };
   final importedPackCount = contents.length;
   final importedLabel = importedPackCount == 1
       ? '1 imported XML pack'
       : '$importedPackCount imported XML packs';
 
   return catalog.copyWith(
-    races: mergedRaces,
-    classes: mergedClasses,
+    races: mergedRaces.values,
+    classes: mergedClasses.values,
     backgrounds: mergedBackgrounds.values,
     narrativeOptionGroups: mergedNarrativeOptionGroups.values,
     spells: mergedSpells.values,
@@ -197,6 +217,8 @@ CompendiumCatalog mergeImportedCompendiumContents(
               section,
               contents,
               conflictCountsBySection: conflictCountsBySection,
+              attemptedCountsBySection: attemptedCountsBySection,
+              acceptedCountsBySection: acceptedCountsBySection,
             ),
           )
           .toList(growable: false),
@@ -208,6 +230,8 @@ CompendiumSectionSourcePolicy _appendImportedSourceNote(
   CompendiumSectionSourcePolicy section,
   List<ImportedCompendiumContent> contents, {
   required Map<String, int> conflictCountsBySection,
+  required Map<String, int> attemptedCountsBySection,
+  required Map<String, int> acceptedCountsBySection,
 }) {
   final contributions = contents
       .map((content) {
@@ -223,8 +247,12 @@ CompendiumSectionSourcePolicy _appendImportedSourceNote(
     return section;
   }
 
+  final attemptedCount = attemptedCountsBySection[section.sectionKey] ?? 0;
+  final acceptedCount = acceptedCountsBySection[section.sectionKey] ?? 0;
   final importedNote =
-      'Imported XML packs active: ${contributions.join(', ')}.';
+      'Imported XML packs active: ${contributions.join(', ')}. '
+      'Processed entries: $attemptedCount. '
+      'Accepted after precedence: $acceptedCount.';
   final conflictCount = conflictCountsBySection[section.sectionKey] ?? 0;
   final conflictNote = conflictCount == 0
       ? null
@@ -245,18 +273,27 @@ CompendiumSectionSourcePolicy _appendImportedSourceNote(
   );
 }
 
-List<String> _mergeUniqueStrings(
+_MergeResult<String> _mergeUniqueStrings(
   List<String> baseValues,
   Iterable<String> importedValues,
 ) {
   final merged = <String>[...baseValues];
   final known = baseValues.toSet();
+  var attempted = 0;
+  var conflicts = 0;
   for (final value in importedValues) {
-    if (known.add(value)) {
-      merged.add(value);
+    attempted += 1;
+    if (!known.add(value)) {
+      conflicts += 1;
+      continue;
     }
+    merged.add(value);
   }
-  return List<String>.unmodifiable(merged);
+  return _MergeResult<String>(
+    values: List<String>.unmodifiable(merged),
+    attempted: attempted,
+    conflicts: conflicts,
+  );
 }
 
 _MergeResult<CompendiumBackground> _mergeUniqueBackgrounds(
@@ -265,8 +302,10 @@ _MergeResult<CompendiumBackground> _mergeUniqueBackgrounds(
 ) {
   final merged = <CompendiumBackground>[...baseValues];
   final knownIds = baseValues.map((item) => item.id).toSet();
+  var attempted = 0;
   var conflicts = 0;
   for (final value in importedValues) {
+    attempted += 1;
     if (!knownIds.add(value.id)) {
       conflicts += 1;
       continue;
@@ -275,6 +314,7 @@ _MergeResult<CompendiumBackground> _mergeUniqueBackgrounds(
   }
   return _MergeResult<CompendiumBackground>(
     values: List<CompendiumBackground>.unmodifiable(merged),
+    attempted: attempted,
     conflicts: conflicts,
   );
 }
@@ -285,8 +325,10 @@ _MergeResult<CompendiumNarrativeOptionGroup> _mergeUniqueNarrativeGroups(
 ) {
   final merged = <CompendiumNarrativeOptionGroup>[...baseValues];
   final knownIds = baseValues.map((item) => item.id).toSet();
+  var attempted = 0;
   var conflicts = 0;
   for (final value in importedValues) {
+    attempted += 1;
     if (!knownIds.add(value.id)) {
       conflicts += 1;
       continue;
@@ -295,6 +337,7 @@ _MergeResult<CompendiumNarrativeOptionGroup> _mergeUniqueNarrativeGroups(
   }
   return _MergeResult<CompendiumNarrativeOptionGroup>(
     values: List<CompendiumNarrativeOptionGroup>.unmodifiable(merged),
+    attempted: attempted,
     conflicts: conflicts,
   );
 }
@@ -306,8 +349,10 @@ _MergeResult<T> _mergeUniqueByName<T>(
 ) {
   final merged = <T>[...baseValues];
   final knownNames = baseValues.map(nameSelector).toSet();
+  var attempted = 0;
   var conflicts = 0;
   for (final value in importedValues) {
+    attempted += 1;
     final name = nameSelector(value);
     if (!knownNames.add(name)) {
       conflicts += 1;
@@ -317,15 +362,23 @@ _MergeResult<T> _mergeUniqueByName<T>(
   }
   return _MergeResult<T>(
     values: List<T>.unmodifiable(merged),
+    attempted: attempted,
     conflicts: conflicts,
   );
 }
 
 class _MergeResult<T> {
-  const _MergeResult({required this.values, required this.conflicts});
+  const _MergeResult({
+    required this.values,
+    required this.attempted,
+    required this.conflicts,
+  });
 
   final List<T> values;
+  final int attempted;
   final int conflicts;
+
+  int get accepted => attempted - conflicts;
 }
 
 CompendiumBackground? _parseBackground(

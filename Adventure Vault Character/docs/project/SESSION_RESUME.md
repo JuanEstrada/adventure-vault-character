@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-03-29
+Last updated: 2026-03-30
 
 This is the single file to read first when resuming work on Adventure Vault
 Character. It consolidates the current product, architecture, repository
@@ -462,18 +462,25 @@ Resolved MVP decision:
 The next logical session should build on the current shell instead of
 restructuring it again:
 
-1. Decide whether narrative option catalogs should remain sourced from legacy
-   5e XML supplements or move to a more explicit import/pack model.
-2. Extend deterministic character rules beyond the first persisted spell-state
+1. Extend deterministic character rules beyond the first persisted spell-state
    slice, including class-specific limits and special-case spellcasting models.
-3. Keep reducing static SRD defaults by deriving more gameplay data directly
+2. Keep reducing static SRD defaults by deriving more gameplay data directly
    from the FightClub source set through the compendium boundary.
-4. Extend the current pack-based filtering beyond narrative supplements and
+3. Extend the current pack-based filtering beyond narrative supplements and
    connect it to future XML import, still without bypassing the existing
    `CompendiumCatalog` contract.
 
 Completed since the previous handoff:
 
+- The source-policy decision for narrative catalogs is now explicit:
+  SRD-aligned core data remains canonical, while legacy Wizards narrative
+  catalogs are exposed through an optional pack model.
+- Legacy PHB narrative-table groups now carry explicit optional-pack ownership,
+  so deactivating the legacy narrative pack removes both PHB and
+  setting-supplement narrative groups while preserving SRD alignment options.
+- Compendium management copy now reflects current behavior: optional-pack
+  activation immediately affects loaded catalog content, and XML import text now
+  distinguishes currently supported ingestion from future section expansion.
 - The Flutter asset bundle now explicitly includes the narrative XML files
   used by compendium narrative-option seeding, so web builds no longer emit
   runtime `404` asset fetches for those sources.
