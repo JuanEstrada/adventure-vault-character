@@ -14,6 +14,7 @@ class CharacterSheetScreen extends StatelessWidget {
     required this.onSetInventoryItemEquipped,
     required this.onSetInventoryItemCarried,
     required this.onSetInventoryItemQuantity,
+    required this.onSpendInventoryItemQuantity,
     required this.onSetInventoryItemCharges,
     required this.onSetInventoryItemContainer,
     super.key,
@@ -33,6 +34,8 @@ class CharacterSheetScreen extends StatelessWidget {
   onSetInventoryItemCarried;
   final Future<void> Function(String inventoryItemId, int quantity)
   onSetInventoryItemQuantity;
+  final Future<void> Function(String inventoryItemId, {int amount})
+  onSpendInventoryItemQuantity;
   final Future<void> Function(
     String inventoryItemId, {
     int? chargesCurrent,
@@ -142,6 +145,8 @@ class CharacterSheetScreen extends StatelessWidget {
                                 onSetInventoryItemCarried,
                             onSetInventoryItemQuantity:
                                 onSetInventoryItemQuantity,
+                            onSpendInventoryItemQuantity:
+                                onSpendInventoryItemQuantity,
                             onSetInventoryItemCharges:
                                 onSetInventoryItemCharges,
                             onSetInventoryItemContainer:
@@ -181,6 +186,7 @@ class CharacterSheetScreen extends StatelessWidget {
                     onSetInventoryItemEquipped: onSetInventoryItemEquipped,
                     onSetInventoryItemCarried: onSetInventoryItemCarried,
                     onSetInventoryItemQuantity: onSetInventoryItemQuantity,
+                    onSpendInventoryItemQuantity: onSpendInventoryItemQuantity,
                     onSetInventoryItemCharges: onSetInventoryItemCharges,
                     onSetInventoryItemContainer: onSetInventoryItemContainer,
                   ),
@@ -756,6 +762,7 @@ class _EquipmentPanel extends StatelessWidget {
     required this.onSetInventoryItemEquipped,
     required this.onSetInventoryItemCarried,
     required this.onSetInventoryItemQuantity,
+    required this.onSpendInventoryItemQuantity,
     required this.onSetInventoryItemCharges,
     required this.onSetInventoryItemContainer,
   });
@@ -768,6 +775,8 @@ class _EquipmentPanel extends StatelessWidget {
   onSetInventoryItemCarried;
   final Future<void> Function(String inventoryItemId, int quantity)
   onSetInventoryItemQuantity;
+  final Future<void> Function(String inventoryItemId, {int amount})
+  onSpendInventoryItemQuantity;
   final Future<void> Function(
     String inventoryItemId, {
     int? chargesCurrent,
@@ -849,6 +858,9 @@ class _EquipmentPanel extends StatelessWidget {
                 onDecreaseQuantity: () {
                   onSetInventoryItemQuantity(item.id, item.quantity - 1);
                 },
+                onSpendQuantity: () {
+                  onSpendInventoryItemQuantity(item.id);
+                },
                 onSetCharges: ({chargesCurrent, chargesMax}) {
                   return onSetInventoryItemCharges(
                     item.id,
@@ -883,6 +895,7 @@ class _InventoryItemRow extends StatelessWidget {
     required this.onSetCarried,
     required this.onIncreaseQuantity,
     required this.onDecreaseQuantity,
+    required this.onSpendQuantity,
     required this.onSetCharges,
     required this.containers,
     required this.onSetContainer,
@@ -894,6 +907,7 @@ class _InventoryItemRow extends StatelessWidget {
   final ValueChanged<bool> onSetCarried;
   final VoidCallback onIncreaseQuantity;
   final VoidCallback onDecreaseQuantity;
+  final VoidCallback onSpendQuantity;
   final Future<void> Function({int? chargesCurrent, int? chargesMax})
   onSetCharges;
   final List<CharacterEquipmentItemDomainModel> containers;
@@ -933,6 +947,15 @@ class _InventoryItemRow extends StatelessWidget {
                 onPressed: isUpdating ? null : onIncreaseQuantity,
                 icon: const Icon(Icons.add_circle_outline),
               ),
+              if (item.isConsumable || item.isAmmunition) ...[
+                const SizedBox(width: 8),
+                ActionChip(
+                  label: const Text('Spend 1'),
+                  onPressed: isUpdating || item.safeQuantity <= 0
+                      ? null
+                      : onSpendQuantity,
+                ),
+              ],
               const SizedBox(width: 12),
               Text('Weight ${item.totalWeight} lb'),
             ],

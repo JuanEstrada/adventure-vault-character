@@ -4,6 +4,7 @@ import 'package:adventure_vault_character/src/core/navigation/app_screen.dart';
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_draft_validator.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_validation_error.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/editable_character.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
@@ -585,6 +586,20 @@ class AppController extends ChangeNotifier {
     );
   }
 
+  Future<void> spendSelectedCharacterInventoryItemQuantity(
+    String inventoryItemId, {
+    int amount = 1,
+  }) async {
+    await _updateSelectedCharacterInventory(
+      inventoryItemId,
+      (id) => _characterRepository.spendInventoryItemQuantity(
+        id,
+        inventoryItemId,
+        amount: amount,
+      ),
+    );
+  }
+
   Future<void> setSelectedCharacterInventoryItemCharges(
     String inventoryItemId, {
     int? chargesCurrent,
@@ -655,6 +670,12 @@ class AppController extends ChangeNotifier {
     try {
       await update(selected.id);
       _state = _state.copyWith(isSavingCharacter: false, clearError: true);
+    } on CharacterInventoryValidationError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage:
+            'Failed to update inventory item: $inventoryItemId (${error.code}).',
+      );
     } catch (_) {
       _state = _state.copyWith(
         isSavingCharacter: false,

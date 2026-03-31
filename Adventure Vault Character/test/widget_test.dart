@@ -705,6 +705,82 @@ void main() {
     expect(sheet.equipment.items.any((item) => item.chargesMax == 1), isTrue);
   });
 
+  testWidgets('sheet consumable spend action decrements quantity end-to-end', (
+    WidgetTester tester,
+  ) async {
+    final catalog = _testCatalog.copyWith(
+      equipmentLoadoutsByClass: <String, List<CompendiumEquipmentLoadout>>{
+        ..._testCatalog.equipmentLoadoutsByClass,
+        'Fighter': <CompendiumEquipmentLoadout>[
+          const CompendiumEquipmentLoadout(
+            id: 'fighter-consumable-kit',
+            label: 'Consumable kit',
+            startingMoneySummary: 'Class kit with a spendable item',
+            selectedItems: <String>['Quarterstaff', 'Torch'],
+          ),
+        ],
+      },
+    );
+    final compendiumRepository = InMemoryCompendiumRepository(catalog);
+    final repository = InMemoryCharacterRepository.empty(
+      compendiumRepository: compendiumRepository,
+    );
+    await tester.binding.setSurfaceSize(const Size(1200, 4200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      AdventureVaultApp(
+        characterRepository: repository,
+        compendiumRepository: compendiumRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Continue offline'));
+    await tester.tap(find.text('Continue offline'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Create character'));
+    await tester.tap(find.text('Create character'));
+    await tester.pumpAndSettle();
+
+    final classField = find.byWidgetPredicate(
+      (widget) =>
+          widget is DropdownButtonFormField<String> &&
+          widget.decoration.labelText == 'Clase',
+    );
+    await tester.enterText(find.byType(TextFormField).first, 'Borin');
+    await tester.tap(classField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Fighter').last);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.widgetWithText(FilledButton, 'Save draft').first,
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Save draft'));
+    await tester.pumpAndSettle();
+
+    final spendChip = find.widgetWithText(ActionChip, 'Spend 1');
+    expect(spendChip, findsOneWidget);
+
+    await tester.tap(spendChip);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Qty 0'), findsOneWidget);
+    final spentChipWidget = tester.widget<ActionChip>(spendChip);
+    expect(spentChipWidget.onPressed, isNull);
+
+    final summaries = await repository.getCharacterSummaries();
+    final sheet = await repository.getCharacterSheetById(summaries.single.id);
+    final torch = sheet!.equipment.items.firstWhere(
+      (item) => item.name == 'Torch',
+    );
+    expect(torch.quantity, 0);
+  });
+
   testWidgets('open edit save and reopen keeps updated character data', (
     WidgetTester tester,
   ) async {

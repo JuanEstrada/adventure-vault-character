@@ -189,6 +189,19 @@ class DriftCharacterRepository implements CharacterRepository {
   }
 
   @override
+  Future<void> spendInventoryItemQuantity(
+    String id,
+    String inventoryItemId, {
+    int amount = 1,
+  }) {
+    return _characterInventoryService.spendInventoryItemQuantity(
+      id,
+      inventoryItemId,
+      amount: amount,
+    );
+  }
+
+  @override
   Future<void> setInventoryItemCharges(
     String id,
     String inventoryItemId, {

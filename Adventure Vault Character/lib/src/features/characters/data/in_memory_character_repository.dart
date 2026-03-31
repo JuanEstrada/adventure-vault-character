@@ -5,6 +5,7 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/domain/character_class_resource_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_encumbrance_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_quantity_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_validation_error.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rest_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
@@ -240,6 +241,21 @@ class InMemoryCharacterRepository implements CharacterRepository {
     int quantity,
   ) async {
     await _updateInventoryItem(id, inventoryItemId, quantity: quantity);
+  }
+
+  @override
+  Future<void> spendInventoryItemQuantity(
+    String id,
+    String inventoryItemId, {
+    int amount = 1,
+  }) async {
+    final existing = _inventoryItemById(id, inventoryItemId);
+    final nextQuantity = CharacterInventoryQuantityRules.spend(
+      currentQuantity: existing.quantity,
+      amount: amount,
+    );
+
+    await _updateInventoryItem(id, inventoryItemId, quantity: nextQuantity);
   }
 
   @override

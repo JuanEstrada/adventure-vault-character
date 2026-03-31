@@ -1004,6 +1004,175 @@ void main() {
   });
 
   test(
+    'inventory quantity spend decrements deterministically and persists',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        const CreateCharacterInput(
+          name: 'Bryn',
+          raceName: 'Human',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'manualPointAllocation',
+          abilityScoreProvenance: 'method=manualPointAllocation',
+          strength: 10,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 10,
+          wisdom: 14,
+          charisma: 8,
+          className: 'Wizard',
+          level: 2,
+          experience: 300,
+          equipmentLoadoutId: 'wizard-focus',
+          equipmentLoadoutLabel: 'Arcane focus kit',
+          startingMoneySummary: '0 gp',
+          selectedEquipmentItems: <String>['3 Torch'],
+          currentHitPoints: 12,
+          maximumHitPoints: 12,
+          temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.spellbook,
+            selectedSpells: <CharacterSpellSelectionInput>[],
+            slotUsages: <CharacterSpellSlotUsageInput>[],
+          ),
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: '',
+            narrativeNotes: '',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection.empty(NarrativeFieldKey.alignment),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
+        ),
+      );
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final torchId = sheet!.equipment.items.single.id;
+      expect(sheet.equipment.items.single.quantity, 3);
+
+      await repository.spendInventoryItemQuantity(
+        summary.id,
+        torchId,
+        amount: 2,
+      );
+
+      sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      expect(sheet!.equipment.items.single.quantity, 1);
+
+      final inventoryRow = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.id.equals(torchId))).getSingle();
+      expect(inventoryRow.quantity, 1);
+    },
+  );
+
+  test(
+    'inventory quantity spend rejects insufficient quantity without state change',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        const CreateCharacterInput(
+          name: 'Rhea',
+          raceName: 'Human',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'manualPointAllocation',
+          abilityScoreProvenance: 'method=manualPointAllocation',
+          strength: 10,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 10,
+          wisdom: 14,
+          charisma: 8,
+          className: 'Wizard',
+          level: 2,
+          experience: 300,
+          equipmentLoadoutId: 'wizard-focus',
+          equipmentLoadoutLabel: 'Arcane focus kit',
+          startingMoneySummary: '0 gp',
+          selectedEquipmentItems: <String>['Torch'],
+          currentHitPoints: 12,
+          maximumHitPoints: 12,
+          temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.spellbook,
+            selectedSpells: <CharacterSpellSelectionInput>[],
+            slotUsages: <CharacterSpellSlotUsageInput>[],
+          ),
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: '',
+            narrativeNotes: '',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection.empty(NarrativeFieldKey.alignment),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
+        ),
+      );
+
+      final characterBefore = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final torchId = sheet!.equipment.items.single.id;
+      expect(sheet.equipment.items.single.quantity, 1);
+
+      await expectLater(
+        repository.spendInventoryItemQuantity(summary.id, torchId, amount: 2),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'insufficient_quantity',
+          ),
+        ),
+      );
+
+      final characterAfter = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      expect(characterAfter.updatedAt, characterBefore.updatedAt);
+
+      sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      expect(sheet!.equipment.items.single.quantity, 1);
+
+      final inventoryRow = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.id.equals(torchId))).getSingle();
+      expect(inventoryRow.quantity, 1);
+    },
+  );
+
+  test(
     'inventory charge lifecycle enforces deterministic spend and restore',
     () async {
       final database = AppDatabase.executor(NativeDatabase.memory());

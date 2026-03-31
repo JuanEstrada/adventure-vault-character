@@ -636,6 +636,14 @@ Completed since the previous handoff:
   (`spendInventoryItemCharges`, `restoreInventoryItemCharges`) plus deterministic
   tracked-state defaults and validation (`invalid_charge_state`,
   `insufficient_charges`) in both Drift and in-memory repositories.
+- Inventory quantity-sensitive mutations now include explicit deterministic
+  spend behavior (`spendInventoryItemQuantity`) for consumable/ammo-style usage,
+  with stable `insufficient_quantity` validation and no-state-change-on-failure
+  behavior in both Drift and in-memory repository paths.
+- The character-sheet equipment flow now exposes that quantity-spend behavior
+  end-to-end through a minimal row-level `Spend 1` control for
+  consumable/ammo-style items, routed via the existing app controller and
+  repository/application contracts.
 
 Next-session starting point:
 
@@ -649,7 +657,7 @@ Next-session starting point:
 - Use `lib/src/features/characters/application/character_inventory_service.dart`
   and `lib/src/features/characters/data/character_repository.dart` as the
   source of truth for inventory mutation contracts (`equipped`, `carried`,
-  `quantity`, `charges`, and `container assignment`).
+  `quantity`, `quantity spend`, `charges`, and `container assignment`).
 - Use `docs/specs/inventory-rules-phase1.md` as the policy source of truth for
   Phase 1 container/charge/consumable semantics before extending those rules.
 - Use `CharacterInventoryInvariantEvaluator` from

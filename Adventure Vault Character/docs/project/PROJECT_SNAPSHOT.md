@@ -403,6 +403,14 @@ summary.
 - Inventory charge handling now includes explicit lifecycle operations for
   spend/restore mutations with deterministic defaults for initial tracked state
   and stable error categories for invalid charge transitions.
+- Inventory quantity spend handling now also includes an explicit mutation
+  contract for consumable/ammo-style usage (`spendInventoryItemQuantity`) with
+  deterministic decrement behavior, `insufficient_quantity` rejection, and
+  no-state-change-on-failure coverage in Drift repository tests.
+- Character-sheet equipment now exposes that consumable/ammo spend contract as a
+  minimal row-level `Spend 1` control routed through the existing app
+  controller and repository path, so quantity spending no longer depends on
+  direct quantity editing only.
 
 ## Pending Work
 
@@ -413,8 +421,8 @@ summary.
   capacity-limited container evaluation and richer nested-container behavior
   using the accepted Phase 1 inventory policy as baseline.
 - Wire the new read-side inventory invariants into application mutation
-  services for additional inventory mutation types beyond container assignment
-  (consumables and quantity-sensitive actions).
+  services for additional inventory mutation types beyond the now-implemented
+  container assignment and quantity-spend consumable/ammo flow.
 - Extend the new compendium screen toward future pack-management and import
   workflows without bypassing the existing repository/domain contract.
 - Extend the current XML import flow beyond the currently supported imported

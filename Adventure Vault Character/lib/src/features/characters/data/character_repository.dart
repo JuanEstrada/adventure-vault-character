@@ -45,6 +45,12 @@ abstract interface class CharacterRepository {
     int quantity,
   );
 
+  Future<void> spendInventoryItemQuantity(
+    String id,
+    String inventoryItemId, {
+    int amount,
+  });
+
   Future<void> setInventoryItemCharges(
     String id,
     String inventoryItemId, {

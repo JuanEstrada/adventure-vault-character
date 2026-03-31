@@ -1,6 +1,7 @@
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_read_dao.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_write_dao.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_quantity_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_validation_error.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:drift/drift.dart';
@@ -51,6 +52,24 @@ class CharacterInventoryService {
       id,
       inventoryItemId,
       quantity: Value(quantity.clamp(0, 9999).toInt()),
+    );
+  }
+
+  Future<void> spendInventoryItemQuantity(
+    String id,
+    String inventoryItemId, {
+    int amount = 1,
+  }) async {
+    final item = await _requireInventoryItem(id, inventoryItemId);
+    final nextQuantity = CharacterInventoryQuantityRules.spend(
+      currentQuantity: item.quantity,
+      amount: amount,
+    );
+
+    await _updateInventoryItem(
+      id,
+      inventoryItemId,
+      quantity: Value(nextQuantity),
     );
   }
 
