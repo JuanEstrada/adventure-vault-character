@@ -189,6 +189,11 @@ summary.
 - Stack lifecycle mutations now use shared deterministic validation and return
   `invalid_stack_state` for non-stackable or incompatible operations while
   preserving no-state-change on failure in both in-memory and Drift paths.
+- Container-aware stack transfer mutations now run through the same inventory
+  service/repository contracts, supporting whole-stack moves into valid
+  containers, deterministic partial transfer orchestration via split/merge
+  projection, and reject-only failures for invalid target/structure/capacity
+  and incompatible target-stack state.
 - Pack-state filtering now also trims pack-tagged backgrounds, spells, feats,
   and monsters, not only narrative-option groups.
 - XML import validation is now shared by in-memory and persisted compendium
@@ -423,10 +428,6 @@ summary.
 - Expand the edit flow beyond the current guided MVP fields and decide how
   later post-creation inventory or combat editing should interact with the
   same aggregate now that sheet-side inventory mutation controls are live.
-- Extend the current inventory mutation surface with container-aware stack
-  transfer orchestration, including whole-stack moves, partial stack transfers,
-  and no-state-change rejection for invalid targets, capacity overflow, depth,
-  cycle, or incompatibility failures.
 - Add compatibility edge coverage for stack lifecycle and future transfer flows
   where item identity matches but state differs (`equipped`, `carried`,
   `container`, `charges`, `notes`).
@@ -488,22 +489,19 @@ summary.
 
 ## Next Recommended Steps
 
-1. Implement container-aware stack transfer mutations as the next inventory
-   batch, keeping the work in domain/application/data/tests before adding new
-   UI.
-2. Add merge/transfer compatibility edge tests for same-item state mismatches
+1. Add merge/transfer compatibility edge tests for same-item state mismatches
    so `invalid_stack_state` stays deterministic across repository
    implementations.
-3. Continue translating the available rules sources into explicit
+2. Continue translating the available rules sources into explicit
    deterministic application/domain services.
-4. Expand compendium ingestion from strict 2024 SRD baseline into broader
+3. Expand compendium ingestion from strict 2024 SRD baseline into broader
    official 2024 sources with explicit precedence and conflict reporting.
-5. Expand deterministic resource recovery beyond the now-implemented HP +
+4. Expand deterministic resource recovery beyond the now-implemented HP +
    spell-slot + initial class-resource rest actions (broader class coverage,
    rest cadence details, and richer sheet-visible recovery summaries).
-6. Continue improving equipment definition quality so weight-aware
+5. Continue improving equipment definition quality so weight-aware
    encumbrance reflects more compendium items without fallback gaps.
-7. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
+6. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
 ## Next Session Guardrail
 

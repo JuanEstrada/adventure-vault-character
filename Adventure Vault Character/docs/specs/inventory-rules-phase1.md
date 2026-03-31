@@ -104,6 +104,23 @@ Out of scope for this phase:
   lossy.
 - Any invalid stack mutation is reject-only and does not mutate state.
 
+## Container-Aware Stack Transfer Contract (Phase 5)
+
+- Transfer mutations target stackable items only.
+- Whole-stack transfer into a container reuses the same structural/container
+  validity checks as direct container assignment.
+- Partial transfer uses deterministic split orchestration:
+  - source quantity is reduced,
+  - a transfer stack shape is projected into the target container,
+  - and compatible merge is applied when an existing target-container stack can
+    absorb it.
+- Compatibility for transfer-merge follows the same stack lifecycle compatibility
+  fields (definition identity plus stack state), so merge remains non-lossy.
+- If target container already has same-identity stacks but none are compatible,
+  transfer is rejected with `invalid_stack_state`.
+- Capacity overflow, invalid target/container, cycle, and depth violations are
+  reject-only and must leave state unchanged.
+
 ## Error Contract
 
 Services must expose structured failure reasons for these categories:

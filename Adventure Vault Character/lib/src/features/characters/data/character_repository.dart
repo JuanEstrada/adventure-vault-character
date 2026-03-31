@@ -66,6 +66,13 @@ abstract interface class CharacterRepository {
 
   Future<int> retireZeroQuantityInventoryStacks(String id);
 
+  Future<String> transferInventoryItemStackToContainer(
+    String id,
+    String sourceInventoryItemId, {
+    required String targetContainerInventoryItemId,
+    int? quantity,
+  });
+
   Future<void> setInventoryItemCharges(
     String id,
     String inventoryItemId, {

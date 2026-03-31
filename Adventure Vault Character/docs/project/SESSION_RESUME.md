@@ -481,9 +481,9 @@ Resolved MVP decision:
 The next logical session should build on the current shell instead of
 restructuring it again:
 
-1. Expand inventory/equipment modeling depth beyond the current mutation and
-   encumbrance baseline by adding container-aware stack transfer mutations on
-   top of the now-implemented split / merge / retire-zero lifecycle.
+1. Harden merge/transfer compatibility edge coverage for same-item state
+   mismatches (`equipped`, `carried`, `container`, `charges`, `notes`) so
+   `invalid_stack_state` remains deterministic across repository paths.
 2. Improve equipment-definition quality so weight-aware encumbrance has fewer
    fallback gaps and reflects more compendium items deterministically.
 3. Continue extending deterministic class-resource recovery coverage while
@@ -655,6 +655,11 @@ Completed since the previous handoff:
   coupling: explicit `split`, `merge`, and `retire-zero` operations run through
   shared deterministic validation and repository parity tests in both Drift and
   in-memory paths.
+- Container-aware stack transfer mutations are now implemented in the same
+  service-first inventory contract: whole-stack moves, partial transfer
+  orchestration through split/merge projection, invariant reuse for
+  target/structure/capacity checks, and reject-only `invalid_stack_state`
+  behavior when target-container same-identity stacks are incompatible.
 
 Next-session starting point:
 
@@ -668,8 +673,8 @@ Next-session starting point:
 - Use `lib/src/features/characters/application/character_inventory_service.dart`
   and `lib/src/features/characters/data/character_repository.dart` as the
   source of truth for inventory mutation contracts (`equipped`, `carried`,
-  `quantity`, `quantity spend`, `charges`, `container assignment`, and stack
-  lifecycle operations).
+  `quantity`, `quantity spend`, `charges`, `container assignment`, stack
+  lifecycle operations, and container-aware stack transfer).
 - Use `docs/specs/inventory-rules-phase1.md` as the policy source of truth for
   Phase 1 container/charge/consumable semantics before extending those rules.
 - Use `CharacterInventoryInvariantEvaluator` from
@@ -678,9 +683,9 @@ Next-session starting point:
 - Use `CharacterInventoryValidationError` from
   `lib/src/features/characters/domain/character_inventory_validation_error.dart`
   as the source of truth for policy-level inventory mutation error categories.
-- Start the next inventory batch from container-aware stack transfer planning:
-  whole-stack move, partial transfer via split orchestration, and rejection for
-  invalid target, overflow, depth, cycle, or compatibility failures.
+- Start the next inventory batch from transfer compatibility edge hardening,
+  especially same-identity stacks that differ by state fields and should reject
+  deterministically with no persistence changes.
 - Use `lib/src/features/settings/data/system_settings_repository.dart` as the
   source of truth for the coin-weight toggle that affects encumbrance behavior.
 - Use the new migration regression tests in

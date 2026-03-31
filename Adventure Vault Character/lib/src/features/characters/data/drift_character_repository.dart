@@ -235,6 +235,21 @@ class DriftCharacterRepository implements CharacterRepository {
   }
 
   @override
+  Future<String> transferInventoryItemStackToContainer(
+    String id,
+    String sourceInventoryItemId, {
+    required String targetContainerInventoryItemId,
+    int? quantity,
+  }) {
+    return _characterInventoryService.transferInventoryItemStackToContainer(
+      id,
+      sourceInventoryItemId,
+      targetContainerInventoryItemId: targetContainerInventoryItemId,
+      quantity: quantity,
+    );
+  }
+
+  @override
   Future<void> setInventoryItemCharges(
     String id,
     String inventoryItemId, {

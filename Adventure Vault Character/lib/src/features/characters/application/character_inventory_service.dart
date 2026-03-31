@@ -199,6 +199,249 @@ class CharacterInventoryService {
     });
   }
 
+  Future<String> transferInventoryItemStackToContainer(
+    String id,
+    String sourceInventoryItemId, {
+    required String targetContainerInventoryItemId,
+    int? quantity,
+  }) async {
+    final normalizedTargetContainerId = targetContainerInventoryItemId.trim();
+    if (normalizedTargetContainerId.isEmpty) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Target container is required for stack transfer.',
+      );
+    }
+
+    final source = await _requireInventoryItem(id, sourceInventoryItemId);
+    final sourceIsStackable = await _isStackable(source);
+    if (!sourceIsStackable) {
+      throw const CharacterInventoryValidationError(
+        'invalid_stack_state',
+        'Only stackable items can be transferred between containers.',
+      );
+    }
+
+    final requestedQuantity = quantity ?? source.quantity;
+    if (requestedQuantity <= 0) {
+      throw const CharacterInventoryValidationError(
+        'invalid_quantity',
+        'Transfer quantity must be greater than zero.',
+      );
+    }
+    if (requestedQuantity > source.quantity) {
+      throw const CharacterInventoryValidationError(
+        'insufficient_quantity',
+        'Source stack does not have enough quantity for this transfer.',
+      );
+    }
+
+    final inventoryItems = await _readDao.getInventoryByCharacterId(id);
+    final itemById = <String, CharacterInventoryData>{
+      for (final item in inventoryItems) item.id: item,
+    };
+    final targetContainer = itemById[normalizedTargetContainerId];
+    if (targetContainer == null) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Container item not found for this character.',
+      );
+    }
+
+    final projectedItems = inventoryItems
+        .map(_ProjectedInventoryItem.fromData)
+        .toList(growable: true);
+    final sourceIndex = projectedItems.indexWhere(
+      (item) => item.id == source.id,
+    );
+    if (sourceIndex < 0) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Inventory item not found for this character.',
+      );
+    }
+
+    final projectedSource = projectedItems[sourceIndex];
+    final transferredShape = projectedSource.copyWith(
+      quantity: requestedQuantity,
+      containerInventoryItemId: normalizedTargetContainerId,
+    );
+    final identityCandidates =
+        projectedItems
+            .where(
+              (item) =>
+                  item.id != projectedSource.id &&
+                  item.containerInventoryItemId ==
+                      normalizedTargetContainerId &&
+                  _hasSameStackIdentity(source: projectedSource, target: item),
+            )
+            .toList(growable: false)
+          ..sort((left, right) => left.id.compareTo(right.id));
+    _ProjectedInventoryItem? mergeTarget;
+    for (final candidate in identityCandidates) {
+      if (_areProjectedStacksCompatible(
+        source: transferredShape,
+        target: candidate,
+      )) {
+        mergeTarget = candidate;
+        break;
+      }
+    }
+    if (identityCandidates.isNotEmpty && mergeTarget == null) {
+      throw const CharacterInventoryValidationError(
+        'invalid_stack_state',
+        'Stacks are not compatible for container transfer merge.',
+      );
+    }
+
+    final definitionIds = inventoryItems
+        .map((item) => item.equipmentDefinitionId)
+        .whereType<String>();
+    final definitions = await _readDao.getEquipmentDefinitionsByIds(
+      definitionIds,
+    );
+    final definitionsById = <String, EquipmentDefinition>{
+      for (final definition in definitions) definition.id: definition,
+    };
+
+    String transferredStackId;
+    String? splitStackId;
+    int? sourceQuantityAfterMerge;
+    int? targetQuantityAfterMerge;
+
+    if (mergeTarget != null) {
+      final mergeResult = CharacterInventoryStackRules.merge(
+        sourceQuantity: projectedSource.quantity,
+        targetQuantity: mergeTarget.quantity,
+        mergeQuantity: requestedQuantity,
+        sourceIsStackable: true,
+        targetIsStackable: true,
+        isCompatible: true,
+      );
+
+      sourceQuantityAfterMerge = mergeResult.sourceQuantity;
+      targetQuantityAfterMerge = mergeResult.targetQuantity;
+      transferredStackId = mergeTarget.id;
+
+      final targetIndex = projectedItems.indexWhere(
+        (item) => item.id == mergeTarget!.id,
+      );
+      projectedItems[targetIndex] = projectedItems[targetIndex].copyWith(
+        quantity: mergeResult.targetQuantity,
+      );
+      if (CharacterInventoryStackRules.shouldRetireZeroQuantityStack(
+        mergeResult.sourceQuantity,
+      )) {
+        projectedItems.removeAt(sourceIndex);
+      } else {
+        projectedItems[sourceIndex] = projectedSource.copyWith(
+          quantity: mergeResult.sourceQuantity,
+        );
+      }
+    } else if (requestedQuantity == projectedSource.quantity) {
+      transferredStackId = projectedSource.id;
+      projectedItems[sourceIndex] = projectedSource.copyWith(
+        containerInventoryItemId: normalizedTargetContainerId,
+      );
+    } else {
+      final splitResult = CharacterInventoryStackRules.split(
+        sourceQuantity: projectedSource.quantity,
+        splitQuantity: requestedQuantity,
+        isStackable: true,
+      );
+      splitStackId = _nextInventoryItemId(id, inventoryItems);
+      transferredStackId = splitStackId;
+
+      projectedItems[sourceIndex] = projectedSource.copyWith(
+        quantity: splitResult.sourceQuantity,
+      );
+      projectedItems.add(
+        projectedSource.copyWith(
+          id: splitStackId,
+          quantity: splitResult.splitQuantity,
+          containerInventoryItemId: normalizedTargetContainerId,
+        ),
+      );
+    }
+
+    _validateProjectedInventory(
+      projectedItems,
+      definitionsById: definitionsById,
+    );
+
+    await _database.transaction(() async {
+      final now = DateTime.now();
+      await _writeDao.updateCharacter(
+        id,
+        CharactersCompanion(updatedAt: Value(now)),
+      );
+
+      if (mergeTarget != null) {
+        await _writeDao.updateInventoryItem(
+          mergeTarget.id,
+          CharacterInventoryCompanion(
+            id: Value(mergeTarget.id),
+            quantity: Value(targetQuantityAfterMerge!),
+          ),
+        );
+        if (CharacterInventoryStackRules.shouldRetireZeroQuantityStack(
+          sourceQuantityAfterMerge ?? 0,
+        )) {
+          await _writeDao.deleteInventoryItemById(source.id);
+        } else {
+          await _writeDao.updateInventoryItem(
+            source.id,
+            CharacterInventoryCompanion(
+              id: Value(source.id),
+              quantity: Value(sourceQuantityAfterMerge!),
+            ),
+          );
+        }
+        return;
+      }
+
+      if (splitStackId == null) {
+        await _writeDao.updateInventoryItem(
+          source.id,
+          CharacterInventoryCompanion(
+            id: Value(source.id),
+            containerInventoryItemId: Value(normalizedTargetContainerId),
+          ),
+        );
+        return;
+      }
+
+      final splitQuantity = requestedQuantity;
+      final nextSourceQuantity = source.quantity - splitQuantity;
+      await _writeDao.updateInventoryItem(
+        source.id,
+        CharacterInventoryCompanion(
+          id: Value(source.id),
+          quantity: Value(nextSourceQuantity),
+        ),
+      );
+      await _writeDao.insertInventoryItem(
+        CharacterInventoryCompanion.insert(
+          id: splitStackId,
+          characterId: id,
+          equipmentDefinitionId: Value(source.equipmentDefinitionId),
+          trinketDefinitionId: Value(source.trinketDefinitionId),
+          displayNameSnapshot: Value(source.displayNameSnapshot),
+          quantity: Value(splitQuantity),
+          isEquipped: Value(source.isEquipped),
+          isCarried: Value(source.isCarried),
+          isFavorite: Value(source.isFavorite),
+          chargesCurrent: Value(source.chargesCurrent),
+          chargesMax: Value(source.chargesMax),
+          containerInventoryItemId: Value(normalizedTargetContainerId),
+          notes: Value(source.notes),
+        ),
+      );
+    });
+
+    return transferredStackId;
+  }
+
   Future<void> setInventoryItemCharges(
     String id,
     String inventoryItemId, {
@@ -493,6 +736,85 @@ class CharacterInventoryService {
         source.notes == target.notes;
   }
 
+  bool _hasSameStackIdentity({
+    required _ProjectedInventoryItem source,
+    required _ProjectedInventoryItem target,
+  }) {
+    return source.equipmentDefinitionId == target.equipmentDefinitionId &&
+        source.trinketDefinitionId == target.trinketDefinitionId &&
+        source.displayNameSnapshot == target.displayNameSnapshot;
+  }
+
+  bool _areProjectedStacksCompatible({
+    required _ProjectedInventoryItem source,
+    required _ProjectedInventoryItem target,
+  }) {
+    return source.equipmentDefinitionId == target.equipmentDefinitionId &&
+        source.trinketDefinitionId == target.trinketDefinitionId &&
+        source.displayNameSnapshot == target.displayNameSnapshot &&
+        source.isEquipped == target.isEquipped &&
+        source.isCarried == target.isCarried &&
+        source.isFavorite == target.isFavorite &&
+        source.chargesCurrent == target.chargesCurrent &&
+        source.chargesMax == target.chargesMax &&
+        source.containerInventoryItemId == target.containerInventoryItemId &&
+        source.notes == target.notes;
+  }
+
+  void _validateProjectedInventory(
+    List<_ProjectedInventoryItem> projectedItems, {
+    required Map<String, EquipmentDefinition> definitionsById,
+  }) {
+    final displayNameById = <String, String>{
+      for (final item in projectedItems)
+        item.id:
+            item.displayNameSnapshot ??
+            definitionsById[item.equipmentDefinitionId]?.name ??
+            item.equipmentDefinitionId ??
+            item.trinketDefinitionId ??
+            'Unknown item',
+    };
+
+    final report = const CharacterInventoryInvariantEvaluator().evaluate(
+      projectedItems
+          .map(
+            (item) => CharacterEquipmentItemDomainModel(
+              id: item.id,
+              name: displayNameById[item.id] ?? 'Unknown item',
+              quantity: item.quantity,
+              isEquipped: item.isEquipped,
+              isCarried: item.isCarried,
+              isFavorite: item.isFavorite,
+              weightPerUnit:
+                  definitionsById[item.equipmentDefinitionId]?.weight,
+              isContainer:
+                  definitionsById[item.equipmentDefinitionId]?.isContainer ??
+                  false,
+              chargesCurrent: item.chargesCurrent,
+              chargesMax: item.chargesMax,
+              containerInventoryItemId: item.containerInventoryItemId,
+              containerDisplayName: null,
+            ),
+          )
+          .toList(growable: false),
+    );
+    final structuralIssues = report.issues.where(
+      (issue) =>
+          issue.code == 'invalid_target' ||
+          issue.code == 'invalid_structure' ||
+          issue.code == 'capacity_exceeded',
+    );
+    if (structuralIssues.isEmpty) {
+      return;
+    }
+
+    final firstIssue = structuralIssues.first;
+    throw CharacterInventoryValidationError(
+      firstIssue.code,
+      firstIssue.message,
+    );
+  }
+
   String _nextInventoryItemId(
     String characterId,
     List<CharacterInventoryData> inventory,
@@ -510,5 +832,78 @@ class CharacterInventoryService {
       }
     }
     return '$characterId-inventory-$nextIndex';
+  }
+}
+
+class _ProjectedInventoryItem {
+  const _ProjectedInventoryItem({
+    required this.id,
+    required this.characterId,
+    required this.equipmentDefinitionId,
+    required this.trinketDefinitionId,
+    required this.displayNameSnapshot,
+    required this.quantity,
+    required this.isEquipped,
+    required this.isCarried,
+    required this.isFavorite,
+    required this.chargesCurrent,
+    required this.chargesMax,
+    required this.containerInventoryItemId,
+    required this.notes,
+  });
+
+  factory _ProjectedInventoryItem.fromData(CharacterInventoryData item) {
+    return _ProjectedInventoryItem(
+      id: item.id,
+      characterId: item.characterId,
+      equipmentDefinitionId: item.equipmentDefinitionId,
+      trinketDefinitionId: item.trinketDefinitionId,
+      displayNameSnapshot: item.displayNameSnapshot,
+      quantity: item.quantity,
+      isEquipped: item.isEquipped,
+      isCarried: item.isCarried,
+      isFavorite: item.isFavorite,
+      chargesCurrent: item.chargesCurrent,
+      chargesMax: item.chargesMax,
+      containerInventoryItemId: item.containerInventoryItemId,
+      notes: item.notes,
+    );
+  }
+
+  final String id;
+  final String characterId;
+  final String? equipmentDefinitionId;
+  final String? trinketDefinitionId;
+  final String? displayNameSnapshot;
+  final int quantity;
+  final bool isEquipped;
+  final bool isCarried;
+  final bool isFavorite;
+  final int? chargesCurrent;
+  final int? chargesMax;
+  final String? containerInventoryItemId;
+  final String? notes;
+
+  _ProjectedInventoryItem copyWith({
+    String? id,
+    int? quantity,
+    String? containerInventoryItemId,
+  }) {
+    return _ProjectedInventoryItem(
+      id: id ?? this.id,
+      characterId: characterId,
+      equipmentDefinitionId: equipmentDefinitionId,
+      trinketDefinitionId: trinketDefinitionId,
+      displayNameSnapshot: displayNameSnapshot,
+      quantity: quantity ?? this.quantity,
+      isEquipped: isEquipped,
+      isCarried: isCarried,
+      isFavorite: isFavorite,
+      chargesCurrent: chargesCurrent,
+      chargesMax: chargesMax,
+      containerInventoryItemId:
+          containerInventoryItemId ?? this.containerInventoryItemId,
+      notes: notes,
+    );
   }
 }

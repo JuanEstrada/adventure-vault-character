@@ -376,6 +376,163 @@ class InMemoryCharacterRepository implements CharacterRepository {
   }
 
   @override
+  Future<String> transferInventoryItemStackToContainer(
+    String id,
+    String sourceInventoryItemId, {
+    required String targetContainerInventoryItemId,
+    int? quantity,
+  }) async {
+    final normalizedTargetContainerId = targetContainerInventoryItemId.trim();
+    if (normalizedTargetContainerId.isEmpty) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Target container is required for stack transfer.',
+      );
+    }
+
+    final source = _inventoryItemById(id, sourceInventoryItemId);
+    if (!source.isStackable) {
+      throw const CharacterInventoryValidationError(
+        'invalid_stack_state',
+        'Only stackable items can be transferred between containers.',
+      );
+    }
+
+    final requestedQuantity = quantity ?? source.quantity;
+    if (requestedQuantity <= 0) {
+      throw const CharacterInventoryValidationError(
+        'invalid_quantity',
+        'Transfer quantity must be greater than zero.',
+      );
+    }
+    if (requestedQuantity > source.quantity) {
+      throw const CharacterInventoryValidationError(
+        'insufficient_quantity',
+        'Source stack does not have enough quantity for this transfer.',
+      );
+    }
+
+    final inventory = _inventoryByCharacterId[id];
+    if (inventory == null) {
+      throw StateError('Inventory not found.');
+    }
+    final sourceIndex = inventory.indexWhere((item) => item.id == source.id);
+    if (sourceIndex < 0) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Inventory item not found for this character.',
+      );
+    }
+    final targetContainer = inventory.firstWhere(
+      (item) => item.id == normalizedTargetContainerId,
+      orElse: () => throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Container item not found for this character.',
+      ),
+    );
+
+    final transferredShape = source.copyWith(
+      quantity: requestedQuantity,
+      containerInventoryItemId: targetContainer.id,
+    );
+    final identityCandidates =
+        inventory
+            .where(
+              (item) =>
+                  item.id != source.id &&
+                  item.containerInventoryItemId == targetContainer.id &&
+                  _hasSameStackIdentityInMemory(source: source, target: item),
+            )
+            .toList(growable: false)
+          ..sort((left, right) => left.id.compareTo(right.id));
+    _InMemoryInventoryItem? mergeTarget;
+    for (final candidate in identityCandidates) {
+      if (_areStacksCompatible(source: transferredShape, target: candidate)) {
+        mergeTarget = candidate;
+        break;
+      }
+    }
+    if (identityCandidates.isNotEmpty && mergeTarget == null) {
+      throw const CharacterInventoryValidationError(
+        'invalid_stack_state',
+        'Stacks are not compatible for container transfer merge.',
+      );
+    }
+
+    final projectedItems = List<_InMemoryInventoryItem>.from(inventory);
+    String transferredStackId;
+
+    if (mergeTarget != null) {
+      final mergeResult = CharacterInventoryStackRules.merge(
+        sourceQuantity: source.quantity,
+        targetQuantity: mergeTarget.quantity,
+        mergeQuantity: requestedQuantity,
+        sourceIsStackable: true,
+        targetIsStackable: true,
+        isCompatible: true,
+      );
+      transferredStackId = mergeTarget.id;
+
+      final next = <_InMemoryInventoryItem>[];
+      for (final item in projectedItems) {
+        if (item.id == mergeTarget.id) {
+          next.add(item.copyWith(quantity: mergeResult.targetQuantity));
+          continue;
+        }
+        if (item.id == source.id) {
+          if (CharacterInventoryStackRules.shouldRetireZeroQuantityStack(
+            mergeResult.sourceQuantity,
+          )) {
+            continue;
+          }
+          next.add(item.copyWith(quantity: mergeResult.sourceQuantity));
+          continue;
+        }
+        next.add(item);
+      }
+      _validateProjectedInventoryInMemory(next);
+      _inventoryByCharacterId[id] = next;
+      _changes.add(null);
+      return transferredStackId;
+    }
+
+    if (requestedQuantity == source.quantity) {
+      transferredStackId = source.id;
+      projectedItems[sourceIndex] = source.copyWith(
+        containerInventoryItemId: targetContainer.id,
+      );
+      _validateProjectedInventoryInMemory(projectedItems);
+      _inventoryByCharacterId[id] = projectedItems;
+      _changes.add(null);
+      return transferredStackId;
+    }
+
+    final splitResult = CharacterInventoryStackRules.split(
+      sourceQuantity: source.quantity,
+      splitQuantity: requestedQuantity,
+      isStackable: true,
+    );
+    final splitId = _nextInventoryItemId(id, inventory);
+    transferredStackId = splitId;
+
+    projectedItems[sourceIndex] = source.copyWith(
+      quantity: splitResult.sourceQuantity,
+    );
+    projectedItems.add(
+      source.copyWith(
+        id: splitId,
+        quantity: splitResult.splitQuantity,
+        containerInventoryItemId: targetContainer.id,
+      ),
+    );
+
+    _validateProjectedInventoryInMemory(projectedItems);
+    _inventoryByCharacterId[id] = projectedItems;
+    _changes.add(null);
+    return transferredStackId;
+  }
+
+  @override
   Future<void> setInventoryItemCharges(
     String id,
     String inventoryItemId, {
@@ -1250,6 +1407,49 @@ class InMemoryCharacterRepository implements CharacterRepository {
         source.chargesCurrent == target.chargesCurrent &&
         source.chargesMax == target.chargesMax &&
         source.containerInventoryItemId == target.containerInventoryItemId;
+  }
+
+  bool _hasSameStackIdentityInMemory({
+    required _InMemoryInventoryItem source,
+    required _InMemoryInventoryItem target,
+  }) {
+    return source.name == target.name;
+  }
+
+  void _validateProjectedInventoryInMemory(
+    List<_InMemoryInventoryItem> projectedItems,
+  ) {
+    final report = const CharacterInventoryInvariantEvaluator().evaluate(
+      projectedItems
+          .map(
+            (item) => CharacterEquipmentItemDomainModel(
+              id: item.id,
+              name: item.name,
+              quantity: item.quantity,
+              isEquipped: item.isEquipped,
+              isCarried: item.isCarried,
+              isFavorite: item.isFavorite,
+              weightPerUnit: item.weightPerUnit,
+              isContainer: item.isContainer,
+              chargesCurrent: item.chargesCurrent,
+              chargesMax: item.chargesMax,
+              containerInventoryItemId: item.containerInventoryItemId,
+              containerDisplayName: null,
+            ),
+          )
+          .toList(growable: false),
+    );
+    final issues = report.issues.where(
+      (issue) =>
+          issue.code == 'invalid_target' ||
+          issue.code == 'invalid_structure' ||
+          issue.code == 'capacity_exceeded',
+    );
+    if (issues.isEmpty) {
+      return;
+    }
+    final first = issues.first;
+    throw CharacterInventoryValidationError(first.code, first.message);
   }
 
   int? _defaultWeightFor(String itemName) {

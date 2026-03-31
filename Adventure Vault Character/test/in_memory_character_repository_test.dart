@@ -264,6 +264,513 @@ void main() {
   );
 
   test(
+    'transferInventoryItemStackToContainer moves whole stack into valid container',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Transfer whole stack in-memory',
+          items: <String>['Backpack', 'Torch'],
+        ),
+      );
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final backpack = sheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Backpack',
+      );
+      final torch = sheet.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+
+      final transferredId = await repository
+          .transferInventoryItemStackToContainer(
+            summary.id,
+            torch.id,
+            targetContainerInventoryItemId: backpack.id,
+          );
+
+      expect(transferredId, torch.id);
+
+      sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final torchStacks = sheet!.equipment.items
+          .where((item) => item.name == 'Torch')
+          .toList(growable: false);
+      expect(torchStacks.length, 1);
+      expect(torchStacks.single.id, torch.id);
+      expect(torchStacks.single.quantity, 1);
+      expect(torchStacks.single.containerInventoryItemId, backpack.id);
+    },
+  );
+
+  test(
+    'transferInventoryItemStackToContainer splits source when no merge target exists',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Transfer split in-memory',
+          items: <String>['Backpack', '4 Torch'],
+        ),
+      );
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final backpack = sheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Backpack',
+      );
+      final source = sheet.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+
+      final transferredId = await repository
+          .transferInventoryItemStackToContainer(
+            summary.id,
+            source.id,
+            targetContainerInventoryItemId: backpack.id,
+            quantity: 2,
+          );
+
+      expect(transferredId, isNot(source.id));
+
+      sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final torchStacks = sheet!.equipment.items
+          .where((item) => item.name == 'Torch')
+          .toList(growable: false);
+      expect(torchStacks.length, 2);
+
+      final updatedSource = torchStacks.firstWhere(
+        (item) => item.id == source.id,
+      );
+      final createdTarget = torchStacks.firstWhere(
+        (item) => item.id == transferredId,
+      );
+      expect(updatedSource.quantity, 2);
+      expect(updatedSource.containerInventoryItemId, isNull);
+      expect(createdTarget.quantity, 2);
+      expect(createdTarget.containerInventoryItemId, backpack.id);
+    },
+  );
+
+  test(
+    'transferInventoryItemStackToContainer rejects non-container target without state change',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Transfer invalid target in-memory',
+          items: <String>['Torch', 'Quarterstaff'],
+        ),
+      );
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final torch = sheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+      final quarterstaff = sheet.equipment.items.firstWhere(
+        (item) => item.name == 'Quarterstaff',
+      );
+      final snapshotBefore = <String, (int, String?, bool)>{
+        for (final item in sheet.equipment.items)
+          item.id: (
+            item.quantity,
+            item.containerInventoryItemId,
+            item.isCarried,
+          ),
+      };
+
+      await expectLater(
+        repository.transferInventoryItemStackToContainer(
+          summary.id,
+          torch.id,
+          targetContainerInventoryItemId: quarterstaff.id,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_target',
+          ),
+        ),
+      );
+
+      final sheetAfter = await repository.getCharacterSheetById(summary.id);
+      expect(sheetAfter, isNotNull);
+      final snapshotAfter = <String, (int, String?, bool)>{
+        for (final item in sheetAfter!.equipment.items)
+          item.id: (
+            item.quantity,
+            item.containerInventoryItemId,
+            item.isCarried,
+          ),
+      };
+      expect(snapshotAfter, snapshotBefore);
+    },
+  );
+
+  test(
+    'transferInventoryItemStackToContainer merges compatible partial transfer',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Transfer partial in-memory',
+          items: <String>['Backpack', '4 Torch', 'Torch'],
+        ),
+      );
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final backpack = sheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Backpack',
+      );
+      final torchStacks =
+          sheet.equipment.items
+              .where((item) => item.name == 'Torch')
+              .toList(growable: false)
+            ..sort((left, right) => right.quantity.compareTo(left.quantity));
+      final source = torchStacks.first;
+      final target = torchStacks.last;
+
+      await repository.setInventoryItemContainer(
+        summary.id,
+        target.id,
+        backpack.id,
+      );
+      final transferredId = await repository
+          .transferInventoryItemStackToContainer(
+            summary.id,
+            source.id,
+            targetContainerInventoryItemId: backpack.id,
+            quantity: 2,
+          );
+
+      expect(transferredId, target.id);
+      sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final updatedSource = sheet!.equipment.items.firstWhere(
+        (item) => item.id == source.id,
+      );
+      final updatedTarget = sheet.equipment.items.firstWhere(
+        (item) => item.id == target.id,
+      );
+      expect(updatedSource.quantity, 2);
+      expect(updatedSource.containerInventoryItemId, isNull);
+      expect(updatedTarget.quantity, 3);
+      expect(updatedTarget.containerInventoryItemId, backpack.id);
+    },
+  );
+
+  test(
+    'transferInventoryItemStackToContainer rejects incompatible target stack without state change',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Transfer reject in-memory',
+          items: <String>['Backpack', '4 Torch', 'Torch'],
+        ),
+      );
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final backpack = sheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Backpack',
+      );
+      final torchStacks =
+          sheet.equipment.items
+              .where((item) => item.name == 'Torch')
+              .toList(growable: false)
+            ..sort((left, right) => right.quantity.compareTo(left.quantity));
+      final source = torchStacks.first;
+      final target = torchStacks.last;
+
+      await repository.setInventoryItemContainer(
+        summary.id,
+        target.id,
+        backpack.id,
+      );
+      await repository.setInventoryItemCarried(summary.id, target.id, false);
+
+      sheet = await repository.getCharacterSheetById(summary.id);
+      final snapshotBefore = <String, (int, String?, bool)>{
+        for (final item in sheet!.equipment.items)
+          item.id: (
+            item.quantity,
+            item.containerInventoryItemId,
+            item.isCarried,
+          ),
+      };
+
+      await expectLater(
+        repository.transferInventoryItemStackToContainer(
+          summary.id,
+          source.id,
+          targetContainerInventoryItemId: backpack.id,
+          quantity: 2,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_stack_state',
+          ),
+        ),
+      );
+
+      final sheetAfter = await repository.getCharacterSheetById(summary.id);
+      expect(sheetAfter, isNotNull);
+      final snapshotAfter = <String, (int, String?, bool)>{
+        for (final item in sheetAfter!.equipment.items)
+          item.id: (
+            item.quantity,
+            item.containerInventoryItemId,
+            item.isCarried,
+          ),
+      };
+      expect(snapshotAfter, snapshotBefore);
+    },
+  );
+
+  test(
+    'transferInventoryItemStackToContainer rejects capacity overflow without state change',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Transfer overflow in-memory',
+          items: <String>['Backpack', '31 Torch'],
+        ),
+      );
+
+      final sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final backpack = sheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Backpack',
+      );
+      final torch = sheet.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+      final snapshotBefore = <String, (int, String?, bool)>{
+        for (final item in sheet.equipment.items)
+          item.id: (
+            item.quantity,
+            item.containerInventoryItemId,
+            item.isCarried,
+          ),
+      };
+
+      await expectLater(
+        repository.transferInventoryItemStackToContainer(
+          summary.id,
+          torch.id,
+          targetContainerInventoryItemId: backpack.id,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'capacity_exceeded',
+          ),
+        ),
+      );
+
+      final sheetAfter = await repository.getCharacterSheetById(summary.id);
+      expect(sheetAfter, isNotNull);
+      final snapshotAfter = <String, (int, String?, bool)>{
+        for (final item in sheetAfter!.equipment.items)
+          item.id: (
+            item.quantity,
+            item.containerInventoryItemId,
+            item.isCarried,
+          ),
+      };
+      expect(snapshotAfter, snapshotBefore);
+    },
+  );
+
+  test(
+    'transferInventoryItemStackToContainer rejects cycle violation without state change',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Transfer cycle in-memory',
+          items: <String>['Flask bag', 'Flask bag'],
+        ),
+      );
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final flaskBags =
+          sheet!.equipment.items
+              .where((item) => item.name == 'Flask bag')
+              .toList(growable: false)
+            ..sort((left, right) => left.id.compareTo(right.id));
+      final source = flaskBags.first;
+      final target = flaskBags.last;
+      await repository.setInventoryItemContainer(
+        summary.id,
+        target.id,
+        source.id,
+      );
+
+      sheet = await repository.getCharacterSheetById(summary.id);
+      final snapshotBefore = <String, (int, String?, bool)>{
+        for (final item in sheet!.equipment.items)
+          item.id: (
+            item.quantity,
+            item.containerInventoryItemId,
+            item.isCarried,
+          ),
+      };
+
+      await expectLater(
+        repository.transferInventoryItemStackToContainer(
+          summary.id,
+          source.id,
+          targetContainerInventoryItemId: target.id,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_structure',
+          ),
+        ),
+      );
+
+      final sheetAfter = await repository.getCharacterSheetById(summary.id);
+      expect(sheetAfter, isNotNull);
+      final snapshotAfter = <String, (int, String?, bool)>{
+        for (final item in sheetAfter!.equipment.items)
+          item.id: (
+            item.quantity,
+            item.containerInventoryItemId,
+            item.isCarried,
+          ),
+      };
+      expect(snapshotAfter, snapshotBefore);
+    },
+  );
+
+  test(
+    'transferInventoryItemStackToContainer rejects depth violation without state change',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Transfer depth in-memory',
+          items: <String>[
+            'Flask bag',
+            'Backpack',
+            'Scholar pack',
+            'Explorer pack',
+            'Priest pack',
+            'Burglar pack',
+            'Dungeoneer pack',
+          ],
+        ),
+      );
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final itemByName = <String, String>{
+        for (final item in sheet!.equipment.items) item.name: item.id,
+      };
+      final flaskBagId = itemByName['Flask bag']!;
+      final backpackId = itemByName['Backpack']!;
+      final scholarPackId = itemByName['Scholar pack']!;
+      final explorerPackId = itemByName['Explorer pack']!;
+      final priestPackId = itemByName['Priest pack']!;
+      final burglarPackId = itemByName['Burglar pack']!;
+      final dungeoneerPackId = itemByName['Dungeoneer pack']!;
+
+      await repository.setInventoryItemContainer(
+        summary.id,
+        backpackId,
+        flaskBagId,
+      );
+      await repository.setInventoryItemContainer(
+        summary.id,
+        scholarPackId,
+        backpackId,
+      );
+      await repository.setInventoryItemContainer(
+        summary.id,
+        explorerPackId,
+        scholarPackId,
+      );
+      await repository.setInventoryItemContainer(
+        summary.id,
+        priestPackId,
+        explorerPackId,
+      );
+      await repository.setInventoryItemContainer(
+        summary.id,
+        dungeoneerPackId,
+        priestPackId,
+      );
+
+      sheet = await repository.getCharacterSheetById(summary.id);
+      final snapshotBefore = <String, (int, String?, bool)>{
+        for (final item in sheet!.equipment.items)
+          item.id: (
+            item.quantity,
+            item.containerInventoryItemId,
+            item.isCarried,
+          ),
+      };
+
+      await expectLater(
+        repository.transferInventoryItemStackToContainer(
+          summary.id,
+          flaskBagId,
+          targetContainerInventoryItemId: burglarPackId,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_structure',
+          ),
+        ),
+      );
+
+      final sheetAfter = await repository.getCharacterSheetById(summary.id);
+      expect(sheetAfter, isNotNull);
+      final snapshotAfter = <String, (int, String?, bool)>{
+        for (final item in sheetAfter!.equipment.items)
+          item.id: (
+            item.quantity,
+            item.containerInventoryItemId,
+            item.isCarried,
+          ),
+      };
+      expect(snapshotAfter, snapshotBefore);
+    },
+  );
+
+  test(
     'retireZeroQuantityInventoryStacks removes zero-quantity rows',
     () async {
       final repository = InMemoryCharacterRepository.empty(

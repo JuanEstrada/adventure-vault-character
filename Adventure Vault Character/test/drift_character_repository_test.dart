@@ -1545,6 +1545,648 @@ void main() {
   );
 
   test(
+    'inventory stack transfer moves whole stack into valid container',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        _createInventoryCharacterInput(
+          name: 'Transfer whole stack drift',
+          items: <String>['Backpack', 'Torch'],
+        ),
+      );
+
+      final sheetBefore = await repository.getCharacterSheetById(summary.id);
+      expect(sheetBefore, isNotNull);
+      final backpack = sheetBefore!.equipment.items.firstWhere(
+        (item) => item.name == 'Backpack',
+      );
+      final torch = sheetBefore.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+
+      final transferredId = await repository
+          .transferInventoryItemStackToContainer(
+            summary.id,
+            torch.id,
+            targetContainerInventoryItemId: backpack.id,
+          );
+
+      expect(transferredId, torch.id);
+
+      final rows = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final torchRows = rows
+          .where((row) => row.displayNameSnapshot == 'Torch')
+          .toList(growable: false);
+      expect(torchRows.length, 1);
+      expect(torchRows.single.id, torch.id);
+      expect(torchRows.single.quantity, 1);
+      expect(torchRows.single.containerInventoryItemId, backpack.id);
+    },
+  );
+
+  test(
+    'inventory stack transfer splits source when no compatible merge target exists',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        _createInventoryCharacterInput(
+          name: 'Transfer split drift',
+          items: <String>['Backpack', '4 Torch'],
+        ),
+      );
+
+      final sheetBefore = await repository.getCharacterSheetById(summary.id);
+      expect(sheetBefore, isNotNull);
+      final backpack = sheetBefore!.equipment.items.firstWhere(
+        (item) => item.name == 'Backpack',
+      );
+      final source = sheetBefore.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+
+      final transferredId = await repository
+          .transferInventoryItemStackToContainer(
+            summary.id,
+            source.id,
+            targetContainerInventoryItemId: backpack.id,
+            quantity: 2,
+          );
+
+      expect(transferredId, isNot(source.id));
+
+      final rows = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final torchRows = rows
+          .where((row) => row.displayNameSnapshot == 'Torch')
+          .toList(growable: false);
+      expect(torchRows.length, 2);
+
+      final sourceRow = torchRows.firstWhere((row) => row.id == source.id);
+      final createdTargetRow = torchRows.firstWhere(
+        (row) => row.id == transferredId,
+      );
+      expect(sourceRow.quantity, 2);
+      expect(sourceRow.containerInventoryItemId, isNull);
+      expect(createdTargetRow.quantity, 2);
+      expect(createdTargetRow.containerInventoryItemId, backpack.id);
+    },
+  );
+
+  test(
+    'inventory stack transfer rejects non-container target without persistence mutation',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        _createInventoryCharacterInput(
+          name: 'Transfer invalid target drift',
+          items: <String>['Torch', 'Quarterstaff'],
+        ),
+      );
+
+      final sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final torch = sheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+      final quarterstaff = sheet.equipment.items.firstWhere(
+        (item) => item.name == 'Quarterstaff',
+      );
+
+      final characterBefore = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      final rowsBefore = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final snapshotBefore = <String, (int, String?, bool)>{
+        for (final row in rowsBefore)
+          row.id: (row.quantity, row.containerInventoryItemId, row.isCarried),
+      };
+
+      await expectLater(
+        repository.transferInventoryItemStackToContainer(
+          summary.id,
+          torch.id,
+          targetContainerInventoryItemId: quarterstaff.id,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_target',
+          ),
+        ),
+      );
+
+      final characterAfter = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      expect(characterAfter.updatedAt, characterBefore.updatedAt);
+
+      final rowsAfter = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final snapshotAfter = <String, (int, String?, bool)>{
+        for (final row in rowsAfter)
+          row.id: (row.quantity, row.containerInventoryItemId, row.isCarried),
+      };
+      expect(snapshotAfter, snapshotBefore);
+    },
+  );
+
+  test(
+    'inventory stack transfer supports partial merge into target container',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        const CreateCharacterInput(
+          name: 'Transfer stack',
+          raceName: 'Human',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'manualPointAllocation',
+          abilityScoreProvenance: 'method=manualPointAllocation',
+          strength: 10,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 10,
+          wisdom: 14,
+          charisma: 8,
+          className: 'Wizard',
+          level: 2,
+          experience: 300,
+          equipmentLoadoutId: 'wizard-focus',
+          equipmentLoadoutLabel: 'Arcane focus kit',
+          startingMoneySummary: '0 gp',
+          selectedEquipmentItems: <String>['Backpack', '4 Torch', 'Torch'],
+          currentHitPoints: 12,
+          maximumHitPoints: 12,
+          temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.spellbook,
+            selectedSpells: <CharacterSpellSelectionInput>[],
+            slotUsages: <CharacterSpellSlotUsageInput>[],
+          ),
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: '',
+            narrativeNotes: '',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection.empty(NarrativeFieldKey.alignment),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
+        ),
+      );
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final backpack = sheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Backpack',
+      );
+      final torchStacks =
+          sheet.equipment.items
+              .where((item) => item.name == 'Torch')
+              .toList(growable: false)
+            ..sort((left, right) => right.quantity.compareTo(left.quantity));
+      final source = torchStacks.first;
+      final target = torchStacks.last;
+
+      await repository.setInventoryItemContainer(
+        summary.id,
+        target.id,
+        backpack.id,
+      );
+      final transferredId = await repository
+          .transferInventoryItemStackToContainer(
+            summary.id,
+            source.id,
+            targetContainerInventoryItemId: backpack.id,
+            quantity: 2,
+          );
+
+      expect(transferredId, target.id);
+
+      final sourceRow = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.id.equals(source.id))).getSingle();
+      final targetRow = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.id.equals(target.id))).getSingle();
+
+      expect(sourceRow.quantity, 2);
+      expect(sourceRow.containerInventoryItemId, isNull);
+      expect(targetRow.quantity, 3);
+      expect(targetRow.containerInventoryItemId, backpack.id);
+    },
+  );
+
+  test(
+    'inventory stack transfer rejects incompatible target stack without persistence mutation',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        const CreateCharacterInput(
+          name: 'Transfer reject',
+          raceName: 'Human',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'manualPointAllocation',
+          abilityScoreProvenance: 'method=manualPointAllocation',
+          strength: 10,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 10,
+          wisdom: 14,
+          charisma: 8,
+          className: 'Wizard',
+          level: 2,
+          experience: 300,
+          equipmentLoadoutId: 'wizard-focus',
+          equipmentLoadoutLabel: 'Arcane focus kit',
+          startingMoneySummary: '0 gp',
+          selectedEquipmentItems: <String>['Backpack', '4 Torch', 'Torch'],
+          currentHitPoints: 12,
+          maximumHitPoints: 12,
+          temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.spellbook,
+            selectedSpells: <CharacterSpellSelectionInput>[],
+            slotUsages: <CharacterSpellSlotUsageInput>[],
+          ),
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: '',
+            narrativeNotes: '',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection.empty(NarrativeFieldKey.alignment),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
+        ),
+      );
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final backpack = sheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Backpack',
+      );
+      final torchStacks =
+          sheet.equipment.items
+              .where((item) => item.name == 'Torch')
+              .toList(growable: false)
+            ..sort((left, right) => right.quantity.compareTo(left.quantity));
+      final source = torchStacks.first;
+      final target = torchStacks.last;
+
+      await repository.setInventoryItemContainer(
+        summary.id,
+        target.id,
+        backpack.id,
+      );
+      await repository.setInventoryItemCarried(summary.id, target.id, false);
+
+      final characterBefore = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      final rowsBefore = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final snapshotBefore = <String, (int, String?, bool)>{
+        for (final row in rowsBefore)
+          row.id: (row.quantity, row.containerInventoryItemId, row.isCarried),
+      };
+
+      await expectLater(
+        repository.transferInventoryItemStackToContainer(
+          summary.id,
+          source.id,
+          targetContainerInventoryItemId: backpack.id,
+          quantity: 2,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_stack_state',
+          ),
+        ),
+      );
+
+      final characterAfter = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      expect(characterAfter.updatedAt, characterBefore.updatedAt);
+
+      final rowsAfter = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final snapshotAfter = <String, (int, String?, bool)>{
+        for (final row in rowsAfter)
+          row.id: (row.quantity, row.containerInventoryItemId, row.isCarried),
+      };
+      expect(snapshotAfter, snapshotBefore);
+    },
+  );
+
+  test(
+    'inventory stack transfer rejects capacity overflow without persistence mutation',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        _createInventoryCharacterInput(
+          name: 'Transfer overflow drift',
+          items: <String>['Backpack', '31 Torch'],
+        ),
+      );
+
+      final sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final backpack = sheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Backpack',
+      );
+      final torch = sheet.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+
+      final characterBefore = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      final rowsBefore = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final snapshotBefore = <String, (int, String?, bool)>{
+        for (final row in rowsBefore)
+          row.id: (row.quantity, row.containerInventoryItemId, row.isCarried),
+      };
+
+      await expectLater(
+        repository.transferInventoryItemStackToContainer(
+          summary.id,
+          torch.id,
+          targetContainerInventoryItemId: backpack.id,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'capacity_exceeded',
+          ),
+        ),
+      );
+
+      final characterAfter = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      expect(characterAfter.updatedAt, characterBefore.updatedAt);
+
+      final rowsAfter = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final snapshotAfter = <String, (int, String?, bool)>{
+        for (final row in rowsAfter)
+          row.id: (row.quantity, row.containerInventoryItemId, row.isCarried),
+      };
+      expect(snapshotAfter, snapshotBefore);
+    },
+  );
+
+  test(
+    'inventory stack transfer rejects cycle violation without persistence mutation',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        _createInventoryCharacterInput(
+          name: 'Transfer cycle drift',
+          items: <String>['Flask bag', 'Flask bag'],
+        ),
+      );
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final flaskBags =
+          sheet!.equipment.items
+              .where((item) => item.name == 'Flask bag')
+              .toList(growable: false)
+            ..sort((left, right) => left.id.compareTo(right.id));
+      final source = flaskBags.first;
+      final target = flaskBags.last;
+      await repository.setInventoryItemContainer(
+        summary.id,
+        target.id,
+        source.id,
+      );
+
+      final characterBefore = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      final rowsBefore = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final snapshotBefore = <String, (int, String?, bool)>{
+        for (final row in rowsBefore)
+          row.id: (row.quantity, row.containerInventoryItemId, row.isCarried),
+      };
+
+      await expectLater(
+        repository.transferInventoryItemStackToContainer(
+          summary.id,
+          source.id,
+          targetContainerInventoryItemId: target.id,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_structure',
+          ),
+        ),
+      );
+
+      final characterAfter = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      expect(characterAfter.updatedAt, characterBefore.updatedAt);
+
+      final rowsAfter = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final snapshotAfter = <String, (int, String?, bool)>{
+        for (final row in rowsAfter)
+          row.id: (row.quantity, row.containerInventoryItemId, row.isCarried),
+      };
+      expect(snapshotAfter, snapshotBefore);
+    },
+  );
+
+  test(
+    'inventory stack transfer rejects depth violation without persistence mutation',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        _createInventoryCharacterInput(
+          name: 'Transfer depth drift',
+          items: <String>[
+            'Flask bag',
+            'Backpack',
+            'Scholar pack',
+            'Explorer pack',
+            'Priest pack',
+            'Burglar pack',
+            'Dungeoneer pack',
+          ],
+        ),
+      );
+
+      final sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final itemByName = <String, String>{
+        for (final item in sheet!.equipment.items) item.name: item.id,
+      };
+      final flaskBagId = itemByName['Flask bag']!;
+      final backpackId = itemByName['Backpack']!;
+      final scholarPackId = itemByName['Scholar pack']!;
+      final explorerPackId = itemByName['Explorer pack']!;
+      final priestPackId = itemByName['Priest pack']!;
+      final burglarPackId = itemByName['Burglar pack']!;
+      final dungeoneerPackId = itemByName['Dungeoneer pack']!;
+
+      await repository.setInventoryItemContainer(
+        summary.id,
+        backpackId,
+        flaskBagId,
+      );
+      await repository.setInventoryItemContainer(
+        summary.id,
+        scholarPackId,
+        backpackId,
+      );
+      await repository.setInventoryItemContainer(
+        summary.id,
+        explorerPackId,
+        scholarPackId,
+      );
+      await repository.setInventoryItemContainer(
+        summary.id,
+        priestPackId,
+        explorerPackId,
+      );
+      await repository.setInventoryItemContainer(
+        summary.id,
+        dungeoneerPackId,
+        priestPackId,
+      );
+
+      final characterBefore = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      final rowsBefore = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final snapshotBefore = <String, (int, String?, bool)>{
+        for (final row in rowsBefore)
+          row.id: (row.quantity, row.containerInventoryItemId, row.isCarried),
+      };
+
+      await expectLater(
+        repository.transferInventoryItemStackToContainer(
+          summary.id,
+          flaskBagId,
+          targetContainerInventoryItemId: burglarPackId,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_structure',
+          ),
+        ),
+      );
+
+      final characterAfter = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      expect(characterAfter.updatedAt, characterBefore.updatedAt);
+
+      final rowsAfter = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final snapshotAfter = <String, (int, String?, bool)>{
+        for (final row in rowsAfter)
+          row.id: (row.quantity, row.containerInventoryItemId, row.isCarried),
+      };
+      expect(snapshotAfter, snapshotBefore);
+    },
+  );
+
+  test(
     'retireZeroQuantityInventoryStacks deletes zero-quantity rows only',
     () async {
       final database = AppDatabase.executor(NativeDatabase.memory());
@@ -2067,6 +2709,54 @@ void main() {
       expect(sheet, isNotNull);
       expect(sheet!.equipment.carrying.totalWeight, 25);
     },
+  );
+}
+
+CreateCharacterInput _createInventoryCharacterInput({
+  required String name,
+  required List<String> items,
+}) {
+  return CreateCharacterInput(
+    name: name,
+    raceName: 'Human',
+    backgroundId: 'acolyte',
+    backgroundName: 'Acolyte',
+    backgroundSummary: 'Temple acolyte',
+    abilityScoreMethod: 'manualPointAllocation',
+    abilityScoreProvenance: 'method=manualPointAllocation',
+    strength: 10,
+    dexterity: 12,
+    constitution: 13,
+    intelligence: 10,
+    wisdom: 14,
+    charisma: 8,
+    className: 'Wizard',
+    level: 2,
+    experience: 300,
+    equipmentLoadoutId: 'wizard-focus',
+    equipmentLoadoutLabel: 'Arcane focus kit',
+    startingMoneySummary: '0 gp',
+    selectedEquipmentItems: items,
+    currentHitPoints: 12,
+    maximumHitPoints: 12,
+    temporaryHitPoints: 0,
+    spellState: const CharacterSpellStateInput(
+      selectionMode: CharacterSpellSelectionMode.spellbook,
+      selectedSpells: <CharacterSpellSelectionInput>[],
+      slotUsages: <CharacterSpellSlotUsageInput>[],
+    ),
+    finishingDetails: const CharacterFinishingDetailsInput(
+      appearanceDetails: '',
+      narrativeNotes: '',
+      narrativeSelections: <NarrativeSelection>[
+        NarrativeSelection.empty(NarrativeFieldKey.alignment),
+        NarrativeSelection.empty(NarrativeFieldKey.faction),
+        NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+        NarrativeSelection.empty(NarrativeFieldKey.ideals),
+        NarrativeSelection.empty(NarrativeFieldKey.bonds),
+        NarrativeSelection.empty(NarrativeFieldKey.flaws),
+      ],
+    ),
   );
 }
 
