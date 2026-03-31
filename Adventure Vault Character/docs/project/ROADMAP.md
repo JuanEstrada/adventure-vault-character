@@ -136,6 +136,28 @@ Goal: support common gameplay interactions without leaving the app flow.
 
 Goal: expand the character toward real tabletop session support.
 
+### Current Implementation Plan
+
+Near-term implementation inside Phase 5 should stay service-first and avoid new
+screen work until the mutation contracts are stable. The next ordered slices
+are:
+
+1. **Container-aware stack transfer mutations**
+   - Move full stacks into valid containers.
+   - Transfer partial stack quantity into valid containers using split-based
+     orchestration.
+   - Reuse existing container validity rules for capacity, depth, cycle, and
+     parent eligibility.
+   - Preserve reject-only behavior with no state change on failure.
+2. **Compatibility edge hardening**
+   - Add explicit repository parity tests for state-mismatch merge/transfer
+     cases (`equipped`, `carried`, `container`, `charges`, `notes`).
+   - Keep `invalid_stack_state` deterministic across Drift and in-memory paths.
+3. **Only after the mutation surface is stable, consider UI exposure**
+   - Prefer minimal controls in existing inventory rows or panels.
+   - Do not add a dedicated inventory screen until the mutation contracts and
+     error semantics stop moving.
+
 ### Screens and Flows
 
 - Inventory list screen
@@ -236,3 +258,9 @@ Every new screen spec added under `docs/specs/` should eventually document:
 Phase 5 - Inventory, Spells, and Character Resources
 then
 Phase 6 - Import and Structured Content
+
+### Next Implementation Slice
+
+Prepare and implement **container-aware stack transfer mutations** as the next
+Phase 5 batch. This should remain a domain/application/data/test slice first,
+with no new UI unless the existing sheet flow cannot exercise the contract.

@@ -482,7 +482,8 @@ The next logical session should build on the current shell instead of
 restructuring it again:
 
 1. Expand inventory/equipment modeling depth beyond the current mutation and
-   encumbrance baseline, starting with containers and charge-tracked items.
+   encumbrance baseline by adding container-aware stack transfer mutations on
+   top of the now-implemented split / merge / retire-zero lifecycle.
 2. Improve equipment-definition quality so weight-aware encumbrance has fewer
    fallback gaps and reflects more compendium items deterministically.
 3. Continue extending deterministic class-resource recovery coverage while
@@ -650,6 +651,10 @@ Completed since the previous handoff:
   end-to-end through a minimal row-level `Spend 1` control for
   consumable/ammo-style items, routed via the existing app controller and
   repository/application contracts.
+- Stack lifecycle mutations are now implemented for stackable items without UI
+  coupling: explicit `split`, `merge`, and `retire-zero` operations run through
+  shared deterministic validation and repository parity tests in both Drift and
+  in-memory paths.
 
 Next-session starting point:
 
@@ -663,7 +668,8 @@ Next-session starting point:
 - Use `lib/src/features/characters/application/character_inventory_service.dart`
   and `lib/src/features/characters/data/character_repository.dart` as the
   source of truth for inventory mutation contracts (`equipped`, `carried`,
-  `quantity`, `quantity spend`, `charges`, and `container assignment`).
+  `quantity`, `quantity spend`, `charges`, `container assignment`, and stack
+  lifecycle operations).
 - Use `docs/specs/inventory-rules-phase1.md` as the policy source of truth for
   Phase 1 container/charge/consumable semantics before extending those rules.
 - Use `CharacterInventoryInvariantEvaluator` from
@@ -672,6 +678,9 @@ Next-session starting point:
 - Use `CharacterInventoryValidationError` from
   `lib/src/features/characters/domain/character_inventory_validation_error.dart`
   as the source of truth for policy-level inventory mutation error categories.
+- Start the next inventory batch from container-aware stack transfer planning:
+  whole-stack move, partial transfer via split orchestration, and rejection for
+  invalid target, overflow, depth, cycle, or compatibility failures.
 - Use `lib/src/features/settings/data/system_settings_repository.dart` as the
   source of truth for the coin-weight toggle that affects encumbrance behavior.
 - Use the new migration regression tests in

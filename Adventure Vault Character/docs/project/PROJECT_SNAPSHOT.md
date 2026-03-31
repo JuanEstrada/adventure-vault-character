@@ -423,12 +423,13 @@ summary.
 - Expand the edit flow beyond the current guided MVP fields and decide how
   later post-creation inventory or combat editing should interact with the
   same aggregate now that sheet-side inventory mutation controls are live.
-- Extend the current container-aware encumbrance behavior with explicit
-  capacity-limited container evaluation and richer nested-container behavior
-  using the accepted Phase 1 inventory policy as baseline.
-- Wire the new read-side inventory invariants into application mutation
-  services for additional inventory mutation types beyond the now-implemented
-  container assignment and quantity-spend consumable/ammo flow.
+- Extend the current inventory mutation surface with container-aware stack
+  transfer orchestration, including whole-stack moves, partial stack transfers,
+  and no-state-change rejection for invalid targets, capacity overflow, depth,
+  cycle, or incompatibility failures.
+- Add compatibility edge coverage for stack lifecycle and future transfer flows
+  where item identity matches but state differs (`equipped`, `carried`,
+  `container`, `charges`, `notes`).
 - Extend the new compendium screen toward future pack-management and import
   workflows without bypassing the existing repository/domain contract.
 - Extend the current XML import flow beyond the currently supported imported
@@ -487,19 +488,22 @@ summary.
 
 ## Next Recommended Steps
 
-1. Continue translating the available rules sources into explicit
+1. Implement container-aware stack transfer mutations as the next inventory
+   batch, keeping the work in domain/application/data/tests before adding new
+   UI.
+2. Add merge/transfer compatibility edge tests for same-item state mismatches
+   so `invalid_stack_state` stays deterministic across repository
+   implementations.
+3. Continue translating the available rules sources into explicit
    deterministic application/domain services.
-2. Expand compendium ingestion from strict 2024 SRD baseline into broader
+4. Expand compendium ingestion from strict 2024 SRD baseline into broader
    official 2024 sources with explicit precedence and conflict reporting.
-3. Expand deterministic resource recovery beyond the now-implemented HP +
+5. Expand deterministic resource recovery beyond the now-implemented HP +
    spell-slot + initial class-resource rest actions (broader class coverage,
    rest cadence details, and richer sheet-visible recovery summaries).
-4. Expand inventory/equipment modeling depth beyond the current mutation and
-   encumbrance baseline into richer containment semantics, container capacity,
-   and compendium-aware charge defaults.
-5. Continue improving equipment definition quality so weight-aware
+6. Continue improving equipment definition quality so weight-aware
    encumbrance reflects more compendium items without fallback gaps.
-6. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
+7. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
 
 ## Next Session Guardrail
 
