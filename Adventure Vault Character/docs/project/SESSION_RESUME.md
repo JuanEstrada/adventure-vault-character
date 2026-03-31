@@ -142,6 +142,12 @@ Verified on 2026-03-28:
 - Character updates now also reuse those shared rules. When class, level, or
   Constitution change during edit, maximum HP is recomputed deterministically
   and current HP is preserved when possible, then clamped to the new maximum.
+- Inventory mutation support now also includes deterministic stack lifecycle
+  operations for stackable items: split stack into a new row, merge compatible
+  stacks, and retire zero-quantity stacks through explicit cleanup mutations.
+- Stack lifecycle validation now rejects non-stackable or incompatible
+  operations with `invalid_stack_state` and preserves no-state-change behavior
+  on mutation failure across in-memory and Drift repositories.
 - The read-side domain is now also structured around dedicated value objects
   for `progression`, `hit points`, `background`, and `money/equipment`
   summaries, so future sheet growth can stay inside the domain layer before

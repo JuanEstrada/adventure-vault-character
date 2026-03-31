@@ -183,6 +183,12 @@ summary.
   `spellbook` and `prepared` rows can coexist for a single spell id.
 - Spell-slot tracking now exposes deterministic short-rest/long-rest reset
   actions in create/edit spell state handling.
+- Inventory stack lifecycle mutations are now implemented end-to-end for
+  stackable items: split into new rows, merge compatible stacks, and retire
+  zero-quantity stacks through explicit cleanup operations.
+- Stack lifecycle mutations now use shared deterministic validation and return
+  `invalid_stack_state` for non-stackable or incompatible operations while
+  preserving no-state-change on failure in both in-memory and Drift paths.
 - Pack-state filtering now also trims pack-tagged backgrounds, spells, feats,
   and monsters, not only narrative-option groups.
 - XML import validation is now shared by in-memory and persisted compendium

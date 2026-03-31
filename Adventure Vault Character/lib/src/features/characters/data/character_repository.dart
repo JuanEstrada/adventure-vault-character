@@ -51,6 +51,21 @@ abstract interface class CharacterRepository {
     int amount,
   });
 
+  Future<String> splitInventoryItemStack(
+    String id,
+    String inventoryItemId, {
+    required int quantity,
+  });
+
+  Future<void> mergeInventoryItemStacks(
+    String id,
+    String sourceInventoryItemId,
+    String targetInventoryItemId, {
+    int? quantity,
+  });
+
+  Future<int> retireZeroQuantityInventoryStacks(String id);
+
   Future<void> setInventoryItemCharges(
     String id,
     String inventoryItemId, {

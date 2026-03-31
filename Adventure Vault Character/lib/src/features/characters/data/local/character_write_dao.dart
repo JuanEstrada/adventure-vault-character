@@ -227,6 +227,25 @@ class CharacterWriteDao {
     )..where((table) => table.id.equals(id))).write(companion);
   }
 
+  Future<void> insertInventoryItem(CharacterInventoryCompanion companion) {
+    return _database.into(_database.characterInventory).insert(companion);
+  }
+
+  Future<void> deleteInventoryItemById(String id) {
+    return (_database.delete(
+      _database.characterInventory,
+    )..where((table) => table.id.equals(id))).go();
+  }
+
+  Future<int> deleteZeroQuantityInventoryByCharacterId(String characterId) {
+    return (_database.delete(_database.characterInventory)..where(
+          (table) =>
+              table.characterId.equals(characterId) &
+              table.quantity.isSmallerOrEqualValue(0),
+        ))
+        .go();
+  }
+
   Future<void> deleteSkillsByCharacterId(String characterId) {
     return (_database.delete(
       _database.characterSkills,

@@ -92,8 +92,17 @@ Out of scope for this phase:
 - Mutation is invalid when quantity is insufficient.
 - Invalid usage does not mutate any state.
 - Quantity is clamped to non-negative values.
-- Stack split/merge policy remains implementation-defined for later tickets,
-  but all resulting quantities must satisfy the same non-negative invariant.
+- Stack lifecycle mutations for stackable items are deterministic:
+  - `split`: creates a new stack row and reduces the source stack by the same
+    amount.
+  - `merge`: moves quantity from source stack to target stack.
+  - `retire-zero`: removes stack rows with quantity `<= 0` when explicitly
+    requested by lifecycle cleanup operations.
+- `split` and `merge` are valid only for stackable and compatible stacks.
+- Compatibility requires matching stack identity and state fields (definition,
+  tracking state, carry/equip/container state, and notes) so merges are not
+  lossy.
+- Any invalid stack mutation is reject-only and does not mutate state.
 
 ## Error Contract
 
@@ -104,6 +113,7 @@ Services must expose structured failure reasons for these categories:
 - `capacity_exceeded` (weight-cap overflow)
 - `insufficient_quantity` (consumable/ammo usage)
 - `invalid_charge_state` (inconsistent charge mutation request)
+- `invalid_stack_state` (non-stackable or incompatible stack lifecycle request)
 
 ## Deterministic Examples
 

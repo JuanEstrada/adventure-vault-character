@@ -6,6 +6,7 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/domain/character_encumbrance_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_quantity_rules.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_stack_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_validation_error.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rest_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
@@ -256,6 +257,122 @@ class InMemoryCharacterRepository implements CharacterRepository {
     );
 
     await _updateInventoryItem(id, inventoryItemId, quantity: nextQuantity);
+  }
+
+  @override
+  Future<String> splitInventoryItemStack(
+    String id,
+    String inventoryItemId, {
+    required int quantity,
+  }) async {
+    final source = _inventoryItemById(id, inventoryItemId);
+    final splitResult = CharacterInventoryStackRules.split(
+      sourceQuantity: source.quantity,
+      splitQuantity: quantity,
+      isStackable: source.isStackable,
+    );
+    final inventory = _inventoryByCharacterId[id];
+    if (inventory == null) {
+      throw StateError('Inventory not found.');
+    }
+
+    final sourceIndex = inventory.indexWhere((item) => item.id == source.id);
+    if (sourceIndex < 0) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Inventory item not found for this character.',
+      );
+    }
+
+    final splitId = _nextInventoryItemId(id, inventory);
+    final nextSource = source.copyWith(quantity: splitResult.sourceQuantity);
+    final splitStack = source.copyWith(
+      id: splitId,
+      quantity: splitResult.splitQuantity,
+    );
+
+    _inventoryByCharacterId[id] = <_InMemoryInventoryItem>[
+      ...inventory.sublist(0, sourceIndex),
+      nextSource,
+      ...inventory.sublist(sourceIndex + 1),
+      splitStack,
+    ];
+    _changes.add(null);
+    return splitId;
+  }
+
+  @override
+  Future<void> mergeInventoryItemStacks(
+    String id,
+    String sourceInventoryItemId,
+    String targetInventoryItemId, {
+    int? quantity,
+  }) async {
+    if (sourceInventoryItemId == targetInventoryItemId) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Cannot merge an inventory stack into itself.',
+      );
+    }
+
+    final source = _inventoryItemById(id, sourceInventoryItemId);
+    final target = _inventoryItemById(id, targetInventoryItemId);
+    final mergeResult = CharacterInventoryStackRules.merge(
+      sourceQuantity: source.quantity,
+      targetQuantity: target.quantity,
+      mergeQuantity: quantity ?? source.quantity,
+      sourceIsStackable: source.isStackable,
+      targetIsStackable: target.isStackable,
+      isCompatible: _areStacksCompatible(source: source, target: target),
+    );
+
+    final inventory = _inventoryByCharacterId[id];
+    if (inventory == null) {
+      throw StateError('Inventory not found.');
+    }
+
+    final next = <_InMemoryInventoryItem>[];
+    for (final item in inventory) {
+      if (item.id == target.id) {
+        next.add(item.copyWith(quantity: mergeResult.targetQuantity));
+        continue;
+      }
+      if (item.id == source.id) {
+        if (CharacterInventoryStackRules.shouldRetireZeroQuantityStack(
+          mergeResult.sourceQuantity,
+        )) {
+          continue;
+        }
+        next.add(item.copyWith(quantity: mergeResult.sourceQuantity));
+        continue;
+      }
+      next.add(item);
+    }
+
+    _inventoryByCharacterId[id] = next;
+    _changes.add(null);
+  }
+
+  @override
+  Future<int> retireZeroQuantityInventoryStacks(String id) async {
+    final inventory = _inventoryByCharacterId[id];
+    if (inventory == null) {
+      throw StateError('Inventory not found.');
+    }
+
+    final remaining = inventory
+        .where(
+          (item) => !CharacterInventoryStackRules.shouldRetireZeroQuantityStack(
+            item.quantity,
+          ),
+        )
+        .toList(growable: false);
+    final removed = inventory.length - remaining.length;
+    if (removed > 0) {
+      _inventoryByCharacterId[id] = remaining;
+      _changes.add(null);
+    }
+    return removed;
   }
 
   @override
@@ -948,6 +1065,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
             id: itemId,
             name: parsed.name,
             quantity: parsed.quantity.clamp(0, 9999).toInt(),
+            isStackable: _looksStackable(parsed.name),
             isEquipped: _looksEquipped(parsed.name),
             isCarried: true,
             isFavorite: false,
@@ -979,6 +1097,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
             id: '$characterId-inventory-${entry.key + 1}',
             name: parsed.name,
             quantity: parsed.quantity.clamp(0, 9999).toInt(),
+            isStackable: _looksStackable(parsed.name),
             isEquipped: _looksEquipped(parsed.name),
             isCarried: true,
             isFavorite: false,
@@ -993,9 +1112,29 @@ class InMemoryCharacterRepository implements CharacterRepository {
               : existingItem.copyWith(
                   name: parsed.name,
                   quantity: parsed.quantity.clamp(0, 9999).toInt(),
+                  isStackable: _looksStackable(parsed.name),
                 );
         })
         .toList(growable: false);
+  }
+
+  String _nextInventoryItemId(
+    String characterId,
+    List<_InMemoryInventoryItem> inventory,
+  ) {
+    var nextIndex = 1;
+    final pattern = RegExp('^${RegExp.escape(characterId)}-inventory-(\\d+)');
+    for (final item in inventory) {
+      final match = pattern.firstMatch(item.id);
+      if (match == null) {
+        continue;
+      }
+      final parsed = int.tryParse(match.group(1) ?? '');
+      if (parsed != null && parsed >= nextIndex) {
+        nextIndex = parsed + 1;
+      }
+    }
+    return '$characterId-inventory-$nextIndex';
   }
 
   _InMemoryInventoryItem _inventoryItemById(String characterId, String itemId) {
@@ -1083,6 +1222,34 @@ class InMemoryCharacterRepository implements CharacterRepository {
         lower.contains('pouch') ||
         lower.contains('bag') ||
         lower.contains('case');
+  }
+
+  bool _looksStackable(String itemName) {
+    final lower = itemName.toLowerCase();
+    return lower.contains('torch') ||
+        lower.contains('ration') ||
+        lower.contains('arrow') ||
+        lower.contains('bolt') ||
+        lower.contains('dart') ||
+        lower.contains('coin') ||
+        lower.contains('vial') ||
+        lower.contains('flask');
+  }
+
+  bool _areStacksCompatible({
+    required _InMemoryInventoryItem source,
+    required _InMemoryInventoryItem target,
+  }) {
+    return source.name == target.name &&
+        source.isStackable == target.isStackable &&
+        source.isEquipped == target.isEquipped &&
+        source.isCarried == target.isCarried &&
+        source.isFavorite == target.isFavorite &&
+        source.weightPerUnit == target.weightPerUnit &&
+        source.isContainer == target.isContainer &&
+        source.chargesCurrent == target.chargesCurrent &&
+        source.chargesMax == target.chargesMax &&
+        source.containerInventoryItemId == target.containerInventoryItemId;
   }
 
   int? _defaultWeightFor(String itemName) {
@@ -1359,6 +1526,7 @@ class _InMemoryInventoryItem {
     required this.id,
     required this.name,
     required this.quantity,
+    required this.isStackable,
     required this.isEquipped,
     required this.isCarried,
     required this.isFavorite,
@@ -1372,6 +1540,7 @@ class _InMemoryInventoryItem {
   final String id;
   final String name;
   final int quantity;
+  final bool isStackable;
   final bool isEquipped;
   final bool isCarried;
   final bool isFavorite;
@@ -1387,6 +1556,7 @@ class _InMemoryInventoryItem {
     String? id,
     String? name,
     int? quantity,
+    bool? isStackable,
     bool? isEquipped,
     bool? isCarried,
     bool? isFavorite,
@@ -1400,6 +1570,7 @@ class _InMemoryInventoryItem {
       id: id ?? this.id,
       name: name ?? this.name,
       quantity: quantity ?? this.quantity,
+      isStackable: isStackable ?? this.isStackable,
       isEquipped: isEquipped ?? this.isEquipped,
       isCarried: isCarried ?? this.isCarried,
       isFavorite: isFavorite ?? this.isFavorite,

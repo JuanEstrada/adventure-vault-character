@@ -2,6 +2,7 @@ import 'package:adventure_vault_character/src/features/characters/data/local/app
 import 'package:adventure_vault_character/src/features/characters/data/local/character_read_dao.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_write_dao.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_quantity_rules.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_stack_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_validation_error.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:drift/drift.dart';
@@ -71,6 +72,131 @@ class CharacterInventoryService {
       inventoryItemId,
       quantity: Value(nextQuantity),
     );
+  }
+
+  Future<String> splitInventoryItemStack(
+    String id,
+    String inventoryItemId, {
+    required int quantity,
+  }) async {
+    final source = await _requireInventoryItem(id, inventoryItemId);
+    final sourceIsStackable = await _isStackable(source);
+    final splitResult = CharacterInventoryStackRules.split(
+      sourceQuantity: source.quantity,
+      splitQuantity: quantity,
+      isStackable: sourceIsStackable,
+    );
+    final existingItems = await _readDao.getInventoryByCharacterId(id);
+    final newItemId = _nextInventoryItemId(id, existingItems);
+
+    await _database.transaction(() async {
+      final now = DateTime.now();
+      await _writeDao.updateCharacter(
+        id,
+        CharactersCompanion(updatedAt: Value(now)),
+      );
+      await _writeDao.updateInventoryItem(
+        source.id,
+        CharacterInventoryCompanion(
+          id: Value(source.id),
+          quantity: Value(splitResult.sourceQuantity),
+        ),
+      );
+      await _writeDao.insertInventoryItem(
+        CharacterInventoryCompanion.insert(
+          id: newItemId,
+          characterId: id,
+          equipmentDefinitionId: Value(source.equipmentDefinitionId),
+          trinketDefinitionId: Value(source.trinketDefinitionId),
+          displayNameSnapshot: Value(source.displayNameSnapshot),
+          quantity: Value(splitResult.splitQuantity),
+          isEquipped: Value(source.isEquipped),
+          isCarried: Value(source.isCarried),
+          isFavorite: Value(source.isFavorite),
+          chargesCurrent: Value(source.chargesCurrent),
+          chargesMax: Value(source.chargesMax),
+          containerInventoryItemId: Value(source.containerInventoryItemId),
+          notes: Value(source.notes),
+        ),
+      );
+    });
+
+    return newItemId;
+  }
+
+  Future<void> mergeInventoryItemStacks(
+    String id,
+    String sourceInventoryItemId,
+    String targetInventoryItemId, {
+    int? quantity,
+  }) async {
+    if (sourceInventoryItemId == targetInventoryItemId) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Cannot merge an inventory stack into itself.',
+      );
+    }
+
+    final source = await _requireInventoryItem(id, sourceInventoryItemId);
+    final target = await _requireInventoryItem(id, targetInventoryItemId);
+    final sourceIsStackable = await _isStackable(source);
+    final targetIsStackable = await _isStackable(target);
+    final mergeResult = CharacterInventoryStackRules.merge(
+      sourceQuantity: source.quantity,
+      targetQuantity: target.quantity,
+      mergeQuantity: quantity ?? source.quantity,
+      sourceIsStackable: sourceIsStackable,
+      targetIsStackable: targetIsStackable,
+      isCompatible: _areStacksCompatible(source: source, target: target),
+    );
+
+    await _database.transaction(() async {
+      final now = DateTime.now();
+      await _writeDao.updateCharacter(
+        id,
+        CharactersCompanion(updatedAt: Value(now)),
+      );
+      await _writeDao.updateInventoryItem(
+        target.id,
+        CharacterInventoryCompanion(
+          id: Value(target.id),
+          quantity: Value(mergeResult.targetQuantity),
+        ),
+      );
+      if (CharacterInventoryStackRules.shouldRetireZeroQuantityStack(
+        mergeResult.sourceQuantity,
+      )) {
+        await _writeDao.deleteInventoryItemById(source.id);
+      } else {
+        await _writeDao.updateInventoryItem(
+          source.id,
+          CharacterInventoryCompanion(
+            id: Value(source.id),
+            quantity: Value(mergeResult.sourceQuantity),
+          ),
+        );
+      }
+    });
+  }
+
+  Future<int> retireZeroQuantityInventoryStacks(String id) async {
+    final character = await _readDao.getCharacterRowById(id);
+    if (character == null) {
+      throw StateError('Character not found.');
+    }
+
+    return _database.transaction(() async {
+      final removed = await _writeDao.deleteZeroQuantityInventoryByCharacterId(
+        id,
+      );
+      if (removed > 0) {
+        await _writeDao.updateCharacter(
+          id,
+          CharactersCompanion(updatedAt: Value(DateTime.now())),
+        );
+      }
+      return removed;
+    });
   }
 
   Future<void> setInventoryItemCharges(
@@ -340,5 +466,49 @@ class CharacterInventoryService {
         ),
       );
     });
+  }
+
+  Future<bool> _isStackable(CharacterInventoryData item) async {
+    final equipmentId = item.equipmentDefinitionId;
+    if (equipmentId == null || equipmentId.isEmpty) {
+      return false;
+    }
+    final definition = await _readDao.getEquipmentDefinitionById(equipmentId);
+    return definition?.isStackable ?? false;
+  }
+
+  bool _areStacksCompatible({
+    required CharacterInventoryData source,
+    required CharacterInventoryData target,
+  }) {
+    return source.equipmentDefinitionId == target.equipmentDefinitionId &&
+        source.trinketDefinitionId == target.trinketDefinitionId &&
+        source.displayNameSnapshot == target.displayNameSnapshot &&
+        source.isEquipped == target.isEquipped &&
+        source.isCarried == target.isCarried &&
+        source.isFavorite == target.isFavorite &&
+        source.chargesCurrent == target.chargesCurrent &&
+        source.chargesMax == target.chargesMax &&
+        source.containerInventoryItemId == target.containerInventoryItemId &&
+        source.notes == target.notes;
+  }
+
+  String _nextInventoryItemId(
+    String characterId,
+    List<CharacterInventoryData> inventory,
+  ) {
+    var nextIndex = 1;
+    final pattern = RegExp('^${RegExp.escape(characterId)}-inventory-(\\d+)');
+    for (final item in inventory) {
+      final match = pattern.firstMatch(item.id);
+      if (match == null) {
+        continue;
+      }
+      final parsed = int.tryParse(match.group(1) ?? '');
+      if (parsed != null && parsed >= nextIndex) {
+        nextIndex = parsed + 1;
+      }
+    }
+    return '$characterId-inventory-$nextIndex';
   }
 }

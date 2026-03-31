@@ -1172,6 +1172,457 @@ void main() {
     },
   );
 
+  test('inventory stack split creates a second persisted row', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final repository = DriftCharacterRepository(
+      database: database,
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+
+    final summary = await repository.createCharacter(
+      const CreateCharacterInput(
+        name: 'Splitter',
+        raceName: 'Human',
+        backgroundId: 'acolyte',
+        backgroundName: 'Acolyte',
+        backgroundSummary: 'Temple acolyte',
+        abilityScoreMethod: 'manualPointAllocation',
+        abilityScoreProvenance: 'method=manualPointAllocation',
+        strength: 10,
+        dexterity: 12,
+        constitution: 13,
+        intelligence: 10,
+        wisdom: 14,
+        charisma: 8,
+        className: 'Wizard',
+        level: 2,
+        experience: 300,
+        equipmentLoadoutId: 'wizard-focus',
+        equipmentLoadoutLabel: 'Arcane focus kit',
+        startingMoneySummary: '0 gp',
+        selectedEquipmentItems: <String>['4 Torch'],
+        currentHitPoints: 12,
+        maximumHitPoints: 12,
+        temporaryHitPoints: 0,
+        spellState: CharacterSpellStateInput(
+          selectionMode: CharacterSpellSelectionMode.spellbook,
+          selectedSpells: <CharacterSpellSelectionInput>[],
+          slotUsages: <CharacterSpellSlotUsageInput>[],
+        ),
+        finishingDetails: CharacterFinishingDetailsInput(
+          appearanceDetails: '',
+          narrativeNotes: '',
+          narrativeSelections: <NarrativeSelection>[
+            NarrativeSelection.empty(NarrativeFieldKey.alignment),
+            NarrativeSelection.empty(NarrativeFieldKey.faction),
+            NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+            NarrativeSelection.empty(NarrativeFieldKey.ideals),
+            NarrativeSelection.empty(NarrativeFieldKey.bonds),
+            NarrativeSelection.empty(NarrativeFieldKey.flaws),
+          ],
+        ),
+      ),
+    );
+
+    final sheetBefore = await repository.getCharacterSheetById(summary.id);
+    expect(sheetBefore, isNotNull);
+    final sourceId = sheetBefore!.equipment.items.single.id;
+
+    final splitId = await repository.splitInventoryItemStack(
+      summary.id,
+      sourceId,
+      quantity: 1,
+    );
+
+    final sheetAfter = await repository.getCharacterSheetById(summary.id);
+    expect(sheetAfter, isNotNull);
+    final torchStacks = sheetAfter!.equipment.items
+        .where((item) => item.name == 'Torch')
+        .toList(growable: false);
+    expect(torchStacks.length, 2);
+    expect(torchStacks.fold<int>(0, (total, item) => total + item.quantity), 4);
+    expect(
+      torchStacks.any((item) => item.id == splitId && item.quantity == 1),
+      isTrue,
+    );
+
+    final splitRow = await (database.select(
+      database.characterInventory,
+    )..where((table) => table.id.equals(splitId))).getSingle();
+    expect(splitRow.quantity, 1);
+  });
+
+  test(
+    'inventory stack split rejects invalid requests without persistence mutation',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        const CreateCharacterInput(
+          name: 'Invalid split',
+          raceName: 'Human',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'manualPointAllocation',
+          abilityScoreProvenance: 'method=manualPointAllocation',
+          strength: 10,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 10,
+          wisdom: 14,
+          charisma: 8,
+          className: 'Wizard',
+          level: 2,
+          experience: 300,
+          equipmentLoadoutId: 'wizard-focus',
+          equipmentLoadoutLabel: 'Arcane focus kit',
+          startingMoneySummary: '0 gp',
+          selectedEquipmentItems: <String>['4 Torch', 'Quarterstaff'],
+          currentHitPoints: 12,
+          maximumHitPoints: 12,
+          temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.spellbook,
+            selectedSpells: <CharacterSpellSelectionInput>[],
+            slotUsages: <CharacterSpellSlotUsageInput>[],
+          ),
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: '',
+            narrativeNotes: '',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection.empty(NarrativeFieldKey.alignment),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
+        ),
+      );
+
+      final characterBefore = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      final rowsBefore = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final quantitySnapshotBefore = <String, int>{
+        for (final row in rowsBefore) row.id: row.quantity,
+      };
+
+      final sheetBefore = await repository.getCharacterSheetById(summary.id);
+      expect(sheetBefore, isNotNull);
+      final torch = sheetBefore!.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+      final quarterstaff = sheetBefore.equipment.items.firstWhere(
+        (item) => item.name == 'Quarterstaff',
+      );
+
+      await expectLater(
+        repository.splitInventoryItemStack(summary.id, torch.id, quantity: 0),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_quantity',
+          ),
+        ),
+      );
+      await expectLater(
+        repository.splitInventoryItemStack(summary.id, torch.id, quantity: 4),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'insufficient_quantity',
+          ),
+        ),
+      );
+      await expectLater(
+        repository.splitInventoryItemStack(
+          summary.id,
+          quarterstaff.id,
+          quantity: 1,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_stack_state',
+          ),
+        ),
+      );
+
+      final characterAfter = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      expect(characterAfter.updatedAt, characterBefore.updatedAt);
+
+      final rowsAfter = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final quantitySnapshotAfter = <String, int>{
+        for (final row in rowsAfter) row.id: row.quantity,
+      };
+      expect(quantitySnapshotAfter, quantitySnapshotBefore);
+    },
+  );
+
+  test('inventory stack merge retires zero-quantity source row', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final repository = DriftCharacterRepository(
+      database: database,
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+
+    final summary = await repository.createCharacter(
+      const CreateCharacterInput(
+        name: 'Merger',
+        raceName: 'Human',
+        backgroundId: 'acolyte',
+        backgroundName: 'Acolyte',
+        backgroundSummary: 'Temple acolyte',
+        abilityScoreMethod: 'manualPointAllocation',
+        abilityScoreProvenance: 'method=manualPointAllocation',
+        strength: 10,
+        dexterity: 12,
+        constitution: 13,
+        intelligence: 10,
+        wisdom: 14,
+        charisma: 8,
+        className: 'Wizard',
+        level: 2,
+        experience: 300,
+        equipmentLoadoutId: 'wizard-focus',
+        equipmentLoadoutLabel: 'Arcane focus kit',
+        startingMoneySummary: '0 gp',
+        selectedEquipmentItems: <String>['Torch', '2 Torch'],
+        currentHitPoints: 12,
+        maximumHitPoints: 12,
+        temporaryHitPoints: 0,
+        spellState: CharacterSpellStateInput(
+          selectionMode: CharacterSpellSelectionMode.spellbook,
+          selectedSpells: <CharacterSpellSelectionInput>[],
+          slotUsages: <CharacterSpellSlotUsageInput>[],
+        ),
+        finishingDetails: CharacterFinishingDetailsInput(
+          appearanceDetails: '',
+          narrativeNotes: '',
+          narrativeSelections: <NarrativeSelection>[
+            NarrativeSelection.empty(NarrativeFieldKey.alignment),
+            NarrativeSelection.empty(NarrativeFieldKey.faction),
+            NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+            NarrativeSelection.empty(NarrativeFieldKey.ideals),
+            NarrativeSelection.empty(NarrativeFieldKey.bonds),
+            NarrativeSelection.empty(NarrativeFieldKey.flaws),
+          ],
+        ),
+      ),
+    );
+
+    final sheetBefore = await repository.getCharacterSheetById(summary.id);
+    expect(sheetBefore, isNotNull);
+    final torchStacks = sheetBefore!.equipment.items
+        .where((item) => item.name == 'Torch')
+        .toList(growable: false);
+    final source = torchStacks.firstWhere((item) => item.quantity == 1);
+    final target = torchStacks.firstWhere((item) => item.quantity == 2);
+
+    await repository.mergeInventoryItemStacks(summary.id, source.id, target.id);
+
+    final sourceRow = await (database.select(
+      database.characterInventory,
+    )..where((table) => table.id.equals(source.id))).getSingleOrNull();
+    expect(sourceRow, isNull);
+
+    final targetRow = await (database.select(
+      database.characterInventory,
+    )..where((table) => table.id.equals(target.id))).getSingle();
+    expect(targetRow.quantity, 3);
+  });
+
+  test(
+    'inventory stack merge rejects incompatible items without state change',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        const CreateCharacterInput(
+          name: 'Invalid merge',
+          raceName: 'Human',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'manualPointAllocation',
+          abilityScoreProvenance: 'method=manualPointAllocation',
+          strength: 10,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 10,
+          wisdom: 14,
+          charisma: 8,
+          className: 'Wizard',
+          level: 2,
+          experience: 300,
+          equipmentLoadoutId: 'wizard-focus',
+          equipmentLoadoutLabel: 'Arcane focus kit',
+          startingMoneySummary: '0 gp',
+          selectedEquipmentItems: <String>['Torch', 'Quarterstaff'],
+          currentHitPoints: 12,
+          maximumHitPoints: 12,
+          temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.spellbook,
+            selectedSpells: <CharacterSpellSelectionInput>[],
+            slotUsages: <CharacterSpellSlotUsageInput>[],
+          ),
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: '',
+            narrativeNotes: '',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection.empty(NarrativeFieldKey.alignment),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
+        ),
+      );
+
+      final characterBefore = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      final sheetBefore = await repository.getCharacterSheetById(summary.id);
+      expect(sheetBefore, isNotNull);
+      final torch = sheetBefore!.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+      final quarterstaff = sheetBefore.equipment.items.firstWhere(
+        (item) => item.name == 'Quarterstaff',
+      );
+
+      await expectLater(
+        repository.mergeInventoryItemStacks(
+          summary.id,
+          torch.id,
+          quarterstaff.id,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_stack_state',
+          ),
+        ),
+      );
+
+      final characterAfter = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      expect(characterAfter.updatedAt, characterBefore.updatedAt);
+    },
+  );
+
+  test(
+    'retireZeroQuantityInventoryStacks deletes zero-quantity rows only',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        const CreateCharacterInput(
+          name: 'Retire zero drift',
+          raceName: 'Human',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'manualPointAllocation',
+          abilityScoreProvenance: 'method=manualPointAllocation',
+          strength: 10,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 10,
+          wisdom: 14,
+          charisma: 8,
+          className: 'Wizard',
+          level: 2,
+          experience: 300,
+          equipmentLoadoutId: 'wizard-focus',
+          equipmentLoadoutLabel: 'Arcane focus kit',
+          startingMoneySummary: '0 gp',
+          selectedEquipmentItems: <String>['Torch', 'Quarterstaff'],
+          currentHitPoints: 12,
+          maximumHitPoints: 12,
+          temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.spellbook,
+            selectedSpells: <CharacterSpellSelectionInput>[],
+            slotUsages: <CharacterSpellSlotUsageInput>[],
+          ),
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: '',
+            narrativeNotes: '',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection.empty(NarrativeFieldKey.alignment),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
+        ),
+      );
+
+      final sheetBefore = await repository.getCharacterSheetById(summary.id);
+      expect(sheetBefore, isNotNull);
+      final torchId = sheetBefore!.equipment.items
+          .firstWhere((item) => item.name == 'Torch')
+          .id;
+      await repository.setInventoryItemQuantity(summary.id, torchId, 0);
+
+      final removed = await repository.retireZeroQuantityInventoryStacks(
+        summary.id,
+      );
+      expect(removed, 1);
+
+      final rows = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      expect(rows.any((row) => row.quantity <= 0), isFalse);
+      expect(
+        rows.map((row) => row.displayNameSnapshot),
+        isNot(contains('Torch')),
+      );
+    },
+  );
+
   test(
     'inventory charge lifecycle enforces deterministic spend and restore',
     () async {

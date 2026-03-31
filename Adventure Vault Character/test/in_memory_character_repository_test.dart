@@ -75,6 +75,227 @@ void main() {
       expect(torchAfter.quantity, torchBefore.quantity);
     },
   );
+
+  test(
+    'splitInventoryItemStack creates a deterministic second stack',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(name: 'Split stack', items: <String>['4 Torch']),
+      );
+      final sourceBefore = await _torchFor(repository, summary.id);
+
+      final splitId = await repository.splitInventoryItemStack(
+        summary.id,
+        sourceBefore.id,
+        quantity: 1,
+      );
+
+      final sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final torchStacks = sheet!.equipment.items
+          .where((item) => item.name == 'Torch')
+          .toList(growable: false);
+      expect(torchStacks.length, 2);
+      expect(
+        torchStacks.fold<int>(0, (total, item) => total + item.quantity),
+        4,
+      );
+      expect(
+        torchStacks.any((item) => item.id == splitId && item.quantity == 1),
+        isTrue,
+      );
+    },
+  );
+
+  test(
+    'splitInventoryItemStack rejects invalid splits without state change',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Invalid split in-memory',
+          items: <String>['4 Torch', 'Quarterstaff'],
+        ),
+      );
+
+      final sheetBefore = await repository.getCharacterSheetById(summary.id);
+      expect(sheetBefore, isNotNull);
+      final torch = sheetBefore!.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+      final quarterstaff = sheetBefore.equipment.items.firstWhere(
+        (item) => item.name == 'Quarterstaff',
+      );
+      final inventorySnapshotBefore = <String, int>{
+        for (final item in sheetBefore.equipment.items) item.id: item.quantity,
+      };
+
+      await expectLater(
+        repository.splitInventoryItemStack(summary.id, torch.id, quantity: 0),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_quantity',
+          ),
+        ),
+      );
+      await expectLater(
+        repository.splitInventoryItemStack(summary.id, torch.id, quantity: 4),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'insufficient_quantity',
+          ),
+        ),
+      );
+      await expectLater(
+        repository.splitInventoryItemStack(
+          summary.id,
+          quarterstaff.id,
+          quantity: 1,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_stack_state',
+          ),
+        ),
+      );
+
+      final sheetAfter = await repository.getCharacterSheetById(summary.id);
+      expect(sheetAfter, isNotNull);
+      final inventorySnapshotAfter = <String, int>{
+        for (final item in sheetAfter!.equipment.items) item.id: item.quantity,
+      };
+      expect(inventorySnapshotAfter, inventorySnapshotBefore);
+    },
+  );
+
+  test('mergeInventoryItemStacks retires fully merged source stack', () async {
+    final repository = InMemoryCharacterRepository.empty(
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+    final summary = await repository.createCharacter(
+      _createCharacterInput(
+        name: 'Merge stack',
+        items: <String>['Torch', '2 Torch'],
+      ),
+    );
+
+    final sheetBefore = await repository.getCharacterSheetById(summary.id);
+    expect(sheetBefore, isNotNull);
+    final torchStacks = sheetBefore!.equipment.items
+        .where((item) => item.name == 'Torch')
+        .toList(growable: false);
+    final source = torchStacks.firstWhere((item) => item.quantity == 1);
+    final target = torchStacks.firstWhere((item) => item.quantity == 2);
+
+    await repository.mergeInventoryItemStacks(summary.id, source.id, target.id);
+
+    final sheetAfter = await repository.getCharacterSheetById(summary.id);
+    expect(sheetAfter, isNotNull);
+    final remainingTorchStacks = sheetAfter!.equipment.items
+        .where((item) => item.name == 'Torch')
+        .toList(growable: false);
+    expect(remainingTorchStacks.length, 1);
+    expect(remainingTorchStacks.single.quantity, 3);
+  });
+
+  test(
+    'mergeInventoryItemStacks rejects incompatible stacks without state change',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Invalid merge in-memory',
+          items: <String>['Torch', 'Quarterstaff'],
+        ),
+      );
+
+      final sheetBefore = await repository.getCharacterSheetById(summary.id);
+      expect(sheetBefore, isNotNull);
+      final torch = sheetBefore!.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+      final quarterstaff = sheetBefore.equipment.items.firstWhere(
+        (item) => item.name == 'Quarterstaff',
+      );
+
+      await expectLater(
+        repository.mergeInventoryItemStacks(
+          summary.id,
+          torch.id,
+          quarterstaff.id,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_stack_state',
+          ),
+        ),
+      );
+
+      final sheetAfter = await repository.getCharacterSheetById(summary.id);
+      expect(sheetAfter, isNotNull);
+      expect(
+        sheetAfter!.equipment.items
+            .firstWhere((item) => item.id == torch.id)
+            .quantity,
+        torch.quantity,
+      );
+      expect(
+        sheetAfter.equipment.items
+            .firstWhere((item) => item.id == quarterstaff.id)
+            .quantity,
+        quarterstaff.quantity,
+      );
+    },
+  );
+
+  test(
+    'retireZeroQuantityInventoryStacks removes zero-quantity rows',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Retire zero',
+          items: <String>['Torch', 'Quarterstaff'],
+        ),
+      );
+
+      final sheetBefore = await repository.getCharacterSheetById(summary.id);
+      expect(sheetBefore, isNotNull);
+      final torch = sheetBefore!.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+
+      await repository.setInventoryItemQuantity(summary.id, torch.id, 0);
+      final removed = await repository.retireZeroQuantityInventoryStacks(
+        summary.id,
+      );
+      expect(removed, 1);
+
+      final sheetAfter = await repository.getCharacterSheetById(summary.id);
+      expect(sheetAfter, isNotNull);
+      expect(
+        sheetAfter!.equipment.items.any((item) => item.name == 'Torch'),
+        isFalse,
+      );
+    },
+  );
 }
 
 Future<dynamic> _torchFor(
