@@ -176,6 +176,39 @@ void main() {
     expect(find.textContaining('backgrounds-scag.xml'), findsNothing);
   });
 
+  testWidgets('main menu Rules and LOAD XML actions open existing routes', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      AdventureVaultApp(
+        characterRepository: InMemoryCharacterRepository.empty(
+          compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+        ),
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Continue offline'));
+    await tester.tap(find.text('Continue offline'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Rules'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Compendium'), findsOneWidget);
+    expect(find.text('Content management'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('LOAD XML'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Import XML'), findsOneWidget);
+    expect(find.text('Local pack registration'), findsOneWidget);
+  });
+
   testWidgets('settings toggles coin weight preference', (
     WidgetTester tester,
   ) async {

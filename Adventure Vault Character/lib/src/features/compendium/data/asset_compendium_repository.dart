@@ -4,6 +4,7 @@ import 'package:adventure_vault_character/src/features/characters/domain/equipme
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/imported_compendium_content.dart';
+import 'package:adventure_vault_character/src/features/compendium/data/xml_import_validation.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/services.dart';
@@ -71,8 +72,50 @@ class AssetCompendiumRepository implements CompendiumRepository {
   final String _erlwBackgroundsAssetPath;
   final String _fallbackCatalogAssetPath;
 
+  CompendiumCatalog? _cachedStartupCatalog;
   CompendiumCatalog? _cachedCatalog;
   final Map<String, String> _importedPackXmlById = <String, String>{};
+
+  @override
+  Future<CompendiumCatalog> loadStartupCatalog() async {
+    final cachedCatalog = _cachedCatalog;
+    if (cachedCatalog != null) {
+      return cachedCatalog;
+    }
+
+    final startupCatalog = _cachedStartupCatalog;
+    if (startupCatalog != null) {
+      return startupCatalog;
+    }
+
+    final rawJson = await _bundle.loadString(_fallbackCatalogAssetPath);
+    var catalog = _parseJsonCatalog(rawJson).copyWith(
+      sourcePolicy: CompendiumSourcePolicy(
+        activeSourceType: 'startup_index',
+        activeSourceLabel: 'Bundled startup compendium index',
+        fallbackSourceLabel: _fallbackCatalogAssetPath,
+        sections: <CompendiumSectionSourcePolicy>[
+          CompendiumSectionSourcePolicy(
+            sectionKey: 'catalog',
+            sectionLabel: 'Catalog index',
+            sourceType: 'startup_index',
+            primarySources: <String>[_fallbackCatalogAssetPath],
+            notes:
+                'Startup uses a lightweight bundled index and defers full XML parsing until compendium-heavy flows are opened.',
+          ),
+        ],
+      ),
+    );
+
+    final database = _database;
+    if (database != null) {
+      catalog = await _loadCatalogWithPersistedPackStates(database, catalog);
+    }
+
+    final effectiveCatalog = catalog.applyPackStateEffects();
+    _cachedStartupCatalog = effectiveCatalog;
+    return effectiveCatalog;
+  }
 
   @override
   Future<CompendiumCatalog> loadCatalog() async {
@@ -90,6 +133,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
     }
 
     final effectiveCatalog = catalog.applyPackStateEffects();
+    _cachedStartupCatalog = effectiveCatalog;
     _cachedCatalog = effectiveCatalog;
     return effectiveCatalog;
   }
@@ -102,6 +146,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
       final updatedCatalog = _mergeImportedCompendiumContentFromMemory(
         _updateCatalogPackState(catalog, packId, isActive),
       ).applyPackStateEffects();
+      _cachedStartupCatalog = updatedCatalog;
       _cachedCatalog = updatedCatalog;
       return updatedCatalog;
     }
@@ -127,6 +172,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
     var refreshed = await _loadBaseCatalog();
     refreshed = await _mergeImportedCompendiumContent(database, refreshed);
     final effectiveCatalog = refreshed.applyPackStateEffects();
+    _cachedStartupCatalog = effectiveCatalog;
     _cachedCatalog = effectiveCatalog;
     return effectiveCatalog;
   }
@@ -134,19 +180,20 @@ class AssetCompendiumRepository implements CompendiumRepository {
   @override
   Future<CompendiumCatalog> importXmlPack(String rawXml) async {
     final catalog = await loadCatalog();
-    final importedPackState = _buildImportedPackState(
-      rawXml,
-      catalog.packStates,
+    final importBuild = buildImportedPackState(
+      rawXml: rawXml,
+      existingPackStates: catalog.packStates,
     );
+    final importedPackState = importBuild.packState;
     parseImportedCompendiumContent(
       packId: importedPackState.id,
       packTitle: importedPackState.title,
-      rawXml: rawXml,
+      rawXml: importBuild.normalizedXml,
     );
     final database = _database;
 
     if (database == null) {
-      _importedPackXmlById[importedPackState.id] = rawXml;
+      _importedPackXmlById[importedPackState.id] = importBuild.normalizedXml;
       final updatedCatalog = _mergeImportedCompendiumContentFromMemory(
         catalog.copyWith(
           packStates: _mergeImportedPackState(
@@ -155,6 +202,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
           ),
         ),
       ).applyPackStateEffects();
+      _cachedStartupCatalog = updatedCatalog;
       _cachedCatalog = updatedCatalog;
       return updatedCatalog;
     }
@@ -177,7 +225,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
         .insertOnConflictUpdate(
           ImportedCompendiumPacksCompanion.insert(
             id: importedPackState.id,
-            rawXml: rawXml,
+            rawXml: importBuild.normalizedXml,
             importedAt: DateTime.now(),
           ),
         );
@@ -185,6 +233,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
     var refreshed = await _loadBaseCatalog();
     refreshed = await _mergeImportedCompendiumContent(database, refreshed);
     final effectiveCatalog = refreshed.applyPackStateEffects();
+    _cachedStartupCatalog = effectiveCatalog;
     _cachedCatalog = effectiveCatalog;
     return effectiveCatalog;
   }
@@ -2026,6 +2075,64 @@ class AssetCompendiumRepository implements CompendiumRepository {
     );
   }
 
+  Future<CompendiumCatalog> _loadCatalogWithPersistedPackStates(
+    AppDatabase database,
+    CompendiumCatalog catalog,
+  ) async {
+    final packStateRows =
+        await (database.select(database.compendiumPackStates)..orderBy([
+              (table) => OrderingTerm.asc(table.isFixed),
+              (table) => OrderingTerm.asc(table.title),
+            ]))
+            .get();
+    if (packStateRows.isEmpty) {
+      return catalog;
+    }
+
+    final persistedById = <String, CompendiumPackState>{
+      for (final row in packStateRows) row.id: row,
+    };
+    final mergedDefaultPackStates = catalog.packStates
+        .map((packState) {
+          final persisted = persistedById[packState.id];
+          if (persisted == null) {
+            return packState;
+          }
+          return CompendiumPackStateModel(
+            id: persisted.id,
+            title: persisted.title,
+            description: persisted.description,
+            kind: persisted.kind,
+            isFixed: persisted.isFixed,
+            isActive: persisted.isFixed ? true : persisted.isActive,
+          );
+        })
+        .toList(growable: false);
+    final mergedPackIds = mergedDefaultPackStates
+        .map((packState) => packState.id)
+        .toSet();
+    final importedPackStates = packStateRows
+        .where((row) => !mergedPackIds.contains(row.id))
+        .map(
+          (row) => CompendiumPackStateModel(
+            id: row.id,
+            title: row.title,
+            description: row.description,
+            kind: row.kind,
+            isFixed: row.isFixed,
+            isActive: row.isFixed ? true : row.isActive,
+          ),
+        )
+        .toList(growable: false);
+
+    return catalog.copyWith(
+      packStates: <CompendiumPackStateModel>[
+        ...mergedDefaultPackStates,
+        ...importedPackStates,
+      ],
+    );
+  }
+
   CompendiumCatalog _updateCatalogPackState(
     CompendiumCatalog catalog,
     String packId,
@@ -2083,56 +2190,6 @@ class AssetCompendiumRepository implements CompendiumRepository {
     return int.tryParse(normalized) ?? 0;
   }
 
-  CompendiumPackStateModel _buildImportedPackState(
-    String rawXml,
-    List<CompendiumPackStateModel> existingPackStates,
-  ) {
-    final normalizedXml = rawXml.trim();
-    if (normalizedXml.isEmpty) {
-      throw const FormatException(
-        'Paste XML content before attempting import.',
-      );
-    }
-    if (!RegExp(
-      r'<(compendium|collection)\b',
-      caseSensitive: false,
-    ).hasMatch(normalizedXml)) {
-      throw const FormatException(
-        'XML content must include a compendium or collection root node.',
-      );
-    }
-
-    final supportedElementCount = RegExp(
-      r'<(background|race|class|spell|feat|monster)\b',
-      caseSensitive: false,
-    ).allMatches(normalizedXml).length;
-    if (supportedElementCount == 0) {
-      throw const FormatException(
-        'XML content does not contain compatible background, race, class, spell, feat, or monster entries.',
-      );
-    }
-
-    final titleMatch = RegExp(
-      r'<name>([^<]+)</name>',
-      caseSensitive: false,
-    ).firstMatch(normalizedXml);
-    final rawTitle = titleMatch?.group(1)?.trim();
-    final title = rawTitle == null || rawTitle.isEmpty
-        ? 'Imported XML pack'
-        : _normalizeCatalogName(rawTitle);
-    final baseId = _slugifyImportedPackId(title);
-    final id = _nextImportedPackId(baseId, existingPackStates);
-    return CompendiumPackStateModel(
-      id: id,
-      title: title,
-      description:
-          'Imported XML pack with $supportedElementCount supported entries registered locally for future ingestion.',
-      kind: 'imported_xml',
-      isFixed: false,
-      isActive: true,
-    );
-  }
-
   List<CompendiumPackStateModel> _mergeImportedPackState(
     List<CompendiumPackStateModel> packStates,
     CompendiumPackStateModel importedPackState,
@@ -2141,30 +2198,6 @@ class AssetCompendiumRepository implements CompendiumRepository {
       ...packStates.where((packState) => packState.id != importedPackState.id),
       importedPackState,
     ];
-  }
-
-  String _nextImportedPackId(
-    String baseId,
-    List<CompendiumPackStateModel> existingPackStates,
-  ) {
-    final existingIds = existingPackStates
-        .map((packState) => packState.id)
-        .toSet();
-    var candidate = 'imported-$baseId';
-    var suffix = 2;
-    while (existingIds.contains(candidate)) {
-      candidate = 'imported-$baseId-$suffix';
-      suffix += 1;
-    }
-    return candidate;
-  }
-
-  String _slugifyImportedPackId(String text) {
-    final slug = _normalizeCatalogName(text)
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
-        .replaceAll(RegExp(r'^-+|-+$'), '');
-    return slug.isEmpty ? 'xml-pack' : slug;
   }
 
   Future<CompendiumCatalog> _mergeImportedCompendiumContent(

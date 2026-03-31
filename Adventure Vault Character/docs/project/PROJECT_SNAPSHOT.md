@@ -35,9 +35,12 @@ summary.
 - `lib/` now includes the first feature-first app shell under `lib/src/`.
 - The app implements `bootstrap -> access -> main menu` with controller-driven
   state.
+- Bootstrap now loads a lightweight startup compendium index from bundled JSON,
+  defers full FightClub XML parsing until compendium-heavy flows, and keeps the
+  full catalog cached lazily for the rest of the session.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- The Drift schema is now at `v16` and includes normalized character-side
+- The Drift schema is now at `v19` and includes normalized character-side
   tables for `ability scores`, `ability score provenance`, `hit points`,
   `finishing details`, `narrative selections`, `equipment loadout`,
   `skills`, `saving throws`, `inventory`, `proficiencies`, and `currency`.
@@ -176,12 +179,17 @@ summary.
   persisted selection-kind storage, editable reload, and sheet-facing labels.
 - Wizard create/edit now captures both spellbook choices and prepared subset
   choices with deterministic subset/limit enforcement.
-- Drift schema is now at `v16`, including expanded spell-selection identity so
+- Drift schema is now at `v19`, including expanded spell-selection identity so
   `spellbook` and `prepared` rows can coexist for a single spell id.
 - Spell-slot tracking now exposes deterministic short-rest/long-rest reset
   actions in create/edit spell state handling.
 - Pack-state filtering now also trims pack-tagged backgrounds, spells, feats,
   and monsters, not only narrative-option groups.
+- XML import validation is now shared by in-memory and persisted compendium
+  repositories, including deterministic malformed-payload rejection,
+  unsupported-content rejection, duplicate-within-import deduplication with
+  source-policy notes, and numeric suffix handling for imported pack title
+  collisions.
 - Imported XML backgrounds now derive bonuses and social-perk style values from
   XML fields/traits instead of static placeholder defaults.
 - Project documentation, internal messages, runtime UI strings, and test
@@ -268,6 +276,9 @@ summary.
 - The app now also exposes a dedicated `Compendium` screen from the main menu,
   showing source-policy details and current section coverage from the loaded
   offline catalog.
+- Main-menu action wiring now reuses existing routes for dead-end entries:
+  `Rules` opens the `Compendium` screen and `LOAD XML` opens the existing
+  `Import XML` flow directly.
 - That compendium screen now also shows the first read-only management
   entry points for `Import XML` and pack-management work while keeping the
   bundled base compendium explicitly active.
@@ -297,6 +308,10 @@ summary.
 - Widget coverage now also verifies navigation into the compendium screen.
 - Widget coverage now also verifies the visible compendium management/import
   placeholders.
+- Widget coverage now also verifies main-menu routing for `Rules` and
+  `LOAD XML` into existing compendium/import flows.
+- Drift migration tests now assert upgrades from `v1` and `v4` all the way to
+  schema `v19`, including post-`v10` table presence and final schema version.
 - `flutter test` passed after the schema normalization changes.
 
 ## Active Architecture Constraints

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/asset_compendium_repository.dart';
+import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -536,6 +537,96 @@ void main() {
     },
   );
 
+  test('rejects malformed imported XML payloads', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final repository = AssetCompendiumRepository(
+      database: database,
+      bundle: _FakeAssetBundle(_buildCompendiumImportBundleAssets()),
+    );
+
+    await expectLater(
+      () => repository.importXmlPack(_malformedImportFixture),
+      throwsA(
+        isA<FormatException>().having(
+          (error) => error.message,
+          'message',
+          contains('appears malformed'),
+        ),
+      ),
+    );
+  });
+
+  test(
+    'deduplicates entries within a single import and reports duplicate notes',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = AssetCompendiumRepository(
+        database: database,
+        bundle: _FakeAssetBundle(_buildCompendiumImportBundleAssets()),
+      );
+
+      final importedCatalog = await repository.importXmlPack(
+        _intraPackDuplicateFixture,
+      );
+
+      expect(
+        importedCatalog.backgrounds
+            .where(
+              (background) => background.name == 'Imported Duplicated Sage',
+            )
+            .length,
+        1,
+      );
+      expect(
+        importedCatalog.spells
+            .where((spell) => spell.name == 'Imported Duplicate Spark')
+            .length,
+        1,
+      );
+      expect(
+        importedCatalog.sourcePolicyForSection('backgrounds')?.notes,
+        contains('Duplicates skipped within imported XML packs: 1.'),
+      );
+      expect(
+        importedCatalog.sourcePolicyForSection('spells')?.notes,
+        contains('Duplicates skipped within imported XML packs: 1.'),
+      );
+    },
+  );
+
+  test(
+    'resolves imported pack title collisions with deterministic suffixes',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = AssetCompendiumRepository(
+        database: database,
+        bundle: _FakeAssetBundle(_buildCompendiumImportBundleAssets()),
+      );
+
+      final firstImport = await repository.importXmlPack(
+        _titleCollisionFixture,
+      );
+      final secondImport = await repository.importXmlPack(
+        _titleCollisionFixture,
+      );
+
+      expect(
+        firstImport.packStateById('imported-collision-same-title')?.title,
+        'Collision Same Title',
+      );
+      expect(
+        secondImport.packStateById('imported-collision-same-title-2')?.title,
+        'Collision Same Title (2)',
+      );
+    },
+  );
+
   test(
     'falls back to bundled json catalog when core XML assets fail',
     () async {
@@ -589,6 +680,153 @@ void main() {
       expect(catalog.packStates.single.isFixed, isTrue);
     },
   );
+
+  test('startup catalog loads lightweight index without XML parsing', () async {
+    final repository = AssetCompendiumRepository(
+      bundle: _FakeAssetBundle({
+        'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{
+          'races': <String>['Human'],
+          'classes': <String>['Fighter'],
+          'backgrounds': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'id': 'acolyte',
+              'name': 'Acolyte',
+              'summary': 'Fallback summary',
+              'bonuses': <String>['Fallback bonus'],
+              'socialPerks': <String>['Fallback perk'],
+            },
+          ],
+          'generatedAbilityScoreSet': <int>[15, 14, 13, 12, 10, 8],
+          'manualAbilityScoreOptions': <int>[8, 9, 10, 11, 12, 13, 14, 15],
+          'equipmentSummariesByClass': <String, dynamic>{
+            'Fighter': <String, dynamic>{
+              'statusLabel': 'Fallback',
+              'description': 'Fallback description',
+              'highlightItems': <String>['Fallback item'],
+            },
+          },
+          'equipmentLoadoutsByClass': <String, dynamic>{
+            'Fighter': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 'fighter-fallback',
+                'label': 'Fallback loadout',
+                'startingMoneySummary': 'Fallback money',
+                'selectedItems': <String>['Fallback item'],
+              },
+            ],
+          },
+        }),
+      }),
+    );
+
+    final startupCatalog = await repository.loadStartupCatalog();
+
+    expect(startupCatalog.sourcePolicy.activeSourceType, 'startup_index');
+    expect(
+      startupCatalog.sourcePolicyForSection('catalog')?.sourceType,
+      'startup_index',
+    );
+    expect(startupCatalog.packStates, hasLength(1));
+    expect(startupCatalog.packStates.single.id, 'bundled-base-compendium');
+  });
+
+  test(
+    'startup catalog applies persisted pack states from local database',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+      await database
+          .into(database.compendiumPackStates)
+          .insert(
+            CompendiumPackStatesCompanion.insert(
+              id: 'imported-test-pack',
+              title: 'Imported Test Pack',
+              description: 'Persisted imported pack',
+              kind: 'imported_xml',
+              isFixed: const Value(false),
+              isActive: const Value(false),
+              updatedAt: DateTime.now(),
+            ),
+          );
+
+      final repository = AssetCompendiumRepository(
+        database: database,
+        bundle: _FakeAssetBundle({
+          'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{
+            'races': <String>['Human'],
+            'classes': <String>['Fighter'],
+            'backgrounds': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 'acolyte',
+                'name': 'Acolyte',
+                'summary': 'Fallback summary',
+                'bonuses': <String>['Fallback bonus'],
+                'socialPerks': <String>['Fallback perk'],
+              },
+            ],
+            'generatedAbilityScoreSet': <int>[15, 14, 13, 12, 10, 8],
+            'manualAbilityScoreOptions': <int>[8, 9, 10, 11, 12, 13, 14, 15],
+            'equipmentSummariesByClass': <String, dynamic>{
+              'Fighter': <String, dynamic>{
+                'statusLabel': 'Fallback',
+                'description': 'Fallback description',
+                'highlightItems': <String>['Fallback item'],
+              },
+            },
+            'equipmentLoadoutsByClass': <String, dynamic>{
+              'Fighter': <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'id': 'fighter-fallback',
+                  'label': 'Fallback loadout',
+                  'startingMoneySummary': 'Fallback money',
+                  'selectedItems': <String>['Fallback item'],
+                },
+              ],
+            },
+          }),
+        }),
+      );
+
+      final startupCatalog = await repository.loadStartupCatalog();
+
+      expect(
+        startupCatalog.packStates.map((packState) => packState.id),
+        containsAll(<String>['bundled-base-compendium', 'imported-test-pack']),
+      );
+      expect(
+        startupCatalog.packStateById('imported-test-pack')?.isActive,
+        isFalse,
+      );
+    },
+  );
+}
+
+Map<String, String> _buildCompendiumImportBundleAssets() {
+  return <String, String>{
+    'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_backgrounds_5.5e.xml':
+        _backgroundsFixture,
+    'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_races_5.5e.xml':
+        _racesFixture,
+    'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_classes_5.5e.xml':
+        _classesFixture,
+    'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_spells_5.5e.xml':
+        _spellsFixture,
+    'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_feats_5.5e.xml':
+        _featsFixture,
+    'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_bestiary_5.5e.xml':
+        _monstersFixture,
+    'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/01_Core/01_Players_Handbook/backgrounds-phb.xml':
+        _phbNarrativeFixture,
+    'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Sword_Coast_Adventurers_Guide/backgrounds-scag.xml':
+        _scagNarrativeFixture,
+    'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Planescape_Adventures_in_the_Multiverse/backgrounds-pam.xml':
+        _pamNarrativeFixture,
+    'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Guildmasters_Guide_to_Ravnica/backgrounds-ggr.xml':
+        _ggrNarrativeFixture,
+    'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml':
+        _erlwNarrativeFixture,
+    'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{}),
+  };
 }
 
 class _FakeAssetBundle extends CachingAssetBundle {
@@ -1028,5 +1266,69 @@ const _importCollisionFixture = '''
     <name>Imported Veteran</name>
     <text>Unique imported feat.</text>
   </feat>
+</compendium>
+''';
+
+const _malformedImportFixture = '''
+<compendium version="5">
+  <background>
+    <name>Broken Entry</name>
+    <trait>
+      <name>Description</name>
+      <text>Missing closing tags on purpose.
+  </background>
+</compendium>
+''';
+
+const _intraPackDuplicateFixture = '''
+<compendium version="5">
+  <background>
+    <name>Imported Duplicated Sage</name>
+    <trait>
+      <name>Description</name>
+      <text>First copy should win.</text>
+    </trait>
+  </background>
+  <background>
+    <name>Imported Duplicated Sage</name>
+    <trait>
+      <name>Description</name>
+      <text>Second copy should be skipped.</text>
+    </trait>
+  </background>
+  <spell>
+    <name>Imported Duplicate Spark</name>
+    <level>0</level>
+    <school>EV</school>
+    <time>Action</time>
+    <range>Touch</range>
+    <components>V, S</components>
+    <duration>Instantaneous</duration>
+    <classes>Wizard</classes>
+    <text>First copy should win.</text>
+  </spell>
+  <spell>
+    <name>Imported Duplicate Spark</name>
+    <level>0</level>
+    <school>EV</school>
+    <time>Action</time>
+    <range>Touch</range>
+    <components>V, S</components>
+    <duration>Instantaneous</duration>
+    <classes>Wizard</classes>
+    <text>Second copy should be skipped.</text>
+  </spell>
+</compendium>
+''';
+
+const _titleCollisionFixture = '''
+<compendium version="5">
+  <background>
+    <name>Collision Same Title</name>
+    <trait>
+      <name>Description</name>
+      <text>Title collision fixture.</text>
+    </trait>
+  </background>
 </compendium>
 ''';

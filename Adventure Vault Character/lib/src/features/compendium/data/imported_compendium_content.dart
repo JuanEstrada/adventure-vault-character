@@ -1,4 +1,5 @@
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
+import 'package:adventure_vault_character/src/features/compendium/data/xml_import_validation.dart';
 
 class ImportedCompendiumContent {
   const ImportedCompendiumContent({
@@ -11,6 +12,7 @@ class ImportedCompendiumContent {
     required this.spells,
     required this.feats,
     required this.monsters,
+    required this.duplicateCountsBySection,
   });
 
   final String packId;
@@ -22,6 +24,7 @@ class ImportedCompendiumContent {
   final List<CompendiumSpell> spells;
   final List<CompendiumFeat> feats;
   final List<CompendiumMonster> monsters;
+  final Map<String, int> duplicateCountsBySection;
 
   int get supportedEntryCount =>
       races.length +
@@ -44,6 +47,10 @@ class ImportedCompendiumContent {
       _ => 0,
     };
   }
+
+  int duplicateCountForSection(String sectionKey) {
+    return duplicateCountsBySection[sectionKey] ?? 0;
+  }
 }
 
 ImportedCompendiumContent parseImportedCompendiumContent({
@@ -51,18 +58,8 @@ ImportedCompendiumContent parseImportedCompendiumContent({
   required String packTitle,
   required String rawXml,
 }) {
-  final normalizedXml = rawXml.trim();
-  if (normalizedXml.isEmpty) {
-    throw const FormatException('Paste XML content before attempting import.');
-  }
-  if (!RegExp(
-    r'<(compendium|collection)\b',
-    caseSensitive: false,
-  ).hasMatch(normalizedXml)) {
-    throw const FormatException(
-      'XML content must include a compendium or collection root node.',
-    );
-  }
+  final validated = validateXmlImportPayload(rawXml);
+  final normalizedXml = validated.normalizedXml;
 
   final races = _extractElements(normalizedXml, 'race')
       .map(
@@ -105,16 +102,45 @@ ImportedCompendiumContent parseImportedCompendiumContent({
       .whereType<CompendiumMonster>()
       .toList(growable: false);
 
+  final uniqueRaces = _dedupeStrings(races);
+  final uniqueClasses = _dedupeStrings(classes);
+  final uniqueBackgrounds = _dedupeBy<CompendiumBackground>(
+    backgrounds,
+    (background) => background.id,
+  );
+  final uniqueNarrativeGroups = _dedupeBy<CompendiumNarrativeOptionGroup>(
+    narrativeOptionGroups,
+    (group) => group.id,
+  );
+  final uniqueSpells = _dedupeBy<CompendiumSpell>(
+    spells,
+    (spell) => spell.name,
+  );
+  final uniqueFeats = _dedupeBy<CompendiumFeat>(feats, (feat) => feat.name);
+  final uniqueMonsters = _dedupeBy<CompendiumMonster>(
+    monsters,
+    (monster) => monster.name,
+  );
+
   final content = ImportedCompendiumContent(
     packId: packId,
     packTitle: packTitle,
-    races: races,
-    classes: classes,
-    backgrounds: backgrounds,
-    narrativeOptionGroups: narrativeOptionGroups,
-    spells: spells,
-    feats: feats,
-    monsters: monsters,
+    races: uniqueRaces.values,
+    classes: uniqueClasses.values,
+    backgrounds: uniqueBackgrounds.values,
+    narrativeOptionGroups: uniqueNarrativeGroups.values,
+    spells: uniqueSpells.values,
+    feats: uniqueFeats.values,
+    monsters: uniqueMonsters.values,
+    duplicateCountsBySection: <String, int>{
+      'races': uniqueRaces.duplicates,
+      'classes': uniqueClasses.duplicates,
+      'backgrounds': uniqueBackgrounds.duplicates,
+      'narrative_options': uniqueNarrativeGroups.duplicates,
+      'spells': uniqueSpells.duplicates,
+      'feats': uniqueFeats.duplicates,
+      'monsters': uniqueMonsters.duplicates,
+    },
   );
   if (content.supportedEntryCount == 0) {
     throw const FormatException(
@@ -193,6 +219,21 @@ CompendiumCatalog mergeImportedCompendiumContents(
     'feats': mergedFeats.accepted,
     'monsters': mergedMonsters.accepted,
   };
+  final duplicatesWithinImportBySection = <String, int>{
+    for (final sectionKey in <String>[
+      'races',
+      'classes',
+      'backgrounds',
+      'narrative_options',
+      'spells',
+      'feats',
+      'monsters',
+    ])
+      sectionKey: contents.fold<int>(
+        0,
+        (sum, content) => sum + content.duplicateCountForSection(sectionKey),
+      ),
+  };
   final importedPackCount = contents.length;
   final importedLabel = importedPackCount == 1
       ? '1 imported XML pack'
@@ -219,6 +260,7 @@ CompendiumCatalog mergeImportedCompendiumContents(
               conflictCountsBySection: conflictCountsBySection,
               attemptedCountsBySection: attemptedCountsBySection,
               acceptedCountsBySection: acceptedCountsBySection,
+              duplicatesWithinImportBySection: duplicatesWithinImportBySection,
             ),
           )
           .toList(growable: false),
@@ -232,6 +274,7 @@ CompendiumSectionSourcePolicy _appendImportedSourceNote(
   required Map<String, int> conflictCountsBySection,
   required Map<String, int> attemptedCountsBySection,
   required Map<String, int> acceptedCountsBySection,
+  required Map<String, int> duplicatesWithinImportBySection,
 }) {
   final contributions = contents
       .map((content) {
@@ -257,9 +300,16 @@ CompendiumSectionSourcePolicy _appendImportedSourceNote(
   final conflictNote = conflictCount == 0
       ? null
       : 'Conflicts skipped by base precedence: $conflictCount.';
-  final combinedImportedNote = conflictNote == null
-      ? importedNote
-      : '$importedNote $conflictNote';
+  final duplicateCount =
+      duplicatesWithinImportBySection[section.sectionKey] ?? 0;
+  final duplicateNote = duplicateCount == 0
+      ? null
+      : 'Duplicates skipped within imported XML packs: $duplicateCount.';
+  final combinedImportedNote = <String?>[
+    importedNote,
+    conflictNote,
+    duplicateNote,
+  ].whereType<String>().join(' ');
   return CompendiumSectionSourcePolicy(
     sectionKey: section.sectionKey,
     sectionLabel: section.sectionLabel,
@@ -379,6 +429,38 @@ class _MergeResult<T> {
   final int conflicts;
 
   int get accepted => attempted - conflicts;
+}
+
+class _UniqueResult<T> {
+  const _UniqueResult({required this.values, required this.duplicates});
+
+  final List<T> values;
+  final int duplicates;
+}
+
+_UniqueResult<String> _dedupeStrings(List<String> values) {
+  return _dedupeBy<String>(values, (value) => value);
+}
+
+_UniqueResult<T> _dedupeBy<T>(
+  List<T> values,
+  String Function(T value) keySelector,
+) {
+  final unique = <T>[];
+  final seen = <String>{};
+  var duplicates = 0;
+  for (final value in values) {
+    final key = keySelector(value);
+    if (!seen.add(key)) {
+      duplicates += 1;
+      continue;
+    }
+    unique.add(value);
+  }
+  return _UniqueResult<T>(
+    values: List<T>.unmodifiable(unique),
+    duplicates: duplicates,
+  );
 }
 
 CompendiumBackground? _parseBackground(

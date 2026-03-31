@@ -115,9 +115,19 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
             AppScreen.mainMenu => MainMenuScreen(
               characterSummaries: state.characterSummaries,
               compendiumCatalog: state.compendiumCatalog!,
-              onOpenCompendium: _controller.openCompendium,
+              onOpenCompendium: () {
+                unawaited(_controller.openCompendium());
+              },
+              onOpenRules: () {
+                unawaited(_controller.openCompendium());
+              },
+              onLoadXml: () {
+                unawaited(_controller.openCompendiumImport());
+              },
               onOpenSettings: _controller.openSettings,
-              onCreateCharacter: _controller.openCreateCharacter,
+              onCreateCharacter: () {
+                unawaited(_controller.openCreateCharacter());
+              },
               onOpenCharacter: _controller.openCharacter,
             ),
             AppScreen.settings => SystemSettingsScreen(
@@ -131,17 +141,27 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
             AppScreen.compendium => CompendiumScreen(
               catalog: state.compendiumCatalog!,
               onBack: _controller.openMainMenu,
-              onOpenCompendiumPacks: _controller.openCompendiumPacks,
-              onOpenCompendiumImport: _controller.openCompendiumImport,
+              onOpenCompendiumPacks: () {
+                unawaited(_controller.openCompendiumPacks());
+              },
+              onOpenCompendiumImport: () {
+                unawaited(_controller.openCompendiumImport());
+              },
             ),
             AppScreen.compendiumPacks => CompendiumPacksScreen(
               catalog: state.compendiumCatalog!,
-              onBack: _controller.openCompendium,
+              onBack: () {
+                unawaited(_controller.openCompendium());
+              },
               onSetPackActive: _controller.setCompendiumPackActive,
             ),
             AppScreen.compendiumImport => CompendiumImportScreen(
-              onBack: _controller.openCompendium,
-              onOpenCompendiumPacks: _controller.openCompendiumPacks,
+              onBack: () {
+                unawaited(_controller.openCompendium());
+              },
+              onOpenCompendiumPacks: () {
+                unawaited(_controller.openCompendiumPacks());
+              },
               onImportXml: _controller.importCompendiumXml,
             ),
             AppScreen.createCharacter => CreateCharacterScreen(

@@ -112,6 +112,7 @@ class AppController extends ChangeNotifier {
   final CharacterDraftValidator _characterDraftValidator;
   StreamSubscription<List<CharacterSummary>>? _characterSummariesSubscription;
   StreamSubscription<CharacterDomainModel?>? _selectedCharacterSubscription;
+  bool _isFullCompendiumCatalogLoaded = false;
 
   AppState _state = const AppState.initial();
 
@@ -122,7 +123,8 @@ class AppController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final compendiumCatalog = await _compendiumRepository.loadCatalog();
+      final compendiumCatalog = await _compendiumRepository
+          .loadStartupCatalog();
       final includeCoinWeightInEncumbrance = await _systemSettingsRepository
           .getIncludeCoinWeightInEncumbrance();
       final summaries = await _characterRepository
@@ -137,6 +139,7 @@ class AppController extends ChangeNotifier {
         includeCoinWeightInEncumbrance: includeCoinWeightInEncumbrance,
         clearError: true,
       );
+      _isFullCompendiumCatalogLoaded = false;
     } catch (_) {
       _state = _state.copyWith(
         isInitializing: false,
@@ -152,7 +155,10 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void openCompendium() {
+  Future<void> openCompendium() async {
+    if (!await _ensureFullCompendiumCatalogLoaded()) {
+      return;
+    }
     _disposeCharacterEditorController();
     _state = _state.copyWith(
       screen: AppScreen.compendium,
@@ -176,7 +182,10 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void openCompendiumPacks() {
+  Future<void> openCompendiumPacks() async {
+    if (!await _ensureFullCompendiumCatalogLoaded()) {
+      return;
+    }
     _disposeCharacterEditorController();
     _state = _state.copyWith(
       screen: AppScreen.compendiumPacks,
@@ -188,7 +197,10 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void openCompendiumImport() {
+  Future<void> openCompendiumImport() async {
+    if (!await _ensureFullCompendiumCatalogLoaded()) {
+      return;
+    }
     _disposeCharacterEditorController();
     _state = _state.copyWith(
       screen: AppScreen.compendiumImport,
@@ -200,7 +212,10 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void openCreateCharacter() {
+  Future<void> openCreateCharacter() async {
+    if (!await _ensureFullCompendiumCatalogLoaded()) {
+      return;
+    }
     _disposeCharacterEditorController();
     _state = _state.copyWith(
       screen: AppScreen.createCharacter,
@@ -225,6 +240,9 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> setCompendiumPackActive(String packId, bool isActive) async {
+    if (!await _ensureFullCompendiumCatalogLoaded()) {
+      return;
+    }
     final catalog = _state.compendiumCatalog;
     if (catalog == null) {
       return;
@@ -249,6 +267,11 @@ class AppController extends ChangeNotifier {
   }
 
   Future<String?> importCompendiumXml(String rawXml) async {
+    if (!await _ensureFullCompendiumCatalogLoaded()) {
+      return _state.errorMessage ??
+          'Failed to prepare compendium data for import.';
+    }
+
     try {
       final updatedCatalog = await _compendiumRepository.importXmlPack(rawXml);
       _state = _state.copyWith(
@@ -340,6 +363,10 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> loadEditableCharacter(String characterId) async {
+    if (!await _ensureFullCompendiumCatalogLoaded()) {
+      return;
+    }
+
     try {
       final editableCharacter = await _characterRepository
           .getEditableCharacterById(characterId);
@@ -672,5 +699,28 @@ class AppController extends ChangeNotifier {
 
   void _disposeCharacterEditorController() {
     _state.characterEditorController?.dispose();
+  }
+
+  Future<bool> _ensureFullCompendiumCatalogLoaded() async {
+    if (_isFullCompendiumCatalogLoaded) {
+      return true;
+    }
+
+    try {
+      final compendiumCatalog = await _compendiumRepository.loadCatalog();
+      _isFullCompendiumCatalogLoaded = true;
+      _state = _state.copyWith(
+        compendiumCatalog: compendiumCatalog,
+        clearError: true,
+      );
+      notifyListeners();
+      return true;
+    } catch (_) {
+      _state = _state.copyWith(
+        errorMessage: 'Failed to load full local compendium data.',
+      );
+      notifyListeners();
+      return false;
+    }
   }
 }

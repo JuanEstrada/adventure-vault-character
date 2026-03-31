@@ -75,6 +75,16 @@ display duration has elapsed.
    work completes.
 8. App routes to the access screen.
 
+### Lazy Full-Load Flow
+
+1. User reaches `access` and can continue offline without waiting for full XML parsing.
+2. Main-menu summary uses the startup compendium index.
+3. The app loads the full XML-backed compendium only when the user enters
+   compendium-heavy flows (`Compendium`, `Manage packs`, `Import XML`,
+   `Create character`, or edit preparation).
+4. Once loaded, the full catalog stays available for subsequent compendium-heavy
+   actions in the same app session.
+
 ### Error Recovery Flow
 
 1. Initialization fails.

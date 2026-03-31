@@ -8,18 +8,18 @@ import 'package:sqlite3/sqlite3.dart' as sqlite;
 void main() {
   group('AppDatabase migrations', () {
     test(
-      'upgrades a v1 database to v10 and preserves character data',
+      'upgrades a v1 database to v19 and preserves character data',
       () async {
-      final file = await _createTempDatabaseFile();
-      addTearDown(() async {
-        if (await file.exists()) {
-          await file.delete();
-        }
-      });
+        final file = await _createTempDatabaseFile();
+        addTearDown(() async {
+          if (await file.exists()) {
+            await file.delete();
+          }
+        });
 
-      final legacy = sqlite.sqlite3.open(file.path);
+        final legacy = sqlite.sqlite3.open(file.path);
 
-      legacy.execute('''
+        legacy.execute('''
         CREATE TABLE characters (
           id TEXT NOT NULL PRIMARY KEY,
           name TEXT NOT NULL,
@@ -31,61 +31,63 @@ void main() {
           portrait_asset_path TEXT NULL
         )
       ''');
-      legacy.execute('''
+        legacy.execute('''
         INSERT INTO characters (
           id, name, race_name, class_name, level, created_at, updated_at, portrait_asset_path
         ) VALUES (
           'char-1', 'Aelar', 'Human', 'Fighter', 1, 1710000000000, 1710000001000, NULL
         )
       ''');
-      legacy.execute('PRAGMA user_version = 1');
-      legacy.close();
+        legacy.execute('PRAGMA user_version = 1');
+        legacy.close();
 
-      final database = AppDatabase.executor(NativeDatabase(file));
-      addTearDown(database.close);
+        final database = AppDatabase.executor(NativeDatabase(file));
+        addTearDown(database.close);
 
-      await (database.select(
-        database.characters,
-      )..where((table) => table.id.equals('char-1'))).getSingle();
-      final equipmentLoadout = await (database.select(
-        database.characterEquipmentLoadouts,
-      )..where((table) => table.characterId.equals('char-1'))).getSingle();
-      final abilityScores = await (database.select(
-        database.characterAbilityScores,
-      )..where((table) => table.characterId.equals('char-1'))).getSingle();
-      final provenance = await (database.select(
-        database.characterAbilityScoreProvenances,
-      )..where((table) => table.characterId.equals('char-1'))).getSingle();
-      final hitPoints = await (database.select(
-        database.characterHitPoints,
-      )..where((table) => table.characterId.equals('char-1'))).getSingle();
-      final finishingDetails = await (database.select(
-        database.characterFinishingDetails,
-      )..where((table) => table.characterId.equals('char-1'))).getSingle();
-      final currency = await (database.select(
-        database.characterCurrency,
-      )..where((table) => table.characterId.equals('char-1'))).getSingle();
-      final savingThrows = await (database.select(
-        database.characterSavingThrows,
-      )..where((table) => table.characterId.equals('char-1'))).get();
+        await (database.select(
+          database.characters,
+        )..where((table) => table.id.equals('char-1'))).getSingle();
+        final equipmentLoadout = await (database.select(
+          database.characterEquipmentLoadouts,
+        )..where((table) => table.characterId.equals('char-1'))).getSingle();
+        final abilityScores = await (database.select(
+          database.characterAbilityScores,
+        )..where((table) => table.characterId.equals('char-1'))).getSingle();
+        final provenance = await (database.select(
+          database.characterAbilityScoreProvenances,
+        )..where((table) => table.characterId.equals('char-1'))).getSingle();
+        final hitPoints = await (database.select(
+          database.characterHitPoints,
+        )..where((table) => table.characterId.equals('char-1'))).getSingle();
+        final finishingDetails = await (database.select(
+          database.characterFinishingDetails,
+        )..where((table) => table.characterId.equals('char-1'))).getSingle();
+        final currency = await (database.select(
+          database.characterCurrency,
+        )..where((table) => table.characterId.equals('char-1'))).getSingle();
+        final savingThrows = await (database.select(
+          database.characterSavingThrows,
+        )..where((table) => table.characterId.equals('char-1'))).get();
 
-      expect(equipmentLoadout.loadoutId, isNull);
-      expect(equipmentLoadout.loadoutLabel, isNull);
-      expect(abilityScores.strengthScore, 0);
-      expect(abilityScores.charismaModifier, -5);
-      expect(provenance.methodKey, isNull);
-      expect(hitPoints.current, 0);
-      expect(finishingDetails.portraitAssetPath, isNull);
-      expect(currency.summarySnapshot, isNull);
-      expect(savingThrows, hasLength(6));
-      expect(
-        savingThrows.map((row) => row.abilityKey),
-        containsAll(<String>['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']),
-      );
-    });
+        expect(equipmentLoadout.loadoutId, isNull);
+        expect(equipmentLoadout.loadoutLabel, isNull);
+        expect(abilityScores.strengthScore, 0);
+        expect(abilityScores.charismaModifier, -5);
+        expect(provenance.methodKey, isNull);
+        expect(hitPoints.current, 0);
+        expect(finishingDetails.portraitAssetPath, isNull);
+        expect(currency.summarySnapshot, isNull);
+        expect(savingThrows, hasLength(6));
+        expect(
+          savingThrows.map((row) => row.abilityKey),
+          containsAll(<String>['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']),
+        );
+        await _expectLatestSchemaArtifacts(database);
+      },
+    );
 
     test(
-      'upgrades a v4 database to v10, preserves normalized data, migrates provenance, and drops redundant snapshot columns',
+      'upgrades a v4 database to v19, preserves normalized data, migrates provenance, and drops redundant snapshot columns',
       () async {
         final file = await _createTempDatabaseFile();
         addTearDown(() async {
@@ -414,9 +416,62 @@ void main() {
             'content',
           ]),
         );
+        await _expectLatestSchemaArtifacts(database);
       },
     );
   });
+}
+
+Future<void> _expectLatestSchemaArtifacts(AppDatabase database) async {
+  final versionRow = await database.customSelect('PRAGMA user_version').get();
+  expect(versionRow.single.data['user_version'], 19);
+
+  final systemPreferenceColumns = await database
+      .customSelect('PRAGMA table_info(system_preferences)')
+      .get();
+  expect(
+    systemPreferenceColumns.map((row) => row.data['name'] as String),
+    containsAll(<String>[
+      'id',
+      'include_coin_weight_in_encumbrance',
+      'updated_at',
+    ]),
+  );
+
+  final spellSelectionColumns = await database
+      .customSelect('PRAGMA table_info(character_spell_selections)')
+      .get();
+  expect(
+    spellSelectionColumns.map((row) => row.data['name'] as String),
+    containsAll(<String>[
+      'character_id',
+      'spell_definition_id',
+      'selection_kind',
+      'selected_at_order',
+    ]),
+  );
+
+  final classResourceColumns = await database
+      .customSelect('PRAGMA table_info(character_class_resources)')
+      .get();
+  expect(
+    classResourceColumns.map((row) => row.data['name'] as String),
+    containsAll(<String>[
+      'character_id',
+      'resource_key',
+      'current_uses',
+      'last_changed_source',
+      'last_changed_at',
+    ]),
+  );
+
+  final importedPackColumns = await database
+      .customSelect('PRAGMA table_info(imported_compendium_packs)')
+      .get();
+  expect(
+    importedPackColumns.map((row) => row.data['name'] as String),
+    containsAll(<String>['id', 'raw_xml', 'imported_at']),
+  );
 }
 
 Future<File> _createTempDatabaseFile() async {

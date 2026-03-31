@@ -52,11 +52,15 @@ Verified on 2026-03-28:
   `lib/src/`.
 - The app now implements the startup path `bootstrap -> access -> main menu`
   with controller-driven state and repository boundaries.
+- Startup now uses a lightweight compendium index (`loadStartupCatalog`) so the
+  app can reach `access` without full XML parsing; full compendium load is
+  triggered lazily by compendium-heavy entry points and reused for the active
+  session.
 - Character summaries now load through a Drift-backed repository over a local
   SQLite database.
 - The previous single-table character persistence has now been extended into a
   normalized Drift schema.
-- The Drift schema is now at `v16` and includes dedicated character-side tables
+- The Drift schema is now at `v19` and includes dedicated character-side tables
   for `ability scores`, `ability score provenance`, `hit points`,
   `finishing details`, `narrative selections`, `equipment loadout`, `skills`,
   `saving throws`, `inventory`, `proficiencies`, and `currency`, plus
@@ -149,10 +153,11 @@ Verified on 2026-03-28:
 - `CharacterSheetMapper` and the old `CharacterSheetViewData` hierarchy have
   now been removed from the active code path, with the remaining
   `EquipmentSummaryViewData` extracted into its own small shared type.
-- Drift migration regression coverage now exists for legacy schemas through
-  `v13`, including verification of backfilled normalized tables, migrated
-  ability-score provenance, and preserved hit-point / finishing-detail /
-  equipment-loadout / narrative-selection data, plus the new pack-state table.
+- Drift migration regression coverage now verifies legacy upgrades into the
+  current schema `v19`, including normalized data preservation from `v1` and
+  `v4` plus presence of post-`v10` tables (`character_spell_selections`,
+  `character_class_resources`, `imported_compendium_packs`, and
+  `system_preferences`).
 - The app startup path now shares one `AppDatabase` instance between the
   Drift character repository and the asset compendium repository, so local
   compendium loads can also seed normalized rule-reference tables.
@@ -177,13 +182,17 @@ Verified on 2026-03-28:
 - The main menu now surfaces that `sourcePolicy` in a read-only
   `Active compendium` card so the loaded rules basis is visible before entering
   character creation.
+- Main-menu core actions are now fully wired: `Rules` reuses the existing
+  `Compendium` route as the current rules destination, and `LOAD XML` opens the
+  existing `Import XML` route directly without introducing a new screen.
 - The app now also exposes a first dedicated `Compendium` screen from that
   main-menu entry, showing the active source policy plus section-by-section
   coverage details from the loaded offline catalog.
-- That compendium screen now also exposes a first read-only content-management
-  block: the bundled base compendium is shown as always active, imported packs
-  are still marked as pending, and the future XML import entry point remains
-  visible without executing any import flow.
+- That compendium screen now also exposes a first content-management block:
+  the bundled base compendium is shown as always active, imported packs are
+  persisted locally through Drift and can contribute supported imported content
+  when active, and the XML import entry point now executes the current offline
+  registration flow.
 - `Manage packs` now opens a dedicated read-only screen inside the same
   compendium feature, while `Import XML` now opens a dedicated offline
   registration screen for pasted XML.
@@ -205,6 +214,10 @@ Verified on 2026-03-28:
   supported imported `backgrounds`, `races`, `classes`, `spells`, `feats`,
   and `monsters` into the effective compendium whenever the imported pack is
   active.
+- XML import validation is now centralized and shared across in-memory and
+  Drift-backed repositories, with deterministic checks for malformed payloads,
+  unsupported content, duplicate entries within a single import, and imported
+  pack title collisions (resolved with numeric suffixes).
 - Active imported XML packs now also parse background
   `Suggested Characteristics` tables into normalized narrative option groups,
   so imported `ideals`, `bonds`, `flaws`, and `personality traits` can appear

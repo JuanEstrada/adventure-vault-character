@@ -8,6 +8,8 @@ class MainMenuScreen extends StatelessWidget {
     required this.characterSummaries,
     required this.compendiumCatalog,
     required this.onOpenCompendium,
+    required this.onOpenRules,
+    required this.onLoadXml,
     required this.onOpenSettings,
     required this.onCreateCharacter,
     required this.onOpenCharacter,
@@ -17,6 +19,8 @@ class MainMenuScreen extends StatelessWidget {
   final List<CharacterSummary> characterSummaries;
   final CompendiumCatalog compendiumCatalog;
   final VoidCallback onOpenCompendium;
+  final VoidCallback onOpenRules;
+  final VoidCallback onLoadXml;
   final VoidCallback onOpenSettings;
   final VoidCallback onCreateCharacter;
   final ValueChanged<String> onOpenCharacter;
@@ -30,7 +34,7 @@ class MainMenuScreen extends StatelessWidget {
         title: const Text('Adventure Vault Character'),
         actions: [
           _TopAction(label: 'Compendium', onPressed: onOpenCompendium),
-          const _TopAction(label: 'Rules'),
+          _TopAction(label: 'Rules', onPressed: onOpenRules),
           _TopAction(label: 'Settings', onPressed: onOpenSettings),
         ],
       ),
@@ -70,7 +74,7 @@ class MainMenuScreen extends StatelessWidget {
                         child: const Text('Create character'),
                       ),
                       OutlinedButton(
-                        onPressed: () {},
+                        onPressed: onLoadXml,
                         child: const Text('LOAD XML'),
                       ),
                     ],
