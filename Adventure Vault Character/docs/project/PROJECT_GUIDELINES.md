@@ -39,7 +39,11 @@ must follow.
 9. New accepted features should be reflected in the appropriate project docs:
    ADRs, arc42 sections, specs, roadmap, and project snapshot as needed.
 10. Simplicity is preferred only when it does not compromise rule correctness,
-    architecture, or future extensibility.
+     architecture, or future extensibility.
+11. Follow the canonical documentation policy in `docs/README.md`.
+12. Keep durable project knowledge in repo docs and transient notes in Engram
+    unless promoted.
+13. Keep all documentation in English.
 
 ## Decision Priority
 

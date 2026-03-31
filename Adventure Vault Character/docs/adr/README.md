@@ -3,6 +3,8 @@
 This directory contains the Architecture Decision Records for Adventure Vault
 Character.
 
+Policy note: `docs/README.md` is the canonical documentation policy.
+
 ## Decision Log
 
 | ADR | Status | Summary |
@@ -23,6 +25,8 @@ Character.
 - Preserve superseded ADRs as historical context instead of deleting them.
 - Add a new ADR when a decision changes architecture, platform direction, or
   delivery constraints in a durable way.
+- Keep ADR prose in English and avoid restating spec or project-status content
+  already owned elsewhere.
 
 ## Related Documents
 

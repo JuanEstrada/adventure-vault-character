@@ -5,6 +5,8 @@ Adventure Vault Character. The content is split into one file per section so
 the architecture can evolve incrementally without losing the standard
 structure.
 
+Policy note: `docs/README.md` is the canonical documentation policy.
+
 ## arc42 Sections
 
 | Section | Focus | File |
@@ -25,9 +27,7 @@ structure.
 ## Related Architecture Artifacts
 
 - ADRs: [ADR Index](../adr/README.md)
-- Diagrams: [Context](../diagrams/context.md),
-  [Containers](../diagrams/containers.md),
-  [Components](../diagrams/components.md)
+- Diagrams: [Diagrams Index](../diagrams/README.md)
 - Project state: [Project Snapshot](../project/PROJECT_SNAPSHOT.md)
 - Specifications: [Specifications Index](../specs/README.md)
 

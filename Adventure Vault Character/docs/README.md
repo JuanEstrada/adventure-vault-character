@@ -1,10 +1,38 @@
 # Documentation Hub
 
-This repository currently contains the documentation baseline for
-Adventure Vault Character together with the generated Flutter project
-scaffolding. It captures the target architecture, architectural
-decisions, diagrams, and project planning that now guide the first
-implementation slices.
+Use this file as the canonical documentation policy for Adventure Vault
+Character.
+
+## Documentation Policy (Canonical)
+
+1. Repo docs are the durable source of truth.
+2. Engram/Gentle-AI memory complements repo docs; it does not replace them.
+3. One topic, one home: keep a single canonical document per topic and link
+   to it from index files.
+4. Keep all documentation in English.
+5. Keep durable, reviewable decisions in git-versioned docs; keep transient
+   session notes in Engram unless they are promoted.
+
+## Purpose Boundaries
+
+| Area | Owns | Does Not Own |
+| --- | --- | --- |
+| `docs/specs/` | Accepted or in-planning product requirements and behavior | Session notes, architecture rationale, ADR decisions |
+| `docs/project/` | Current project state, continuity, runbooks, and delivery direction | Long-lived architecture definition or duplicated spec content |
+| `docs/architecture/` | arc42 architecture baseline and cross-cutting technical structure | Daily status notes or decision-history details |
+| `docs/adr/` | Durable architecture decisions and status history | Feature specs, implementation checklists, or session logs |
+| `docs/diagrams/` | Durable diagram views that support architecture and specs | Narrative policy text already owned elsewhere |
+| Engram / session memory | Transient notes, working memory, and in-session continuity | Replacement for durable repo documentation |
+
+## Cleanup Rules
+
+- Keep durable docs in the repository.
+- Keep transient working notes in Engram.
+- Promote durable findings from Engram into the correct repo doc when they
+  become stable decisions, requirements, or architecture facts.
+- Keep docs in English.
+- Avoid duplicate sources of truth; link to canonical docs instead of restating
+  them.
 
 ## Start Here
 
@@ -28,6 +56,8 @@ implementation slices.
   arc42 architecture documentation.
 - [ADR Index](adr/README.md): decision log and current accepted architecture
   constraints.
+- [Diagrams Index](diagrams/README.md): durable diagram map and ownership
+  boundaries.
 - [Roadmap](project/ROADMAP.md): phased implementation direction.
 
 ## Documentation Map
@@ -44,7 +74,8 @@ implementation slices.
 | Specifications | Accepted or in-planning functional specs | [Specifications Index](specs/README.md) |
 | Architecture | arc42-based system description | [Architecture Index](architecture/README.md) |
 | ADRs | Decision record history | [ADR Index](adr/README.md) |
-| Diagrams | C4 textual views | [Context Diagram](diagrams/context.md) |
+| Diagrams | Durable diagram views and links | [Diagrams Index](diagrams/README.md) |
+| Session memory | Transient AI session continuity notes | Engram (non-repo, promoted when durable) |
 
 ## Recommended Reading Order
 
@@ -53,7 +84,8 @@ implementation slices.
 3. Review the [Project Index](project/README.md).
 4. Review the [Architecture Index](architecture/README.md).
 5. Scan the key [ADRs](adr/README.md).
-6. Use the [Roadmap](project/ROADMAP.md) to connect architecture to delivery
+6. Review [Diagrams Index](diagrams/README.md) for visual references.
+7. Use the [Roadmap](project/ROADMAP.md) to connect architecture to delivery
    planning.
 
 ## Repository Status

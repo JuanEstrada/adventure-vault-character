@@ -2,6 +2,8 @@
 
 This directory contains implementation-facing product specifications.
 
+Policy note: `docs/README.md` is the canonical documentation policy.
+
 ## Purpose
 
 Use `docs/specs/` for accepted or actively planned requirements that sit
@@ -47,6 +49,9 @@ between high-level architecture and the roadmap.
 - Put accepted or in-planning specs here.
 - Keep deferred ideas in [../project/FUTURE_SPECS.md](../project/FUTURE_SPECS.md).
 - Link architecture-impacting changes back to ADRs when needed.
+- Keep spec content durable, reviewable, and in English.
+- Do not store transient session notes in this folder; keep those in Engram
+  unless promoted.
 - When a spec references visual examples, those usually come from
   `local-ui-assets/`.
 - Source rule files, XML examples, and other raw reference materials live in

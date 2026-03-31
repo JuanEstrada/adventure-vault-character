@@ -39,11 +39,15 @@ When instructions overlap, apply them in this order:
 
 - Do not duplicate documentation when a source-of-truth document already covers
   the topic.
+- Use `docs/README.md` as the canonical documentation policy.
 - Treat accepted ADRs as active constraints.
 - Keep architecture docs aligned with implementation planning.
 - Keep project-state docs aligned with repository reality.
 - Prefer updating index pages when adding new documents.
 - Record accepted product requirements in `docs/specs/`.
+- Keep transient working notes in Engram; promote durable findings into repo
+  docs when they become stable.
+- Keep all documentation in English.
 
 ## Continuity Rule
 
