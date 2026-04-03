@@ -39,6 +39,7 @@ class CharacterRecordLoader {
     final spellSelections = await _readDao.getSpellSelectionsByCharacterId(id);
     final spellSlotUsages = await _readDao.getSpellSlotUsagesByCharacterId(id);
     final classResources = await _readDao.getClassResourcesByCharacterId(id);
+    final deathSaves = await _readDao.getDeathSavesByCharacterId(id);
     final currency = await _readDao.getCurrencyByCharacterId(id);
     final inventory = await _readDao.getInventoryByCharacterId(id);
     final inventoryEquipmentDefinitionIds = inventory
@@ -66,6 +67,7 @@ class CharacterRecordLoader {
       spellSelections: spellSelections,
       spellSlotUsages: spellSlotUsages,
       classResources: classResources,
+      deathSaves: deathSaves,
       currency: currency,
       inventory: inventory,
       inventoryEquipmentDefinitions: inventoryEquipmentDefinitions,

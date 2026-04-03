@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:adventure_vault_character/src/features/characters/data/character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_class_resource_rules.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_combat_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_encumbrance_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_quantity_rules.dart';
@@ -27,6 +28,8 @@ class InMemoryCharacterRepository implements CharacterRepository {
        _classResourcesByCharacterId = <String, Map<String, int>>{},
        _classResourceMetaByCharacterId =
            <String, Map<String, _InMemoryClassResourceMeta>>{},
+       _deathSavesByCharacterId =
+           <String, CharacterDeathSaveTransitionResult>{},
        _compendiumRepository = compendiumRepository;
 
   InMemoryCharacterRepository.seeded(
@@ -38,6 +41,8 @@ class InMemoryCharacterRepository implements CharacterRepository {
        _classResourcesByCharacterId = <String, Map<String, int>>{},
        _classResourceMetaByCharacterId =
            <String, Map<String, _InMemoryClassResourceMeta>>{},
+       _deathSavesByCharacterId =
+           <String, CharacterDeathSaveTransitionResult>{},
        _compendiumRepository = compendiumRepository;
 
   final List<CharacterSummary> _summaries;
@@ -46,6 +51,8 @@ class InMemoryCharacterRepository implements CharacterRepository {
   final Map<String, Map<String, int>> _classResourcesByCharacterId;
   final Map<String, Map<String, _InMemoryClassResourceMeta>>
   _classResourceMetaByCharacterId;
+  final Map<String, CharacterDeathSaveTransitionResult>
+  _deathSavesByCharacterId;
   final CompendiumRepository _compendiumRepository;
   final CharacterSummaryMapper _characterSummaryMapper =
       const CharacterSummaryMapper();
@@ -55,6 +62,8 @@ class InMemoryCharacterRepository implements CharacterRepository {
       const CharacterClassResourceRules();
   final CharacterEncumbranceRules _characterEncumbranceRules =
       const CharacterEncumbranceRules();
+  final CharacterCombatRules _characterCombatRules =
+      const CharacterCombatRules();
   final StreamController<void> _changes = StreamController<void>.broadcast();
 
   @override
@@ -97,6 +106,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
       changedAt: DateTime.now(),
       existing: const <String, _InMemoryClassResourceMeta>{},
     );
+    _deathSavesByCharacterId[id] = _characterCombatRules.resetDeathSaves();
     _changes.add(null);
     return summary;
   }
@@ -136,8 +146,58 @@ class InMemoryCharacterRepository implements CharacterRepository {
           _classResourceMetaByCharacterId[id] ??
           const <String, _InMemoryClassResourceMeta>{},
     );
+    _deathSavesByCharacterId[id] = CharacterDeathSaveTransitionResult(
+      successCount: (_deathSavesByCharacterId[id]?.successCount ?? 0).clamp(
+        0,
+        3,
+      ),
+      failureCount: (_deathSavesByCharacterId[id]?.failureCount ?? 0).clamp(
+        0,
+        3,
+      ),
+    );
     _changes.add(null);
     return summary;
+  }
+
+  @override
+  Future<void> recordDeathSaveSuccess(String id) async {
+    final summary = await getCharacterSummaryById(id);
+    if (summary == null) {
+      throw StateError('Character not found.');
+    }
+    final persisted =
+        _deathSavesByCharacterId[id] ?? _characterCombatRules.resetDeathSaves();
+    _deathSavesByCharacterId[id] = _characterCombatRules.registerSuccess(
+      successCount: persisted.successCount,
+      failureCount: persisted.failureCount,
+    );
+    _changes.add(null);
+  }
+
+  @override
+  Future<void> recordDeathSaveFailure(String id) async {
+    final summary = await getCharacterSummaryById(id);
+    if (summary == null) {
+      throw StateError('Character not found.');
+    }
+    final persisted =
+        _deathSavesByCharacterId[id] ?? _characterCombatRules.resetDeathSaves();
+    _deathSavesByCharacterId[id] = _characterCombatRules.registerFailure(
+      successCount: persisted.successCount,
+      failureCount: persisted.failureCount,
+    );
+    _changes.add(null);
+  }
+
+  @override
+  Future<void> resetDeathSaves(String id) async {
+    final summary = await getCharacterSummaryById(id);
+    if (summary == null) {
+      throw StateError('Character not found.');
+    }
+    _deathSavesByCharacterId[id] = _characterCombatRules.resetDeathSaves();
+    _changes.add(null);
   }
 
   @override
@@ -720,6 +780,22 @@ class InMemoryCharacterRepository implements CharacterRepository {
       level: summary.level,
       experience: createdInput?.experience ?? 0,
     );
+    final dexterityModifier = CharacterRules.abilityModifier(
+      createdInput?.dexterity ?? 14,
+    );
+    final armorClassResult = _characterCombatRules.deriveArmorClass(
+      dexterityModifier: dexterityModifier,
+      equippedItems: inventoryItems
+          .map(
+            (item) => CharacterArmorProfile(
+              name: item.name,
+              isEquipped: item.isEquipped,
+            ),
+          )
+          .toList(growable: false),
+    );
+    final deathSaves =
+        _deathSavesByCharacterId[id] ?? _characterCombatRules.resetDeathSaves();
     final spellcasting = _buildSpellcastingSummary(
       className: className,
       catalog: catalog,
@@ -757,6 +833,15 @@ class InMemoryCharacterRepository implements CharacterRepository {
           maximum: maximumHitPoints,
           temporary: temporaryHitPoints,
         ),
+        armorClass: armorClassResult.armorClass,
+        initiativeModifier: _characterCombatRules.deriveInitiativeModifier(
+          dexterityModifier: dexterityModifier,
+        ),
+        deathSaves: CharacterDeathSaveStateDomainModel(
+          successCount: deathSaves.successCount,
+          failureCount: deathSaves.failureCount,
+        ),
+        hasArmorConfigurationConflict: armorClassResult.hasArmorConflict,
         savingThrows: const <CharacterSavingThrowDomainModel>[],
         classResources: classResourceDefinitions
             .map(
@@ -808,6 +893,16 @@ class InMemoryCharacterRepository implements CharacterRepository {
                 name: item,
                 isProficient: true,
                 hasExpertise: false,
+              ),
+            )
+            .toList(growable: false),
+        skills: _extractBackgroundSkillLabels(background)
+            .map(
+              (item) => CharacterSkillDomainModel(
+                name: item,
+                isProficient: true,
+                hasExpertise: false,
+                bonus: progression.proficiencyBonus,
               ),
             )
             .toList(growable: false),
@@ -1087,6 +1182,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
     );
 
     if (isLongRest) {
+      _deathSavesByCharacterId[id] = _characterCombatRules.resetDeathSaves();
       final inventory = _inventoryByCharacterId[id];
       if (inventory != null) {
         _inventoryByCharacterId[id] = inventory

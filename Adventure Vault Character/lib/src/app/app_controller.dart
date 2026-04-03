@@ -544,6 +544,24 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> recordSelectedCharacterDeathSaveSuccess() async {
+    await _updateSelectedCharacterDeathSaves((id) {
+      return _characterRepository.recordDeathSaveSuccess(id);
+    });
+  }
+
+  Future<void> recordSelectedCharacterDeathSaveFailure() async {
+    await _updateSelectedCharacterDeathSaves((id) {
+      return _characterRepository.recordDeathSaveFailure(id);
+    });
+  }
+
+  Future<void> resetSelectedCharacterDeathSaves() async {
+    await _updateSelectedCharacterDeathSaves((id) {
+      return _characterRepository.resetDeathSaves(id);
+    });
+  }
+
   Future<void> setSelectedCharacterInventoryItemEquipped(
     String inventoryItemId,
     bool isEquipped,
@@ -680,6 +698,34 @@ class AppController extends ChangeNotifier {
       _state = _state.copyWith(
         isSavingCharacter: false,
         errorMessage: 'Failed to update inventory item: $inventoryItemId.',
+      );
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> _updateSelectedCharacterDeathSaves(
+    Future<void> Function(String characterId) update,
+  ) async {
+    final selected = _state.selectedCharacterSheet;
+    if (selected == null) {
+      _state = _state.copyWith(
+        errorMessage: 'No character is currently selected.',
+      );
+      notifyListeners();
+      return;
+    }
+
+    _state = _state.copyWith(isSavingCharacter: true, clearError: true);
+    notifyListeners();
+
+    try {
+      await update(selected.id);
+      _state = _state.copyWith(isSavingCharacter: false, clearError: true);
+    } catch (_) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: 'Failed to update death save state.',
       );
     }
 

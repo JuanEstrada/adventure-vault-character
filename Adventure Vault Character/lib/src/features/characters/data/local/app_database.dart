@@ -389,6 +389,22 @@ class CharacterClassResources extends Table {
   Set<Column<Object>> get primaryKey => {characterId, resourceKey};
 }
 
+class CharacterDeathSaves extends Table {
+  TextColumn get characterId => text().references(Characters, #id)();
+
+  IntColumn get successCount =>
+      integer().named('success_count').withDefault(const Constant(0))();
+
+  IntColumn get failureCount =>
+      integer().named('failure_count').withDefault(const Constant(0))();
+
+  DateTimeColumn get updatedAt =>
+      dateTime().named('updated_at').withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column<Object>> get primaryKey => {characterId};
+}
+
 class SystemPreferences extends Table {
   IntColumn get id => integer()();
 
@@ -665,6 +681,7 @@ class TrinketDefinitions extends Table {
     CharacterProficiencies,
     CharacterCurrency,
     CharacterClassResources,
+    CharacterDeathSaves,
     SystemPreferences,
     ClassDefinitions,
     CharacterAdvancementDefinitions,
@@ -694,7 +711,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.executor(super.executor);
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -886,6 +903,15 @@ class AppDatabase extends _$AppDatabase {
       if (from < 19) {
         await migrator.createTable(systemPreferences);
       }
+      if (from < 20) {
+        await migrator.createTable(characterDeathSaves);
+        await customStatement('''
+          INSERT INTO character_death_saves (character_id, success_count, failure_count)
+          SELECT id, 0, 0
+          FROM characters
+          WHERE id NOT IN (SELECT character_id FROM character_death_saves)
+        ''');
+      }
 
       await _createIndexes();
     },
@@ -947,6 +973,10 @@ class AppDatabase extends _$AppDatabase {
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_character_class_resources_character '
       'ON character_class_resources (character_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_character_death_saves_character '
+      'ON character_death_saves (character_id)',
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_character_proficiencies_character '

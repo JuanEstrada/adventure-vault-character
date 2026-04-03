@@ -23,6 +23,24 @@ class CharacterDomainModel {
   final CharacterFeaturesNotesDomainModel featuresNotes;
   final CharacterEquipmentDomainModel equipment;
   final CharacterSpellcastingDomainModel? spellcasting;
+
+  int get passivePerception => 10 + _perceptionBonus;
+
+  int get _perceptionBonus {
+    for (final skill in featuresNotes.skills) {
+      if (skill.name.trim().toLowerCase() == 'perception') {
+        return skill.bonus;
+      }
+    }
+
+    for (final ability in abilities.entries) {
+      if (ability.label.trim().toLowerCase() == 'wisdom') {
+        return ability.modifier;
+      }
+    }
+
+    return 0;
+  }
 }
 
 @immutable
@@ -62,11 +80,87 @@ class CharacterCombatDomainModel {
     required this.hitPoints,
     required this.savingThrows,
     required this.classResources,
+    this.weaponAttacks = const <CharacterWeaponAttackDomainModel>[],
+    this.armorClass = 10,
+    this.initiativeModifier = 0,
+    this.deathSaves = const CharacterDeathSaveStateDomainModel(),
+    this.hasArmorConfigurationConflict = false,
   });
 
   final CharacterHitPointsDomainModel hitPoints;
   final List<CharacterSavingThrowDomainModel> savingThrows;
   final List<CharacterClassResourceDomainModel> classResources;
+  final List<CharacterWeaponAttackDomainModel> weaponAttacks;
+  final int armorClass;
+  final int initiativeModifier;
+  final CharacterDeathSaveStateDomainModel deathSaves;
+  final bool hasArmorConfigurationConflict;
+
+  String get displayInitiativeModifier =>
+      initiativeModifier >= 0 ? '+$initiativeModifier' : '$initiativeModifier';
+}
+
+@immutable
+class CharacterWeaponAttackDomainModel {
+  const CharacterWeaponAttackDomainModel({
+    required this.name,
+    required this.attackAbilityKey,
+    required this.attackBonus,
+    required this.damageModifier,
+    required this.isProficient,
+    this.damageDice,
+    this.damageType,
+  });
+
+  final String name;
+  final String attackAbilityKey;
+  final int attackBonus;
+  final int damageModifier;
+  final bool isProficient;
+  final String? damageDice;
+  final String? damageType;
+
+  String get attackAbilityLabel {
+    return switch (attackAbilityKey) {
+      'str' => 'Strength',
+      'dex' => 'Dexterity',
+      _ => attackAbilityKey.toUpperCase(),
+    };
+  }
+
+  String get displayAttackBonus =>
+      attackBonus >= 0 ? '+$attackBonus' : '$attackBonus';
+
+  String get displayDamageModifier =>
+      damageModifier >= 0 ? '+$damageModifier' : '$damageModifier';
+
+  String get displayDamageExpression {
+    final dice = damageDice;
+    final typeSuffix = damageType == null ? '' : ' ${damageType!}';
+    if (dice == null || dice.isEmpty || dice == '1') {
+      return 'Damage $displayDamageModifier$typeSuffix'.trim();
+    }
+    if (damageModifier == 0) {
+      return '$dice$typeSuffix'.trim();
+    }
+    return '$dice $displayDamageModifier$typeSuffix'.trim();
+  }
+}
+
+@immutable
+class CharacterDeathSaveStateDomainModel {
+  const CharacterDeathSaveStateDomainModel({
+    this.successCount = 0,
+    this.failureCount = 0,
+  });
+
+  final int successCount;
+  final int failureCount;
+
+  bool get isStable => successCount >= 3;
+  bool get isDead => failureCount >= 3;
+  bool get canRecordSuccess => !isStable && !isDead;
+  bool get canRecordFailure => !isStable && !isDead;
 }
 
 @immutable
@@ -318,12 +412,14 @@ class CharacterFeaturesNotesDomainModel {
     required this.proficientSkills,
     required this.otherProficiencies,
     required this.finishingDetails,
+    this.skills = const <CharacterSkillDomainModel>[],
   });
 
   final CharacterBackgroundDomainModel background;
   final List<CharacterSkillDomainModel> proficientSkills;
   final List<CharacterProficiencyDomainModel> otherProficiencies;
   final CharacterFinishingDetailsDomainModel finishingDetails;
+  final List<CharacterSkillDomainModel> skills;
 
   List<String> get proficientSkillLabels =>
       proficientSkills.map((item) => item.displayLabel).toList(growable: false);
@@ -426,13 +522,19 @@ class CharacterSkillDomainModel {
     required this.name,
     required this.isProficient,
     required this.hasExpertise,
+    this.abilityKey = 'unknown',
+    this.bonus = 0,
   });
 
   final String name;
   final bool isProficient;
   final bool hasExpertise;
+  final String abilityKey;
+  final int bonus;
 
   String get displayLabel => hasExpertise ? '$name (expertise)' : name;
+
+  String get displayBonus => bonus >= 0 ? '+$bonus' : '$bonus';
 }
 
 @immutable
@@ -445,8 +547,11 @@ class CharacterProficiencyDomainModel {
   final String proficiencyType;
   final String referenceKey;
 
-  String get displayLabel =>
-      '${_titleCase(proficiencyType)}: ${_humanizeKey(referenceKey)}';
+  String get proficiencyTypeLabel => _titleCase(proficiencyType);
+
+  String get referenceLabel => _humanizeKey(referenceKey);
+
+  String get displayLabel => '$proficiencyTypeLabel: $referenceLabel';
 
   static String _titleCase(String raw) {
     if (raw.isEmpty) {

@@ -92,6 +92,12 @@ abstract interface class CharacterRepository {
     int amount,
   });
 
+  Future<void> recordDeathSaveSuccess(String id);
+
+  Future<void> recordDeathSaveFailure(String id);
+
+  Future<void> resetDeathSaves(String id);
+
   Future<void> setInventoryItemContainer(
     String id,
     String inventoryItemId,

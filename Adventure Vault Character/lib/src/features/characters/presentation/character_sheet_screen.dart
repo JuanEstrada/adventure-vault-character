@@ -11,6 +11,9 @@ class CharacterSheetScreen extends StatelessWidget {
     required this.onApplyShortRest,
     required this.onApplyLongRest,
     required this.onSetClassResourceUses,
+    required this.onRecordDeathSaveSuccess,
+    required this.onRecordDeathSaveFailure,
+    required this.onResetDeathSaves,
     required this.onSetInventoryItemEquipped,
     required this.onSetInventoryItemCarried,
     required this.onSetInventoryItemQuantity,
@@ -28,6 +31,9 @@ class CharacterSheetScreen extends StatelessWidget {
   final Future<void> Function() onApplyLongRest;
   final Future<void> Function(String resourceKey, int currentUses)
   onSetClassResourceUses;
+  final Future<void> Function() onRecordDeathSaveSuccess;
+  final Future<void> Function() onRecordDeathSaveFailure;
+  final Future<void> Function() onResetDeathSaves;
   final Future<void> Function(String inventoryItemId, bool isEquipped)
   onSetInventoryItemEquipped;
   final Future<void> Function(String inventoryItemId, bool isCarried)
@@ -79,16 +85,35 @@ class CharacterSheetScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  character.identity.name,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${character.identity.raceName}  •  ${character.identity.className}  •  Nivel ${character.identity.progression.level}  •  XP ${character.identity.progression.experience}',
-                  style: theme.textTheme.titleMedium,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            character.identity.name,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${character.identity.raceName}  •  ${character.identity.className}  •  Lv ${character.identity.progression.level}  •  XP ${character.identity.progression.experience}',
+                            style: theme.textTheme.titleMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    _PortraitPreview(
+                      portraitPath: character
+                          .featuresNotes
+                          .finishingDetails
+                          .portraitAssetPath,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -126,6 +151,9 @@ class CharacterSheetScreen extends StatelessWidget {
                             onApplyShortRest: onApplyShortRest,
                             onApplyLongRest: onApplyLongRest,
                             onSetClassResourceUses: onSetClassResourceUses,
+                            onRecordDeathSaveSuccess: onRecordDeathSaveSuccess,
+                            onRecordDeathSaveFailure: onRecordDeathSaveFailure,
+                            onResetDeathSaves: onResetDeathSaves,
                           ),
                           const SizedBox(height: 16),
                           _AbilitiesPanel(character: character),
@@ -170,6 +198,9 @@ class CharacterSheetScreen extends StatelessWidget {
                     onApplyShortRest: onApplyShortRest,
                     onApplyLongRest: onApplyLongRest,
                     onSetClassResourceUses: onSetClassResourceUses,
+                    onRecordDeathSaveSuccess: onRecordDeathSaveSuccess,
+                    onRecordDeathSaveFailure: onRecordDeathSaveFailure,
+                    onResetDeathSaves: onResetDeathSaves,
                   ),
                   const SizedBox(height: 16),
                   _AbilitiesPanel(character: character),
@@ -216,17 +247,17 @@ class _IdentityPanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Resumen',
+              'Summary',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 16),
-            _FactRow(label: 'Nombre', value: character.identity.name),
-            _FactRow(label: 'Raza', value: character.identity.raceName),
-            _FactRow(label: 'Clase', value: character.identity.className),
+            _FactRow(label: 'Name', value: character.identity.name),
+            _FactRow(label: 'Race', value: character.identity.raceName),
+            _FactRow(label: 'Class', value: character.identity.className),
             _FactRow(
-              label: 'Nivel',
+              label: 'Level',
               value: character.identity.progression.level.toString(),
             ),
             _FactRow(
@@ -234,7 +265,7 @@ class _IdentityPanel extends StatelessWidget {
               value: character.identity.progression.experience.toString(),
             ),
             _FactRow(
-              label: 'Prof.',
+              label: 'Proficiency',
               value: '+${character.identity.progression.proficiencyBonus}',
             ),
             _FactRow(
@@ -361,6 +392,9 @@ class _CombatPanel extends StatelessWidget {
     required this.onApplyShortRest,
     required this.onApplyLongRest,
     required this.onSetClassResourceUses,
+    required this.onRecordDeathSaveSuccess,
+    required this.onRecordDeathSaveFailure,
+    required this.onResetDeathSaves,
   });
 
   final CharacterDomainModel character;
@@ -370,6 +404,9 @@ class _CombatPanel extends StatelessWidget {
   final Future<void> Function() onApplyLongRest;
   final Future<void> Function(String resourceKey, int currentUses)
   onSetClassResourceUses;
+  final Future<void> Function() onRecordDeathSaveSuccess;
+  final Future<void> Function() onRecordDeathSaveFailure;
+  final Future<void> Function() onResetDeathSaves;
 
   @override
   Widget build(BuildContext context) {
@@ -399,6 +436,110 @@ class _CombatPanel extends StatelessWidget {
             _FactRow(
               label: 'Temp HP',
               value: '${character.combat.hitPoints.temporary}',
+            ),
+            _FactRow(
+              label: 'Armor Class',
+              value: '${character.combat.armorClass}',
+            ),
+            _FactRow(
+              label: 'Initiative',
+              value: character.combat.displayInitiativeModifier,
+            ),
+            _FactRow(
+              label: 'Passive Perception',
+              value: '${character.passivePerception}',
+            ),
+            if (character.combat.hasArmorConfigurationConflict)
+              Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 8),
+                child: Text(
+                  'Multiple body armors are equipped. Highest valid armor class is shown.',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
+            const SizedBox(height: 8),
+            Text('Attacks', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            if (character.combat.weaponAttacks.isEmpty)
+              Text(
+                'No equipped weapons with attack helpers available.',
+                style: theme.textTheme.bodySmall,
+              )
+            else
+              ...character.combat.weaponAttacks.map(
+                (attack) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        attack.name,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      _FactRow(
+                        label: 'Attack',
+                        value:
+                            '${attack.attackAbilityLabel} ${attack.displayAttackBonus}${attack.isProficient ? ' (proficient)' : ''}',
+                      ),
+                      _FactRow(
+                        label: 'Damage',
+                        value: attack.displayDamageExpression,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: 8),
+            Text('Death Saves', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            _FactRow(
+              label: 'Successes',
+              value:
+                  '${character.combat.deathSaves.successCount} / 3${character.combat.deathSaves.isStable ? ' (Stable)' : ''}',
+            ),
+            _FactRow(
+              label: 'Failures',
+              value:
+                  '${character.combat.deathSaves.failureCount} / 3${character.combat.deathSaves.isDead ? ' (Dead)' : ''}',
+            ),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  onPressed:
+                      isApplyingRest ||
+                          !character.combat.deathSaves.canRecordSuccess
+                      ? null
+                      : () {
+                          onRecordDeathSaveSuccess();
+                        },
+                  icon: const Icon(Icons.add_circle_outline),
+                  label: const Text('Mark success'),
+                ),
+                OutlinedButton.icon(
+                  onPressed:
+                      isApplyingRest ||
+                          !character.combat.deathSaves.canRecordFailure
+                      ? null
+                      : () {
+                          onRecordDeathSaveFailure();
+                        },
+                  icon: const Icon(Icons.highlight_off_outlined),
+                  label: const Text('Mark failure'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: isApplyingRest
+                      ? null
+                      : () {
+                          onResetDeathSaves();
+                        },
+                  icon: const Icon(Icons.refresh_outlined),
+                  label: const Text('Reset death saves'),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             Text('Recovery', style: theme.textTheme.titleMedium),
@@ -525,6 +666,18 @@ class _AbilitiesPanel extends StatelessWidget {
                 ),
               ),
             ),
+            if (character.featuresNotes.skills.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text('Skills', style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: character.featuresNotes.skills
+                    .map((skill) => _SkillChip(skill: skill))
+                    .toList(growable: false),
+              ),
+            ],
           ],
         ),
       ),
@@ -540,6 +693,54 @@ class _FeaturesNotesPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final languageProficiencies =
+        character.featuresNotes.otherProficiencies
+            .where(
+              (item) => item.proficiencyType.trim().toLowerCase() == 'language',
+            )
+            .toList(growable: false)
+          ..sort(
+            (left, right) =>
+                left.referenceLabel.compareTo(right.referenceLabel),
+          );
+    final groupedProficiencies =
+        <String, List<CharacterProficiencyDomainModel>>{};
+    for (final proficiency in character.featuresNotes.otherProficiencies) {
+      if (proficiency.proficiencyType.trim().toLowerCase() == 'language') {
+        continue;
+      }
+
+      groupedProficiencies
+          .putIfAbsent(
+            proficiency.proficiencyTypeLabel,
+            () => <CharacterProficiencyDomainModel>[],
+          )
+          .add(proficiency);
+    }
+    final groupedProficiencyWidgets = <Widget>[];
+    final groupedEntries = groupedProficiencies.entries.toList(growable: false)
+      ..sort((left, right) => left.key.compareTo(right.key));
+    for (final entry in groupedEntries) {
+      final labels =
+          entry.value
+              .map((item) => item.referenceLabel)
+              .toSet()
+              .toList(growable: false)
+            ..sort();
+      groupedProficiencyWidgets.add(
+        Text(
+          entry.key,
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+      groupedProficiencyWidgets.add(const SizedBox(height: 4));
+      for (final label in labels) {
+        groupedProficiencyWidgets.add(Text('• $label'));
+      }
+      groupedProficiencyWidgets.add(const SizedBox(height: 8));
+    }
 
     return Card(
       child: Padding(
@@ -587,11 +788,20 @@ class _FeaturesNotesPanel extends StatelessWidget {
             ],
             if (character.featuresNotes.otherProficiencies.isNotEmpty) ...[
               const SizedBox(height: 12),
-              Text('Other proficiencies', style: theme.textTheme.titleMedium),
-              const SizedBox(height: 8),
-              ...character.featuresNotes.otherProficiencyLabels.map(
-                (item) => Text('• $item'),
-              ),
+              if (languageProficiencies.isNotEmpty) ...[
+                Text('Languages', style: theme.textTheme.titleMedium),
+                const SizedBox(height: 8),
+                ...languageProficiencies.map(
+                  (item) => Text('• ${item.referenceLabel}'),
+                ),
+              ],
+              if (groupedProficiencies.isNotEmpty) ...[
+                if (languageProficiencies.isNotEmpty)
+                  const SizedBox(height: 12),
+                Text('Other proficiencies', style: theme.textTheme.titleMedium),
+                const SizedBox(height: 8),
+                ...groupedProficiencyWidgets,
+              ],
             ],
             if (character
                 .featuresNotes
@@ -1095,5 +1305,66 @@ class _PanelChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Chip(label: Text(label));
+  }
+}
+
+class _SkillChip extends StatelessWidget {
+  const _SkillChip({required this.skill});
+
+  final CharacterSkillDomainModel skill;
+
+  @override
+  Widget build(BuildContext context) {
+    final masterySuffix = skill.hasExpertise
+        ? ' (exp)'
+        : skill.isProficient
+        ? ' (prof)'
+        : '';
+    return Chip(
+      label: Text('${skill.name} ${skill.displayBonus}$masterySuffix'),
+    );
+  }
+}
+
+class _PortraitPreview extends StatelessWidget {
+  const _PortraitPreview({required this.portraitPath});
+
+  final String? portraitPath;
+
+  @override
+  Widget build(BuildContext context) {
+    final trimmedPath = portraitPath?.trim() ?? '';
+    if (trimmedPath.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final imageProvider = _resolveImageProvider(trimmedPath);
+    return CircleAvatar(
+      radius: 34,
+      backgroundColor: Colors.brown.shade100,
+      child: ClipOval(
+        child: imageProvider == null
+            ? const Icon(Icons.person, size: 34)
+            : Image(
+                image: imageProvider,
+                width: 68,
+                height: 68,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => const Icon(Icons.person, size: 34),
+              ),
+      ),
+    );
+  }
+
+  ImageProvider<Object>? _resolveImageProvider(String value) {
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return NetworkImage(value);
+    }
+
+    if (value.startsWith('assets/')) {
+      return AssetImage(value);
+    }
+
+    return null;
   }
 }

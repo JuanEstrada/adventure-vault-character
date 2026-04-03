@@ -2,6 +2,7 @@ import 'package:adventure_vault_character/src/features/characters/data/local/app
 import 'package:adventure_vault_character/src/features/characters/domain/character_encumbrance_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_class_resource_rules.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_combat_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_record.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
@@ -15,13 +16,16 @@ class CharacterDomainMapper {
         const CharacterClassResourceRules(),
     CharacterEncumbranceRules characterEncumbranceRules =
         const CharacterEncumbranceRules(),
+    CharacterCombatRules characterCombatRules = const CharacterCombatRules(),
   }) : _characterSpellRules = characterSpellRules,
        _characterClassResourceRules = characterClassResourceRules,
-       _characterEncumbranceRules = characterEncumbranceRules;
+       _characterEncumbranceRules = characterEncumbranceRules,
+       _characterCombatRules = characterCombatRules;
 
   final CharacterSpellRules _characterSpellRules;
   final CharacterClassResourceRules _characterClassResourceRules;
   final CharacterEncumbranceRules _characterEncumbranceRules;
+  final CharacterCombatRules _characterCombatRules;
 
   CharacterDomainModel map(
     CharacterRecord record, {
@@ -92,6 +96,36 @@ class CharacterDomainMapper {
       level: row.level,
       experience: row.experience ?? 0,
     );
+    final abilityModifierByKey = <String, int>{
+      'str': CharacterRules.abilityModifier(
+        resolvedAbilityScores.strengthScore,
+      ),
+      'dex': CharacterRules.abilityModifier(
+        resolvedAbilityScores.dexterityScore,
+      ),
+      'con': CharacterRules.abilityModifier(
+        resolvedAbilityScores.constitutionScore,
+      ),
+      'int': CharacterRules.abilityModifier(
+        resolvedAbilityScores.intelligenceScore,
+      ),
+      'wis': CharacterRules.abilityModifier(resolvedAbilityScores.wisdomScore),
+      'cha': CharacterRules.abilityModifier(
+        resolvedAbilityScores.charismaScore,
+      ),
+    };
+    final mappedSkills =
+        record.skills
+            .map(
+              (item) => _mapSkill(
+                item,
+                skillDefinitionsById: skillDefinitionsById,
+                proficiencyBonus: progression.proficiencyBonus,
+                abilityModifierByKey: abilityModifierByKey,
+              ),
+            )
+            .toList(growable: false)
+          ..sort((left, right) => left.name.compareTo(right.name));
     final equipmentItemsById = <String, CharacterEquipmentItemDomainModel>{
       for (final item in equipmentItems) item.id: item,
     };
@@ -107,6 +141,68 @@ class CharacterDomainMapper {
       totalCoinCount: _totalCoinCount(record.currency),
       includeCoinWeight: includeCoinWeightInEncumbrance,
     );
+    final dexterityModifier = CharacterRules.abilityModifier(
+      resolvedAbilityScores.dexterityScore,
+    );
+    final armorClassResult = _characterCombatRules.deriveArmorClass(
+      dexterityModifier: dexterityModifier,
+      equippedItems: record.inventory
+          .map(
+            (item) => CharacterArmorProfile(
+              name: _resolveInventoryItemName(
+                item,
+                equipmentDefinitionsById: equipmentDefinitionsById,
+              ),
+              isEquipped: item.isEquipped,
+              category: item.equipmentDefinitionId == null
+                  ? null
+                  : equipmentDefinitionsById[item.equipmentDefinitionId!]
+                        ?.category,
+              armorPropertiesJson: item.equipmentDefinitionId == null
+                  ? null
+                  : equipmentDefinitionsById[item.equipmentDefinitionId!]
+                        ?.armorPropertiesJson,
+            ),
+          )
+          .toList(growable: false),
+    );
+    final weaponAttackResults = _characterCombatRules.deriveWeaponAttacks(
+      strengthModifier: CharacterRules.abilityModifier(
+        resolvedAbilityScores.strengthScore,
+      ),
+      dexterityModifier: dexterityModifier,
+      proficiencyBonus: progression.proficiencyBonus,
+      weaponProficiencyKeys: record.proficiencies
+          .where(
+            (item) => item.proficiencyType.trim().toLowerCase() == 'weapon',
+          )
+          .map((item) => item.referenceKey)
+          .toSet(),
+      equippedItems: record.inventory
+          .map(
+            (item) => CharacterWeaponProfile(
+              name: _resolveInventoryItemName(
+                item,
+                equipmentDefinitionsById: equipmentDefinitionsById,
+              ),
+              isEquipped: item.isEquipped,
+              category: item.equipmentDefinitionId == null
+                  ? null
+                  : equipmentDefinitionsById[item.equipmentDefinitionId!]
+                        ?.category,
+              subcategory: item.equipmentDefinitionId == null
+                  ? null
+                  : equipmentDefinitionsById[item.equipmentDefinitionId!]
+                        ?.subcategory,
+              weaponPropertiesJson: item.equipmentDefinitionId == null
+                  ? null
+                  : equipmentDefinitionsById[item.equipmentDefinitionId!]
+                        ?.weaponPropertiesJson,
+            ),
+          )
+          .toList(growable: false),
+    );
+    final deathSaves = record.deathSaves;
 
     return CharacterDomainModel(
       id: row.id,
@@ -122,6 +218,28 @@ class CharacterDomainMapper {
           maximum: resolvedHitPoints?.maximum ?? 0,
           temporary: resolvedHitPoints?.temporary ?? 0,
         ),
+        armorClass: armorClassResult.armorClass,
+        initiativeModifier: _characterCombatRules.deriveInitiativeModifier(
+          dexterityModifier: dexterityModifier,
+        ),
+        deathSaves: CharacterDeathSaveStateDomainModel(
+          successCount: deathSaves?.successCount ?? 0,
+          failureCount: deathSaves?.failureCount ?? 0,
+        ),
+        weaponAttacks: weaponAttackResults
+            .map(
+              (item) => CharacterWeaponAttackDomainModel(
+                name: item.name,
+                attackAbilityKey: item.attackAbilityKey,
+                attackBonus: item.attackBonus,
+                damageModifier: item.damageModifier,
+                isProficient: item.isProficient,
+                damageDice: item.damageDice,
+                damageType: item.damageType,
+              ),
+            )
+            .toList(growable: false),
+        hasArmorConfigurationConflict: armorClassResult.hasArmorConflict,
         savingThrows: record.savingThrows
             .map(
               (item) => CharacterSavingThrowDomainModel(
@@ -172,32 +290,24 @@ class CharacterDomainMapper {
           name:
               record.backgroundDefinition?.name ??
               background?.name ??
-              'Sin background',
+              'No background',
           summary:
               record.backgroundDefinition?.summary ??
               background?.summary ??
-              'Sin resumen disponible.',
-          bonuses: (background?.bonuses ?? const <String>['Sin bonos cargados'])
+              'No summary available.',
+          bonuses: (background?.bonuses ?? const <String>['No bonuses loaded'])
               .map(_mapBackgroundEntry)
               .toList(growable: false),
           socialPerks:
               (background?.socialPerks ??
-                      const <String>['Sin perks sociales cargados'])
+                      const <String>['No social perks loaded'])
                   .map(_mapBackgroundEntry)
                   .toList(growable: false),
         ),
-        proficientSkills: record.skills
+        proficientSkills: mappedSkills
             .where((item) => item.isProficient || item.hasExpertise)
-            .map(
-              (item) => CharacterSkillDomainModel(
-                name:
-                    skillDefinitionsById[item.skillDefinitionId]?.name ??
-                    item.skillDefinitionId,
-                isProficient: item.isProficient,
-                hasExpertise: item.hasExpertise,
-              ),
-            )
             .toList(growable: false),
+        skills: mappedSkills,
         otherProficiencies: record.proficiencies
             .map(
               (item) => CharacterProficiencyDomainModel(
@@ -237,6 +347,54 @@ class CharacterDomainMapper {
         ),
       ),
     );
+  }
+
+  CharacterSkillDomainModel _mapSkill(
+    CharacterSkill item, {
+    required Map<String, SkillDefinition> skillDefinitionsById,
+    required int proficiencyBonus,
+    required Map<String, int> abilityModifierByKey,
+  }) {
+    final definition = skillDefinitionsById[item.skillDefinitionId];
+    final abilityKey = _normalizeAbilityKey(definition?.governingAbility);
+    final proficiencyMultiplier = item.hasExpertise
+        ? 2
+        : item.isProficient
+        ? 1
+        : 0;
+    final derivedBonus =
+        (abilityModifierByKey[abilityKey] ?? 0) +
+        (proficiencyMultiplier * proficiencyBonus) +
+        item.miscBonus;
+
+    return CharacterSkillDomainModel(
+      name: definition?.name ?? item.skillDefinitionId,
+      isProficient: item.isProficient,
+      hasExpertise: item.hasExpertise,
+      abilityKey: abilityKey,
+      bonus: item.totalBonus ?? derivedBonus,
+    );
+  }
+
+  String _normalizeAbilityKey(String? raw) {
+    final normalized = raw?.trim().toLowerCase() ?? '';
+    if (normalized.isEmpty) {
+      return 'unknown';
+    }
+
+    if (normalized.length <= 3) {
+      return normalized;
+    }
+
+    return switch (normalized) {
+      'strength' => 'str',
+      'dexterity' => 'dex',
+      'constitution' => 'con',
+      'intelligence' => 'int',
+      'wisdom' => 'wis',
+      'charisma' => 'cha',
+      _ => normalized.substring(0, 3),
+    };
   }
 
   CharacterSpellcastingDomainModel? _mapSpellcasting({

@@ -1,266 +1,130 @@
 # Adventure Vault Character - Roadmap
 
-## Purpose
-
-This roadmap organizes delivery around the application lifecycle and the
-player-facing screens that must exist from app boot to app exit. It is meant
-to guide implementation planning, navigation design, and future screen-level
-specifications.
-
-## Planning Principle
-
-The roadmap is ordered by usable end-to-end flows, not only by technical
-capabilities. Each phase should leave the app in a more coherent state from
-startup, through interaction, to backgrounding and closure.
-
-## Phase 0 - Application Lifecycle Baseline
-
-Goal: make the app start, initialize, route, and close predictably.
+## Last Updated
 
-### Screens and Flows
+2026-04-02
 
-- Splash or bootstrap screen
-- Startup dependency initialization
-- Local configuration load
-- Saved character summary load
-- XML content index load without full content preload
-- Access screen after splash
-- App resume from background
-- App close and state persistence
+## Roadmap Intent
 
-### Expected Outcomes
+This roadmap is now focused on **finishing the playable character sheet and
+missing core 5e player rules** on top of the existing offline-first,
+normalized architecture.
 
-- The app launches into a deterministic first screen.
-- Initialization failures have a visible recovery path.
-- Session state survives app pause, resume, and close.
-- Navigation entry rules are documented before feature expansion.
+The app already has a strong baseline: guided create/edit, normalized
+persistence, compendium import management, deterministic spell foundations, and
+inventory mutations. The remaining work is primarily about turning those
+foundations into a complete in-session player tool.
 
-## Phase 1 - First Playable Shell
+## Current Reality (from implementation audit)
 
-Goal: let a player open the app, understand what it is for, and reach a
-useful first screen even before deep gameplay features exist.
+- Normalized data already exists for skills, proficiencies/languages, portrait,
+  currency detail, spell selections/slots, class resources, and inventory.
+- Character sheet has meaningful content but still has high-value usability
+  gaps.
+- Core combat automation is intentionally partial (no AC/initiative/attacks/
+  death saves yet).
 
-### Screens and Flows
+## Phase 1 — Character Sheet Completion (Now)
 
-- Access screen with dummy online login
-- Continue offline action
-- Main menu or home hub
-- Top menu entries for compendium, rules, and settings
-- Character cards in the main menu
-- Always-visible create character entry point
-- Basic character detail shell
+Goal: Make the sheet the reliable in-session home screen using already
+available data and deterministic derivations.
 
-### Expected Outcomes
+### Scope
 
-- A new user can understand the first available action immediately.
-- A returning user can find existing characters quickly.
-- The app has a clear home hub for subsequent milestones.
-
-## Phase 2 - Character Creation and Core Data
-
-Goal: support creation and editing of a valid character record.
-
-### Screens and Flows
-
-- Guided character creation flow
-- Character builder overview screen
-- Visible XML-load entry point in the builder overview
-- Race selection from compendium data
-- Background selection from compendium data
-- Name entry
-- Ability score method selection and assignment
-- Class selection
-- Level and experience synchronization
-- Equipment selection and purchase confirmation
-- Finishing-details step
-- Finalize validation before save
-- Class progression table and feature preview
-- Save or cancel flow
-- Edit existing character flow
+- Improve identity header clarity (including optional portrait display).
+- Surface passive perception from existing character data.
+- Improve visibility of skills and proficiencies/languages.
+- Keep all logic in domain/application outputs; avoid widget-side rule logic.
+- Do not add speculative combat systems in this phase.
 
-### Expected Outcomes
+### Exit Criteria
 
-- Characters can be created, stored locally, reopened, and updated.
-- Validation rules exist for required fields and invalid values.
-- Character creation and editing boundaries are documented screen by screen.
-- Background-derived player-facing information is preserved and surfaced in
-  the character sheet.
-- Ability score choices are captured in a way that preserves both final values
-  and the selected creation method.
-- Equipment choices are captured and persisted as part of the initial
-  character record.
-- Finishing details can enrich the character record without blocking MVP
-  validity.
-- Progression rules are explicit during class and level selection.
+- Sheet exposes key information players look up constantly without opening
+  edit/create screens.
+- UI improvements are presentation-first and do not require schema changes.
+- Behavior is covered by focused tests.
 
-## Phase 3 - Character Sheet and Session Use
-
-Goal: support the primary in-session experience once a character exists.
-
-### Screens and Flows
-
-- Character sheet overview
-- Panel-based character sheet navigation
-- Background summary with bonuses and social perks
-- Ability score block with final values and modifiers
-- Hit-points block in the combat panel
-- Features or notes-style panel
-- Combat panel with MVP hit-points content
-- Equipment panel placeholder in MVP
+## Phase 2 — Core Combat Rules (Deterministic MVP)
 
-### Expected Outcomes
+Goal: Fill missing essential combat calculations using canonical state.
 
-- The player can open a character and use core information during play.
-- Derived values are presented consistently.
-- The main in-session screen becomes the functional center of the app.
+### Scope
 
-## Phase 4 - Action and Utility Screens
+- Armor Class derivation (base armor + shield + Dex rules).
+- Initiative derivation.
+- Attack and damage roll helpers from equipped weapons and ability mapping.
+- Death saves and stable tracking state.
 
-Goal: support common gameplay interactions without leaving the app flow.
+### Exit Criteria
 
-### Screens and Flows
+- Combat panel no longer depends on placeholders for core table play.
+- Rules are deterministic, testable, and persistence-agnostic.
 
-- Dice roller screen or panel
-- Roll result presentation
-- Quick actions for common checks
-- Roll history or recent actions
-- Shortcut navigation from character sheet to utility tools
+## Phase 3 — Spellcasting Workflow Completion
 
-### Expected Outcomes
+Goal: Move from spell foundation to full day-to-day spell use flow.
 
-- Dice interactions are fast enough for live session use.
-- Action-oriented screens feel connected to the character context.
-- Utility flows do not fragment the main navigation experience.
+### Scope
 
-## Phase 5 - Inventory, Spells, and Character Resources
+- Better prepared/known/spellbook interaction UX.
+- Slot expenditure and recovery visibility integrated in sheet workflows.
+- Class-specific edge handling for known/prepared constraints.
 
-Goal: expand the character toward real tabletop session support.
+### Exit Criteria
 
-### Current Implementation Plan
+- Spellcasters can run common session actions without leaving the app context.
 
-Near-term implementation inside Phase 5 should stay service-first and avoid new
-screen work until the mutation contracts are stable. The next ordered slices
-are:
+## Phase 4 — Inventory & Resource Session UX
 
-1. **Container-aware stack transfer mutations**
-   - Move full stacks into valid containers.
-   - Transfer partial stack quantity into valid containers using split-based
-     orchestration.
-   - Reuse existing container validity rules for capacity, depth, cycle, and
-     parent eligibility.
-   - Preserve reject-only behavior with no state change on failure.
-2. **Compatibility edge hardening**
-   - Add explicit repository parity tests for state-mismatch merge/transfer
-     cases (`equipped`, `carried`, `container`, `charges`, `notes`).
-   - Keep `invalid_stack_state` deterministic across Drift and in-memory paths.
-3. **Only after the mutation surface is stable, consider UI exposure**
-   - Prefer minimal controls in existing inventory rows or panels.
-   - Do not add a dedicated inventory screen until the mutation contracts and
-     error semantics stop moving.
+Goal: Expose existing inventory/resource mutation capabilities clearly in the
+sheet.
 
-### Screens and Flows
+### Scope
 
-- Inventory list screen
-- Inventory item detail or edit flow
-- Spell list screen
-- Spell slot or usage tracking
-- Feature, trait, or resource tracking views
+- Better in-sheet interaction affordances for stack/container operations.
+- Resource tracking consistency across rests and manual adjustments.
+- Item-state clarity (equipped/carried/container/charges) in compact layouts.
 
-### Expected Outcomes
+### Exit Criteria
 
-- Core session resources are available offline from the character context.
-- Inventory and spell interactions follow the same navigation model as the
-  rest of the app.
-- Resource-heavy screens remain usable and comprehensible.
+- Inventory/resource operations are usable and understandable during live play.
 
-## Phase 6 - Import and Structured Content
+## Phase 5 — Rules Coverage & Validation Hardening
 
-Goal: allow controlled ingestion of external content into the local app model.
+Goal: Raise confidence that deterministic rules stay correct as scope expands.
 
-### Screens and Flows
+### Scope
 
-- Import entry screen
-- Compendium screen with content selector
-- Installed compendium-pack list
-- Active/inactive pack state management
-- File selection or import source flow
-- Validation progress screen
-- Import result summary
-- Import error state and recovery path
+- Expand rule-level tests for combat, skills, spell edge cases, and rest flows.
+- Add regression coverage for mixed compendium/base/imported content scenarios.
+- Strengthen migration and repository parity tests for new rule slices.
 
-### Expected Outcomes
+### Exit Criteria
 
-- Import workflows are explicit and auditable.
-- The active compendium can be reviewed and managed explicitly by the player.
-- The bundled base compendium remains active while future imported packs can
-  be enabled or disabled through a content selector.
-- XML or structured content errors are visible and actionable.
-- Imported content fits the offline-first local model cleanly.
+- High-risk rule paths are protected by automated tests.
 
-## Phase 7 - Quality, Recovery, and Lifecycle Completion
+## Phase 6 — Finish-the-App Polish & Recovery
 
-Goal: close the loop on app lifecycle quality after the primary screens exist.
+Goal: Close quality gaps before broader feature expansion.
 
-### Screens and Flows
+### Scope
 
-- Global error and recovery states
-- Corrupted local data fallback path
-- Settings or local app preferences
-- Background resume behavior review
-- Exit consistency and pending-write protection
+- Better missing-data and partial-state UX in character sheet.
+- Error/recovery pass for read/write interruptions.
+- Documentation and architecture alignment cleanup.
 
-### Expected Outcomes
+### Exit Criteria
 
-- The app behaves predictably across interruptions and recovery scenarios.
-- Error states are documented as first-class screens or routes.
-- The user can leave and re-enter the app without losing expected progress.
+- App is coherent for regular offline table use and resilient to edge states.
 
-## Phase 8 - Ecosystem Expansion Readiness
+## Not In Current Roadmap Scope
 
-Goal: prepare the player app for future scope without breaking current
-screen boundaries.
+- Network sync and account systems.
+- DM tooling (separate product boundary remains in effect).
+- Large net-new screens that bypass finishing the sheet-first strategy.
 
-### Screens and Flows
+## Immediate Next Slice
 
-- Future sync or account boundary review
-- Future Adventure Vault Master integration touchpoints
-- Homebrew or content-management expansion review
-- Optional help or onboarding overlays for new players
-
-### Expected Outcomes
-
-- Screen boundaries remain stable as the product grows.
-- Future integrations do not leak into current MVP flows prematurely.
-- Expansion work can build on documented routes and states instead of
-  redefining them.
-
-## Cross-Cutting Documentation Rules
-
-Every new screen spec added under `docs/specs/` should eventually document:
-
-- Screen purpose
-- Entry conditions
-- Exit paths
-- Primary actions
-- Required data
-- UI states: loading, empty, error, success
-- Dependencies on navigation, persistence, and domain rules
-
-## Suggested Next Documentation Steps
-
-1. Define the first `lib/` package and module boundaries.
-2. Define the first Drift schema from the proposed character model.
-3. Break the approved MVP flow into implementation tasks.
-4. Keep this roadmap aligned with `PROJECT_SNAPSHOT.md` and the MVP scope.
-
-## Current Priority
-
-Phase 5 - Inventory, Spells, and Character Resources
-then
-Phase 6 - Import and Structured Content
-
-### Next Implementation Slice
-
-Prepare and implement **container-aware stack transfer mutations** as the next
-Phase 5 batch. This should remain a domain/application/data/test slice first,
-with no new UI unless the existing sheet flow cannot exercise the contract.
+Continue Phase 1 with minimal, justified sheet improvements only where data is
+already available, then move directly to deterministic AC/initiative/attack
+foundations in Phase 2.

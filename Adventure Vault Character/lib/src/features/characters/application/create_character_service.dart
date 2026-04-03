@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:adventure_vault_character/src/features/characters/application/equipment_definition_seed.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_reference_dao.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_write_dao.dart';
@@ -47,6 +48,7 @@ class CreateCharacterService {
       updatedAt: now,
       existingRow: null,
       existingHitPoints: null,
+      existingDeathSaves: null,
     );
   }
 
@@ -61,6 +63,7 @@ class CreateCharacterService {
       throw StateError('Character not found.');
     }
     final existingHitPoints = await _readExistingHitPoints(id);
+    final existingDeathSaves = await _readExistingDeathSaves(id);
 
     return _persistCharacter(
       id: id,
@@ -69,6 +72,7 @@ class CreateCharacterService {
       updatedAt: DateTime.now(),
       existingRow: existingRow,
       existingHitPoints: existingHitPoints,
+      existingDeathSaves: existingDeathSaves,
     );
   }
 
@@ -79,6 +83,7 @@ class CreateCharacterService {
     required DateTime updatedAt,
     required Character? existingRow,
     required CharacterHitPoint? existingHitPoints,
+    required CharacterDeathSave? existingDeathSaves,
   }) async {
     final catalog = await _loadCatalog();
     final background = catalog.backgroundById(input.backgroundId);
@@ -150,6 +155,12 @@ class CreateCharacterService {
       await _writeHitPoints(
         id,
         resolvedHitPoints,
+        replaceExisting: existingRow != null,
+      );
+      await _writeDeathSaves(
+        id,
+        existingSuccessCount: existingDeathSaves?.successCount,
+        existingFailureCount: existingDeathSaves?.failureCount,
         replaceExisting: existingRow != null,
       );
       await _writeFinishingDetails(
@@ -552,25 +563,40 @@ class CreateCharacterService {
           .map((item) {
             final definitionId = _equipmentDefinitionId(item.name);
             final existing = existingById[definitionId];
+            final seeded = EquipmentDefinitionSeed.resolve(item.name);
             return EquipmentDefinitionsCompanion.insert(
               id: definitionId,
               key: _slugify(item.name),
               name: item.name,
               category:
-                  existing?.category ?? _inferEquipmentCategory(item.name),
-              subcategory: Value(existing?.subcategory),
-              weight: Value(existing?.weight ?? _defaultWeightFor(item.name)),
+                  existing?.category ??
+                  seeded.category ??
+                  _inferEquipmentCategory(item.name),
+              subcategory: Value(existing?.subcategory ?? seeded.subcategory),
+              weight: Value(
+                existing?.weight ??
+                    seeded.weight ??
+                    _defaultWeightFor(item.name),
+              ),
               costValue: Value(existing?.costValue),
               costUnit: Value(existing?.costUnit),
               isContainer: Value(
-                existing?.isContainer ?? _looksLikeContainer(item.name),
+                existing?.isContainer ??
+                    seeded.isContainer ??
+                    _looksLikeContainer(item.name),
               ),
               isStackable: Value(
-                existing?.isStackable ?? _looksStackable(item.name),
+                existing?.isStackable ??
+                    seeded.isStackable ??
+                    _looksStackable(item.name),
               ),
               description: Value(existing?.description),
-              weaponPropertiesJson: Value(existing?.weaponPropertiesJson),
-              armorPropertiesJson: Value(existing?.armorPropertiesJson),
+              weaponPropertiesJson: Value(
+                existing?.weaponPropertiesJson ?? seeded.weaponPropertiesJson,
+              ),
+              armorPropertiesJson: Value(
+                existing?.armorPropertiesJson ?? seeded.armorPropertiesJson,
+              ),
             );
           })
           .toList(growable: false),
@@ -711,6 +737,39 @@ class CreateCharacterService {
     return (_database.select(
       _database.characterHitPoints,
     )..where((table) => table.characterId.equals(id))).getSingleOrNull();
+  }
+
+  Future<CharacterDeathSave?> _readExistingDeathSaves(String id) {
+    return (_database.select(
+      _database.characterDeathSaves,
+    )..where((table) => table.characterId.equals(id))).getSingleOrNull();
+  }
+
+  Future<void> _writeDeathSaves(
+    String id, {
+    required int? existingSuccessCount,
+    required int? existingFailureCount,
+    required bool replaceExisting,
+  }) async {
+    final companion = CharacterDeathSavesCompanion(
+      characterId: Value(id),
+      successCount: Value((existingSuccessCount ?? 0).clamp(0, 3)),
+      failureCount: Value((existingFailureCount ?? 0).clamp(0, 3)),
+      updatedAt: Value(DateTime.now()),
+    );
+    if (replaceExisting) {
+      await _writeDao.replaceDeathSaves(companion);
+      return;
+    }
+
+    await _writeDao.insertDeathSaves(
+      CharacterDeathSavesCompanion.insert(
+        characterId: id,
+        successCount: Value((existingSuccessCount ?? 0).clamp(0, 3)),
+        failureCount: Value((existingFailureCount ?? 0).clamp(0, 3)),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
   }
 
   int _abilityModifier(int score) => CharacterRules.abilityModifier(score);

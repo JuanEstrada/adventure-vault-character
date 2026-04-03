@@ -8859,6 +8859,340 @@ class CharacterClassResourcesCompanion
   }
 }
 
+class $CharacterDeathSavesTable extends CharacterDeathSaves
+    with TableInfo<$CharacterDeathSavesTable, CharacterDeathSave> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CharacterDeathSavesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _characterIdMeta = const VerificationMeta(
+    'characterId',
+  );
+  @override
+  late final GeneratedColumn<String> characterId = GeneratedColumn<String>(
+    'character_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES characters (id)',
+    ),
+  );
+  static const VerificationMeta _successCountMeta = const VerificationMeta(
+    'successCount',
+  );
+  @override
+  late final GeneratedColumn<int> successCount = GeneratedColumn<int>(
+    'success_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _failureCountMeta = const VerificationMeta(
+    'failureCount',
+  );
+  @override
+  late final GeneratedColumn<int> failureCount = GeneratedColumn<int>(
+    'failure_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    characterId,
+    successCount,
+    failureCount,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'character_death_saves';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CharacterDeathSave> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('character_id')) {
+      context.handle(
+        _characterIdMeta,
+        characterId.isAcceptableOrUnknown(
+          data['character_id']!,
+          _characterIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_characterIdMeta);
+    }
+    if (data.containsKey('success_count')) {
+      context.handle(
+        _successCountMeta,
+        successCount.isAcceptableOrUnknown(
+          data['success_count']!,
+          _successCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('failure_count')) {
+      context.handle(
+        _failureCountMeta,
+        failureCount.isAcceptableOrUnknown(
+          data['failure_count']!,
+          _failureCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {characterId};
+  @override
+  CharacterDeathSave map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CharacterDeathSave(
+      characterId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}character_id'],
+      )!,
+      successCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}success_count'],
+      )!,
+      failureCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}failure_count'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CharacterDeathSavesTable createAlias(String alias) {
+    return $CharacterDeathSavesTable(attachedDatabase, alias);
+  }
+}
+
+class CharacterDeathSave extends DataClass
+    implements Insertable<CharacterDeathSave> {
+  final String characterId;
+  final int successCount;
+  final int failureCount;
+  final DateTime updatedAt;
+  const CharacterDeathSave({
+    required this.characterId,
+    required this.successCount,
+    required this.failureCount,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['character_id'] = Variable<String>(characterId);
+    map['success_count'] = Variable<int>(successCount);
+    map['failure_count'] = Variable<int>(failureCount);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  CharacterDeathSavesCompanion toCompanion(bool nullToAbsent) {
+    return CharacterDeathSavesCompanion(
+      characterId: Value(characterId),
+      successCount: Value(successCount),
+      failureCount: Value(failureCount),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory CharacterDeathSave.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CharacterDeathSave(
+      characterId: serializer.fromJson<String>(json['characterId']),
+      successCount: serializer.fromJson<int>(json['successCount']),
+      failureCount: serializer.fromJson<int>(json['failureCount']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'characterId': serializer.toJson<String>(characterId),
+      'successCount': serializer.toJson<int>(successCount),
+      'failureCount': serializer.toJson<int>(failureCount),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  CharacterDeathSave copyWith({
+    String? characterId,
+    int? successCount,
+    int? failureCount,
+    DateTime? updatedAt,
+  }) => CharacterDeathSave(
+    characterId: characterId ?? this.characterId,
+    successCount: successCount ?? this.successCount,
+    failureCount: failureCount ?? this.failureCount,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  CharacterDeathSave copyWithCompanion(CharacterDeathSavesCompanion data) {
+    return CharacterDeathSave(
+      characterId: data.characterId.present
+          ? data.characterId.value
+          : this.characterId,
+      successCount: data.successCount.present
+          ? data.successCount.value
+          : this.successCount,
+      failureCount: data.failureCount.present
+          ? data.failureCount.value
+          : this.failureCount,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterDeathSave(')
+          ..write('characterId: $characterId, ')
+          ..write('successCount: $successCount, ')
+          ..write('failureCount: $failureCount, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(characterId, successCount, failureCount, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CharacterDeathSave &&
+          other.characterId == this.characterId &&
+          other.successCount == this.successCount &&
+          other.failureCount == this.failureCount &&
+          other.updatedAt == this.updatedAt);
+}
+
+class CharacterDeathSavesCompanion extends UpdateCompanion<CharacterDeathSave> {
+  final Value<String> characterId;
+  final Value<int> successCount;
+  final Value<int> failureCount;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const CharacterDeathSavesCompanion({
+    this.characterId = const Value.absent(),
+    this.successCount = const Value.absent(),
+    this.failureCount = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CharacterDeathSavesCompanion.insert({
+    required String characterId,
+    this.successCount = const Value.absent(),
+    this.failureCount = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : characterId = Value(characterId);
+  static Insertable<CharacterDeathSave> custom({
+    Expression<String>? characterId,
+    Expression<int>? successCount,
+    Expression<int>? failureCount,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (characterId != null) 'character_id': characterId,
+      if (successCount != null) 'success_count': successCount,
+      if (failureCount != null) 'failure_count': failureCount,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CharacterDeathSavesCompanion copyWith({
+    Value<String>? characterId,
+    Value<int>? successCount,
+    Value<int>? failureCount,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return CharacterDeathSavesCompanion(
+      characterId: characterId ?? this.characterId,
+      successCount: successCount ?? this.successCount,
+      failureCount: failureCount ?? this.failureCount,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (characterId.present) {
+      map['character_id'] = Variable<String>(characterId.value);
+    }
+    if (successCount.present) {
+      map['success_count'] = Variable<int>(successCount.value);
+    }
+    if (failureCount.present) {
+      map['failure_count'] = Variable<int>(failureCount.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CharacterDeathSavesCompanion(')
+          ..write('characterId: $characterId, ')
+          ..write('successCount: $successCount, ')
+          ..write('failureCount: $failureCount, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $SystemPreferencesTable extends SystemPreferences
     with TableInfo<$SystemPreferencesTable, SystemPreference> {
   @override
@@ -13906,6 +14240,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $CharacterCurrencyTable(this);
   late final $CharacterClassResourcesTable characterClassResources =
       $CharacterClassResourcesTable(this);
+  late final $CharacterDeathSavesTable characterDeathSaves =
+      $CharacterDeathSavesTable(this);
   late final $SystemPreferencesTable systemPreferences =
       $SystemPreferencesTable(this);
   late final $ClassDefinitionsTable classDefinitions = $ClassDefinitionsTable(
@@ -13954,6 +14290,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     characterProficiencies,
     characterCurrency,
     characterClassResources,
+    characterDeathSaves,
     systemPreferences,
     classDefinitions,
     characterAdvancementDefinitions,
@@ -14375,6 +14712,33 @@ final class $$CharactersTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _characterClassResourcesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $CharacterDeathSavesTable,
+    List<CharacterDeathSave>
+  >
+  _characterDeathSavesRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.characterDeathSaves,
+        aliasName: $_aliasNameGenerator(
+          db.characters.id,
+          db.characterDeathSaves.characterId,
+        ),
+      );
+
+  $$CharacterDeathSavesTableProcessedTableManager get characterDeathSavesRefs {
+    final manager = $$CharacterDeathSavesTableTableManager(
+      $_db,
+      $_db.characterDeathSaves,
+    ).filter((f) => f.characterId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _characterDeathSavesRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -14808,6 +15172,31 @@ class $$CharactersTableFilterComposer
                     $removeJoinBuilderFromRootComposer,
               ),
         );
+    return f(composer);
+  }
+
+  Expression<bool> characterDeathSavesRefs(
+    Expression<bool> Function($$CharacterDeathSavesTableFilterComposer f) f,
+  ) {
+    final $$CharacterDeathSavesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.characterDeathSaves,
+      getReferencedColumn: (t) => t.characterId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharacterDeathSavesTableFilterComposer(
+            $db: $db,
+            $table: $db.characterDeathSaves,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return f(composer);
   }
 }
@@ -15292,6 +15681,32 @@ class $$CharactersTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> characterDeathSavesRefs<T extends Object>(
+    Expression<T> Function($$CharacterDeathSavesTableAnnotationComposer a) f,
+  ) {
+    final $$CharacterDeathSavesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.characterDeathSaves,
+          getReferencedColumn: (t) => t.characterId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$CharacterDeathSavesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.characterDeathSaves,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$CharactersTableTableManager
@@ -15322,6 +15737,7 @@ class $$CharactersTableTableManager
             bool characterProficienciesRefs,
             bool characterCurrencyRefs,
             bool characterClassResourcesRefs,
+            bool characterDeathSavesRefs,
           })
         > {
   $$CharactersTableTableManager(_$AppDatabase db, $CharactersTable table)
@@ -15411,6 +15827,7 @@ class $$CharactersTableTableManager
                 characterProficienciesRefs = false,
                 characterCurrencyRefs = false,
                 characterClassResourcesRefs = false,
+                characterDeathSavesRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -15435,6 +15852,7 @@ class $$CharactersTableTableManager
                     if (characterProficienciesRefs) db.characterProficiencies,
                     if (characterCurrencyRefs) db.characterCurrency,
                     if (characterClassResourcesRefs) db.characterClassResources,
+                    if (characterDeathSavesRefs) db.characterDeathSaves,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -15733,6 +16151,27 @@ class $$CharactersTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (characterDeathSavesRefs)
+                        await $_getPrefetchedData<
+                          Character,
+                          $CharactersTable,
+                          CharacterDeathSave
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CharactersTableReferences
+                              ._characterDeathSavesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CharactersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).characterDeathSavesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.characterId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -15768,6 +16207,7 @@ typedef $$CharactersTableProcessedTableManager =
         bool characterProficienciesRefs,
         bool characterCurrencyRefs,
         bool characterClassResourcesRefs,
+        bool characterDeathSavesRefs,
       })
     >;
 typedef $$CharacterAbilityScoresTableCreateCompanionBuilder =
@@ -22488,6 +22928,332 @@ typedef $$CharacterClassResourcesTableProcessedTableManager =
       CharacterClassResource,
       PrefetchHooks Function({bool characterId})
     >;
+typedef $$CharacterDeathSavesTableCreateCompanionBuilder =
+    CharacterDeathSavesCompanion Function({
+      required String characterId,
+      Value<int> successCount,
+      Value<int> failureCount,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$CharacterDeathSavesTableUpdateCompanionBuilder =
+    CharacterDeathSavesCompanion Function({
+      Value<String> characterId,
+      Value<int> successCount,
+      Value<int> failureCount,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$CharacterDeathSavesTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $CharacterDeathSavesTable,
+          CharacterDeathSave
+        > {
+  $$CharacterDeathSavesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CharactersTable _characterIdTable(_$AppDatabase db) =>
+      db.characters.createAlias(
+        $_aliasNameGenerator(
+          db.characterDeathSaves.characterId,
+          db.characters.id,
+        ),
+      );
+
+  $$CharactersTableProcessedTableManager get characterId {
+    final $_column = $_itemColumn<String>('character_id')!;
+
+    final manager = $$CharactersTableTableManager(
+      $_db,
+      $_db.characters,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_characterIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CharacterDeathSavesTableFilterComposer
+    extends Composer<_$AppDatabase, $CharacterDeathSavesTable> {
+  $$CharacterDeathSavesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get successCount => $composableBuilder(
+    column: $table.successCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get failureCount => $composableBuilder(
+    column: $table.failureCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CharactersTableFilterComposer get characterId {
+    final $$CharactersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableFilterComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterDeathSavesTableOrderingComposer
+    extends Composer<_$AppDatabase, $CharacterDeathSavesTable> {
+  $$CharacterDeathSavesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get successCount => $composableBuilder(
+    column: $table.successCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get failureCount => $composableBuilder(
+    column: $table.failureCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CharactersTableOrderingComposer get characterId {
+    final $$CharactersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableOrderingComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterDeathSavesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CharacterDeathSavesTable> {
+  $$CharacterDeathSavesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get successCount => $composableBuilder(
+    column: $table.successCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get failureCount => $composableBuilder(
+    column: $table.failureCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$CharactersTableAnnotationComposer get characterId {
+    final $$CharactersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.characterId,
+      referencedTable: $db.characters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CharactersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.characters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CharacterDeathSavesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CharacterDeathSavesTable,
+          CharacterDeathSave,
+          $$CharacterDeathSavesTableFilterComposer,
+          $$CharacterDeathSavesTableOrderingComposer,
+          $$CharacterDeathSavesTableAnnotationComposer,
+          $$CharacterDeathSavesTableCreateCompanionBuilder,
+          $$CharacterDeathSavesTableUpdateCompanionBuilder,
+          (CharacterDeathSave, $$CharacterDeathSavesTableReferences),
+          CharacterDeathSave,
+          PrefetchHooks Function({bool characterId})
+        > {
+  $$CharacterDeathSavesTableTableManager(
+    _$AppDatabase db,
+    $CharacterDeathSavesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CharacterDeathSavesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CharacterDeathSavesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$CharacterDeathSavesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> characterId = const Value.absent(),
+                Value<int> successCount = const Value.absent(),
+                Value<int> failureCount = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterDeathSavesCompanion(
+                characterId: characterId,
+                successCount: successCount,
+                failureCount: failureCount,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String characterId,
+                Value<int> successCount = const Value.absent(),
+                Value<int> failureCount = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CharacterDeathSavesCompanion.insert(
+                characterId: characterId,
+                successCount: successCount,
+                failureCount: failureCount,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CharacterDeathSavesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({characterId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (characterId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.characterId,
+                                referencedTable:
+                                    $$CharacterDeathSavesTableReferences
+                                        ._characterIdTable(db),
+                                referencedColumn:
+                                    $$CharacterDeathSavesTableReferences
+                                        ._characterIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CharacterDeathSavesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CharacterDeathSavesTable,
+      CharacterDeathSave,
+      $$CharacterDeathSavesTableFilterComposer,
+      $$CharacterDeathSavesTableOrderingComposer,
+      $$CharacterDeathSavesTableAnnotationComposer,
+      $$CharacterDeathSavesTableCreateCompanionBuilder,
+      $$CharacterDeathSavesTableUpdateCompanionBuilder,
+      (CharacterDeathSave, $$CharacterDeathSavesTableReferences),
+      CharacterDeathSave,
+      PrefetchHooks Function({bool characterId})
+    >;
 typedef $$SystemPreferencesTableCreateCompanionBuilder =
     SystemPreferencesCompanion Function({
       Value<int> id,
@@ -25426,6 +26192,8 @@ class $AppDatabaseManager {
         _db,
         _db.characterClassResources,
       );
+  $$CharacterDeathSavesTableTableManager get characterDeathSaves =>
+      $$CharacterDeathSavesTableTableManager(_db, _db.characterDeathSaves);
   $$SystemPreferencesTableTableManager get systemPreferences =>
       $$SystemPreferencesTableTableManager(_db, _db.systemPreferences);
   $$ClassDefinitionsTableTableManager get classDefinitions =>

@@ -91,6 +91,11 @@ class CharacterSheetService {
             )
             .listen((_) => emitCurrent()),
         _database
+            .tableUpdates(
+              TableUpdateQuery.onTable(_database.characterDeathSaves),
+            )
+            .listen((_) => emitCurrent()),
+        _database
             .tableUpdates(TableUpdateQuery.onTable(_database.systemPreferences))
             .listen((_) => emitCurrent()),
         _database

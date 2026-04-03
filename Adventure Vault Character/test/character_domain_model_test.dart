@@ -33,6 +33,17 @@ void main() {
             ),
           ],
           classResources: <CharacterClassResourceDomainModel>[],
+          weaponAttacks: <CharacterWeaponAttackDomainModel>[
+            CharacterWeaponAttackDomainModel(
+              name: 'Quarterstaff',
+              attackAbilityKey: 'str',
+              attackBonus: 3,
+              damageModifier: 1,
+              isProficient: true,
+              damageDice: '1d6',
+              damageType: 'bludgeoning',
+            ),
+          ],
         ),
         abilities: CharacterAbilitiesDomainModel(
           methodKey: 'generatedSetAssignment',
@@ -72,6 +83,22 @@ void main() {
               name: 'History',
               isProficient: true,
               hasExpertise: true,
+            ),
+          ],
+          skills: <CharacterSkillDomainModel>[
+            CharacterSkillDomainModel(
+              name: 'Arcana',
+              isProficient: true,
+              hasExpertise: false,
+              abilityKey: 'int',
+              bonus: 5,
+            ),
+            CharacterSkillDomainModel(
+              name: 'Perception',
+              isProficient: true,
+              hasExpertise: false,
+              abilityKey: 'wis',
+              bonus: 5,
             ),
           ],
           otherProficiencies: <CharacterProficiencyDomainModel>[
@@ -218,6 +245,16 @@ void main() {
       expect(character.featuresNotes.otherProficiencyLabels, <String>[
         'Weapon: Simple Weapons',
       ]);
+      expect(character.passivePerception, 15);
+      expect(
+        character.combat.weaponAttacks.single.attackAbilityLabel,
+        'Strength',
+      );
+      expect(character.combat.weaponAttacks.single.displayAttackBonus, '+3');
+      expect(
+        character.combat.weaponAttacks.single.displayDamageExpression,
+        '1d6 +1 bludgeoning',
+      );
       expect(character.spellcasting, isNotNull);
       expect(character.spellcasting!.displayAbilityModifier, '+2');
       expect(character.spellcasting!.spellSaveDc, 13);

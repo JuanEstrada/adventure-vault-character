@@ -182,6 +182,11 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
               onApplyLongRest: _controller.applyLongRestToSelectedCharacter,
               onSetClassResourceUses:
                   _controller.setSelectedCharacterClassResourceUses,
+              onRecordDeathSaveSuccess:
+                  _controller.recordSelectedCharacterDeathSaveSuccess,
+              onRecordDeathSaveFailure:
+                  _controller.recordSelectedCharacterDeathSaveFailure,
+              onResetDeathSaves: _controller.resetSelectedCharacterDeathSaves,
               onSetInventoryItemEquipped:
                   _controller.setSelectedCharacterInventoryItemEquipped,
               onSetInventoryItemCarried:

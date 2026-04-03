@@ -707,15 +707,16 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
             padding: const EdgeInsets.all(24),
             children: [
               Text(
-                'Draft guiado inicial',
+                'Initial guided draft',
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Este draft ya captura Background y Ability Scores y ahora se '
-                'extiende hasta Equipment y Finishing details antes de persistir.',
+                'This draft already captures Background and Ability Scores and '
+                'now extends through Equipment and Finishing details before '
+                'persisting.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -765,7 +766,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                         ),
                         OutlinedButton(
                           onPressed: widget.isSaving ? null : widget.onCancel,
-                          child: const Text('Cancelar'),
+                          child: const Text('Cancel'),
                         ),
                       ],
                     ),
@@ -794,7 +795,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
             ),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Ingresa un nombre.';
+                return 'Enter a name.';
               }
               return null;
             },
@@ -803,7 +804,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           DropdownButtonFormField<String>(
             initialValue: _selectedRace,
             decoration: const InputDecoration(
-              labelText: 'Raza',
+              labelText: 'Race',
               border: OutlineInputBorder(),
             ),
             items: widget.catalog.races
@@ -877,7 +878,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           DropdownButtonFormField<String>(
             initialValue: _selectedClass,
             decoration: const InputDecoration(
-              labelText: 'Clase',
+              labelText: 'Class',
               border: OutlineInputBorder(),
             ),
             items: widget.catalog.classes
@@ -908,14 +909,14 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           DropdownButtonFormField<int>(
             initialValue: _selectedLevel,
             decoration: const InputDecoration(
-              labelText: 'Nivel',
+              labelText: 'Level',
               border: OutlineInputBorder(),
             ),
             items: List<int>.generate(5, (index) => index + 1)
                 .map(
                   (level) => DropdownMenuItem<int>(
                     value: level,
-                    child: Text('Nivel $level'),
+                    child: Text('Level $level'),
                   ),
                 )
                 .toList(growable: false),
@@ -937,7 +938,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              'Experience inicial: $_selectedExperience',
+              'Initial experience: $_selectedExperience',
               style: theme.textTheme.bodyLarge,
             ),
           ),

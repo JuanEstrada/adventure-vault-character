@@ -34,6 +34,10 @@ replacing the core screen structure.
 - Header and panel-navigation layout for the first character sheet
 - MVP population of the abilities and features-style panels
 - MVP hit-points presentation in the combat panel
+- Optional portrait preview in header/top context when persisted value is
+  available and safely renderable
+- Passive perception visibility derived from existing character state
+- Dedicated skills visibility and organized proficiency/language presentation
 
 ## Out of Scope
 
@@ -67,6 +71,7 @@ replacing the core screen structure.
 - Selected background summary
 - Background bonuses and social perks
 - Final ability scores with per-ability modifiers
+- Skill list with deterministic bonus display
 - Ability score generation method summary
 - Core stats and derived summary fields
 - Locally persisted character state for the selected record
@@ -255,6 +260,12 @@ Foundation expectation:
 - The six final ability scores and their modifiers are visible on the
   character sheet.
 - The combat panel shows current, maximum, and temporary hit points in MVP.
+- The combat panel also shows passive perception derived from existing
+  character data via deterministic formula logic outside widgets.
+- If a persisted portrait value exists and can be rendered safely, the sheet
+  shows it in the top context area; otherwise it degrades gracefully.
+- The sheet exposes a visible skills section and separates languages from other
+  proficiencies for faster in-session lookup.
 - When the active class is a spellcaster, the sheet can show a read-only
   spellcasting summary derived from domain logic and the local compendium.
 - When persisted spell state exists, the sheet should also show the stored

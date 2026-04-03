@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-03-30
+Last updated: 2026-04-02
 
 This is the single file to read first when resuming work on Adventure Vault
 Character. It consolidates the current product, architecture, repository
@@ -60,10 +60,10 @@ Verified on 2026-03-28:
   SQLite database.
 - The previous single-table character persistence has now been extended into a
   normalized Drift schema.
-- The Drift schema is now at `v19` and includes dedicated character-side tables
+- The Drift schema is now at `v20` and includes dedicated character-side tables
   for `ability scores`, `ability score provenance`, `hit points`,
   `finishing details`, `narrative selections`, `equipment loadout`, `skills`,
-  `saving throws`, `inventory`, `proficiencies`, and `currency`, plus
+  `saving throws`, `inventory`, `proficiencies`, `currency`, and `death saves`, plus
   compendium-side definition tables for `skills`, `equipment`, `classes`,
   `character advancement`, `class standard array recommendations`,
   `narrative option groups`, `narrative options`, `compendium pack states`,
@@ -109,6 +109,9 @@ Verified on 2026-03-28:
 - The character sheet now renders normalized `saving throws`,
   `skill proficiencies`, `other proficiencies`, and inventory-derived
   equipment labels.
+- The character sheet now also renders passive perception, an optional portrait
+  preview when a safe path/value exists, a dedicated skills section, and
+  language proficiencies separated from other proficiency categories.
 - Character loading now also supports an editing-oriented aggregate:
   `EditableCharacterService` reuses the normalized read assembly,
   `EditableCharacterMapper` projects `CharacterRecord` into an editable
@@ -214,8 +217,8 @@ Verified on 2026-03-28:
   Drift roundtrip instead of depending on a broad `sourceType` heuristic.
 - The first real XML import slice now exists: pasted XML can be validated and
   registered locally as an optional imported pack that persists through Drift
-  and appears in pack management, even though imported content is not yet
-  ingested into the live compendium catalog.
+  and appears in pack management, with supported imported content merged into
+  the live compendium catalog when the imported pack is active.
 - That import slice now also persists the raw imported XML payload and merges
   supported imported `backgrounds`, `races`, `classes`, `spells`, `feats`,
   and `monsters` into the effective compendium whenever the imported pack is
@@ -229,6 +232,11 @@ Verified on 2026-03-28:
   so imported `ideals`, `bonds`, `flaws`, and `personality traits` can appear
   through the same compendium catalog used by finishing details and source
   policy.
+- Compendium XML ingestion now also extracts structured `item` metadata for
+  armor and weapons (when those tags are available), and persists normalized
+  `equipment_definitions` rows so combat helper derivation can consume
+  XML-derived damage/AC metadata instead of relying only on seeded name
+  heuristics.
 - `CompendiumCatalog` now exposes normalized `narrativeOptionGroups`, so the
   future finishing-details flow can consume official options without reparsing
   raw XML in widgets.
@@ -333,12 +341,10 @@ coverage protecting both create and update paths. `characters` is now closer
 to an identity/resume row, with HP and finishing details moved into dedicated
 normalized tables, equipment loadout metadata in its own normalized table, and
 the narrative-field selections now also stored in their own normalized
-character-side table. The latest documentation pass also leaves the repo with
-a clearer product briefing, a better separation between automatic calculations
-and player input, and an explicit local-source inventory for future rules
-extraction. The next major improvement is extending the same deterministic
-approach further into persisted spell selection, slots/resources, combat, and
-richer inventory behavior.
+character-side table. The roadmap focus is now explicitly a
+**finish-the-character-sheet-first plan**: complete high-value sheet visibility
+from existing data, then implement missing deterministic combat foundations
+(AC/initiative/attacks/death saves) as domain/application slices.
 
 ## Current Phase
 
@@ -576,6 +582,27 @@ Completed since the previous handoff:
   and limit constraints deterministic.
 - Character rest behavior now flows through `CharacterRestRules`, and edit
   flows use the same long-rest/short-rest deterministic rule path as create.
+- Core Combat Rules MVP now includes deterministic Armor Class derivation from
+  equipped armor/shield plus Dexterity modifier, initiative derivation from
+  Dexterity modifier, and a normalized death-save state model.
+- Character-sheet combat panel now displays AC + initiative and exposes death-
+  save controls for `Mark success`, `Mark failure`, and `Reset death saves`.
+- Long rest now resets persisted death-save counters through the same
+  application/service mutation path as other recovery updates.
+- Combat rules now also derive equipped-weapon attack helpers deterministically
+  from canonical abilities, proficiencies, and equipped inventory definitions,
+  including attack ability selection (`Strength`/`Dexterity`), attack bonus,
+  and damage expression/modifier helper values.
+- Character-sheet `Combat` panel now includes a read-only `Attacks` section
+  sourced from the read-side domain model, keeping attack helper logic out of
+  widgets.
+- Equipment-definition seeding now persists structured armor/weapon metadata
+  JSON for recognized SRD items (including deterministic `+X` magic bonuses),
+  so combat helpers prefer persisted metadata instead of relying mostly on
+  name/category heuristics.
+- Deterministic name/category fallbacks remain active only for unknown/custom
+  items when current loadout/import inputs cannot provide reliable combat
+  metadata.
 - Character sheet now exposes direct `Apply short rest` / `Apply long rest`
   actions routed through repository/application services instead of widget-local
   rule execution, with short rest enabled when the class has pact-slot or

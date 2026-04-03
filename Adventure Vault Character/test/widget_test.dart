@@ -292,7 +292,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Save draft'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Resumen'), findsOneWidget);
+    expect(find.text('Summary'), findsOneWidget);
     expect(find.text('Aelar'), findsWidgets);
     expect(find.textContaining('Human'), findsWidgets);
     expect(find.textContaining('Fighter'), findsWidgets);
@@ -300,10 +300,12 @@ void main() {
     expect(find.text('Acolyte'), findsOneWidget);
     expect(find.text('Combat'), findsWidgets);
     expect(find.text('Current HP'), findsOneWidget);
+    expect(find.text('Passive Perception'), findsOneWidget);
     expect(find.text('Equipment'), findsWidgets);
     expect(find.text('Chain mail starter kit'), findsOneWidget);
     expect(find.text('Starting money'), findsOneWidget);
     expect(find.text('Strength'), findsWidgets);
+    expect(find.text('Languages'), findsOneWidget);
     expect(find.text('Spell save DC'), findsNothing);
 
     await tester.tap(find.byIcon(Icons.arrow_back));
@@ -342,7 +344,7 @@ void main() {
     final classField = find.byWidgetPredicate(
       (widget) =>
           widget is DropdownButtonFormField<String> &&
-          widget.decoration.labelText == 'Clase',
+          widget.decoration.labelText == 'Class',
     );
 
     await tester.enterText(find.byType(TextFormField).first, 'Meris');
@@ -449,7 +451,7 @@ void main() {
     final classField = find.byWidgetPredicate(
       (widget) =>
           widget is DropdownButtonFormField<String> &&
-          widget.decoration.labelText == 'Clase',
+          widget.decoration.labelText == 'Class',
     );
 
     await tester.enterText(find.byType(TextFormField).first, 'Nim');
@@ -501,7 +503,7 @@ void main() {
       final classField = find.byWidgetPredicate(
         (widget) =>
             widget is DropdownButtonFormField<String> &&
-            widget.decoration.labelText == 'Clase',
+            widget.decoration.labelText == 'Class',
       );
 
       await tester.enterText(find.byType(TextFormField).first, 'Limit Test');
@@ -607,7 +609,7 @@ void main() {
     final classField = find.byWidgetPredicate(
       (widget) =>
           widget is DropdownButtonFormField<String> &&
-          widget.decoration.labelText == 'Clase',
+          widget.decoration.labelText == 'Class',
     );
     await tester.enterText(find.byType(TextFormField).first, 'Seren');
     await tester.tap(classField);
@@ -672,7 +674,7 @@ void main() {
     final classField = find.byWidgetPredicate(
       (widget) =>
           widget is DropdownButtonFormField<String> &&
-          widget.decoration.labelText == 'Clase',
+          widget.decoration.labelText == 'Class',
     );
     await tester.tap(classField);
     await tester.pumpAndSettle();
@@ -747,7 +749,7 @@ void main() {
     final classField = find.byWidgetPredicate(
       (widget) =>
           widget is DropdownButtonFormField<String> &&
-          widget.decoration.labelText == 'Clase',
+          widget.decoration.labelText == 'Class',
     );
     await tester.enterText(find.byType(TextFormField).first, 'Borin');
     await tester.tap(classField);
@@ -810,7 +812,7 @@ void main() {
     final classField = find.byWidgetPredicate(
       (widget) =>
           widget is DropdownButtonFormField<String> &&
-          widget.decoration.labelText == 'Clase',
+          widget.decoration.labelText == 'Class',
     );
     await tester.tap(classField);
     await tester.pumpAndSettle();
@@ -1090,7 +1092,7 @@ const _testCatalog = CompendiumCatalog(
     'Fighter': EquipmentSummaryViewData(
       statusLabel: 'MVP minimal',
       description:
-          'La hoja ya reserva un espacio para el loadout del personaje, con foco futuro en armas, armadura y gear.',
+          'The sheet already reserves space for the character loadout, with future focus on weapons, armor, and gear.',
       highlightItems: <String>[
         'Weapon loadout pending',
         'Armor summary pending',

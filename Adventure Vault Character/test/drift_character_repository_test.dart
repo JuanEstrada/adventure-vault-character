@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:adventure_vault_character/src/features/characters/data/drift_character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_inventory_validation_error.dart';
@@ -2619,6 +2621,95 @@ void main() {
       expect(byName['Backpack']?.weight, 5);
       expect(byName['Torch']?.weight, 1);
       expect(byName['Torch']?.isStackable, isTrue);
+    },
+  );
+
+  test(
+    'seeded equipment metadata persists structured armor and weapon fields',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        const CreateCharacterInput(
+          name: 'Arlen',
+          raceName: 'Human',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'manualPointAllocation',
+          abilityScoreProvenance: 'method=manualPointAllocation',
+          strength: 10,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 10,
+          wisdom: 14,
+          charisma: 8,
+          className: 'Fighter',
+          level: 2,
+          experience: 300,
+          equipmentLoadoutId: 'fighter-kit',
+          equipmentLoadoutLabel: 'Fighter kit',
+          startingMoneySummary: '0 gp',
+          selectedEquipmentItems: <String>['Longsword +1', 'Shield +1'],
+          currentHitPoints: 12,
+          maximumHitPoints: 12,
+          temporaryHitPoints: 0,
+          spellState: CharacterSpellStateInput.empty(),
+          finishingDetails: CharacterFinishingDetailsInput(
+            appearanceDetails: '',
+            narrativeNotes: '',
+            narrativeSelections: <NarrativeSelection>[
+              NarrativeSelection.empty(NarrativeFieldKey.alignment),
+              NarrativeSelection.empty(NarrativeFieldKey.faction),
+              NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+              NarrativeSelection.empty(NarrativeFieldKey.ideals),
+              NarrativeSelection.empty(NarrativeFieldKey.bonds),
+              NarrativeSelection.empty(NarrativeFieldKey.flaws),
+            ],
+          ),
+        ),
+      );
+
+      final inventoryRows = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final definitionIds = inventoryRows
+          .map((item) => item.equipmentDefinitionId)
+          .whereType<String>()
+          .toSet();
+      final definitions = await (database.select(
+        database.equipmentDefinitions,
+      )..where((table) => table.id.isIn(definitionIds))).get();
+
+      final longsword = definitions.firstWhere(
+        (definition) => definition.name == 'Longsword +1',
+      );
+      final shield = definitions.firstWhere(
+        (definition) => definition.name == 'Shield +1',
+      );
+
+      expect(longsword.category, 'weapon');
+      expect(longsword.subcategory, 'martial');
+      expect(longsword.weaponPropertiesJson, isNotNull);
+      final weaponProps =
+          jsonDecode(longsword.weaponPropertiesJson!) as Map<String, dynamic>;
+      expect(weaponProps['attack_bonus'], 1);
+      expect(weaponProps['damage_bonus'], 1);
+      expect(weaponProps['damage_dice'], '1d8');
+
+      expect(shield.category, 'armor');
+      expect(shield.subcategory, 'shield');
+      expect(shield.armorPropertiesJson, isNotNull);
+      final armorProps =
+          jsonDecode(shield.armorPropertiesJson!) as Map<String, dynamic>;
+      expect(armorProps['is_shield'], isTrue);
+      expect(armorProps['armor_class_bonus'], 3);
     },
   );
 

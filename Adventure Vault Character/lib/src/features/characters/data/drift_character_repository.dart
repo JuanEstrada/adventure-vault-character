@@ -1,5 +1,6 @@
 import 'package:adventure_vault_character/src/features/characters/application/character_sheet_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/create_character_service.dart';
+import 'package:adventure_vault_character/src/features/characters/application/character_death_save_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/editable_character_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/character_inventory_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/character_recovery_service.dart';
@@ -54,6 +55,11 @@ class DriftCharacterRepository implements CharacterRepository {
          database: database,
          readDao: CharacterReadDao(database),
          writeDao: CharacterWriteDao(database),
+       ),
+       _characterDeathSaveService = CharacterDeathSaveService(
+         database: database,
+         readDao: CharacterReadDao(database),
+         writeDao: CharacterWriteDao(database),
        );
 
   final CharacterReadDao _readDao;
@@ -64,6 +70,7 @@ class DriftCharacterRepository implements CharacterRepository {
   final EditableCharacterService _editableCharacterService;
   final CharacterRecoveryService _characterRecoveryService;
   final CharacterInventoryService _characterInventoryService;
+  final CharacterDeathSaveService _characterDeathSaveService;
 
   @override
   Future<List<CharacterSummary>> getCharacterSummaries() async {
@@ -301,6 +308,21 @@ class DriftCharacterRepository implements CharacterRepository {
       inventoryItemId,
       containerInventoryItemId,
     );
+  }
+
+  @override
+  Future<void> recordDeathSaveSuccess(String id) {
+    return _characterDeathSaveService.recordSuccess(id);
+  }
+
+  @override
+  Future<void> recordDeathSaveFailure(String id) {
+    return _characterDeathSaveService.recordFailure(id);
+  }
+
+  @override
+  Future<void> resetDeathSaves(String id) {
+    return _characterDeathSaveService.reset(id);
   }
 
   @override

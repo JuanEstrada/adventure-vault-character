@@ -206,6 +206,16 @@ class CharacterWriteDao {
     });
   }
 
+  Future<void> insertDeathSaves(CharacterDeathSavesCompanion companion) {
+    return _database.into(_database.characterDeathSaves).insert(companion);
+  }
+
+  Future<void> replaceDeathSaves(CharacterDeathSavesCompanion companion) async {
+    await _database
+        .into(_database.characterDeathSaves)
+        .insertOnConflictUpdate(companion);
+  }
+
   Future<void> insertInventory(
     List<CharacterInventoryCompanion> companions,
   ) async {

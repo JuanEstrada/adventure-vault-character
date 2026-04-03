@@ -2,6 +2,7 @@ import 'package:adventure_vault_character/src/features/characters/data/local/app
 import 'package:adventure_vault_character/src/features/characters/data/local/character_read_dao.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/character_write_dao.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_class_resource_rules.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_combat_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rest_rules.dart';
 import 'package:drift/drift.dart';
 
@@ -13,17 +14,20 @@ class CharacterRecoveryService {
     CharacterRestRules characterRestRules = const CharacterRestRules(),
     CharacterClassResourceRules characterClassResourceRules =
         const CharacterClassResourceRules(),
+    CharacterCombatRules characterCombatRules = const CharacterCombatRules(),
   }) : _database = database,
        _readDao = readDao,
        _writeDao = writeDao,
        _characterRestRules = characterRestRules,
-       _characterClassResourceRules = characterClassResourceRules;
+       _characterClassResourceRules = characterClassResourceRules,
+       _characterCombatRules = characterCombatRules;
 
   final AppDatabase _database;
   final CharacterReadDao _readDao;
   final CharacterWriteDao _writeDao;
   final CharacterRestRules _characterRestRules;
   final CharacterClassResourceRules _characterClassResourceRules;
+  final CharacterCombatRules _characterCombatRules;
 
   Future<void> applyShortRest(String id) {
     return _applyRecovery(id, isLongRest: false);
@@ -187,6 +191,16 @@ class CharacterRecoveryService {
       await _writeDao.insertClassResources(resourceCompanions);
 
       if (isLongRest) {
+        final resetDeathSaves = _characterCombatRules.resetDeathSaves();
+        await _writeDao.replaceDeathSaves(
+          CharacterDeathSavesCompanion.insert(
+            characterId: id,
+            successCount: Value(resetDeathSaves.successCount),
+            failureCount: Value(resetDeathSaves.failureCount),
+            updatedAt: Value(now),
+          ),
+        );
+
         for (final item in inventory) {
           final chargesMax = item.chargesMax;
           if (chargesMax == null) {

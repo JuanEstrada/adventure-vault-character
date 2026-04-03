@@ -8,7 +8,7 @@ import 'package:sqlite3/sqlite3.dart' as sqlite;
 void main() {
   group('AppDatabase migrations', () {
     test(
-      'upgrades a v1 database to v19 and preserves character data',
+      'upgrades a v1 database to v20 and preserves character data',
       () async {
         final file = await _createTempDatabaseFile();
         addTearDown(() async {
@@ -87,7 +87,7 @@ void main() {
     );
 
     test(
-      'upgrades a v4 database to v19, preserves normalized data, migrates provenance, and drops redundant snapshot columns',
+      'upgrades a v4 database to v20, preserves normalized data, migrates provenance, and drops redundant snapshot columns',
       () async {
         final file = await _createTempDatabaseFile();
         addTearDown(() async {
@@ -424,7 +424,7 @@ void main() {
 
 Future<void> _expectLatestSchemaArtifacts(AppDatabase database) async {
   final versionRow = await database.customSelect('PRAGMA user_version').get();
-  expect(versionRow.single.data['user_version'], 19);
+  expect(versionRow.single.data['user_version'], 20);
 
   final systemPreferenceColumns = await database
       .customSelect('PRAGMA table_info(system_preferences)')
@@ -471,6 +471,19 @@ Future<void> _expectLatestSchemaArtifacts(AppDatabase database) async {
   expect(
     importedPackColumns.map((row) => row.data['name'] as String),
     containsAll(<String>['id', 'raw_xml', 'imported_at']),
+  );
+
+  final deathSaveColumns = await database
+      .customSelect('PRAGMA table_info(character_death_saves)')
+      .get();
+  expect(
+    deathSaveColumns.map((row) => row.data['name'] as String),
+    containsAll(<String>[
+      'character_id',
+      'success_count',
+      'failure_count',
+      'updated_at',
+    ]),
   );
 }
 

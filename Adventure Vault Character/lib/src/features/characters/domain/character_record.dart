@@ -18,6 +18,7 @@ class CharacterRecord {
     required this.spellSelections,
     required this.spellSlotUsages,
     required this.classResources,
+    this.deathSaves,
     required this.currency,
     required this.inventory,
     required this.inventoryEquipmentDefinitions,
@@ -40,6 +41,7 @@ class CharacterRecord {
   final List<CharacterSpellSelection> spellSelections;
   final List<CharacterSpellSlotUsage> spellSlotUsages;
   final List<CharacterClassResource> classResources;
+  final CharacterDeathSave? deathSaves;
   final CharacterCurrencyData? currency;
   final List<CharacterInventoryData> inventory;
   final List<EquipmentDefinition> inventoryEquipmentDefinitions;

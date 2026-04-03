@@ -1,6 +1,9 @@
 import 'dart:convert';
 
+import 'package:adventure_vault_character/src/features/characters/data/drift_character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/asset_compendium_repository.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
@@ -137,6 +140,9 @@ void main() {
     final narrativeOptionRows = await database
         .select(database.narrativeOptions)
         .get();
+    final equipmentRows = await database
+        .select(database.equipmentDefinitions)
+        .get();
     expect(advancementRows, hasLength(20));
     expect(
       advancementRows.firstWhere((row) => row.level == 1).proficiencyBonus,
@@ -151,6 +157,22 @@ void main() {
     );
     expect(narrativeGroupRows, isNotEmpty);
     expect(narrativeOptionRows, isNotEmpty);
+    expect(
+      equipmentRows.firstWhere((row) => row.id == 'equipment-pistol').category,
+      'weapon',
+    );
+    expect(
+      equipmentRows
+          .firstWhere((row) => row.id == 'equipment-pistol')
+          .weaponPropertiesJson,
+      contains('"damage_dice":"1d10"'),
+    );
+    expect(
+      equipmentRows
+          .firstWhere((row) => row.id == 'equipment-scale-mail')
+          .armorPropertiesJson,
+      contains('"base_armor_class":14'),
+    );
     expect(
       narrativeGroupRows
           .firstWhere((row) => row.id == 'narrative-sword-coast-factions')
@@ -341,6 +363,25 @@ void main() {
             .map((option) => option.text),
         contains('Tradition. Preserve the old ways.'),
       );
+      final importedWeapon = await (database.select(
+        database.equipmentDefinitions,
+      )..where((table) => table.id.equals('equipment-thunder-pistol'))).get();
+      final importedArmor =
+          await (database.select(database.equipmentDefinitions)..where(
+                (table) => table.id.equals('equipment-imported-bulwark-1'),
+              ))
+              .get();
+      expect(importedWeapon.single.category, 'weapon');
+      expect(
+        importedWeapon.single.weaponPropertiesJson,
+        contains('"damage_dice":"1d10"'),
+      );
+      expect(importedWeapon.single.costValue, 180);
+      expect(importedArmor.single.category, 'armor');
+      expect(
+        importedArmor.single.armorPropertiesJson,
+        contains('"armor_class_bonus":3'),
+      );
       expect(
         importedCatalog.sourcePolicyForSection('backgrounds')?.notes,
         contains('Imported XML packs active: Imported Acolyte Expansion (1).'),
@@ -438,6 +479,67 @@ void main() {
       );
     },
   );
+
+  test('xml-derived imported weapon metadata drives combat helper outputs', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final bundle = _FakeAssetBundle({
+      'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_backgrounds_5.5e.xml':
+          _backgroundsFixture,
+      'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_races_5.5e.xml':
+          _racesFixture,
+      'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_classes_5.5e.xml':
+          _classesFixture,
+      'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_spells_5.5e.xml':
+          _spellsFixture,
+      'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_feats_5.5e.xml':
+          _featsFixture,
+      'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_bestiary_5.5e.xml':
+          _monstersFixture,
+      'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/01_Core/01_Players_Handbook/backgrounds-phb.xml':
+          _phbNarrativeFixture,
+      'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Sword_Coast_Adventurers_Guide/backgrounds-scag.xml':
+          _scagNarrativeFixture,
+      'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Planescape_Adventures_in_the_Multiverse/backgrounds-pam.xml':
+          _pamNarrativeFixture,
+      'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Guildmasters_Guide_to_Ravnica/backgrounds-ggr.xml':
+          _ggrNarrativeFixture,
+      'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml':
+          _erlwNarrativeFixture,
+      'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{}),
+    });
+
+    final compendium = AssetCompendiumRepository(
+      database: database,
+      bundle: bundle,
+    );
+    await compendium.loadCatalog();
+    await compendium.importXmlPack(_importFixture);
+
+    final characters = DriftCharacterRepository(
+      database: database,
+      compendiumRepository: compendium,
+    );
+
+    final summary = await characters.createCharacter(
+      _createCombatInput(
+        selectedEquipmentItems: const <String>['Thunder Pistol'],
+      ),
+    );
+    await (database.update(database.characterInventory)
+          ..where((table) => table.characterId.equals(summary.id)))
+        .write(const CharacterInventoryCompanion(isEquipped: Value(true)));
+    final sheet = await characters.getCharacterSheetById(summary.id);
+
+    expect(sheet, isNot(equals(null)));
+    expect(sheet!.combat.weaponAttacks, hasLength(1));
+    expect(sheet.combat.weaponAttacks.single.name, 'Thunder Pistol');
+    expect(sheet.combat.weaponAttacks.single.attackAbilityKey, 'dex');
+    expect(sheet.combat.weaponAttacks.single.attackBonus, 4);
+    expect(sheet.combat.weaponAttacks.single.damageDice, '1d10');
+    expect(sheet.combat.weaponAttacks.single.damageType, 'piercing');
+  });
 
   test(
     'mixed legacy and imported pack state keeps precedence deterministic across sections',
@@ -829,6 +931,38 @@ Map<String, String> _buildCompendiumImportBundleAssets() {
   };
 }
 
+CreateCharacterInput _createCombatInput({
+  required List<String> selectedEquipmentItems,
+}) {
+  return CreateCharacterInput(
+    name: 'Imported Combat Test',
+    raceName: 'Human',
+    backgroundId: 'acolyte',
+    backgroundName: 'Acolyte',
+    backgroundSummary: 'Temple acolyte',
+    abilityScoreMethod: 'generatedSetAssignment',
+    abilityScoreProvenance: 'method=generatedSetAssignment',
+    strength: 10,
+    dexterity: 14,
+    constitution: 13,
+    intelligence: 12,
+    wisdom: 10,
+    charisma: 8,
+    className: 'Fighter',
+    level: 1,
+    experience: 0,
+    equipmentLoadoutId: 'fighter-kit',
+    equipmentLoadoutLabel: 'Fighter kit',
+    startingMoneySummary: '10 gp',
+    selectedEquipmentItems: selectedEquipmentItems,
+    currentHitPoints: 12,
+    maximumHitPoints: 12,
+    temporaryHitPoints: 0,
+    spellState: const CharacterSpellStateInput.empty(),
+    finishingDetails: CharacterFinishingDetailsInput.empty(),
+  );
+}
+
 class _FakeAssetBundle extends CachingAssetBundle {
   _FakeAssetBundle(this._assets);
 
@@ -940,6 +1074,23 @@ const _classesFixture = '''
       </feature>
     </autolevel>
   </class>
+  <item>
+    <name>Pistol [5.5e]</name>
+    <type>Martial Ranged Weapon</type>
+    <dmg1>1d10</dmg1>
+    <dmgType>P</dmgType>
+    <property>Ammunition, Loading</property>
+    <range>30/90</range>
+    <weight>3</weight>
+    <value>250 gp</value>
+  </item>
+  <item>
+    <name>Scale Mail [5.5e]</name>
+    <type>Medium Armor</type>
+    <ac>14</ac>
+    <weight>45</weight>
+    <value>50 gp</value>
+  </item>
 </compendium>
 ''';
 
@@ -1204,6 +1355,23 @@ const _importFixture = '''
     <trait><name>Alert</name></trait>
     <action><name>Arc Slam</name></action>
   </monster>
+  <item>
+    <name>Thunder Pistol</name>
+    <type>Martial Ranged Weapon</type>
+    <dmg1>1d10</dmg1>
+    <dmgType>P</dmgType>
+    <property>Ammunition, Loading</property>
+    <range>30/90</range>
+    <weight>4</weight>
+    <value>180 gp</value>
+  </item>
+  <item>
+    <name>Imported Bulwark +1</name>
+    <type>S</type>
+    <ac>2</ac>
+    <weight>6</weight>
+    <value>70 gp</value>
+  </item>
 </compendium>
 ''';
 

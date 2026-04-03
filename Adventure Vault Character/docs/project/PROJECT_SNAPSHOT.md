@@ -1,7 +1,7 @@
 # Adventure Vault Character - Project Snapshot
 
 ## Last Update
-2026-03-30
+2026-04-02
 
 ## Role of This Document
 
@@ -19,14 +19,13 @@ spellcasting summary now exposed on the character sheet
 
 ## Current Focus
 
-Stabilizing and extending the normalized Drift model now that the guided
-draft, sheet flow, and edit/reopen path now also consume the official
-narrative option catalogs through a real finishing-details integration. In
-parallel, the project now also needs to keep translating the local SRD and
-Wizards XML sources into deterministic character systems for spells, combat,
-and richer inventory behavior, while turning the compendium source-policy work
-into a first dedicated offline screen instead of leaving it only as a main-menu
-summary.
+Finish-the-app roadmap execution centered on character-sheet completion and
+deterministic core rules. The current slice strengthens normalized equipment
+definition seeding so combat helpers consume persisted structured armor/weapon
+metadata first, now including compendium-side XML `item` extraction for
+armor/weapon metadata on bundled and imported packs where available, with
+conservative fallback heuristics retained only when metadata is still
+unavailable.
 
 ## Repository State
 
@@ -40,10 +39,11 @@ summary.
   full catalog cached lazily for the rest of the session.
 - Character-summary loading is abstracted behind a repository and now reads
   from a local Drift-backed SQLite database.
-- The Drift schema is now at `v19` and includes normalized character-side
+- The Drift schema is now at `v20` and includes normalized character-side
   tables for `ability scores`, `ability score provenance`, `hit points`,
   `finishing details`, `narrative selections`, `equipment loadout`,
-  `skills`, `saving throws`, `inventory`, `proficiencies`, and `currency`.
+  `skills`, `saving throws`, `inventory`, `proficiencies`, `currency`, and
+  `death saves`.
 - The local database now also includes compendium definition tables for
   `skills`, `equipment`, `classes`, `character advancement`,
   `class standard array recommendations`, `narrative option groups`,
@@ -150,6 +150,10 @@ summary.
 - The character sheet now renders mapped MVP data for identity, background,
   abilities, progression, hit points, structured equipment data, normalized
   saving throws, proficiencies, and finishing details.
+- The character sheet now also surfaces passive perception deterministically
+  from existing character data, displays an optional portrait when a valid
+  path/value is present, exposes a dedicated skills section with bonuses, and
+  separates language proficiencies from other proficiencies for readability.
 - The character sheet now also renders the resolved narrative fields
   individually instead of depending only on the old merged narrative note.
 - The character sheet now also exposes a first `Spells` panel for
@@ -215,6 +219,31 @@ summary.
   management (`Prepare all valid`, `Clear prepared`).
 - Shared rest rules are now encapsulated in `CharacterRestRules` and applied by
   create/edit spell-state handling.
+- Core combat rules now include deterministic Armor Class derivation from
+  equipped armor/shield + Dexterity modifier, initiative derivation from
+  Dexterity modifier, and normalized death-save persistence/mutations.
+- The character sheet combat panel now shows AC and initiative, plus death-save
+  state and controls for mark-success, mark-failure, and reset.
+- Core combat rules now also include deterministic equipped-weapon helper
+  derivation for attack ability selection (`Strength`/`Dexterity`), attack
+  bonus (`ability + proficiency + item bonus when present`), and damage
+  expression/modifier mapping from persisted weapon metadata with stable
+  name/category fallbacks.
+- The character sheet combat panel now shows a read-only `Attacks` section from
+  canonical equipped items, including attack bonus and damage helper text.
+- Equipment-definition seeding now writes structured armor/weapon metadata JSON
+  for recognized SRD items (including magic `+X` item bonuses), so combat
+  helpers can derive AC and attack outputs from persisted metadata instead of
+  relying primarily on name/category heuristics.
+- Compendium ingestion now also parses XML `item` entries and persists
+  normalized armor/weapon equipment definitions (damage dice/type, weapon
+  category/properties, armor class structure, cost, and weight) so imported
+  and bundled packs can contribute deterministic combat metadata without
+  UI-layer parsing.
+- Deterministic fallbacks remain intentionally active for unknown/custom items
+  where current import/loadout sources do not provide reliable structured
+  combat metadata.
+- Long rest recovery now also resets persisted death-save state.
 - The baseline SRD 5.5e compendium now includes optional-features spell/feat
   ingestion, reaching strict 2024 SRD runtime parity for those sections.
 - Source-policy metadata for `spells` and `feats` now includes the optional

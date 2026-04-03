@@ -4,6 +4,7 @@ import 'package:adventure_vault_character/src/features/characters/domain/equipme
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/imported_compendium_content.dart';
+import 'package:adventure_vault_character/src/features/compendium/data/xml_equipment_metadata_extractor.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/xml_import_validation.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:drift/drift.dart';
@@ -39,6 +40,11 @@ class AssetCompendiumRepository implements CompendiumRepository {
         'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Guildmasters_Guide_to_Ravnica/backgrounds-ggr.xml',
     String erlwBackgroundsAssetPath =
         'local-assets/FightClub5eXML-master/Sources/DND_5e/WizardsOfTheCoast/03_Campaign_Settings/Eberron_Rising_From_the_Last_War/backgrounds-erlw.xml',
+    List<String> equipmentAssetPaths = const <String>[
+      'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_items_5.5e.xml',
+      'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_armor_5.5e.xml',
+      'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_weapons_5.5e.xml',
+    ],
     String fallbackCatalogAssetPath = 'assets/compendium/catalog.json',
   }) : _bundle = bundle ?? rootBundle,
        _database = database,
@@ -54,6 +60,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
        _pamBackgroundsAssetPath = pamBackgroundsAssetPath,
        _ggrBackgroundsAssetPath = ggrBackgroundsAssetPath,
        _erlwBackgroundsAssetPath = erlwBackgroundsAssetPath,
+       _equipmentAssetPaths = List<String>.unmodifiable(equipmentAssetPaths),
        _fallbackCatalogAssetPath = fallbackCatalogAssetPath;
 
   final AssetBundle _bundle;
@@ -70,10 +77,12 @@ class AssetCompendiumRepository implements CompendiumRepository {
   final String _pamBackgroundsAssetPath;
   final String _ggrBackgroundsAssetPath;
   final String _erlwBackgroundsAssetPath;
+  final List<String> _equipmentAssetPaths;
   final String _fallbackCatalogAssetPath;
 
   CompendiumCatalog? _cachedStartupCatalog;
   CompendiumCatalog? _cachedCatalog;
+  List<String> _baseCompendiumXmlSources = const <String>[];
   final Map<String, String> _importedPackXmlById = <String, String>{};
 
   @override
@@ -1935,6 +1944,58 @@ class AssetCompendiumRepository implements CompendiumRepository {
     });
   }
 
+  Future<void> _persistEquipmentMetadataReferences(AppDatabase database) async {
+    final importedRows = await database
+        .select(database.importedCompendiumPacks)
+        .get();
+    final metadata = extractCompendiumEquipmentMetadataFromXmlSources(<String>[
+      ..._baseCompendiumXmlSources,
+      ...importedRows.map((row) => row.rawXml),
+    ]);
+    if (metadata.isEmpty) {
+      return;
+    }
+
+    final definitionIds = metadata.map((item) => item.id).toSet();
+    final existingRows = await (database.select(
+      database.equipmentDefinitions,
+    )..where((table) => table.id.isIn(definitionIds))).get();
+    final existingById = <String, EquipmentDefinition>{
+      for (final row in existingRows) row.id: row,
+    };
+
+    await database.batch((batch) {
+      batch.insertAll(
+        database.equipmentDefinitions,
+        metadata
+            .map((item) {
+              final existing = existingById[item.id];
+              return EquipmentDefinitionsCompanion.insert(
+                id: item.id,
+                key: item.key,
+                name: item.name,
+                category: item.category,
+                subcategory: Value(item.subcategory ?? existing?.subcategory),
+                weight: Value(item.weight ?? existing?.weight),
+                costValue: Value(item.costValue ?? existing?.costValue),
+                costUnit: Value(item.costUnit ?? existing?.costUnit),
+                isContainer: Value(existing?.isContainer ?? false),
+                isStackable: Value(existing?.isStackable ?? false),
+                description: Value(item.description ?? existing?.description),
+                weaponPropertiesJson: Value(
+                  item.weaponPropertiesJson ?? existing?.weaponPropertiesJson,
+                ),
+                armorPropertiesJson: Value(
+                  item.armorPropertiesJson ?? existing?.armorPropertiesJson,
+                ),
+              );
+            })
+            .toList(growable: false),
+        mode: InsertMode.insertOrReplace,
+      );
+    });
+  }
+
   Future<void> _persistPackStates(
     AppDatabase database,
     CompendiumCatalog catalog,
@@ -2266,6 +2327,21 @@ class AssetCompendiumRepository implements CompendiumRepository {
       final erlwBackgroundsXml = await _tryLoadString(
         _erlwBackgroundsAssetPath,
       );
+      final equipmentAssetXmls = await Future.wait(
+        _equipmentAssetPaths.map(
+          (path) async => await _tryLoadString(path) ?? '',
+        ),
+      );
+      _baseCompendiumXmlSources = <String>[
+        backgroundsXml,
+        racesXml,
+        classesXml,
+        spellsXml ?? '',
+        featsXml ?? '',
+        optionalFeaturesXml ?? '',
+        monstersXml ?? '',
+        ...equipmentAssetXmls,
+      ];
       catalog = _parseFightClubCatalog(
         backgroundsXml: backgroundsXml,
         racesXml: racesXml,
@@ -2281,6 +2357,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
         erlwBackgroundsXml: erlwBackgroundsXml ?? '',
       );
     } catch (_) {
+      _baseCompendiumXmlSources = const <String>[];
       final rawJson = await _bundle.loadString(_fallbackCatalogAssetPath);
       catalog = _parseJsonCatalog(rawJson);
     }
@@ -2292,6 +2369,7 @@ class AssetCompendiumRepository implements CompendiumRepository {
 
     await _persistNormalizedRuleReferences(database, catalog);
     await _persistPackStates(database, catalog);
+    await _persistEquipmentMetadataReferences(database);
     return _loadCatalogWithNormalizedRules(database, catalog);
   }
 }
