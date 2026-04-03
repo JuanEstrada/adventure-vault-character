@@ -1,5 +1,11 @@
 # Repository Guidelines
 
+## Non-Negotiable Rules
+
+- All documentation must be written in English.
+- All code-related language must be written in English, including comments,
+  identifiers, and developer-facing text.
+
 ## Product Context
 
 Adventure Vault Character is an offline-first D&D 5e character builder built

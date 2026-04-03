@@ -6,12 +6,12 @@ Character.
 ## Documentation Policy (Canonical)
 
 1. Repo docs are the durable source of truth.
-2. Engram/Gentle-AI memory complements repo docs; it does not replace them.
+2. External working memory complements repo docs; it does not replace them.
 3. One topic, one home: keep a single canonical document per topic and link
    to it from index files.
 4. Keep all documentation in English.
 5. Keep durable, reviewable decisions in git-versioned docs; keep transient
-   session notes in Engram unless they are promoted.
+   session notes outside the repo unless they are promoted.
 
 ## Purpose Boundaries
 
@@ -22,13 +22,13 @@ Character.
 | `docs/architecture/` | arc42 architecture baseline and cross-cutting technical structure | Daily status notes or decision-history details |
 | `docs/adr/` | Durable architecture decisions and status history | Feature specs, implementation checklists, or session logs |
 | `docs/diagrams/` | Durable diagram views that support architecture and specs | Narrative policy text already owned elsewhere |
-| Engram / session memory | Transient notes, working memory, and in-session continuity | Replacement for durable repo documentation |
+| External session memory | Transient notes, working memory, and in-session continuity | Replacement for durable repo documentation |
 
 ## Cleanup Rules
 
 - Keep durable docs in the repository.
-- Keep transient working notes in Engram.
-- Promote durable findings from Engram into the correct repo doc when they
+- Keep transient working notes outside the repo.
+- Promote durable findings into the correct repo doc when they
   become stable decisions, requirements, or architecture facts.
 - Keep docs in English.
 - Avoid duplicate sources of truth; link to canonical docs instead of restating
@@ -46,8 +46,6 @@ Character.
   technical rules for evaluating proposals.
 - [AI Session Runbook](project/AI_SESSION_GUIDE.md): canonical execution guide
   for AI-assisted sessions.
-- [AI Model Playbook](project/playbooks/AI_MODEL_PLAYBOOK.md): model routing
-  and prompt templates for AI-assisted implementation sessions.
 - [Future Specs](project/FUTURE_SPECS.md): candidate features intentionally
   deferred for later planning.
 - [Specifications Index](specs/README.md): accepted or in-planning functional
@@ -69,13 +67,12 @@ Character.
 | Project state | Current status and next steps | [Project Snapshot](project/PROJECT_SNAPSHOT.md) |
 | Project guidelines | Official decision and implementation rules | [Project Guidelines](project/PROJECT_GUIDELINES.md) |
 | AI session runbook | Canonical execution guide for AI sessions | [AI Session Runbook](project/AI_SESSION_GUIDE.md) |
-| AI model workflow | Stage-based model routing and prompt templates | [AI Model Playbook](project/playbooks/AI_MODEL_PLAYBOOK.md) |
 | Future features | Deferred or speculative feature candidates | [Future Specs](project/FUTURE_SPECS.md) |
 | Specifications | Accepted or in-planning functional specs | [Specifications Index](specs/README.md) |
 | Architecture | arc42-based system description | [Architecture Index](architecture/README.md) |
 | ADRs | Decision record history | [ADR Index](adr/README.md) |
 | Diagrams | Durable diagram views and links | [Diagrams Index](diagrams/README.md) |
-| Session memory | Transient AI session continuity notes | Engram (non-repo, promoted when durable) |
+| Session memory | Transient AI session continuity notes | Non-repo working notes (promoted when durable) |
 
 ## Recommended Reading Order
 

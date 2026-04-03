@@ -33,8 +33,8 @@ Do not update by inertia:
 - do not rewrite documents only for style changes
 - do not duplicate information if a source-of-truth doc already exists
 - do not change specs without a real product decision
-- do not copy transient notes from Engram into repo docs unless they are
-  promoted as durable knowledge
+- do not copy transient external notes into repo docs unless they are promoted
+  as durable knowledge
 
 ## 2. Verify the Work
 
@@ -80,7 +80,7 @@ Before ending the session:
 
 ## 7. Memory and Promotion Hygiene
 
-- Keep transient session notes in Engram.
-- Promote stable decisions/findings from Engram into the correct repo doc.
+- Keep transient session notes outside the repo.
+- Promote stable decisions/findings into the correct repo doc.
 - Ensure promoted content is in English and does not duplicate an existing
   source of truth.

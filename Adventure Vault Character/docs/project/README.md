@@ -19,14 +19,13 @@ index focused on routing and project-state ownership.
 | [APP_DISCOVERY_QUESTIONNAIRE.md](APP_DISCOVERY_QUESTIONNAIRE.md) | Short questionnaire to capture app scope, architecture, and prompt usage context. |
 | [USER_INPUTS_AND_AUTOMATIC_CALCULATIONS.md](USER_INPUTS_AND_AUTOMATIC_CALCULATIONS.md) | Quick reference for what the app calculates automatically versus what the player must enter or confirm. |
 | [SESSION_CLOSE_CHECKLIST.md](SESSION_CLOSE_CHECKLIST.md) | Canonical during-session + close-session checklist. |
-| [playbooks/AI_MODEL_PLAYBOOK.md](playbooks/AI_MODEL_PLAYBOOK.md) | Stage-based model routing and prompt templates for AI-assisted implementation. |
 
 ## Scope Boundary
 
 - `docs/project/` owns durable project continuity: current status, next steps,
   and operational runbooks.
-- Transient session notes should live in Engram and only be promoted here when
-  they become stable, durable project context.
+- Transient session notes should live outside the repo and only be promoted
+  here when they become stable, durable project context.
 
 ## Recommended Reading Order
 

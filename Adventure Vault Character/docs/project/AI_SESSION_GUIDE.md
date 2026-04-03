@@ -9,7 +9,6 @@ When instructions overlap, apply them in this order:
 1. `AGENTS.md` (repository-wide operating constraints)
 2. `docs/project/PROJECT_GUIDELINES.md` (product and technical decision rules)
 3. `docs/project/AI_SESSION_GUIDE.md` (session execution runbook)
-4. `docs/project/playbooks/AI_MODEL_PLAYBOOK.md` (model-routing strategy)
 
 ## Start Here
 
@@ -45,8 +44,8 @@ When instructions overlap, apply them in this order:
 - Keep project-state docs aligned with repository reality.
 - Prefer updating index pages when adding new documents.
 - Record accepted product requirements in `docs/specs/`.
-- Keep transient working notes in Engram; promote durable findings into repo
-  docs when they become stable.
+- Keep transient working notes outside the repo; promote durable findings into
+  repo docs when they become stable.
 - Keep all documentation in English.
 
 ## Continuity Rule

@@ -50,8 +50,8 @@ between high-level architecture and the roadmap.
 - Keep deferred ideas in [../project/FUTURE_SPECS.md](../project/FUTURE_SPECS.md).
 - Link architecture-impacting changes back to ADRs when needed.
 - Keep spec content durable, reviewable, and in English.
-- Do not store transient session notes in this folder; keep those in Engram
-  unless promoted.
+- Do not store transient session notes in this folder; keep those outside the
+  repo unless promoted.
 - When a spec references visual examples, those usually come from
   `local-ui-assets/`.
 - Source rule files, XML examples, and other raw reference materials live in
