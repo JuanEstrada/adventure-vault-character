@@ -546,6 +546,89 @@ void main() {
   );
 
   test(
+    'transferInventoryItemStackToContainer rejects mixed same-item target stack states without state change',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Transfer mixed stack state in-memory',
+          items: <String>['Backpack', '4 Torch', 'Torch', 'Torch'],
+        ),
+      );
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final backpack = sheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Backpack',
+      );
+      final torchStacks =
+          sheet.equipment.items
+              .where((item) => item.name == 'Torch')
+              .toList(growable: false)
+            ..sort((left, right) => right.quantity.compareTo(left.quantity));
+      final source = torchStacks.first;
+      final compatibleTarget = torchStacks[1];
+      final incompatibleTarget = torchStacks[2];
+
+      await repository.setInventoryItemContainer(
+        summary.id,
+        compatibleTarget.id,
+        backpack.id,
+      );
+      await repository.setInventoryItemContainer(
+        summary.id,
+        incompatibleTarget.id,
+        backpack.id,
+      );
+      await repository.setInventoryItemCarried(
+        summary.id,
+        incompatibleTarget.id,
+        false,
+      );
+
+      sheet = await repository.getCharacterSheetById(summary.id);
+      final snapshotBefore = <String, (int, String?, bool)>{
+        for (final item in sheet!.equipment.items)
+          item.id: (
+            item.quantity,
+            item.containerInventoryItemId,
+            item.isCarried,
+          ),
+      };
+
+      await expectLater(
+        repository.transferInventoryItemStackToContainer(
+          summary.id,
+          source.id,
+          targetContainerInventoryItemId: backpack.id,
+          quantity: 2,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_stack_state',
+          ),
+        ),
+      );
+
+      final sheetAfter = await repository.getCharacterSheetById(summary.id);
+      expect(sheetAfter, isNotNull);
+      final snapshotAfter = <String, (int, String?, bool)>{
+        for (final item in sheetAfter!.equipment.items)
+          item.id: (
+            item.quantity,
+            item.containerInventoryItemId,
+            item.isCarried,
+          ),
+      };
+      expect(snapshotAfter, snapshotBefore);
+    },
+  );
+
+  test(
     'transferInventoryItemStackToContainer rejects capacity overflow without state change',
     () async {
       final repository = InMemoryCharacterRepository.empty(

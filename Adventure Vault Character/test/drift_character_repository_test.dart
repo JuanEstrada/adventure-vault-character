@@ -2007,6 +2007,97 @@ void main() {
   );
 
   test(
+    'inventory stack transfer rejects mixed same-item target stack states without persistence mutation',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      final summary = await repository.createCharacter(
+        _createInventoryCharacterInput(
+          name: 'Transfer mixed stack state drift',
+          items: <String>['Backpack', '4 Torch', 'Torch', 'Torch'],
+        ),
+      );
+
+      var sheet = await repository.getCharacterSheetById(summary.id);
+      expect(sheet, isNotNull);
+      final backpack = sheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Backpack',
+      );
+      final torchStacks =
+          sheet.equipment.items
+              .where((item) => item.name == 'Torch')
+              .toList(growable: false)
+            ..sort((left, right) => right.quantity.compareTo(left.quantity));
+      final source = torchStacks.first;
+      final compatibleTarget = torchStacks[1];
+      final incompatibleTarget = torchStacks[2];
+
+      await repository.setInventoryItemContainer(
+        summary.id,
+        compatibleTarget.id,
+        backpack.id,
+      );
+      await repository.setInventoryItemContainer(
+        summary.id,
+        incompatibleTarget.id,
+        backpack.id,
+      );
+      await repository.setInventoryItemCarried(
+        summary.id,
+        incompatibleTarget.id,
+        false,
+      );
+
+      final characterBefore = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      final rowsBefore = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final snapshotBefore = <String, (int, String?, bool)>{
+        for (final row in rowsBefore)
+          row.id: (row.quantity, row.containerInventoryItemId, row.isCarried),
+      };
+
+      await expectLater(
+        repository.transferInventoryItemStackToContainer(
+          summary.id,
+          source.id,
+          targetContainerInventoryItemId: backpack.id,
+          quantity: 2,
+        ),
+        throwsA(
+          isA<CharacterInventoryValidationError>().having(
+            (error) => error.code,
+            'code',
+            'invalid_stack_state',
+          ),
+        ),
+      );
+
+      final characterAfter = await (database.select(
+        database.characters,
+      )..where((table) => table.id.equals(summary.id))).getSingle();
+      expect(characterAfter.updatedAt, characterBefore.updatedAt);
+
+      final rowsAfter = await (database.select(
+        database.characterInventory,
+      )..where((table) => table.characterId.equals(summary.id))).get();
+      final snapshotAfter = <String, (int, String?, bool)>{
+        for (final row in rowsAfter)
+          row.id: (row.quantity, row.containerInventoryItemId, row.isCarried),
+      };
+      expect(snapshotAfter, snapshotBefore);
+    },
+  );
+
+  test(
     'inventory stack transfer rejects cycle violation without persistence mutation',
     () async {
       final database = AppDatabase.executor(NativeDatabase.memory());

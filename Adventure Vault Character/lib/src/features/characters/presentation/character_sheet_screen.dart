@@ -6,6 +6,7 @@ class CharacterSheetScreen extends StatelessWidget {
   const CharacterSheetScreen({
     required this.character,
     required this.isApplyingRest,
+    required this.errorMessage,
     required this.onBack,
     required this.onEdit,
     required this.onApplyShortRest,
@@ -25,6 +26,7 @@ class CharacterSheetScreen extends StatelessWidget {
 
   final CharacterDomainModel character;
   final bool isApplyingRest;
+  final String? errorMessage;
   final VoidCallback onBack;
   final VoidCallback onEdit;
   final Future<void> Function() onApplyShortRest;
@@ -159,7 +161,14 @@ class CharacterSheetScreen extends StatelessWidget {
                           _AbilitiesPanel(character: character),
                           const SizedBox(height: 16),
                           if (character.spellcasting != null) ...[
-                            _SpellsPanel(character: character),
+                            _SpellsPanel(
+                              character: character,
+                              isApplyingRest: isApplyingRest,
+                              supportsShortRestRecovery:
+                                  supportsShortRestRecovery,
+                              onApplyShortRest: onApplyShortRest,
+                              onApplyLongRest: onApplyLongRest,
+                            ),
                             const SizedBox(height: 16),
                           ],
                           _FeaturesNotesPanel(character: character),
@@ -167,6 +176,7 @@ class CharacterSheetScreen extends StatelessWidget {
                           _EquipmentPanel(
                             character: character,
                             isUpdating: isApplyingRest,
+                            errorMessage: errorMessage,
                             onSetInventoryItemEquipped:
                                 onSetInventoryItemEquipped,
                             onSetInventoryItemCarried:
@@ -206,7 +216,13 @@ class CharacterSheetScreen extends StatelessWidget {
                   _AbilitiesPanel(character: character),
                   const SizedBox(height: 16),
                   if (character.spellcasting != null) ...[
-                    _SpellsPanel(character: character),
+                    _SpellsPanel(
+                      character: character,
+                      isApplyingRest: isApplyingRest,
+                      supportsShortRestRecovery: supportsShortRestRecovery,
+                      onApplyShortRest: onApplyShortRest,
+                      onApplyLongRest: onApplyLongRest,
+                    ),
                     const SizedBox(height: 16),
                   ],
                   _FeaturesNotesPanel(character: character),
@@ -214,6 +230,7 @@ class CharacterSheetScreen extends StatelessWidget {
                   _EquipmentPanel(
                     character: character,
                     isUpdating: isApplyingRest,
+                    errorMessage: errorMessage,
                     onSetInventoryItemEquipped: onSetInventoryItemEquipped,
                     onSetInventoryItemCarried: onSetInventoryItemCarried,
                     onSetInventoryItemQuantity: onSetInventoryItemQuantity,
@@ -836,9 +853,19 @@ class _FeaturesNotesPanel extends StatelessWidget {
 }
 
 class _SpellsPanel extends StatelessWidget {
-  const _SpellsPanel({required this.character});
+  const _SpellsPanel({
+    required this.character,
+    required this.isApplyingRest,
+    required this.supportsShortRestRecovery,
+    required this.onApplyShortRest,
+    required this.onApplyLongRest,
+  });
 
   final CharacterDomainModel character;
+  final bool isApplyingRest;
+  final bool supportsShortRestRecovery;
+  final Future<void> Function() onApplyShortRest;
+  final Future<void> Function() onApplyLongRest;
 
   @override
   Widget build(BuildContext context) {
@@ -924,8 +951,55 @@ class _SpellsPanel extends StatelessWidget {
               )
             else
               ...spellcasting.slotProgression.map(
-                (slot) =>
-                    _FactRow(label: slot.label, value: slot.displaySummary),
+                (slot) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _FactRow(label: slot.label, value: slot.displaySummary),
+                      LinearProgressIndicator(
+                        value: slot.slotsMax == 0
+                            ? 0
+                            : slot.slotsRemaining / slot.slotsMax,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: 8),
+            Text('Session recovery', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: isApplyingRest || !supportsShortRestRecovery
+                      ? null
+                      : () {
+                          onApplyShortRest();
+                        },
+                  icon: const Icon(Icons.timer_outlined),
+                  label: const Text('Apply short rest'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: isApplyingRest
+                      ? null
+                      : () {
+                          onApplyLongRest();
+                        },
+                  icon: const Icon(Icons.bed_outlined),
+                  label: const Text('Apply long rest'),
+                ),
+              ],
+            ),
+            if (!supportsShortRestRecovery)
+              Padding(
+                padding: const EdgeInsets.only(top: 6, bottom: 2),
+                child: Text(
+                  'Short rest recovery currently applies only to pact magic and short-rest class resources.',
+                  style: theme.textTheme.bodySmall,
+                ),
               ),
             const SizedBox(height: 8),
             Text('Available spells', style: theme.textTheme.titleMedium),
@@ -969,6 +1043,7 @@ class _EquipmentPanel extends StatelessWidget {
   const _EquipmentPanel({
     required this.character,
     required this.isUpdating,
+    required this.errorMessage,
     required this.onSetInventoryItemEquipped,
     required this.onSetInventoryItemCarried,
     required this.onSetInventoryItemQuantity,
@@ -979,6 +1054,7 @@ class _EquipmentPanel extends StatelessWidget {
 
   final CharacterDomainModel character;
   final bool isUpdating;
+  final String? errorMessage;
   final Future<void> Function(String inventoryItemId, bool isEquipped)
   onSetInventoryItemEquipped;
   final Future<void> Function(String inventoryItemId, bool isCarried)
@@ -1052,10 +1128,28 @@ class _EquipmentPanel extends StatelessWidget {
               style: theme.textTheme.bodySmall,
             ),
             const SizedBox(height: 10),
+            if (errorMessage != null) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  errorMessage!,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onErrorContainer,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             ...character.equipment.items.map(
               (item) => _InventoryItemRow(
                 item: item,
                 isUpdating: isUpdating,
+                containerState: character.equipment.containerStateFor(item.id),
                 onSetEquipped: (value) {
                   onSetInventoryItemEquipped(item.id, value);
                 },
@@ -1101,6 +1195,7 @@ class _InventoryItemRow extends StatelessWidget {
   const _InventoryItemRow({
     required this.item,
     required this.isUpdating,
+    required this.containerState,
     required this.onSetEquipped,
     required this.onSetCarried,
     required this.onIncreaseQuantity,
@@ -1113,6 +1208,7 @@ class _InventoryItemRow extends StatelessWidget {
 
   final CharacterEquipmentItemDomainModel item;
   final bool isUpdating;
+  final CharacterInventoryContainerStateDomainModel? containerState;
   final ValueChanged<bool> onSetEquipped;
   final ValueChanged<bool> onSetCarried;
   final VoidCallback onIncreaseQuantity;
@@ -1144,6 +1240,8 @@ class _InventoryItemRow extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
+          Text(item.stackStateLabel, style: theme.textTheme.bodySmall),
+          const SizedBox(height: 2),
           Row(
             children: [
               IconButton(
@@ -1290,6 +1388,14 @@ class _InventoryItemRow extends StatelessWidget {
           ] else ...[
             const SizedBox(height: 8),
             Text(item.containerLabel),
+            if (containerState != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  containerState!.summaryLabel,
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
           ],
         ],
       ),

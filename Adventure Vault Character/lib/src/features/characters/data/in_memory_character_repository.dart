@@ -505,19 +505,28 @@ class InMemoryCharacterRepository implements CharacterRepository {
             )
             .toList(growable: false)
           ..sort((left, right) => left.id.compareTo(right.id));
-    _InMemoryInventoryItem? mergeTarget;
-    for (final candidate in identityCandidates) {
-      if (_areStacksCompatible(source: transferredShape, target: candidate)) {
-        mergeTarget = candidate;
-        break;
-      }
-    }
-    if (identityCandidates.isNotEmpty && mergeTarget == null) {
+    final compatibleCandidates = identityCandidates
+        .where(
+          (candidate) =>
+              _areStacksCompatible(source: transferredShape, target: candidate),
+        )
+        .toList(growable: false);
+    if (identityCandidates.isNotEmpty && compatibleCandidates.isEmpty) {
       throw const CharacterInventoryValidationError(
         'invalid_stack_state',
         'Stacks are not compatible for container transfer merge.',
       );
     }
+    if (compatibleCandidates.isNotEmpty &&
+        compatibleCandidates.length != identityCandidates.length) {
+      throw const CharacterInventoryValidationError(
+        'invalid_stack_state',
+        'Target container has mixed same-item stack state. Normalize stacks before transfer.',
+      );
+    }
+    final mergeTarget = compatibleCandidates.isEmpty
+        ? null
+        : compatibleCandidates.first;
 
     final projectedItems = List<_InMemoryInventoryItem>.from(inventory);
     String transferredStackId;

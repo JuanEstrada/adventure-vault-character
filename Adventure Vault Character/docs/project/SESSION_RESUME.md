@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-04-02
+Last updated: 2026-04-03
 
 This is the single file to read first when resuming work on Adventure Vault
 Character. It consolidates the current product, architecture, repository
@@ -44,7 +44,7 @@ Primary references:
 
 ## Repository Reality
 
-Verified on 2026-03-28:
+Verified on 2026-04-03:
 
 - Flutter project scaffolding exists for Android, iOS, web, Windows, Linux,
   and macOS.
@@ -341,30 +341,32 @@ coverage protecting both create and update paths. `characters` is now closer
 to an identity/resume row, with HP and finishing details moved into dedicated
 normalized tables, equipment loadout metadata in its own normalized table, and
 the narrative-field selections now also stored in their own normalized
-character-side table. The roadmap focus is now explicitly a
-**finish-the-character-sheet-first plan**: complete high-value sheet visibility
-from existing data, then implement missing deterministic combat foundations
-(AC/initiative/attacks/death saves) as domain/application slices.
+character-side table. The previous roadmap focus was a
+**finish-the-character-sheet-first plan**; that phase is now implemented,
+including deterministic combat foundations (AC/initiative/attacks/death saves).
 
 ## Current Phase
 
-Implementation shell established, with SRD source extraction now materialized
-as repository content.
+Post-foundation implementation phase.
 
-The project has moved from documentation-only preparation into a real app
-shell. The startup path, access screen, main menu shell, and character-summary
- repository boundary now exist in code. In parallel, the local SRD now has a
- reproducible normalized PDF-derived corpus and a cleaner section-based
- reference tree in `local-assets/por ordenar/srd_55e_source_from_markdown/`
- derived from a clean markdown source corpus. The next step is to keep the app
- work moving
-while using these sources to formalize deterministic rules and compendium
-contracts instead of spending more time on PDF cleanup.
+The project is no longer in "shell establishment" mode. The roadmap's first
+two slices are implemented in production code:
+
+- Character-sheet completion items are live (portrait/passive perception/
+  skills/proficiency readability).
+- Deterministic combat MVP is live (AC, initiative, death saves, attack
+  helpers, combat panel integration).
+
+The active phase now is completion depth and hardening:
+
+- stronger in-session spell/inventory workflows,
+- broader deterministic edge-case coverage,
+- finish-the-app polish for missing-data and recovery UX.
 
 ## MVP Slice In Focus
 
-The first implementation slice is the offline path from app launch to a usable
-character sheet.
+The active slice is no longer "first MVP shell". The current target is
+**post-MVP operational quality** for in-session play.
 
 Canonical MVP flow:
 
@@ -426,10 +428,11 @@ Primary references:
   character sheet when present.
 - The first character sheet uses a panel-based layout.
 - `Abilities` and `Features / Notes` carry real MVP content.
-- `Combat` carries real hit-points content in MVP, while deeper combat
-  features may still remain placeholders.
-- `Equipment` may exist as a simple placeholder panel in MVP even though
-  equipment is captured during creation.
+- `Combat` now includes deterministic AC/initiative, death-save actions,
+  class-resource counters, rest actions, and attack helper outputs.
+- `Equipment` is no longer display-only; it supports deterministic inventory
+  mutations (`equipped`, `carried`, `quantity`, `charges`, containers,
+  stack-aware behavior).
 - The first character card uses a library-style layout with portrait or
   placeholder plus a short identity summary.
 
@@ -440,10 +443,10 @@ These are the highest-value unresolved items:
 1. Decide how far XML import should expand beyond the current supported
    imported catalog sections and the first imported narrative-option slice
    into deeper rules data.
-2. Decide when deeper `Combat` features and the `Equipment` panel move from
-   MVP-minimal states into populated panels.
-3. Decide how far pack-based filtering should go beyond narrative supplements,
-   and whether additional compendium areas should become optional-pack aware.
+2. Decide the target in-session spell workflow depth on sheet context (summary
+   plus edit path vs additional direct in-session actions).
+3. Decide how far pack-based filtering and precedence diagnostics should expand
+   across additional compendium sections.
 
 Resolved architecture decision:
 
@@ -484,16 +487,16 @@ Resolved MVP decision:
 
 ## Recommended Next Step
 
-The next logical session should build on the current shell instead of
-restructuring it again:
+The next logical session should continue hardening the existing implementation
+instead of opening new architectural surfaces:
 
 1. Harden merge/transfer compatibility edge coverage for same-item state
    mismatches (`equipped`, `carried`, `container`, `charges`, `notes`) so
    `invalid_stack_state` remains deterministic across repository paths.
-2. Improve equipment-definition quality so weight-aware encumbrance has fewer
-   fallback gaps and reflects more compendium items deterministically.
-3. Continue extending deterministic class-resource recovery coverage while
-   preserving service-first rule execution and repository-backed sheet updates.
+2. Add explicit sheet-visible feedback for inventory mutation rejections so
+   users can understand and recover from invalid actions.
+3. Improve in-session spell workflow ergonomics while preserving
+   service/domain-owned deterministic rules.
 
 Completed since the previous handoff:
 
@@ -687,6 +690,14 @@ Completed since the previous handoff:
   orchestration through split/merge projection, invariant reuse for
   target/structure/capacity checks, and reject-only `invalid_stack_state`
   behavior when target-container same-identity stacks are incompatible.
+- Same-item transfer validation now also rejects mixed target-container stack
+  states (a mix of compatible and incompatible same-identity stacks), with
+  explicit no-mutation regression coverage in both Drift and in-memory tests.
+- Character-sheet equipment now surfaces inventory mutation rejections directly
+  in-panel and clarifies stack/container status via stack-size labels plus
+  container content summaries.
+- Character-sheet spells flow now includes in-panel rest recovery actions and
+  spell-slot progress indicators to reduce in-session navigation overhead.
 
 Next-session starting point:
 
@@ -710,9 +721,9 @@ Next-session starting point:
 - Use `CharacterInventoryValidationError` from
   `lib/src/features/characters/domain/character_inventory_validation_error.dart`
   as the source of truth for policy-level inventory mutation error categories.
-- Start the next inventory batch from transfer compatibility edge hardening,
-  especially same-identity stacks that differ by state fields and should reject
-  deterministically with no persistence changes.
+- Start the next inventory/spell UX batch from direct per-slot spend/restore
+  controls and richer explicit transfer actions (split/merge/transfer) while
+  keeping deterministic validation/service-layer orchestration.
 - Use `lib/src/features/settings/data/system_settings_repository.dart` as the
   source of truth for the coin-weight toggle that affects encumbrance behavior.
 - Use the new migration regression tests in

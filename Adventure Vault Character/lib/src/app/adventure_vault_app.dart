@@ -174,6 +174,7 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
             AppScreen.characterSheet => CharacterSheetScreen(
               character: state.selectedCharacterSheet!,
               isApplyingRest: state.isSavingCharacter,
+              errorMessage: state.errorMessage,
               onBack: _controller.openMainMenu,
               onEdit: () => _controller.loadEditableCharacter(
                 state.selectedCharacterSheet!.id,

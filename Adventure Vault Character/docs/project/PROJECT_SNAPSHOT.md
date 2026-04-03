@@ -1,7 +1,7 @@
 # Adventure Vault Character - Project Snapshot
 
 ## Last Update
-2026-04-02
+2026-04-03
 
 ## Role of This Document
 
@@ -13,19 +13,41 @@ and delivery risks.
 
 ## Project Phase
 
-Implementation shell established, with SRD source extraction materialized, the
-first official finishing-details integration implemented, and a first
-spellcasting summary now exposed on the character sheet
+Post-foundation implementation: character-sheet completion and deterministic
+combat MVP are implemented; active work has shifted to workflow depth,
+hardening, and finish-the-app quality slices.
 
 ## Current Focus
 
-Finish-the-app roadmap execution centered on character-sheet completion and
-deterministic core rules. The current slice strengthens normalized equipment
-definition seeding so combat helpers consume persisted structured armor/weapon
-metadata first, now including compendium-side XML `item` extraction for
-armor/weapon metadata on bundled and imported packs where available, with
-conservative fallback heuristics retained only when metadata is still
-unavailable.
+Close the highest-value in-session gaps now that the old "Phase 1/2" scope is
+already in production, with the latest slice now improving sheet-level
+inventory rejection feedback, explicit stack/container state visibility, and
+same-item transfer compatibility regression coverage across in-memory/Drift.
+
+## Roadmap Gap Status (Audit 2026-04-03)
+
+- **Phase 1 — Character Sheet Completion**: **Complete**.
+  - Implemented: identity clarity, optional portrait, passive perception,
+    dedicated skills, readable proficiency/language sections.
+- **Phase 2 — Core Combat Rules (Deterministic MVP)**: **Complete**.
+  - Implemented: AC/initiative derivation, death-save state + mutations,
+    deterministic equipped-weapon attack helpers, sheet combat panel integration.
+- **Phase 3 — Spellcasting Workflow Completion**: **Partially complete**.
+  - Implemented: known/prepared/spellbook modes, class-specific limits,
+    persisted selected spells and slot usage, rest-driven slot recovery.
+  - Remaining: tighter in-session spell-use interaction flow from sheet context.
+- **Phase 4 — Inventory & Resource Session UX**: **Partially complete**.
+  - Implemented: equip/carry/quantity/charges/container mutations, stack
+    lifecycle rules, rest/resource integration.
+  - Remaining: deeper transfer UX and clearer state/error visibility in compact
+    sheet interactions.
+- **Phase 5 — Rules Coverage & Validation Hardening**: **Partially complete**.
+  - Implemented: targeted tests for combat, spell rules, rest rules,
+    encumbrance, inventory stack rules, migrations, repository behavior.
+  - Remaining: broader edge-case matrix and mixed-source regression breadth.
+- **Phase 6 — Finish-the-App Polish & Recovery**: **Mostly pending**.
+  - Remaining: deliberate missing-data, interruption/recovery, and final UX
+    resilience pass.
 
 ## Repository State
 
@@ -198,6 +220,16 @@ unavailable.
   containers, deterministic partial transfer orchestration via split/merge
   projection, and reject-only failures for invalid target/structure/capacity
   and incompatible target-stack state.
+- Same-item stack transfer validation now also rejects mixed target-container
+  states for identical item identity (partially compatible + partially
+  incompatible stacks) to prevent ambiguous merges.
+- Character-sheet equipment UI now shows explicit mutation rejection feedback
+  inline in the sheet, with clear no-state-change messaging for rejected
+  inventory actions.
+- Character-sheet equipment rows now expose clearer stack/container state,
+  including stack-size labels and per-container content summary lines.
+- Character-sheet spells panel now includes in-panel short/long rest recovery
+  actions and spell-slot progress indicators for faster in-session usage checks.
 - Pack-state filtering now also trims pack-tagged backgrounds, spells, feats,
   and monsters, not only narrative-option groups.
 - XML import validation is now shared by in-memory and persisted compendium
@@ -457,9 +489,6 @@ unavailable.
 - Expand the edit flow beyond the current guided MVP fields and decide how
   later post-creation inventory or combat editing should interact with the
   same aggregate now that sheet-side inventory mutation controls are live.
-- Add compatibility edge coverage for stack lifecycle and future transfer flows
-  where item identity matches but state differs (`equipped`, `carried`,
-  `container`, `charges`, `notes`).
 - Extend the new compendium screen toward future pack-management and import
   workflows without bypassing the existing repository/domain contract.
 - Extend the current XML import flow beyond the currently supported imported
@@ -469,13 +498,12 @@ unavailable.
   compendium concerns beyond the current narrative-catalog model.
 - Expand precedence diagnostics from aggregate section notes into richer
   per-pack conflict visibility if UI/readability remains acceptable.
-- Decide whether any additional reshaping is still needed in
-  `local-assets/por ordenar/srd_55e_source_from_markdown/` before treating it
-  as the stable long-term section reference tree.
-- Decide when the local normalized compendium catalog becomes a generated or
-  parsed XML-backed source instead of curated asset data.
-- Map the approved MVP flow into implementation tasks in `lib/`.
-- Add implementation documentation once production code exists.
+- Add compatibility edge coverage for transfer/merge paths where same item
+  identity has incompatible state (`equipped`, `carried`, `container`,
+  `charges`, `notes`) and must reject deterministically.
+- Improve sheet-side feedback for inventory mutation errors so users understand
+  why state-changing actions were rejected.
+- Expand spell workflow ergonomics for in-session usage from sheet context.
 
 ## Newly Confirmed MVP Decision
 
@@ -518,24 +546,24 @@ unavailable.
 
 ## Next Recommended Steps
 
-1. Add merge/transfer compatibility edge tests for same-item state mismatches
-   so `invalid_stack_state` stays deterministic across repository
-   implementations.
-2. Continue translating the available rules sources into explicit
-   deterministic application/domain services.
-3. Expand compendium ingestion from strict 2024 SRD baseline into broader
-   official 2024 sources with explicit precedence and conflict reporting.
-4. Expand deterministic resource recovery beyond the now-implemented HP +
-   spell-slot + initial class-resource rest actions (broader class coverage,
-   rest cadence details, and richer sheet-visible recovery summaries).
-5. Continue improving equipment definition quality so weight-aware
-   encumbrance reflects more compendium items without fallback gaps.
-6. Update `SESSION_RESUME.md` and this snapshot after each relevant session.
+1. Harden transfer compatibility tests and no-state-change guarantees for
+   same-identity stack/state mismatches.
+2. Add explicit sheet feedback for inventory mutation validation failures
+   (`invalid_target`, `invalid_structure`, `capacity_exceeded`,
+   `invalid_stack_state`, etc.).
+3. Improve in-session spell workflow visibility and actionability while keeping
+   deterministic logic in domain/application layers.
+4. Extend mixed-source regression coverage (base + optional + imported packs)
+   around precedence/conflict diagnostics.
+5. Continue improving equipment metadata quality so combat/encumbrance rely less
+   on fallback heuristics.
+6. Keep `SESSION_RESUME.md` and this snapshot aligned after each meaningful
+   implementation session.
 
 ## Next Session Guardrail
 
-- Resume by extending the current shell into persistence and creation flow,
-  not by reopening closed MVP flow decisions.
+- Resume by hardening and completing in-session workflows on the current
+  architecture, not by reopening closed MVP shell decisions.
 - Use the approved flow, the proposed domain-model docs, and
   `local-assets/local-rule-bases/README.md` as the working basis unless a new
   product decision replaces them.

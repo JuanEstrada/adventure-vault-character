@@ -277,22 +277,30 @@ class CharacterInventoryService {
             )
             .toList(growable: false)
           ..sort((left, right) => left.id.compareTo(right.id));
-    _ProjectedInventoryItem? mergeTarget;
-    for (final candidate in identityCandidates) {
-      if (_areProjectedStacksCompatible(
-        source: transferredShape,
-        target: candidate,
-      )) {
-        mergeTarget = candidate;
-        break;
-      }
-    }
-    if (identityCandidates.isNotEmpty && mergeTarget == null) {
+    final compatibleCandidates = identityCandidates
+        .where(
+          (candidate) => _areProjectedStacksCompatible(
+            source: transferredShape,
+            target: candidate,
+          ),
+        )
+        .toList(growable: false);
+    if (identityCandidates.isNotEmpty && compatibleCandidates.isEmpty) {
       throw const CharacterInventoryValidationError(
         'invalid_stack_state',
         'Stacks are not compatible for container transfer merge.',
       );
     }
+    if (compatibleCandidates.isNotEmpty &&
+        compatibleCandidates.length != identityCandidates.length) {
+      throw const CharacterInventoryValidationError(
+        'invalid_stack_state',
+        'Target container has mixed same-item stack state. Normalize stacks before transfer.',
+      );
+    }
+    final mergeTarget = compatibleCandidates.isEmpty
+        ? null
+        : compatibleCandidates.first;
 
     final definitionIds = inventoryItems
         .map((item) => item.equipmentDefinitionId)
@@ -324,7 +332,7 @@ class CharacterInventoryService {
       transferredStackId = mergeTarget.id;
 
       final targetIndex = projectedItems.indexWhere(
-        (item) => item.id == mergeTarget!.id,
+        (item) => item.id == mergeTarget.id,
       );
       projectedItems[targetIndex] = projectedItems[targetIndex].copyWith(
         quantity: mergeResult.targetQuantity,

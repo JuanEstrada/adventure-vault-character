@@ -2,29 +2,50 @@
 
 ## Last Updated
 
-2026-04-02
+2026-04-03
 
 ## Roadmap Intent
 
-This roadmap is now focused on **finishing the playable character sheet and
-missing core 5e player rules** on top of the existing offline-first,
-normalized architecture.
+This roadmap focuses on **closing the remaining in-session player gaps** on top
+of the current offline-first, normalized architecture.
 
-The app already has a strong baseline: guided create/edit, normalized
-persistence, compendium import management, deterministic spell foundations, and
-inventory mutations. The remaining work is primarily about turning those
-foundations into a complete in-session player tool.
+The implementation has moved past the old "sheet foundation" state: core sheet
+visibility and deterministic combat MVP rules are already live. The roadmap now
+tracks what is complete versus what still needs delivery hardening.
 
-## Current Reality (from implementation audit)
+## Current Reality (implementation audit — 2026-04-03)
 
-- Normalized data already exists for skills, proficiencies/languages, portrait,
-  currency detail, spell selections/slots, class resources, and inventory.
-- Character sheet has meaningful content but still has high-value usability
-  gaps.
-- Core combat automation is intentionally partial (no AC/initiative/attacks/
-  death saves yet).
+- Normalized persistence is in place for character state, spell state, class
+  resources, inventory/container state, and death saves.
+- Character sheet already shows passive perception, combat core values (AC,
+  initiative), death saves, attack helpers, class resources, spells summary,
+  and actionable inventory mutations.
+- Compendium import and pack activation are implemented with persisted optional
+  pack state, section-level source policy metadata, and XML import validation.
+- Major remaining work is no longer "foundations"; it is completion polish for
+  spellcasting/inventory workflows, broader rule coverage, and quality/recovery
+  hardening.
 
-## Phase 1 — Character Sheet Completion (Now)
+## Phase Status Snapshot
+
+| Phase | Status | Notes |
+|---|---|---|
+| Phase 1 — Character Sheet Completion | ✅ Complete | Header, portrait, passive perception, skills, and proficiency/language readability are implemented in the sheet domain+UI path. |
+| Phase 2 — Core Combat Rules (Deterministic MVP) | ✅ Complete | AC, initiative, death-save state/mutations, and equipped-weapon attack helpers are implemented and surfaced on sheet. |
+| Phase 3 — Spellcasting Workflow Completion | 🟡 In progress | Selection modes/limits, persisted selected spells, and slot tracking are implemented; in-session spell-use ergonomics still need refinement. |
+| Phase 4 — Inventory & Resource Session UX | 🟡 In progress | Core mutations (equip/carry/quantity/charges/container/stack operations) and rest/resource actions exist; transfer UX depth and compact clarity still need improvement. |
+| Phase 5 — Rules Coverage & Validation Hardening | 🟡 In progress | Combat/spell/inventory/migration tests exist; broader edge/path parity and deeper mixed-source regressions remain. |
+| Phase 6 — Finish-the-App Polish & Recovery | ⚪ Not started | Partial improvements exist, but no full missing-data/error-recovery polish pass yet. |
+
+## Outdated Roadmap Assumptions (now implemented)
+
+- "No AC/initiative/attacks/death saves yet" is obsolete; all are implemented.
+- Phase 1 wording that implied only early sheet visibility work remained is
+  obsolete; those scope items are complete.
+- Immediate-next guidance to "continue Phase 1, then start Phase 2" is obsolete;
+  the project is already beyond both phases.
+
+## Phase 1 — Character Sheet Completion
 
 Goal: Make the sheet the reliable in-session home screen using already
 available data and deterministic derivations.
@@ -39,10 +60,7 @@ available data and deterministic derivations.
 
 ### Exit Criteria
 
-- Sheet exposes key information players look up constantly without opening
-  edit/create screens.
-- UI improvements are presentation-first and do not require schema changes.
-- Behavior is covered by focused tests.
+- ✅ Achieved.
 
 ## Phase 2 — Core Combat Rules (Deterministic MVP)
 
@@ -57,8 +75,7 @@ Goal: Fill missing essential combat calculations using canonical state.
 
 ### Exit Criteria
 
-- Combat panel no longer depends on placeholders for core table play.
-- Rules are deterministic, testable, and persistence-agnostic.
+- ✅ Achieved for MVP scope.
 
 ## Phase 3 — Spellcasting Workflow Completion
 
@@ -69,6 +86,18 @@ Goal: Move from spell foundation to full day-to-day spell use flow.
 - Better prepared/known/spellbook interaction UX.
 - Slot expenditure and recovery visibility integrated in sheet workflows.
 - Class-specific edge handling for known/prepared constraints.
+
+### Current Progress
+
+- ✅ Class-specific selection modes and limits are implemented, including
+  wizard spellbook/prepared subset handling and warlock pact magic.
+- ✅ Selected spells and slot usage persist and survive create/edit/reopen.
+- ✅ Slot recovery rules are integrated with short/long rest handling.
+- ✅ Spells panel now surfaces explicit slot-usage progress and in-panel
+  short/long rest recovery actions, reducing context switches during session
+  tracking.
+- 🟡 Remaining: direct per-slot spend/restore controls from the sheet are still
+  pending.
 
 ### Exit Criteria
 
@@ -85,6 +114,19 @@ sheet.
 - Resource tracking consistency across rests and manual adjustments.
 - Item-state clarity (equipped/carried/container/charges) in compact layouts.
 
+### Current Progress
+
+- ✅ Deterministic inventory/resource mutation contracts are implemented and
+  persisted, including quantity spend, charge spend/restore, container
+  assignment, and stack lifecycle operations.
+- ✅ Rest/resource mutations are service-driven and shown in sheet workflows.
+- ✅ Inventory mutation rejection is now surfaced directly in the sheet
+  equipment panel with explicit no-state-change messaging.
+- ✅ Equipment rows now expose stack/container state more explicitly,
+  including stack-size labels and container content summaries.
+- 🟡 Remaining: richer explicit transfer controls (split/merge/transfer actions)
+  are still pending beyond the current inline mutation controls.
+
 ### Exit Criteria
 
 - Inventory/resource operations are usable and understandable during live play.
@@ -98,6 +140,17 @@ Goal: Raise confidence that deterministic rules stay correct as scope expands.
 - Expand rule-level tests for combat, skills, spell edge cases, and rest flows.
 - Add regression coverage for mixed compendium/base/imported content scenarios.
 - Strengthen migration and repository parity tests for new rule slices.
+
+### Current Progress
+
+- ✅ Dedicated rule tests exist for combat, spells, rest rules, encumbrance,
+  class resources, and inventory stack rules.
+- ✅ Migration and repository tests cover normalized schema evolution and
+  behavior parity across in-memory and Drift paths for key flows.
+- ✅ Transfer compatibility coverage now includes mixed same-item target-stack
+  state rejection parity in both in-memory and Drift repository paths.
+- 🟡 Remaining: additional advanced spell edge cases and broader mixed
+  compendium regression breadth.
 
 ### Exit Criteria
 
@@ -125,6 +178,12 @@ Goal: Close quality gaps before broader feature expansion.
 
 ## Immediate Next Slice
 
-Continue Phase 1 with minimal, justified sheet improvements only where data is
-already available, then move directly to deterministic AC/initiative/attack
-foundations in Phase 2.
+Prioritize **Phase 3 + Phase 4 completion quality** by delivering one cohesive
+"in-session action loop" slice:
+
+1. ✅ Strengthened same-item transfer compatibility validation/coverage for
+   container/stack states.
+2. ✅ Exposed clearer in-sheet feedback for rejected inventory mutations and
+   current stack/container state.
+3. 🟡 Improved spell/resource session visibility by adding in-panel recovery
+   actions and slot progress; direct per-slot mutation controls remain.

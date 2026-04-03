@@ -274,9 +274,88 @@ void main() {
       ]);
       expect(character.equipment.items[1].isConsumable, isTrue);
       expect(character.equipment.items[1].isAmmunition, isFalse);
+      expect(character.equipment.items[1].stackStateLabel, 'Stack size: 3');
       expect(character.equipment.inventoryInvariantReport.isValid, isTrue);
     },
   );
+
+  test('equipment derives container content summary from canonical items', () {
+    const equipment = CharacterEquipmentDomainModel(
+      equipmentSummary: EquipmentSummaryViewData(
+        statusLabel: 'MVP minimal',
+        description: 'Equipment summary',
+        highlightItems: <String>[],
+      ),
+      selectedEquipmentLabel: 'Explorer pack',
+      money: CharacterMoneySummaryDomainModel(
+        currencySummary: '10 gp',
+        startingMoneySummary: '10 gp',
+      ),
+      items: <CharacterEquipmentItemDomainModel>[
+        CharacterEquipmentItemDomainModel(
+          id: 'backpack',
+          name: 'Backpack',
+          quantity: 1,
+          isEquipped: false,
+          isCarried: true,
+          isFavorite: false,
+          weightPerUnit: 5,
+          isContainer: true,
+          chargesCurrent: null,
+          chargesMax: null,
+          containerInventoryItemId: null,
+          containerDisplayName: null,
+        ),
+        CharacterEquipmentItemDomainModel(
+          id: 'torch-stack',
+          name: 'Torch',
+          quantity: 2,
+          isEquipped: false,
+          isCarried: true,
+          isFavorite: false,
+          weightPerUnit: 1,
+          isContainer: false,
+          chargesCurrent: null,
+          chargesMax: null,
+          containerInventoryItemId: 'backpack',
+          containerDisplayName: 'Backpack',
+        ),
+        CharacterEquipmentItemDomainModel(
+          id: 'ration',
+          name: 'Rations (1 day)',
+          quantity: 1,
+          isEquipped: false,
+          isCarried: true,
+          isFavorite: false,
+          weightPerUnit: 2,
+          isContainer: false,
+          chargesCurrent: null,
+          chargesMax: null,
+          containerInventoryItemId: 'backpack',
+          containerDisplayName: 'Backpack',
+        ),
+      ],
+      carrying: CharacterCarryingDomainModel(
+        carriedWeight: 9,
+        coinWeight: 0,
+        totalWeight: 9,
+        capacity: 150,
+        encumberedThreshold: 50,
+        heavilyEncumberedThreshold: 100,
+        includeCoinWeight: false,
+        tier: 'normal',
+        tierLabel: 'Normal',
+        tierDescription: 'No encumbrance penalties.',
+      ),
+    );
+
+    final state = equipment.containerStateFor('backpack');
+    expect(state, isNotNull);
+    expect(state!.containedStackCount, 2);
+    expect(state.containedItemQuantity, 3);
+    expect(state.containedWeight, 4);
+    expect(state.summaryLabel, '2 stack(s), 3 item(s), 4 / 30 lb');
+  });
 
   test('inventory invariants flag invalid charge and container states', () {
     const items = <CharacterEquipmentItemDomainModel>[

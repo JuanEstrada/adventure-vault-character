@@ -691,8 +691,10 @@ class AppController extends ChangeNotifier {
     } on CharacterInventoryValidationError catch (error) {
       _state = _state.copyWith(
         isSavingCharacter: false,
-        errorMessage:
-            'Failed to update inventory item: $inventoryItemId (${error.code}).',
+        errorMessage: _inventoryValidationMessage(
+          inventoryItemId: inventoryItemId,
+          error: error,
+        ),
       );
     } catch (_) {
       _state = _state.copyWith(
@@ -702,6 +704,31 @@ class AppController extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  String _inventoryValidationMessage({
+    required String inventoryItemId,
+    required CharacterInventoryValidationError error,
+  }) {
+    final actionMessage = switch (error.code) {
+      'invalid_target' =>
+        'The selected container or item target is not valid for this character.',
+      'invalid_structure' =>
+        'The transfer would create an invalid container structure.',
+      'capacity_exceeded' => 'The target container capacity would be exceeded.',
+      'invalid_stack_state' =>
+        'A same-item stack in the target container is incompatible with this transfer.',
+      'invalid_quantity' =>
+        'The requested quantity is outside the allowed range.',
+      'insufficient_quantity' =>
+        'The item does not have enough quantity for this action.',
+      'invalid_charge_state' =>
+        'Charge tracking is not in a valid state for this action.',
+      'insufficient_charges' =>
+        'The item does not have enough charges for this action.',
+      _ => error.message,
+    };
+    return 'Inventory action rejected for $inventoryItemId: $actionMessage Current stack and container state were not changed.';
   }
 
   Future<void> _updateSelectedCharacterDeathSaves(

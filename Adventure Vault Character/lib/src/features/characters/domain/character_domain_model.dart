@@ -590,6 +590,63 @@ class CharacterEquipmentDomainModel {
 
   CharacterInventoryInvariantReport get inventoryInvariantReport =>
       const CharacterInventoryInvariantEvaluator().evaluate(items);
+
+  CharacterInventoryContainerStateDomainModel? containerStateFor(
+    String containerItemId,
+  ) {
+    CharacterEquipmentItemDomainModel? container;
+    for (final item in items) {
+      if (item.id == containerItemId) {
+        container = item;
+        break;
+      }
+    }
+    if (container == null || !container.isContainer) {
+      return null;
+    }
+    final contained = items
+        .where((item) => item.containerInventoryItemId == containerItemId)
+        .toList(growable: false);
+    final containedWeight = contained.fold<int>(
+      0,
+      (sum, item) => sum + item.totalWeight,
+    );
+    final containedItemQuantity = contained.fold<int>(
+      0,
+      (sum, item) => sum + item.safeQuantity,
+    );
+    return CharacterInventoryContainerStateDomainModel(
+      containerItemId: containerItemId,
+      containedStackCount: contained.length,
+      containedItemQuantity: containedItemQuantity,
+      containedWeight: containedWeight,
+      capacityWeight: container.containerMaxWeight,
+    );
+  }
+}
+
+@immutable
+class CharacterInventoryContainerStateDomainModel {
+  const CharacterInventoryContainerStateDomainModel({
+    required this.containerItemId,
+    required this.containedStackCount,
+    required this.containedItemQuantity,
+    required this.containedWeight,
+    required this.capacityWeight,
+  });
+
+  final String containerItemId;
+  final int containedStackCount;
+  final int containedItemQuantity;
+  final int containedWeight;
+  final int? capacityWeight;
+
+  String get summaryLabel {
+    final capacityLabel = capacityWeight == null
+        ? 'unknown capacity'
+        : '$containedWeight / $capacityWeight lb';
+    return '$containedStackCount stack(s), $containedItemQuantity item(s), $capacityLabel';
+  }
 }
 
 @immutable
@@ -718,6 +775,9 @@ class CharacterEquipmentItemDomainModel {
     final carriedLabel = isCarried ? '' : ' (stowed)';
     return '$name$quantityLabel$equippedLabel$carriedLabel';
   }
+
+  String get stackStateLabel =>
+      safeQuantity > 1 ? 'Stack size: $safeQuantity' : 'Single-item stack';
 
   String get _normalizedName => name.trim().toLowerCase();
 }
