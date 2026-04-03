@@ -364,3 +364,41 @@ Default tie-breakers:
 - If the change is mostly view composition, prioritize `Flutter UI`.
 - If uncertainty remains, use `Reviewer` to validate the final shape against
   repository constraints.
+
+## Promptineer Delegation Policy
+
+Treat Promptineer as a delegation-enhancement layer, not as a standalone
+delivery phase.
+
+Use Promptineer before handing work to another agent when the delegated task
+would benefit from sharper instructions, tighter constraints, or a more
+structured output contract.
+
+Preferred flow:
+
+1. Orchestrator understands the user goal.
+2. Promptineer rewrites or strengthens the delegation prompt.
+3. The target agent executes the improved prompt.
+
+Apply Promptineer when one or more of these are true:
+
+- the task is ambiguous or underspecified
+- the task crosses multiple layers or features
+- architectural or layering constraints must be enforced explicitly
+- ownership, file scope, or acceptance criteria need to be clarified
+- a prior delegation produced weak, incomplete, or overly broad results
+- the task needs a strict output schema for easier review or synthesis
+
+Promptineer output should strengthen the delegated prompt with:
+
+- a clear objective
+- explicit scope and non-goals
+- relevant architectural and product constraints
+- file or module ownership when applicable
+- acceptance criteria
+- expected output structure
+- known risks or failure modes
+
+Do not invoke Promptineer for trivial, mechanical, or already well-scoped
+delegations where the extra prompt pass would add cost without improving
+quality.
