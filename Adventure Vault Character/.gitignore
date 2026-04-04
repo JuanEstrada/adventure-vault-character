@@ -5,6 +5,7 @@ local-assets/*
 local-assets/local-rule-bases/*
 !local-assets/local-rule-bases/README.md
 .agents/
+.atl/
 skills-lock.json
 .dart_tool/
 .idea/
