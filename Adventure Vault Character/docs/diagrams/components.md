@@ -1,48 +1,53 @@
 # Component Diagram Description
 
-This file is a lightweight component view of the Flutter app. The source of
-truth for component responsibilities remains
+This file provides a lightweight C4 Level 3 view of the Flutter app.
+Canonical component responsibilities live in
 [../architecture/05-building-block-view.md](../architecture/05-building-block-view.md).
 
-## C4 Level 3 Components Inside the Flutter App
+## C4 Level 3 Components Inside the Flutter Client
 
 ```mermaid
 flowchart TD
-    Ui[Flutter UI Layer]
-    Nav[Navigation Coordinator]
-    State[Screen State Controllers]
-    Character[Character Manager]
-    DiceRoller[Dice Roller]
-    Spell[Spell Manager]
-    Inventory[Inventory Manager]
-    Import[Import Processor]
-    Dice[Dice Engine]
-    Xml[XML Import Module]
-    Db[(Local Database)]
+    UI[Presentation Layer\nScreens Widgets Controllers]
+    APP[Application Layer\nUse-Case Services]
+    DOMAIN[Domain Layer\nRules Models Invariants]
+    DATA[Data Layer\nRepositories DAOs Parsers]
 
-    Ui --> Nav
-    Ui --> State
-    State --> Character
-    State --> DiceRoller
-    State --> Spell
-    State --> Inventory
-    State --> Import
-    DiceRoller --> Dice
-    Character --> Db
-    Spell --> Db
-    Inventory --> Db
-    Import --> Xml
-    Import --> Db
+    CHAR[Characters Feature]
+    COMP[Compendium Feature]
+    SET[Settings Feature]
+
+    DB[(Drift SQLite)]
+    SRC[(Bundled or Imported XML/JSON Sources)]
+
+    UI --> APP
+    APP --> DOMAIN
+    APP --> DATA
+    DATA --> DB
+    DATA --> SRC
+
+    CHAR --> UI
+    CHAR --> APP
+    CHAR --> DOMAIN
+    CHAR --> DATA
+
+    COMP --> UI
+    COMP --> APP
+    COMP --> DOMAIN
+    COMP --> DATA
+
+    SET --> UI
+    SET --> APP
+    SET --> DOMAIN
+    SET --> DATA
 ```
 
 ## Responsibilities
 
-- Flutter UI Layer: declarative screen rendering and reusable widgets.
-- Navigation Coordinator: route definitions and screen transitions.
-- Screen State Controllers: screen state and user intent handling.
-- Character Manager: character lifecycle and derived character data access.
-- Dice Roller: prepares roll requests and uses the Dice Engine.
-- Spell Manager: spell-related state and queries.
-- Inventory Manager: item state and equipment effects.
-- Import Processor: imported content orchestration, validation, and
-  persistence.
+- **Presentation Layer**: declarative rendering, route composition, user intents.
+- **Application Layer**: workflow orchestration and transaction-like use cases.
+- **Domain Layer**: deterministic gameplay rules and invariant evaluation.
+- **Data Layer**: local persistence, compendium import mapping, repository
+  implementations.
+- **Feature Modules**: keep these layers close to each feature capability,
+  avoiding cross-feature rule leakage.

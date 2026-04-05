@@ -36,40 +36,35 @@ Character.
 
 ## Start Here
 
-- [Session Resume](project/SESSION_RESUME.md): single-file handoff for
-  resuming a project session.
-- [Project Index](project/README.md): current status, roadmap, future specs,
-  and AI session guidance.
-- [Project Snapshot](project/PROJECT_SNAPSHOT.md): current phase, completed
-  work, pending work, and next recommended steps.
-- [Project Guidelines](project/PROJECT_GUIDELINES.md): official product and
-  technical rules for evaluating proposals.
-- [AI Session Runbook](project/AI_SESSION_GUIDE.md): canonical execution guide
-  for AI-assisted sessions.
-- [Future Specs](project/FUTURE_SPECS.md): candidate features intentionally
-  deferred for later planning.
+- [Session Resume](project/SESSION_RESUME.md): **canonical short handoff** for
+  continuing the next work session.
+- [Project Snapshot](project/PROJECT_SNAPSHOT.md): **canonical consolidated
+  project state** (status, implemented baseline, and next steps).
+- [Architecture Index](architecture/README.md): **canonical architecture
+  baseline entry point** (arc42 structure and related artifacts).
+- [Roadmap](project/ROADMAP.md): **canonical delivery roadmap**.
+- [Project Guidelines](project/PROJECT_GUIDELINES.md): **canonical project
+  rules** for product and technical decisions.
+- [Project Index](project/README.md): routing index for project-governance
+  files under `docs/project/`.
 - [Specifications Index](specs/README.md): accepted or in-planning functional
-  specs.
-- [Architecture Index](architecture/README.md): guided entry point to the
-  arc42 architecture documentation.
-- [ADR Index](adr/README.md): decision log and current accepted architecture
-  constraints.
+  specifications.
+- [ADR Index](adr/README.md): architecture decision history and status.
 - [Diagrams Index](diagrams/README.md): durable diagram map and ownership
   boundaries.
-- [Roadmap](project/ROADMAP.md): phased implementation direction.
 
 ## Documentation Map
 
 | Area | Purpose | Entry Point |
 | --- | --- | --- |
 | Session continuity | Single-file project handoff | [Session Resume](project/SESSION_RESUME.md) |
-| Project index | Central navigation for planning docs | [Project Index](project/README.md) |
-| Project state | Current status and next steps | [Project Snapshot](project/PROJECT_SNAPSHOT.md) |
+| Project state | Consolidated current-state reference | [Project Snapshot](project/PROJECT_SNAPSHOT.md) |
+| Project index | Central routing for project governance docs | [Project Index](project/README.md) |
 | Project guidelines | Official decision and implementation rules | [Project Guidelines](project/PROJECT_GUIDELINES.md) |
 | AI session runbook | Canonical execution guide for AI sessions | [AI Session Runbook](project/AI_SESSION_GUIDE.md) |
 | Future features | Deferred or speculative feature candidates | [Future Specs](project/FUTURE_SPECS.md) |
 | Specifications | Accepted or in-planning functional specs | [Specifications Index](specs/README.md) |
-| Architecture | arc42-based system description | [Architecture Index](architecture/README.md) |
+| Architecture | Canonical arc42 architecture baseline | [Architecture Index](architecture/README.md) |
 | ADRs | Decision record history | [ADR Index](adr/README.md) |
 | Diagrams | Durable diagram views and links | [Diagrams Index](diagrams/README.md) |
 | Session memory | Transient AI session continuity notes | Non-repo working notes (promoted when durable) |
@@ -78,21 +73,12 @@ Character.
 
 1. Read the [Session Resume](project/SESSION_RESUME.md).
 2. Review the [Project Guidelines](project/PROJECT_GUIDELINES.md).
-3. Review the [Project Index](project/README.md).
+3. Review the [Project Snapshot](project/PROJECT_SNAPSHOT.md).
 4. Review the [Architecture Index](architecture/README.md).
 5. Scan the key [ADRs](adr/README.md).
 6. Review [Diagrams Index](diagrams/README.md) for visual references.
 7. Use the [Roadmap](project/ROADMAP.md) to connect architecture to delivery
    planning.
-
-## Repository Status
-
-At the time of this update, the repository contains documentation, project
-planning artifacts, Flutter scaffolding for Android, iOS, web, desktop, and a
-real app shell under `lib/src/`. The current codebase already implements the
-startup path `bootstrap -> access -> main menu`, and the next slice is local
-persistence plus `create -> save -> card -> open sheet`. The repository
-baseline is green for `flutter analyze` and `flutter test`.
 
 ## Local Reference Assets
 

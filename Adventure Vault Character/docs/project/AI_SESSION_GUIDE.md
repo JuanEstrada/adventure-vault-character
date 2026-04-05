@@ -17,6 +17,14 @@ When instructions overlap, apply them in this order:
 3. Read [PROJECT_GUIDELINES.md](PROJECT_GUIDELINES.md).
 4. Open only the linked documents needed for the area you will modify.
 
+## Canonical Document Roles
+
+- `docs/project/SESSION_RESUME.md`: short canonical handoff for the next session.
+- `docs/project/PROJECT_SNAPSHOT.md`: consolidated current-state reference.
+- `docs/architecture/README.md`: architecture baseline entry point.
+- `docs/project/ROADMAP.md`: delivery roadmap.
+- `docs/project/PROJECT_GUIDELINES.md`: project rules.
+
 ## Open By Work Area
 
 - Product phase and next steps: `docs/project/ROADMAP.md`
@@ -39,6 +47,8 @@ When instructions overlap, apply them in this order:
 - Do not duplicate documentation when a source-of-truth document already covers
   the topic.
 - Use `docs/README.md` as the canonical documentation policy.
+- When updating one canonical document, update only the facts owned by that
+  document and link to the others instead of restating their content.
 - Treat accepted ADRs as active constraints.
 - Keep architecture docs aligned with implementation planning.
 - Keep project-state docs aligned with repository reality.

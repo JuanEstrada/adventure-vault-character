@@ -21,12 +21,18 @@ Policy note: `docs/README.md` is the canonical documentation policy.
 ## How To Use This Folder
 
 - Read the ADRs in numeric order to understand how the architecture evolved.
+- Keep this index scoped to decision history and accepted architectural
+  constraints.
 - Treat accepted ADRs as constraints for future implementation work.
 - Preserve superseded ADRs as historical context instead of deleting them.
 - Add a new ADR when a decision changes architecture, platform direction, or
   delivery constraints in a durable way.
 - Keep ADR prose in English and avoid restating spec or project-status content
   already owned elsewhere.
+- Do not duplicate current project-state narrative from
+  `docs/project/PROJECT_SNAPSHOT.md`.
+- Do not duplicate session handoff guidance from
+  `docs/project/SESSION_RESUME.md`.
 
 ## Related Documents
 

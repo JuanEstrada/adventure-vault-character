@@ -5,6 +5,14 @@ next one.
 
 Policy note: follow `docs/README.md` as the canonical documentation policy.
 
+## Canonical Document Roles (Verify Before Closing)
+
+- `docs/project/SESSION_RESUME.md` = short canonical handoff.
+- `docs/project/PROJECT_SNAPSHOT.md` = consolidated current-state reference.
+- `docs/architecture/README.md` = architecture baseline entry point.
+- `docs/project/ROADMAP.md` = delivery roadmap.
+- `docs/project/PROJECT_GUIDELINES.md` = project rules.
+
 ## 1. During the Session (If Real State Changes)
 
 Review whether these need updates:
@@ -32,6 +40,10 @@ Do not update by inertia:
 
 - do not rewrite documents only for style changes
 - do not duplicate information if a source-of-truth doc already exists
+- do not copy the same status across `SESSION_RESUME.md` and
+  `PROJECT_SNAPSHOT.md`; keep handoff short and put full state in snapshot
+- do not restate architecture baseline in project docs; link to
+  `docs/architecture/README.md`
 - do not change specs without a real product decision
 - do not copy transient external notes into repo docs unless they are promoted
   as durable knowledge
@@ -48,6 +60,9 @@ Update at minimum:
 
 - `docs/project/SESSION_RESUME.md`
 - `docs/project/PROJECT_SNAPSHOT.md`
+
+Update only the canonical owner for each fact, then link from related docs if
+cross-reference is needed.
 
 Also update any README, spec, architecture doc, or ADR made obsolete by
 session changes.

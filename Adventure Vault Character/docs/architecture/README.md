@@ -1,9 +1,8 @@
 # Architecture Index
 
-This directory contains the arc42 architecture documentation for
-Adventure Vault Character. The content is split into one file per section so
-the architecture can evolve incrementally without losing the standard
-structure.
+This directory is the canonical architecture baseline entry point for
+Adventure Vault Character. It contains the arc42 architecture split by section
+so the baseline can evolve incrementally without losing the standard structure.
 
 Policy note: `docs/README.md` is the canonical documentation policy.
 
@@ -28,7 +27,7 @@ Policy note: `docs/README.md` is the canonical documentation policy.
 
 - ADRs: [ADR Index](../adr/README.md)
 - Diagrams: [Diagrams Index](../diagrams/README.md)
-- Project state: [Project Snapshot](../project/PROJECT_SNAPSHOT.md)
+- Consolidated project state: [Project Snapshot](../project/PROJECT_SNAPSHOT.md)
 - Specifications: [Specifications Index](../specs/README.md)
 
 ## Recommended Reading Path
@@ -44,7 +43,7 @@ If you are new to the project, read the sections in this order:
 
 ## Current State
 
-The architecture describes the intended implementation of the player-facing
-Flutter application targeting Android first. It should be treated as the
-baseline for future codebase scaffolding, MVP definition, and implementation
-planning.
+The architecture documents the baseline for the implemented Flutter codebase
+and future increments. Treat this index and its arc42 sections as the canonical
+technical reference; use [Project Snapshot](../project/PROJECT_SNAPSHOT.md)
+for execution status and current delivery state.

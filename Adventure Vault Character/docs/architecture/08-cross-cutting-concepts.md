@@ -2,57 +2,49 @@
 
 ## Local-First Data Ownership
 
-Character data is owned locally by the device. All major user flows must
-operate against local state first, with future synchronization treated as a
-secondary concern.
+Character state is owned by the local device. Core player flows must remain
+functional offline, with future synchronization treated as an extension of the
+local model.
 
-## Modularization
+## Feature-First Modularization
 
-The codebase should be organized around stable capabilities such as character
-management, dice mechanics, spell handling, inventory, and import processing.
-This reduces coupling and improves testability.
+The codebase is organized by feature capabilities (characters, compendium,
+settings, navigation) and each feature keeps internal layered boundaries.
 
-## Rules Automation
+## Layered Boundaries (Presentation/Application/Domain/Data)
 
-D20 mechanics should be implemented as explicit domain logic rather than
-embedded inside user interface code. This supports correctness, reuse, and
-future extension.
+- **Presentation** renders state and captures intents.
+- **Application** orchestrates use cases and coordinates repositories/services.
+- **Domain** owns deterministic rules and invariants.
+- **Data** implements persistence/import adapters and mapping.
 
-## Compendium Import
+Rules logic must not leak into widgets; storage details must not drive domain
+semantics.
 
-Imported compendium content requires validation, mapping, and separation from
-core application code. The `Compendium Import System` is the project term for
-the subsystem that ingests XML sources, including future user-supplied
-compendium packs that add or modify classes, races, backgrounds, spells,
-equipment, and related rules data. The import path must prevent malformed or
-incompatible content from corrupting the local model.
+## Deterministic Rules Automation
 
-## Synchronization Readiness
+D20 behavior (combat, spell state, inventory mutations, rest effects, and
+validation outcomes) must be explicit and deterministic in domain/application
+logic, with clear no-state-change behavior on rejected mutations.
 
-Even without a backend, the internal data model should distinguish between
-local identifiers, imported content, and future synchronization metadata so
-later integration can be added incrementally.
+## Compendium Import and Source Policy
 
-## Flutter Application Architecture
+The `Compendium Import System` validates and maps imported XML content before it
+can affect local state. Source policy metadata must stay explicit so the app
+can explain what comes from base SRD content versus optional/imported packs.
 
-Flutter-aligned patterns should be used for lifecycle awareness, persistence
-integration, navigation, and clear separation between presentation and domain
-responsibilities.
+## Persistence and Migration Discipline
 
-## Flutter UI Model
-
-User interface development should follow Flutter patterns with state-driven
-rendering, unidirectional data flow, and minimal business logic in widgets.
-Screen state should be produced by application-layer components and rendered
-declaratively by the UI layer.
+Drift schema evolution must keep normalized tables as source of truth and
+preserve upgrade safety through migration coverage up to the current schema
+version.
 
 ## Decision Priority
 
-When architectural or implementation concerns compete, the project should use
-the following decision order:
+When concerns compete, use this order:
 
 1. Rules accuracy
-2. Alignment with project decisions and guidelines
-3. Future scalability
-4. Implementation simplicity and maintainability
-5. Advanced optimization
+2. ADR and project-guideline alignment
+3. Offline reliability and data integrity
+4. Maintainability and architectural clarity
+5. UI convenience and optimization

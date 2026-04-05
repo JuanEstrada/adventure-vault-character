@@ -47,6 +47,12 @@ between high-level architecture and the roadmap.
 ## Usage Rules
 
 - Put accepted or in-planning specs here.
+- Keep this index scoped to functional requirements and accepted/in-planning
+  behavior only.
+- Do not duplicate current project-state narrative from
+  `docs/project/PROJECT_SNAPSHOT.md`.
+- Do not duplicate session handoff guidance from
+  `docs/project/SESSION_RESUME.md`.
 - Keep deferred ideas in [../project/FUTURE_SPECS.md](../project/FUTURE_SPECS.md).
 - Link architecture-impacting changes back to ADRs when needed.
 - Keep spec content durable, reviewable, and in English.
