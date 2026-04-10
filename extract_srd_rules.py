@@ -9,12 +9,9 @@ from typing import Iterable
 from pypdf import PdfReader
 
 
-PDF_PATH = Path(
-    r"C:/Users/Mocy/Documents/Playground/Adventure Vault Character/local-assets/por ordenar/SRD_CC_v5.2.1.pdf"
-)
-OUTPUT_DIR = Path(
-    r"C:/Users/Mocy/Documents/Playground/Adventure Vault Character/local-assets/por ordenar/srd_rules"
-)
+PROJECT_ROOT = Path(__file__).resolve().parent
+PDF_PATH = PROJECT_ROOT / "local-assets" / "por ordenar" / "SRD_CC_v5.2.1.pdf"
+OUTPUT_DIR = PROJECT_ROOT / "local-assets" / "por ordenar" / "srd_rules"
 
 
 @dataclass

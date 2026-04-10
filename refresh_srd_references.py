@@ -5,9 +5,8 @@ import re
 from pathlib import Path
 
 
-ROOT = Path(
-    r"C:/Users/Mocy/Documents/Playground/Adventure Vault Character/local-assets/por ordenar/srd_rules"
-)
+PROJECT_ROOT = Path(__file__).resolve().parent
+ROOT = PROJECT_ROOT / "local-assets" / "por ordenar" / "srd_rules"
 
 
 def get_title(path: Path) -> str | None:
