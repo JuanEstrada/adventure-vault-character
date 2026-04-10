@@ -1,9 +1,25 @@
-Adventure Vault Character/.atl/
-Adventure Vault Character/.vscode/
-Adventure Vault Character/coverage/
-Adventure Vault Character/scripts/
-Adventure Vault Character/docs/project/ai-lab/
 .gga
 .gga/
 .codex
 powershell/
+local-ui-assets/
+local-assets/*
+!local-assets/README.md
+!local-assets/local-rule-bases/
+local-assets/local-rule-bases/*
+!local-assets/local-rule-bases/README.md
+.agents/
+.atl/
+.vscode/
+coverage/
+scripts/
+docs/project/ai-lab/
+skills-lock.json
+.dart_tool/
+.idea/
+.metadata
+*.iml
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
