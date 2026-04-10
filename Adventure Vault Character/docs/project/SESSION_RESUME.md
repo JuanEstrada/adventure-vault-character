@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-04-04
+Last updated: 2026-04-09
 
 This is the canonical, short handoff file for resuming work quickly.
 
@@ -20,6 +20,8 @@ This is the canonical, short handoff file for resuming work quickly.
   (`presentation -> application -> domain -> data`).
 - Drift schema: **`v20`** (canonical current version).
 - Current phase: post-foundation hardening and workflow depth.
+- Active planning focus: `MinFunc` minimal functional release tracking in
+  `docs/project/MINFUNC_TRACKER.md`.
 
 ## What Is Stable (Do Not Reopen)
 
@@ -33,11 +35,11 @@ This is the canonical, short handoff file for resuming work quickly.
 
 ## Next Actionable Slice
 
-Prioritize UX and validation hardening without changing core architecture:
+Prioritize the **MinFunc** execution path before broader hardening work:
 
-1. Expand edge-case coverage for same-item transfer/merge incompatibility states.
-2. Improve sheet-visible mutation rejection feedback and recovery guidance.
-3. Continue spell in-session ergonomics using existing domain/application rules.
+1. Audit real code-level gaps against the frozen release bar (`S2`).
+2. Only then implement the smallest blocking slice, expected to be spell-slot
+   in-session control if the audit confirms it.
 
 ## Guardrails
 
@@ -50,6 +52,7 @@ Prioritize UX and validation hardening without changing core architecture:
 
 - Consolidated project state: `docs/project/PROJECT_SNAPSHOT.md`
 - Roadmap priorities: `docs/project/ROADMAP.md`
+- MinFunc execution tracker: `docs/project/MINFUNC_TRACKER.md`
 - Constraints and rules: `docs/project/PROJECT_GUIDELINES.md`
 - Architecture baseline: `docs/architecture/README.md`
 - Functional specs: `docs/specs/README.md`

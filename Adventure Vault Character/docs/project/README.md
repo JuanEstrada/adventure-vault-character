@@ -19,6 +19,7 @@ index focused on routing and project-state ownership.
 | [APP_DISCOVERY_QUESTIONNAIRE.md](APP_DISCOVERY_QUESTIONNAIRE.md) | Short questionnaire to capture app scope, architecture, and prompt usage context. |
 | [USER_INPUTS_AND_AUTOMATIC_CALCULATIONS.md](USER_INPUTS_AND_AUTOMATIC_CALCULATIONS.md) | Quick reference for what the app calculates automatically versus what the player must enter or confirm. |
 | [SESSION_CLOSE_CHECKLIST.md](SESSION_CLOSE_CHECKLIST.md) | Canonical during-session + close-session checklist. |
+| [MINFUNC_TRACKER.md](MINFUNC_TRACKER.md) | Execution tracker for the minimal functional release plan, including session prompts and progress. |
 
 ## Canonical Ownership Quick Map
 
@@ -26,6 +27,7 @@ index focused on routing and project-state ownership.
 - Consolidated project state: [PROJECT_SNAPSHOT.md](PROJECT_SNAPSHOT.md)
 - Roadmap: [ROADMAP.md](ROADMAP.md)
 - Project rules: [PROJECT_GUIDELINES.md](PROJECT_GUIDELINES.md)
+- MinFunc execution tracker: [MINFUNC_TRACKER.md](MINFUNC_TRACKER.md)
 - Architecture baseline entry point: [../architecture/README.md](../architecture/README.md)
 
 ## Scope Boundary

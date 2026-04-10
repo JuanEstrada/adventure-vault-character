@@ -1,7 +1,7 @@
 # Adventure Vault Character — Project Snapshot
 
 ## Last Updated
-2026-04-04
+2026-04-09
 
 ## Role of This Document
 
@@ -76,10 +76,12 @@ Primary constraints are tracked in:
 
 ## Active Delivery Focus
 
-1. Keep deterministic inventory and spell behavior stable while expanding
-   in-session UX clarity.
-2. Expand high-value regression coverage for mixed-source and edge-case paths.
-3. Improve recovery and missing-data resilience in sheet-driven play sessions.
+1. Close the **MinFunc** release bar so a real offline player session can be
+   completed without functional blockers.
+2. Confirm the remaining minimum gaps in code before adding implementation
+   work, with special attention to spell-slot in-session actions.
+3. Keep broader UX depth, non-blocking edge-case breadth, and polish outside
+   the minimum-functional release scope unless they prove to be blockers.
 
 ## Risks and Follow-Ups
 
@@ -93,6 +95,7 @@ Primary constraints are tracked in:
 ## Primary References
 
 - Session handoff: `docs/project/SESSION_RESUME.md`
+- MinFunc tracker: `docs/project/MINFUNC_TRACKER.md`
 - Roadmap: `docs/project/ROADMAP.md`
 - Project rules: `docs/project/PROJECT_GUIDELINES.md`
 - Architecture index: `docs/architecture/README.md`
