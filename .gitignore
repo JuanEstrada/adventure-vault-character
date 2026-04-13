@@ -22,6 +22,8 @@ skills-lock.json
 .flutter-plugins
 .flutter-plugins-dependencies
 .packages
+devtools_options.yaml
 build/
 __pycache__/
 *.pyc
+flutter_01.log
