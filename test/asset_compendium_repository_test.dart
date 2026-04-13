@@ -220,56 +220,44 @@ void main() {
     );
   });
 
-  test('loads strict 2024 SRD baseline with expected counts', () async {
-    final database = AppDatabase.executor(NativeDatabase.memory());
-    addTearDown(database.close);
+  test(
+    'loads bundled fallback catalog when local XML assets are unavailable',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
 
-    final repository = AssetCompendiumRepository(database: database);
-    final catalog = await repository.loadCatalog();
+      final repository = AssetCompendiumRepository(database: database);
+      final catalog = await repository.loadCatalog();
 
-    expect(catalog.backgrounds, hasLength(4));
-    expect(catalog.races, hasLength(14));
-    expect(catalog.classes, hasLength(12));
-    expect(catalog.spells, hasLength(374));
-    expect(catalog.feats, hasLength(21));
-    expect(catalog.monsters, hasLength(332));
+      expect(catalog.backgrounds, hasLength(3));
+      expect(catalog.races, hasLength(5));
+      expect(catalog.classes, hasLength(5));
+      expect(catalog.spells, isEmpty);
+      expect(catalog.feats, isEmpty);
+      expect(catalog.monsters, isEmpty);
 
-    expect(
-      catalog.spells.map((item) => item.name),
-      containsAll(<String>[
-        'Invocation: Agonizing Blast',
-        'Invocation: Pact of the Blade',
-        'Metamagic: Quickened Spell',
-      ]),
-    );
-    expect(
-      catalog.feats.map((item) => item.name),
-      containsAll(<String>[
-        'Boon of Combat Prowess',
-        'Fighting Style: Archery',
-        'Fighting Style: Two-Weapon Fighting',
-      ]),
-    );
+      expect(
+        catalog.backgrounds.map((item) => item.name),
+        containsAll(<String>['Acolyte', 'Soldier', 'Wanderer']),
+      );
+      expect(
+        catalog.races,
+        containsAll(<String>['Human', 'Dragonborn (Black)', 'Elf']),
+      );
+      expect(
+        catalog.classes,
+        containsAll(<String>['Fighter', 'Wizard', 'Cleric']),
+      );
 
-    final spellSources =
-        catalog.sourcePolicyForSection('spells')?.primarySources ??
-        const <String>[];
-    final featSources =
-        catalog.sourcePolicyForSection('feats')?.primarySources ??
-        const <String>[];
-    expect(
-      spellSources,
-      contains(
-        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_optionalfeatures_5.5e.xml',
-      ),
-    );
-    expect(
-      featSources,
-      contains(
-        'local-assets/FightClub5eXML-master/Sources/System_Reference_Document_DND_5.5e/default_optionalfeatures_5.5e.xml',
-      ),
-    );
-  });
+      expect(catalog.sourcePolicy.activeSourceType, 'fallback_json');
+      expect(
+        catalog.sourcePolicyForSection('catalog')?.primarySources,
+        <String>['assets/compendium/catalog.json'],
+      );
+      expect(catalog.sourcePolicyForSection('spells'), equals(null));
+      expect(catalog.sourcePolicyForSection('feats'), equals(null));
+    },
+  );
 
   test(
     'imports XML pack content, exposes it in the catalog, and removes it when inactive',

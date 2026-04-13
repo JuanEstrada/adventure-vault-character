@@ -1,7 +1,7 @@
 # Adventure Vault Character — Project Snapshot
 
 ## Last Updated
-2026-04-10
+2026-04-12
 
 ## Role of This Document
 
@@ -48,6 +48,7 @@ Primary constraints are tracked in:
   implemented on top of normalized persistence.
 - Compendium flow includes local source policy visibility, imported-pack
   registration, pack activation state, and effective-catalog filtering.
+- The bundled runtime asset set is currently reduced to `assets/compendium/catalog.json`; missing local XML source trees now fall through to the repository's existing fallback behavior instead of blocking asset-bundle builds.
 - Character sheet renders deterministic derived state for key gameplay areas,
   including combat helpers, spell-state summaries, rest effects, and inventory
   mutation feedback.

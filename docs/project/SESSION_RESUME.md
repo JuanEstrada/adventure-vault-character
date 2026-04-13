@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-04-10
+Last updated: 2026-04-12
 
 This is the canonical, short handoff file for resuming work quickly.
 
@@ -36,6 +36,7 @@ This is the canonical, short handoff file for resuming work quickly.
 - Deterministic inventory mutation contracts and stack/container validation.
 - Compendium source-policy visibility, pack persistence, and pack-state
   filtering behavior.
+- Runtime asset bundling currently relies on `assets/compendium/catalog.json`; missing local XML trees no longer block Flutter test startup.
 
 ## Next Actionable Slice
 
