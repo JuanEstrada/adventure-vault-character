@@ -137,6 +137,10 @@ class CharacterSheetScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
+          if (errorMessage != null) ...[
+            _SheetErrorBanner(message: errorMessage!),
+            const SizedBox(height: 24),
+          ],
           LayoutBuilder(
             builder: (context, constraints) {
               final isWide = constraints.maxWidth >= 900;
@@ -182,7 +186,6 @@ class CharacterSheetScreen extends StatelessWidget {
                           _EquipmentPanel(
                             character: character,
                             isUpdating: isApplyingRest,
-                            errorMessage: errorMessage,
                             onSetInventoryItemEquipped:
                                 onSetInventoryItemEquipped,
                             onSetInventoryItemCarried:
@@ -238,7 +241,6 @@ class CharacterSheetScreen extends StatelessWidget {
                   _EquipmentPanel(
                     character: character,
                     isUpdating: isApplyingRest,
-                    errorMessage: errorMessage,
                     onSetInventoryItemEquipped: onSetInventoryItemEquipped,
                     onSetInventoryItemCarried: onSetInventoryItemCarried,
                     onSetInventoryItemQuantity: onSetInventoryItemQuantity,
@@ -298,6 +300,32 @@ class _IdentityPanel extends StatelessWidget {
               value: '${character.identity.progression.levelProgressPercent}%',
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SheetErrorBanner extends StatelessWidget {
+  const _SheetErrorBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        message,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onErrorContainer,
         ),
       ),
     );
@@ -1088,7 +1116,6 @@ class _EquipmentPanel extends StatelessWidget {
   const _EquipmentPanel({
     required this.character,
     required this.isUpdating,
-    required this.errorMessage,
     required this.onSetInventoryItemEquipped,
     required this.onSetInventoryItemCarried,
     required this.onSetInventoryItemQuantity,
@@ -1099,7 +1126,6 @@ class _EquipmentPanel extends StatelessWidget {
 
   final CharacterDomainModel character;
   final bool isUpdating;
-  final String? errorMessage;
   final Future<void> Function(String inventoryItemId, bool isEquipped)
   onSetInventoryItemEquipped;
   final Future<void> Function(String inventoryItemId, bool isCarried)
@@ -1184,23 +1210,6 @@ class _EquipmentPanel extends StatelessWidget {
               style: theme.textTheme.bodySmall,
             ),
             const SizedBox(height: 10),
-            if (errorMessage != null) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.errorContainer,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  errorMessage!,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onErrorContainer,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
             if (!hasInventoryItems)
               Padding(
                 padding: const EdgeInsets.only(top: 8),

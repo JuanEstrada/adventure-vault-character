@@ -534,6 +534,14 @@ class AppController extends ChangeNotifier {
         currentUses,
       );
       _state = _state.copyWith(isSavingCharacter: false, clearError: true);
+    } on StateError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: _stateErrorMessage(
+          error,
+          fallback: 'Class resource update was rejected.',
+        ),
+      );
     } catch (_) {
       _state = _state.copyWith(
         isSavingCharacter: false,
@@ -544,7 +552,9 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> spendSelectedCharacterSpellSlot({required int spellLevel}) async {
+  Future<void> spendSelectedCharacterSpellSlot({
+    required int spellLevel,
+  }) async {
     final selected = _state.selectedCharacterSheet;
     if (selected == null) {
       _state = _state.copyWith(
@@ -563,6 +573,14 @@ class AppController extends ChangeNotifier {
         spellLevel: spellLevel,
       );
       _state = _state.copyWith(isSavingCharacter: false, clearError: true);
+    } on StateError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: _stateErrorMessage(
+          error,
+          fallback: 'Spell slot spend was rejected.',
+        ),
+      );
     } catch (_) {
       _state = _state.copyWith(
         isSavingCharacter: false,
@@ -594,6 +612,14 @@ class AppController extends ChangeNotifier {
         spellLevel: spellLevel,
       );
       _state = _state.copyWith(isSavingCharacter: false, clearError: true);
+    } on StateError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: _stateErrorMessage(
+          error,
+          fallback: 'Spell slot restore was rejected.',
+        ),
+      );
     } catch (_) {
       _state = _state.copyWith(
         isSavingCharacter: false,
@@ -789,6 +815,14 @@ class AppController extends ChangeNotifier {
       _ => error.message,
     };
     return 'Inventory action rejected for $inventoryItemId: $actionMessage Current stack and container state were not changed.';
+  }
+
+  String _stateErrorMessage(StateError error, {required String fallback}) {
+    final rawMessage = error.message.toString().trim();
+    if (rawMessage.isEmpty) {
+      return fallback;
+    }
+    return rawMessage;
   }
 
   Future<void> _updateSelectedCharacterDeathSaves(

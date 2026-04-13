@@ -1269,6 +1269,66 @@ void main() {
     expect(restoreChipAfterReopen.onPressed, isNull);
   });
 
+  testWidgets('sheet shows spell mutation rejection and keeps flow operable', (
+    WidgetTester tester,
+  ) async {
+    final compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
+    final repository = _RejectSpellSpendCharacterRepository(
+      compendiumRepository: compendiumRepository,
+    );
+    await tester.binding.setSurfaceSize(const Size(1200, 4200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      AdventureVaultApp(
+        characterRepository: repository,
+        compendiumRepository: compendiumRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Continue offline'));
+    await tester.tap(find.text('Continue offline'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Create character'));
+    await tester.tap(find.text('Create character'));
+    await tester.pumpAndSettle();
+
+    final classField = find.byWidgetPredicate(
+      (widget) =>
+          widget is DropdownButtonFormField<String> &&
+          widget.decoration.labelText == 'Class',
+    );
+
+    await tester.enterText(find.byType(TextFormField).first, 'Neris');
+    await tester.tap(classField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Wizard').last);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.widgetWithText(FilledButton, 'Save draft').first,
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Save draft'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(ActionChip, 'Spend 1').first);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Spell slot level is not available for this character.'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.widgetWithText(TextButton, 'Edit'));
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(FilledButton, 'Save changes'), findsOneWidget);
+  });
+
   testWidgets('open edit save and reopen keeps updated character data', (
     WidgetTester tester,
   ) async {
@@ -1708,3 +1768,14 @@ const _importFixture = '''
   </background>
 </compendium>
 ''';
+
+class _RejectSpellSpendCharacterRepository extends InMemoryCharacterRepository {
+  _RejectSpellSpendCharacterRepository({
+    required InMemoryCompendiumRepository compendiumRepository,
+  }) : super.empty(compendiumRepository: compendiumRepository);
+
+  @override
+  Future<void> spendSpellSlot(String id, {required int spellLevel}) async {
+    throw StateError('Spell slot level is not available for this character.');
+  }
+}
