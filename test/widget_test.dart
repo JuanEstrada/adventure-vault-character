@@ -783,6 +783,133 @@ void main() {
     expect(torch.quantity, 0);
   });
 
+  testWidgets(
+    'sheet inventory smoke path persists toggle and container updates',
+    (WidgetTester tester) async {
+      final catalog = _testCatalog.copyWith(
+        equipmentLoadoutsByClass: <String, List<CompendiumEquipmentLoadout>>{
+          ..._testCatalog.equipmentLoadoutsByClass,
+          'Fighter': <CompendiumEquipmentLoadout>[
+            const CompendiumEquipmentLoadout(
+              id: 'fighter-inventory-smoke-kit',
+              label: 'Inventory smoke kit',
+              startingMoneySummary: 'Class kit for inventory smoke coverage',
+              selectedItems: <String>['Torch', 'Explorer pack'],
+            ),
+          ],
+        },
+      );
+      final compendiumRepository = InMemoryCompendiumRepository(catalog);
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: compendiumRepository,
+      );
+      await tester.binding.setSurfaceSize(const Size(1200, 4200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        AdventureVaultApp(
+          characterRepository: repository,
+          compendiumRepository: compendiumRepository,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Continue offline'));
+      await tester.tap(find.text('Continue offline'));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Create character'));
+      await tester.tap(find.text('Create character'));
+      await tester.pumpAndSettle();
+
+      final classField = find.byWidgetPredicate(
+        (widget) =>
+            widget is DropdownButtonFormField<String> &&
+            widget.decoration.labelText == 'Class',
+      );
+      await tester.enterText(find.byType(TextFormField).first, 'Kara');
+      await tester.tap(classField);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Fighter').last);
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.widgetWithText(FilledButton, 'Save draft').first,
+        400,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Save draft'));
+      await tester.pumpAndSettle();
+
+      final summaries = await repository.getCharacterSummaries();
+      final initialSheet = await repository.getCharacterSheetById(
+        summaries.single.id,
+      );
+      expect(initialSheet, isNotNull);
+      final initialTorch = initialSheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+      final initialExplorerPack = initialSheet.equipment.items.firstWhere(
+        (item) => item.name == 'Explorer pack',
+      );
+
+      final torchRow = find.ancestor(
+        of: find.text('Torch').first,
+        matching: find.byWidgetPredicate(
+          (widget) => widget.runtimeType.toString() == '_InventoryItemRow',
+        ),
+      );
+      final explorerPackRow = find.ancestor(
+        of: find.text('Explorer pack').first,
+        matching: find.byWidgetPredicate(
+          (widget) => widget.runtimeType.toString() == '_InventoryItemRow',
+        ),
+      );
+
+      final torchEquippedChip = find.descendant(
+        of: torchRow,
+        matching: find.widgetWithText(FilterChip, 'Equipped'),
+      );
+      final explorerPackCarriedChip = find.descendant(
+        of: explorerPackRow,
+        matching: find.widgetWithText(FilterChip, 'Carried'),
+      );
+      final torchContainerDropdown = find.descendant(
+        of: torchRow,
+        matching: find.byType(DropdownButtonFormField<String?>),
+      );
+
+      await tester.tap(torchEquippedChip);
+      await tester.pumpAndSettle();
+      await tester.tap(explorerPackCarriedChip);
+      await tester.pumpAndSettle();
+
+      await tester.tap(torchContainerDropdown);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Explorer pack').last);
+      await tester.pumpAndSettle();
+
+      final updatedSheet = await repository.getCharacterSheetById(
+        summaries.single.id,
+      );
+      expect(updatedSheet, isNotNull);
+      final updatedTorch = updatedSheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+      final updatedExplorerPack = updatedSheet.equipment.items.firstWhere(
+        (item) => item.name == 'Explorer pack',
+      );
+
+      expect(updatedTorch.isEquipped, isNot(initialTorch.isEquipped));
+      expect(
+        updatedExplorerPack.isCarried,
+        isNot(initialExplorerPack.isCarried),
+      );
+      expect(updatedTorch.containerInventoryItemId, updatedExplorerPack.id);
+      expect(updatedTorch.containerDisplayName, 'Explorer pack');
+    },
+  );
+
   testWidgets('sheet spell-slot spend action persists after reopen', (
     WidgetTester tester,
   ) async {
