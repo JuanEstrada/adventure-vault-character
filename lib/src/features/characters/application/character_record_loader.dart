@@ -104,7 +104,7 @@ class CharacterRecordLoader {
 
   List<String> _backgroundDefinitionLookupIds(Character row) {
     final ids = <String>{
-      if (row.backgroundDefinitionRefId case final refId?) refId,
+      ?row.backgroundDefinitionRefId,
       if (row.backgroundDefinitionRefId case final refId?)
         'background-${_slugify(refId)}',
     };

@@ -128,11 +128,11 @@ CompendiumEquipmentMetadata? _parseEquipmentMetadata(String itemXml) {
 
   final weaponJson = <String, Object>{
     'type': 'weapon',
-    if (weaponCategory != null) 'weapon_category': weaponCategory,
+    'weapon_category': ?weaponCategory,
     if (isRanged) 'is_ranged': true,
     if (isFinesse) 'is_finesse': true,
-    if (damageDice != null) 'damage_dice': damageDice,
-    if (damageType != null) 'damage_type': damageType,
+    'damage_dice': ?damageDice,
+    'damage_type': ?damageType,
     if (proficiencyKey.isNotEmpty) 'proficiency_key': proficiencyKey,
     if (magicBonus > 0) 'attack_bonus': magicBonus,
     if (magicBonus > 0) 'damage_bonus': magicBonus,

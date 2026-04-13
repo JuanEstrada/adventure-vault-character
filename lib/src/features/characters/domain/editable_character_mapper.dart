@@ -187,15 +187,12 @@ class EditableCharacterMapper {
     }
 
     final assignedScoresByAbility = <String, int>{
-      if (persisted.strengthAssignedScore case final value?) 'Strength': value,
-      if (persisted.dexterityAssignedScore case final value?)
-        'Dexterity': value,
-      if (persisted.constitutionAssignedScore case final value?)
-        'Constitution': value,
-      if (persisted.intelligenceAssignedScore case final value?)
-        'Intelligence': value,
-      if (persisted.wisdomAssignedScore case final value?) 'Wisdom': value,
-      if (persisted.charismaAssignedScore case final value?) 'Charisma': value,
+      'Strength': ?persisted.strengthAssignedScore,
+      'Dexterity': ?persisted.dexterityAssignedScore,
+      'Constitution': ?persisted.constitutionAssignedScore,
+      'Intelligence': ?persisted.intelligenceAssignedScore,
+      'Wisdom': ?persisted.wisdomAssignedScore,
+      'Charisma': ?persisted.charismaAssignedScore,
     };
 
     final rawParts = <String>[
