@@ -26,6 +26,11 @@
 - If a required tool is unavailable, stop and report the constraint instead of improvising with another namespace.
 - Do not use implementation agents for documentation-only tasks when inline editing or a documentation/planning/exploration path is sufficient.
 
+## Model Preference
+
+- For code implementation, edits, refactors, and test fixes, prefer `gpt-5.3-codex` when that model is available in the current runtime.
+- For planning, architecture, analysis, and user-facing explanations, the primary model may remain in use unless the task is explicitly implementation-heavy.
+
 ## Before Finishing
 
 - Run dart format
