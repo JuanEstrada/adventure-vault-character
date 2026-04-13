@@ -47,8 +47,8 @@ Prioritize the **MinFunc** execution path before broader hardening work:
 2. Inventory is audit-confirmed as sufficient for MinFunc and now has minimum
    smoke/regression coverage through `S14`; skip new inventory feature work
    unless a later regression proves a real blocker.
-3. The next actionable slice is `S15`: harden the minimum missing-data or
-   partial-state sheet scenarios without redesigning the UI.
+3. The next actionable slice is `S16`: surface expected mutation rejections so
+   failures stay visible and non-blocking in the main flow.
 
 ## Guardrails
 
