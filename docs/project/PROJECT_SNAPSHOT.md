@@ -58,7 +58,8 @@ Primary constraints are tracked in:
   spend mutation now exists with Drift + in-memory parity and minimum non-widget
   coverage.
 - The main remaining functional blocker is now restore-slot symmetry for the
-  full minimum spell loop, plus final spend persistence/reopen verification.
+  full minimum spell loop; the restore contract exists, but non-UI behavior,
+  sheet wiring, and reopen proof are still pending.
 
 ## Drift Status
 
@@ -86,8 +87,8 @@ Primary constraints are tracked in:
 
 1. Close the **MinFunc** release bar so a real offline player session can be
    completed without functional blockers.
-2. Implement restore-slot symmetry in non-UI layers next, then expose and test
-   the restore flow in later slices.
+2. Implement restore-slot restore behavior in non-UI layers next (`S9B`), then
+   expose and test the restore flow in later slices.
 3. Keep broader UX depth, non-blocking edge-case breadth, and polish outside
    the minimum-functional release scope unless they prove to be blockers.
 

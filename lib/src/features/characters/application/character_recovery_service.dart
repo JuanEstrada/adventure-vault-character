@@ -140,6 +140,10 @@ class CharacterRecoveryService {
     });
   }
 
+  Future<void> restoreSpellSlot(String id, {required int spellLevel}) async {
+    throw UnimplementedError();
+  }
+
   Future<void> _applyRecovery(String id, {required bool isLongRest}) async {
     final row = await _readDao.getCharacterRowById(id);
     if (row == null) {

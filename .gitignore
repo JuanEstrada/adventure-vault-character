@@ -23,3 +23,5 @@ skills-lock.json
 .flutter-plugins-dependencies
 .packages
 build/
+__pycache__/
+*.pyc

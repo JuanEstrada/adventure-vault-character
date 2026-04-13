@@ -353,6 +353,11 @@ class InMemoryCharacterRepository implements CharacterRepository {
   }
 
   @override
+  Future<void> restoreSpellSlot(String id, {required int spellLevel}) async {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<void> setInventoryItemEquipped(
     String id,
     String inventoryItemId,

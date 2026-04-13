@@ -573,6 +573,37 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> restoreSelectedCharacterSpellSlot({
+    required int spellLevel,
+  }) async {
+    final selected = _state.selectedCharacterSheet;
+    if (selected == null) {
+      _state = _state.copyWith(
+        errorMessage: 'No character is currently selected.',
+      );
+      notifyListeners();
+      return;
+    }
+
+    _state = _state.copyWith(isSavingCharacter: true, clearError: true);
+    notifyListeners();
+
+    try {
+      await _characterRepository.restoreSpellSlot(
+        selected.id,
+        spellLevel: spellLevel,
+      );
+      _state = _state.copyWith(isSavingCharacter: false, clearError: true);
+    } catch (_) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: 'Failed to restore spell slot.',
+      );
+    }
+
+    notifyListeners();
+  }
+
   Future<void> recordSelectedCharacterDeathSaveSuccess() async {
     await _updateSelectedCharacterDeathSaves((id) {
       return _characterRepository.recordDeathSaveSuccess(id);

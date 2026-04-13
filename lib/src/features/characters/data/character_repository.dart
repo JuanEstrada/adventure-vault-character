@@ -29,6 +29,8 @@ abstract interface class CharacterRepository {
 
   Future<void> spendSpellSlot(String id, {required int spellLevel});
 
+  Future<void> restoreSpellSlot(String id, {required int spellLevel});
+
   Future<void> setInventoryItemEquipped(
     String id,
     String inventoryItemId,

@@ -47,7 +47,8 @@ Prioritize the **MinFunc** execution path before broader hardening work:
    spend path: contract (`S6A`, done), Drift persistence (`S6B`, done), then
    the in-memory parity sub-slice: behavior (`S6C1`, done), parity tests (`S6C2`, done),
    and closeout (`S6C3`, done), followed by spend UI (`S7`, done), spend test (`S8`, done), restore
-   mutation (`S9`), restore UI (`S10`), and restore test (`S11`).
+   contract (`S9A`, done), restore behavior (`S9B`), restore closeout (`S9C`),
+   restore UI (`S10`), and restore test (`S11`).
 3. Treat inventory as already sufficient for MinFunc unless a later regression
    proves otherwise; keep all later sessions equally atomic.
 
@@ -97,6 +98,8 @@ Prioritize the **MinFunc** execution path before broader hardening work:
 - S8 is complete: targeted widget coverage now proves spend remains persisted
   after navigating back and reopening the same character.
 - Direct spell-slot spend/restore remains the confirmed MinFunc blocker.
-- Deferred gap captured for the roadmap: restore-slot symmetry still remains
-  after spend UI/test work; the next step is the non-UI restore mutation path
-  in S9.
+- S9A is complete: the restore-slot contract now exists on repository,
+  application, controller, and repository-implementation surfaces as a
+  placeholder-only path.
+- Deferred gap captured for the roadmap: restore-slot symmetry still remains;
+  the next step is implementing the non-UI restore behavior in S9B.

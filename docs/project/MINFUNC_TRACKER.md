@@ -35,7 +35,7 @@ tracker.
 | Character sheet exposes current combat MVP values | Yes | Met | `character_sheet_screen.dart` exposes HP, AC, initiative, attacks, and death-save controls directly from the sheet. |
 | Character sheet exposes current hit-point and class-resource state | Yes | Met | Sheet exposes HP facts and class-resource controls/state; repository + controller support persisted manual adjustment. |
 | Supported spellcasters can inspect spell-state summaries during play | Yes | Met | Sheet exposes spellcasting facts, selected/available spells, and slot summaries for supported casters. |
-| Supported spellcasters can spend and restore spell slots during play | Yes | Not met | Slot summaries are read-only on the sheet; there is no repository/controller/UI action for direct in-session spend/restore outside rest flows. |
+| Supported spellcasters can spend and restore spell slots during play | Yes | Not met | Spend now exists end-to-end from the sheet; restore has non-UI contract placeholders only and still lacks mutation behavior, sheet wiring, and reopen proof. |
 | Inventory and resource actions required for basic live play are usable | Yes | Met | Inventory quantity, charges, carry/equip, and container assignment flows are implemented with deterministic validation and persistence. |
 | Rest flows update supported resources correctly | Yes | Met | Recovery service updates HP, slot usage, class resources, death saves, and tracked charges; repository tests verify persisted results. |
 | Core mutations persist correctly after reopen | Yes | Not met | Inventory and rest-driven mutations persist, but the full release-bar item stays blocked until direct spell-slot in-session mutation exists and can be reopened. |
@@ -81,8 +81,10 @@ real blockers:
 | S6C3 | Close spend parity slice | Verify docs/tracker state for spend-path parity and capture any deferred gaps before UI. | S6C2 | Done | Spend-slot mutation parity is closed for Drift + in-memory non-UI paths; next gap is exposing spend from the sheet and later restore symmetry. |
 | S7 | Expose spend from sheet | Wire the existing spend contract into the character sheet UI. | S6C3 | Done | Added minimal spell-slot `Spend 1` controls in the sheet and routed them through the controller without widget-side rules logic. |
 | S8 | Test spend persistence | Add targeted coverage for spend + persist + reopen. | S7 | Done | Added widget coverage proving sheet spend persists in state and remains visible after navigating back and reopening the character. |
-| S9 | Add restore mutation path | Implement the minimum non-widget contract to restore a spell slot. | S8 | Planned | Mirror the spend path. |
-| S10 | Expose restore from sheet | Wire the existing restore contract into the character sheet UI. | S9 | Planned | Close the minimum slot loop in UI. |
+| S9A | Add restore contract flow | Add explicit restore-slot repository/application/controller contract signatures only. | S8 | Done | Added `restoreSpellSlot(id, {required spellLevel})` to repository/controller/application surfaces with placeholders only; behavior stays pending for `S9B`/`S9C`. |
+| S9B | Implement restore mutation behavior | Implement the minimum non-widget restore-slot behavior in persistence layers. | S9A | Planned | Mirror spend validation and reject restore below zero usage. |
+| S9C | Close restore non-UI slice | Verify parity/docs state for the restore mutation path before UI work. | S9B | Planned | Leave the next step as sheet wiring only. |
+| S10 | Expose restore from sheet | Wire the existing restore contract into the character sheet UI. | S9C | Planned | Close the minimum slot loop in UI. |
 | S11 | Test restore persistence | Add targeted coverage for restore + persist + reopen. | S10 | Planned | Restore only. |
 | S12 | Audit minimum inventory usability | Decide whether current inventory already supports real table use. | S2 | Planned | Distinguish blockers from comfort issues. |
 | S13 | Implement one blocking inventory action | Add only the single inventory capability proven to block the loop. | S12 | Planned / N/A | Skip if audit says inventory is already sufficient. |
@@ -155,9 +157,17 @@ Apply these constraints to every delegated MinFunc session prompt:
 
 > Add the minimum automated coverage for spell-slot spending only: spend action, persistence, and reopen. Reuse existing test patterns. Do not cover restore yet. Return: (1) covered cases, (2) test files touched, (3) deliberately deferred gaps.
 
-### S9 — Add restore mutation path
+### S9A — Add restore contract flow
 
-> Implement the smallest non-widget change needed to restore a spell slot using existing rules and contracts. Focus on repository/controller/application flow only; do not wire UI yet. Return: (1) change summary, (2) files touched, (3) exact UI step that remains.
+> Add only the explicit repository/application/controller contract signatures needed to restore a spell slot. Freeze method naming, parameters, and validation entry point. Do not implement Drift writes, in-memory behavior, tests, or UI yet. Return: (1) contract summary, (2) files touched, (3) next implementation step.
+
+### S9B — Implement restore mutation behavior
+
+> Implement the minimum non-widget restore-slot mutation behavior using the frozen contract. Mirror spend-path validation, keep rules logic in the existing service/repository layers, and reject restore below zero usage. Do not wire UI yet. Return: (1) change summary, (2) files touched, (3) exact closeout step that remains.
+
+### S9C — Close restore non-UI slice
+
+> Close the restore non-UI slice by verifying tracker/docs state, recording any unresolved bug, missing capability, or deferred improvement, and leaving the next recommended step as the sheet UI wiring. Do not implement UI or broaden into extra edge cases. Return: (1) closeout summary, (2) files touched, (3) next UI step.
 
 ### S10 — Expose restore from sheet
 
@@ -244,5 +254,6 @@ step is obvious.
 
 ## Current Recommendation
 
-Proceed to **S9**. Implement the minimum non-widget restore-slot mutation path,
-mirroring the spend contract while keeping UI work out of scope.
+Proceed to **S9B**. Implement the minimum non-widget restore-slot mutation
+behavior, mirroring the spend validation path while keeping UI work out of
+scope.
