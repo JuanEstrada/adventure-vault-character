@@ -1,6 +1,8 @@
 import 'package:adventure_vault_character/src/app/adventure_vault_app.dart';
 import 'package:adventure_vault_character/src/features/characters/data/in_memory_character_repository.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
+import 'package:adventure_vault_character/src/features/characters/presentation/character_sheet_screen.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/in_memory_compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:adventure_vault_character/src/features/settings/data/in_memory_system_settings_repository.dart';
@@ -907,6 +909,126 @@ void main() {
       );
       expect(updatedTorch.containerInventoryItemId, updatedExplorerPack.id);
       expect(updatedTorch.containerDisplayName, 'Explorer pack');
+    },
+  );
+
+  testWidgets(
+    'sheet equipment panel remains renderable with partial equipment state',
+    (WidgetTester tester) async {
+      final compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: compendiumRepository,
+      );
+      await tester.binding.setSurfaceSize(const Size(1200, 4200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        AdventureVaultApp(
+          characterRepository: repository,
+          compendiumRepository: compendiumRepository,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Continue offline'));
+      await tester.tap(find.text('Continue offline'));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Create character'));
+      await tester.tap(find.text('Create character'));
+      await tester.pumpAndSettle();
+
+      final classField = find.byWidgetPredicate(
+        (widget) =>
+            widget is DropdownButtonFormField<String> &&
+            widget.decoration.labelText == 'Class',
+      );
+      await tester.enterText(find.byType(TextFormField).first, 'Riven');
+      await tester.tap(classField);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Fighter').last);
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.widgetWithText(FilledButton, 'Save draft').first,
+        400,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Save draft'));
+      await tester.pumpAndSettle();
+
+      final summaries = await repository.getCharacterSummaries();
+      final persistedSheet = await repository.getCharacterSheetById(
+        summaries.single.id,
+      );
+      expect(persistedSheet, isNotNull);
+
+      var didTapEdit = false;
+      final partialStateSheet = CharacterDomainModel(
+        id: persistedSheet!.id,
+        identity: persistedSheet.identity,
+        combat: persistedSheet.combat,
+        abilities: persistedSheet.abilities,
+        featuresNotes: persistedSheet.featuresNotes,
+        spellcasting: persistedSheet.spellcasting,
+        equipment: CharacterEquipmentDomainModel(
+          equipmentSummary: const EquipmentSummaryViewData(
+            statusLabel: 'MVP minimal',
+            description: '   ',
+            highlightItems: <String>[],
+          ),
+          selectedEquipmentLabel: '  ',
+          money: persistedSheet.equipment.money,
+          items: const <CharacterEquipmentItemDomainModel>[],
+          carrying: persistedSheet.equipment.carrying,
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: CharacterSheetScreen(
+            character: partialStateSheet,
+            isApplyingRest: false,
+            errorMessage: null,
+            onBack: () {},
+            onEdit: () {
+              didTapEdit = true;
+            },
+            onApplyShortRest: () async {},
+            onApplyLongRest: () async {},
+            onSpendSpellSlot: ({required spellLevel}) async {},
+            onRestoreSpellSlot: ({required spellLevel}) async {},
+            onSetClassResourceUses: (resourceKey, currentUses) async {},
+            onRecordDeathSaveSuccess: () async {},
+            onRecordDeathSaveFailure: () async {},
+            onResetDeathSaves: () async {},
+            onSetInventoryItemEquipped: (inventoryItemId, isEquipped) async {},
+            onSetInventoryItemCarried: (inventoryItemId, isCarried) async {},
+            onSetInventoryItemQuantity: (inventoryItemId, quantity) async {},
+            onSpendInventoryItemQuantity:
+                (inventoryItemId, {amount = 1}) async {},
+            onSetInventoryItemCharges:
+                (inventoryItemId, {chargesCurrent, chargesMax}) async {},
+            onSetInventoryItemContainer:
+                (inventoryItemId, containerInventoryItemId) async {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Equipment'), findsWidgets);
+      expect(find.text('Selected loadout unavailable'), findsOneWidget);
+      expect(
+        find.text(
+          'Equipment details are unavailable for this character state.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('No inventory items available.'), findsOneWidget);
+
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
+      expect(didTapEdit, isTrue);
     },
   );
 

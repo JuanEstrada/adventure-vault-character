@@ -1123,6 +1123,20 @@ class _EquipmentPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final selectedEquipmentLabel = character.equipment.selectedEquipmentLabel
+        .trim();
+    final equipmentLabel = selectedEquipmentLabel.isEmpty
+        ? 'Selected loadout unavailable'
+        : selectedEquipmentLabel;
+    final equipmentSummaryDescription = character
+        .equipment
+        .equipmentSummary
+        .description
+        .trim();
+    final hasInventoryItems = character.equipment.items.isNotEmpty;
+    final equipmentSummaryText = equipmentSummaryDescription.isEmpty
+        ? 'Equipment details are unavailable for this character state.'
+        : equipmentSummaryDescription;
 
     return Card(
       child: Padding(
@@ -1138,7 +1152,7 @@ class _EquipmentPanel extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              character.equipment.selectedEquipmentLabel,
+              equipmentLabel,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
@@ -1163,10 +1177,7 @@ class _EquipmentPanel extends StatelessWidget {
                   '${character.equipment.carrying.coinWeightLabel} (${character.equipment.carrying.coinWeight} lb)',
             ),
             const SizedBox(height: 4),
-            Text(
-              character.equipment.equipmentSummary.description,
-              style: theme.textTheme.bodyLarge,
-            ),
+            Text(equipmentSummaryText, style: theme.textTheme.bodyLarge),
             const SizedBox(height: 12),
             Text(
               character.equipment.carrying.tierDescription,
@@ -1190,45 +1201,56 @@ class _EquipmentPanel extends StatelessWidget {
               ),
               const SizedBox(height: 12),
             ],
-            ...character.equipment.items.map(
-              (item) => _InventoryItemRow(
-                item: item,
-                isUpdating: isUpdating,
-                containerState: character.equipment.containerStateFor(item.id),
-                onSetEquipped: (value) {
-                  onSetInventoryItemEquipped(item.id, value);
-                },
-                onSetCarried: (value) {
-                  onSetInventoryItemCarried(item.id, value);
-                },
-                onIncreaseQuantity: () {
-                  onSetInventoryItemQuantity(item.id, item.quantity + 1);
-                },
-                onDecreaseQuantity: () {
-                  onSetInventoryItemQuantity(item.id, item.quantity - 1);
-                },
-                onSpendQuantity: () {
-                  onSpendInventoryItemQuantity(item.id);
-                },
-                onSetCharges: ({chargesCurrent, chargesMax}) {
-                  return onSetInventoryItemCharges(
+            if (!hasInventoryItems)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'No inventory items available.',
+                  style: theme.textTheme.bodyMedium,
+                ),
+              )
+            else
+              ...character.equipment.items.map(
+                (item) => _InventoryItemRow(
+                  item: item,
+                  isUpdating: isUpdating,
+                  containerState: character.equipment.containerStateFor(
                     item.id,
-                    chargesCurrent: chargesCurrent,
-                    chargesMax: chargesMax,
-                  );
-                },
-                containers: character.equipment.items
-                    .where((candidate) => candidate.id != item.id)
-                    .where((candidate) => candidate.isContainer)
-                    .toList(growable: false),
-                onSetContainer: (containerInventoryItemId) {
-                  return onSetInventoryItemContainer(
-                    item.id,
-                    containerInventoryItemId,
-                  );
-                },
+                  ),
+                  onSetEquipped: (value) {
+                    onSetInventoryItemEquipped(item.id, value);
+                  },
+                  onSetCarried: (value) {
+                    onSetInventoryItemCarried(item.id, value);
+                  },
+                  onIncreaseQuantity: () {
+                    onSetInventoryItemQuantity(item.id, item.quantity + 1);
+                  },
+                  onDecreaseQuantity: () {
+                    onSetInventoryItemQuantity(item.id, item.quantity - 1);
+                  },
+                  onSpendQuantity: () {
+                    onSpendInventoryItemQuantity(item.id);
+                  },
+                  onSetCharges: ({chargesCurrent, chargesMax}) {
+                    return onSetInventoryItemCharges(
+                      item.id,
+                      chargesCurrent: chargesCurrent,
+                      chargesMax: chargesMax,
+                    );
+                  },
+                  containers: character.equipment.items
+                      .where((candidate) => candidate.id != item.id)
+                      .where((candidate) => candidate.isContainer)
+                      .toList(growable: false),
+                  onSetContainer: (containerInventoryItemId) {
+                    return onSetInventoryItemContainer(
+                      item.id,
+                      containerInventoryItemId,
+                    );
+                  },
+                ),
               ),
-            ),
           ],
         ),
       ),
