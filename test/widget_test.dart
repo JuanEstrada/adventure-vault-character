@@ -352,7 +352,7 @@ void main() {
     await tester.enterText(find.byType(TextFormField).first, 'Meris');
     await tester.tap(classField);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Wizard').last);
+    await tester.tap(find.text('Warlock').last);
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
@@ -459,7 +459,7 @@ void main() {
     await tester.enterText(find.byType(TextFormField).first, 'Nim');
     await tester.tap(classField);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Warlock').last);
+    await tester.tap(find.text('Wizard').last);
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
@@ -569,7 +569,7 @@ void main() {
     },
   );
 
-  testWidgets('sheet class resource controls update persisted uses', (
+  testWidgets('sheet class resource controls persist after reopen', (
     WidgetTester tester,
   ) async {
     final catalog = _testCatalog.copyWith(
@@ -644,6 +644,20 @@ void main() {
     expect(updatedSheet, isNotNull);
     expect(updatedSheet!.combat.classResources.single.currentUses, 0);
     expect(find.textContaining('via Manual'), findsWidgets);
+
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Seren'), findsOneWidget);
+
+    await tester.tap(find.byType(InkWell).first);
+    await tester.pumpAndSettle();
+
+    final reopenedSheet = await repository.getCharacterSheetById(
+      summaries.single.id,
+    );
+    expect(reopenedSheet, isNotNull);
+    expect(reopenedSheet!.combat.classResources.single.currentUses, 0);
   });
 
   testWidgets('sheet inventory charge controls persist tracked values', (
@@ -786,7 +800,7 @@ void main() {
   });
 
   testWidgets(
-    'sheet inventory smoke path persists toggle and container updates',
+    'sheet inventory smoke path persists toggle and container updates after reopen',
     (WidgetTester tester) async {
       final catalog = _testCatalog.copyWith(
         equipmentLoadoutsByClass: <String, List<CompendiumEquipmentLoadout>>{
@@ -909,6 +923,29 @@ void main() {
       );
       expect(updatedTorch.containerInventoryItemId, updatedExplorerPack.id);
       expect(updatedTorch.containerDisplayName, 'Explorer pack');
+
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kara'), findsOneWidget);
+
+      await tester.tap(find.byType(InkWell).first);
+      await tester.pumpAndSettle();
+
+      final reopenedSheet = await repository.getCharacterSheetById(
+        summaries.single.id,
+      );
+      expect(reopenedSheet, isNotNull);
+      final reopenedTorch = reopenedSheet!.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+      final reopenedExplorerPack = reopenedSheet.equipment.items.firstWhere(
+        (item) => item.name == 'Explorer pack',
+      );
+
+      expect(reopenedTorch.isEquipped, updatedTorch.isEquipped);
+      expect(reopenedTorch.containerInventoryItemId, updatedExplorerPack.id);
+      expect(reopenedExplorerPack.isCarried, updatedExplorerPack.isCarried);
     },
   );
 

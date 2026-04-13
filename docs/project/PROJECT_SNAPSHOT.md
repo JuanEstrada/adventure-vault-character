@@ -103,10 +103,10 @@ Primary constraints are tracked in:
 
 1. Close the **MinFunc** release bar so a real offline player session can be
    completed without functional blockers.
-2. Verify minimum persistence and reopen behavior next (`S17`) so any remaining
-   failure is proven or fixed only where needed.
+2. Re-audit the full `MinFuncSpec` loop next (`S18`) and decide whether the
+   minimum offline player release is now actually met.
 3. Keep broader UX depth, non-blocking edge-case breadth, and polish outside
-   the minimum-functional release scope unless they prove to be blockers.
+   the minimum-functional release scope unless the S18 audit proves a blocker.
 
 ## Risks and Follow-Ups
 

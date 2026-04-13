@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-04-12
+Last updated: 2026-04-13
 
 This is the canonical, short handoff file for resuming work quickly.
 
@@ -47,8 +47,8 @@ Prioritize the **MinFunc** execution path before broader hardening work:
 2. Inventory is audit-confirmed as sufficient for MinFunc and now has minimum
    smoke/regression coverage through `S14`; skip new inventory feature work
    unless a later regression proves a real blocker.
-3. The next actionable slice is `S17`: verify the minimum persistence and
-   reopen behavior across spells, inventory, rests, and character reopen.
+3. The next actionable slice is `S18`: re-audit the full `MinFuncSpec` loop
+   end-to-end and decide whether MinFunc is now actually met.
 
 ## Guardrails
 
@@ -114,5 +114,8 @@ Prioritize the **MinFunc** execution path before broader hardening work:
 - S16 is complete: expected mutation rejections now surface in a visible sheet
   banner, and spell/resource rejection messages preserve meaningful error text
   instead of collapsing into generic failure copy.
-- The next step is S17: verify minimum persistence and reopen behavior, fixing
-  only real failures.
+- S17 is complete: targeted verification confirmed spell slots, baseline
+  inventory mutations, class-resource usage, rest persistence, and character
+  reopen behavior remain correct; no reopen-specific code fix was needed.
+- The next step is S18: validate the full minimum loop and decide whether
+  MinFunc is met, not met, or still unclear.
