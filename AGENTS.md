@@ -38,3 +38,5 @@
 - Run tests if affected
 - Update SESSION_RESUME.md and PROJECT_SNAPSHOT.md when relevant
 - When you discover an unresolved bug, missing capability, or intentionally deferred improvement, record it in the session roadmap/tracker before finishing.
+- Create a commit that matches the completed task or grouped tasks with an intentional message.
+- Push the branch after the commit when the work is ready to publish.
