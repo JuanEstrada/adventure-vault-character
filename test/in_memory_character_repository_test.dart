@@ -15,7 +15,10 @@ void main() {
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
       final summary = await repository.createCharacter(
-        _createCharacterInput(name: 'Spend from zero', items: <String>['Torch']),
+        _createCharacterInput(
+          name: 'Spend from zero',
+          items: <String>['Torch'],
+        ),
       );
 
       await repository.spendSpellSlot(summary.id, spellLevel: 1);
@@ -60,6 +63,73 @@ void main() {
             (error) => error.message,
             'message',
             'Spell slot usage exceeds the derived slot maximum.',
+          ),
+        ),
+      );
+
+      final sheetAfter = await repository.getCharacterSheetById(summary.id);
+      expect(sheetAfter, isNotNull);
+      final slotBefore = sheetBefore!.spellcasting!.slotProgression.firstWhere(
+        (entry) => entry.spellLevel == 1,
+      );
+      final slotAfter = sheetAfter!.spellcasting!.slotProgression.firstWhere(
+        (entry) => entry.spellLevel == 1,
+      );
+      expect(slotAfter.slotsExpended, slotBefore.slotsExpended);
+    },
+  );
+
+  test('restoreSpellSlot decrements slot usage in memory', () async {
+    final repository = InMemoryCharacterRepository.empty(
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+    final summary = await repository.createCharacter(
+      _createCharacterInput(
+        name: 'Restore in-memory',
+        items: <String>['Torch'],
+        spellState: const CharacterSpellStateInput(
+          selectionMode: CharacterSpellSelectionMode.spellbook,
+          selectedSpells: <CharacterSpellSelectionInput>[],
+          slotUsages: <CharacterSpellSlotUsageInput>[
+            CharacterSpellSlotUsageInput(spellLevel: 1, slotsExpended: 2),
+          ],
+        ),
+      ),
+    );
+
+    await repository.restoreSpellSlot(summary.id, spellLevel: 1);
+
+    final sheet = await repository.getCharacterSheetById(summary.id);
+    expect(sheet, isNotNull);
+    final slot = sheet!.spellcasting!.slotProgression.firstWhere(
+      (entry) => entry.spellLevel == 1,
+    );
+    expect(slot.slotsExpended, 1);
+  });
+
+  test(
+    'restoreSpellSlot rejects restoring below zero without state change',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Overrestore in-memory',
+          items: <String>['Torch'],
+        ),
+      );
+
+      final sheetBefore = await repository.getCharacterSheetById(summary.id);
+      expect(sheetBefore, isNotNull);
+
+      await expectLater(
+        repository.restoreSpellSlot(summary.id, spellLevel: 1),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            'Spell slot usage cannot be restored below zero.',
           ),
         ),
       );

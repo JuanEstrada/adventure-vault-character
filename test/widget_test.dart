@@ -850,13 +850,89 @@ void main() {
 
     expect(find.text('Selene'), findsOneWidget);
 
-    final updatedCard = find.byType(InkWell).first;
-    await tester.ensureVisible(updatedCard);
-    await tester.tap(updatedCard);
+    final updatedCharacterName = find.text('Selene').last;
+    await tester.ensureVisible(updatedCharacterName);
+    await tester.tap(updatedCharacterName);
     await tester.pumpAndSettle();
 
     expect(find.text('1 / 2'), findsOneWidget);
     expect(find.widgetWithText(ActionChip, 'Spend 1'), findsOneWidget);
+  });
+
+  testWidgets('sheet spell-slot restore action closes the minimum slot loop', (
+    WidgetTester tester,
+  ) async {
+    final compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
+    final repository = InMemoryCharacterRepository.empty(
+      compendiumRepository: compendiumRepository,
+    );
+    await tester.binding.setSurfaceSize(const Size(1200, 4200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      AdventureVaultApp(
+        characterRepository: repository,
+        compendiumRepository: compendiumRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Continue offline'));
+    await tester.tap(find.text('Continue offline'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Create character'));
+    await tester.tap(find.text('Create character'));
+    await tester.pumpAndSettle();
+
+    final classField = find.byWidgetPredicate(
+      (widget) =>
+          widget is DropdownButtonFormField<String> &&
+          widget.decoration.labelText == 'Class',
+    );
+
+    await tester.enterText(find.byType(TextFormField).first, 'Lyra');
+    await tester.tap(classField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Wizard').last);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.widgetWithText(FilledButton, 'Save draft').first,
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Save draft'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('2 / 2'), findsOneWidget);
+
+    final spendChip = find.widgetWithText(ActionChip, 'Spend 1').first;
+    final restoreChip = find.widgetWithText(ActionChip, 'Restore 1').first;
+
+    final restoreChipBeforeSpend = tester.widget<ActionChip>(restoreChip);
+    expect(restoreChipBeforeSpend.onPressed, isNull);
+
+    await tester.tap(spendChip);
+    await tester.pumpAndSettle();
+
+    expect(find.text('1 / 2'), findsOneWidget);
+
+    final restoreChipAfterSpend = tester.widget<ActionChip>(restoreChip);
+    expect(restoreChipAfterSpend.onPressed, isNotNull);
+
+    await tester.tap(restoreChip);
+    await tester.pumpAndSettle();
+
+    expect(find.text('2 / 2'), findsOneWidget);
+
+    final summaries = await repository.getCharacterSummaries();
+    final sheet = await repository.getCharacterSheetById(summaries.single.id);
+    expect(sheet, isNotNull);
+    final levelOneSlot = sheet!.spellcasting!.slotProgression.firstWhere(
+      (slot) => slot.spellLevel == 1,
+    );
+    expect(levelOneSlot.slotsExpended, 0);
   });
 
   testWidgets('open edit save and reopen keeps updated character data', (

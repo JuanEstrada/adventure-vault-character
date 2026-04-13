@@ -845,6 +845,148 @@ void main() {
     );
   });
 
+  test('restoreSpellSlot persists one fewer expended slot', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final repository = DriftCharacterRepository(
+      database: database,
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+
+    final summary = await repository.createCharacter(
+      const CreateCharacterInput(
+        name: 'Sera',
+        raceName: 'Elf',
+        backgroundId: 'acolyte',
+        backgroundName: 'Acolyte',
+        backgroundSummary: 'Temple acolyte',
+        abilityScoreMethod: 'generatedSetAssignment',
+        abilityScoreProvenance:
+            'method=generatedSetAssignment;Strength=8;Dexterity=14;Constitution=13;Intelligence=15;Wisdom=12;Charisma=10',
+        strength: 8,
+        dexterity: 14,
+        constitution: 13,
+        intelligence: 15,
+        wisdom: 12,
+        charisma: 10,
+        className: 'Wizard',
+        level: 3,
+        experience: 900,
+        equipmentLoadoutId: 'wizard-focus',
+        equipmentLoadoutLabel: 'Arcane focus kit',
+        startingMoneySummary: '15 gp, 4 sp',
+        selectedEquipmentItems: <String>['Quarterstaff'],
+        currentHitPoints: 14,
+        maximumHitPoints: 14,
+        temporaryHitPoints: 0,
+        spellState: CharacterSpellStateInput(
+          selectionMode: CharacterSpellSelectionMode.spellbook,
+          selectedSpells: <CharacterSpellSelectionInput>[],
+          slotUsages: <CharacterSpellSlotUsageInput>[
+            CharacterSpellSlotUsageInput(spellLevel: 1, slotsExpended: 2),
+          ],
+        ),
+        finishingDetails: CharacterFinishingDetailsInput(
+          appearanceDetails: '',
+          narrativeNotes: '',
+          narrativeSelections: <NarrativeSelection>[
+            NarrativeSelection.empty(NarrativeFieldKey.alignment),
+            NarrativeSelection.empty(NarrativeFieldKey.faction),
+            NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+            NarrativeSelection.empty(NarrativeFieldKey.ideals),
+            NarrativeSelection.empty(NarrativeFieldKey.bonds),
+            NarrativeSelection.empty(NarrativeFieldKey.flaws),
+          ],
+        ),
+      ),
+    );
+
+    await repository.restoreSpellSlot(summary.id, spellLevel: 1);
+
+    final sheet = await repository.getCharacterSheetById(summary.id);
+    expect(sheet, isNotNull);
+    expect(sheet!.spellcasting, isNotNull);
+    final levelOneSlot = sheet.spellcasting!.slotProgression.firstWhere(
+      (slot) => slot.spellLevel == 1,
+    );
+    expect(levelOneSlot.slotsExpended, 1);
+
+    final slotRows = await (database.select(
+      database.characterSpellSlotUsages,
+    )..where((table) => table.characterId.equals(summary.id))).get();
+    expect(slotRows, hasLength(1));
+    expect(slotRows.single.spellLevel, 1);
+    expect(slotRows.single.slotsExpended, 1);
+  });
+
+  test('restoreSpellSlot rejects restoring below zero usage', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final repository = DriftCharacterRepository(
+      database: database,
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+
+    final summary = await repository.createCharacter(
+      const CreateCharacterInput(
+        name: 'Vale',
+        raceName: 'Elf',
+        backgroundId: 'acolyte',
+        backgroundName: 'Acolyte',
+        backgroundSummary: 'Temple acolyte',
+        abilityScoreMethod: 'generatedSetAssignment',
+        abilityScoreProvenance:
+            'method=generatedSetAssignment;Strength=8;Dexterity=14;Constitution=13;Intelligence=15;Wisdom=12;Charisma=10',
+        strength: 8,
+        dexterity: 14,
+        constitution: 13,
+        intelligence: 15,
+        wisdom: 12,
+        charisma: 10,
+        className: 'Wizard',
+        level: 1,
+        experience: 0,
+        equipmentLoadoutId: 'wizard-focus',
+        equipmentLoadoutLabel: 'Arcane focus kit',
+        startingMoneySummary: '15 gp, 4 sp',
+        selectedEquipmentItems: <String>['Quarterstaff'],
+        currentHitPoints: 8,
+        maximumHitPoints: 8,
+        temporaryHitPoints: 0,
+        spellState: CharacterSpellStateInput(
+          selectionMode: CharacterSpellSelectionMode.spellbook,
+          selectedSpells: <CharacterSpellSelectionInput>[],
+          slotUsages: <CharacterSpellSlotUsageInput>[],
+        ),
+        finishingDetails: CharacterFinishingDetailsInput(
+          appearanceDetails: '',
+          narrativeNotes: '',
+          narrativeSelections: <NarrativeSelection>[
+            NarrativeSelection.empty(NarrativeFieldKey.alignment),
+            NarrativeSelection.empty(NarrativeFieldKey.faction),
+            NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+            NarrativeSelection.empty(NarrativeFieldKey.ideals),
+            NarrativeSelection.empty(NarrativeFieldKey.bonds),
+            NarrativeSelection.empty(NarrativeFieldKey.flaws),
+          ],
+        ),
+      ),
+    );
+
+    await expectLater(
+      () => repository.restoreSpellSlot(summary.id, spellLevel: 1),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.message,
+          'message',
+          'Spell slot usage cannot be restored below zero.',
+        ),
+      ),
+    );
+  });
+
   test('short rest restores short-rest class resources', () async {
     final database = AppDatabase.executor(NativeDatabase.memory());
     addTearDown(database.close);

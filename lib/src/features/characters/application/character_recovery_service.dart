@@ -141,7 +141,45 @@ class CharacterRecoveryService {
   }
 
   Future<void> restoreSpellSlot(String id, {required int spellLevel}) async {
-    throw UnimplementedError();
+    final row = await _readDao.getCharacterRowById(id);
+    if (row == null) {
+      throw StateError('Character not found.');
+    }
+
+    final slotProgression = _characterSpellRules.slotProgressionFor(
+      className: row.className,
+      level: row.level,
+    );
+    final matchingSlot = slotProgression.where(
+      (slot) => slot.spellLevel == spellLevel,
+    );
+    if (matchingSlot.isEmpty) {
+      throw StateError('Spell slot level is not available for this character.');
+    }
+
+    final persistedUsages = await _readDao.getSpellSlotUsagesByCharacterId(id);
+    final currentUsage = persistedUsages
+        .where((usage) => usage.spellLevel == spellLevel)
+        .map((usage) => usage.slotsExpended)
+        .fold<int>(0, (_, value) => value);
+    if (currentUsage <= 0) {
+      throw StateError('Spell slot usage cannot be restored below zero.');
+    }
+
+    await _database.transaction(() async {
+      final now = DateTime.now();
+      await _writeDao.updateCharacter(
+        id,
+        CharactersCompanion(updatedAt: Value(now)),
+      );
+      await _writeDao.upsertSpellSlotUsage(
+        CharacterSpellSlotUsagesCompanion.insert(
+          characterId: id,
+          spellLevel: spellLevel,
+          slotsExpended: Value(currentUsage - 1),
+        ),
+      );
+    });
   }
 
   Future<void> _applyRecovery(String id, {required bool isLongRest}) async {
