@@ -17,8 +17,9 @@ Post-foundation implementation and hardening.
 
 - Character-sheet completion slice: implemented.
 - Deterministic combat MVP slice: implemented.
-- Current work posture: MinFunc gap closure focused on direct spell-slot
-  in-session actions, then targeted regression hardening.
+- Current work posture: MinFunc gap closure has moved past direct spell-slot
+  actions and is now focused on targeted regression hardening plus minimum
+  sheet resilience work.
 
 ## Architecture Baseline (Current)
 

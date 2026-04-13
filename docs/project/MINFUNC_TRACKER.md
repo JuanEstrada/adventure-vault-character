@@ -35,12 +35,12 @@ tracker.
 | Character sheet exposes current combat MVP values | Yes | Met | `character_sheet_screen.dart` exposes HP, AC, initiative, attacks, and death-save controls directly from the sheet. |
 | Character sheet exposes current hit-point and class-resource state | Yes | Met | Sheet exposes HP facts and class-resource controls/state; repository + controller support persisted manual adjustment. |
 | Supported spellcasters can inspect spell-state summaries during play | Yes | Met | Sheet exposes spellcasting facts, selected/available spells, and slot summaries for supported casters. |
-| Supported spellcasters can spend and restore spell slots during play | Yes | Not met | Spend now exists end-to-end from the sheet; restore has non-UI contract placeholders only and still lacks mutation behavior, sheet wiring, and reopen proof. |
+| Supported spellcasters can spend and restore spell slots during play | Yes | Met | Sheet now exposes direct `Spend 1` and `Restore 1` slot actions backed by repository/controller mutation paths and reopen-proof coverage. |
 | Inventory and resource actions required for basic live play are usable | Yes | Met | Inventory quantity, charges, carry/equip, and container assignment flows are implemented with deterministic validation and persistence. |
 | Rest flows update supported resources correctly | Yes | Met | Recovery service updates HP, slot usage, class resources, death saves, and tracked charges; repository tests verify persisted results. |
-| Core mutations persist correctly after reopen | Yes | Not met | Inventory and rest-driven mutations persist, but the full release-bar item stays blocked until direct spell-slot in-session mutation exists and can be reopened. |
+| Core mutations persist correctly after reopen | Yes | Met | Widget coverage now proves direct spell-slot spend/restore and baseline inventory mutations persist correctly after navigation and reopen. |
 | Expected rejection and recoverable error states do not break the session loop | Yes | Unclear | Inventory rejection feedback is implemented, and several missing-data defaults exist in mapping, but recoverable read/write interruption coverage is not yet proven end-to-end. |
-| Targeted automated coverage exists for the release-bar flows | Yes | Not met | Coverage exists for create/edit/reopen, rests, combat, and inventory, but the release bar is still missing direct spell-slot action coverage and final MinFunc smoke proof. |
+| Targeted automated coverage exists for the release-bar flows | Yes | Met | Coverage now includes create/edit/reopen, rests, combat, direct spell-slot actions, and minimum inventory smoke/regression behavior for the MinFunc path. |
 
 ## S1 Explicit Exclusions
 

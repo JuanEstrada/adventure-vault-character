@@ -42,16 +42,13 @@ This is the canonical, short handoff file for resuming work quickly.
 
 Prioritize the **MinFunc** execution path before broader hardening work:
 
-1. Spell-slot mapping is complete through `S5`: read path, existing mutation
-   path, and the minimum missing gap are now verified.
-2. Execute one atomic implementation session at a time starting with the split
-   spend path: contract (`S6A`, done), Drift persistence (`S6B`, done), then
-   the in-memory parity sub-slice: behavior (`S6C1`, done), parity tests (`S6C2`, done),
-   and closeout (`S6C3`, done), followed by spend UI (`S7`, done), spend test (`S8`, done), restore
-   contract (`S9A`, done), restore behavior (`S9B`, done), restore closeout (`S9C`, done),
-   restore UI (`S10`, done), and restore test (`S11`, done).
-3. Inventory is now audit-confirmed as sufficient for MinFunc; skip any new
-   inventory feature work unless a later regression proves a real blocker.
+1. The direct spell-slot loop is complete through `S11`: read path, mutation
+   path, UI wiring, persistence, and reopen proof are now verified.
+2. Inventory is audit-confirmed as sufficient for MinFunc and now has minimum
+   smoke/regression coverage through `S14`; skip new inventory feature work
+   unless a later regression proves a real blocker.
+3. The next actionable slice is `S15`: harden the minimum missing-data or
+   partial-state sheet scenarios without redesigning the UI.
 
 ## Guardrails
 
