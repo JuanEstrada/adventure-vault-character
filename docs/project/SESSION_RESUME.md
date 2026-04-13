@@ -47,8 +47,8 @@ Prioritize the **MinFunc** execution path before broader hardening work:
 2. Inventory is audit-confirmed as sufficient for MinFunc and now has minimum
    smoke/regression coverage through `S14`; skip new inventory feature work
    unless a later regression proves a real blocker.
-3. The next actionable slice is `S16`: surface expected mutation rejections so
-   failures stay visible and non-blocking in the main flow.
+3. The next actionable slice is `S17`: verify the minimum persistence and
+   reopen behavior across spells, inventory, rests, and character reopen.
 
 ## Guardrails
 
@@ -111,5 +111,8 @@ Prioritize the **MinFunc** execution path before broader hardening work:
 - S15 is complete: the sheet now has simple Equipment-panel fallbacks for
   missing loadout text, missing summary text, and empty inventory lists, with
   widget coverage proving the screen still renders and remains operable.
-- The next step is S16: surface expected mutation rejections so failures stay
-  visible and non-blocking in the main flow.
+- S16 is complete: expected mutation rejections now surface in a visible sheet
+  banner, and spell/resource rejection messages preserve meaningful error text
+  instead of collapsing into generic failure copy.
+- The next step is S17: verify minimum persistence and reopen behavior, fixing
+  only real failures.

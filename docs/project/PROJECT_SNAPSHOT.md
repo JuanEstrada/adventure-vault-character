@@ -74,6 +74,8 @@ Primary constraints are tracked in:
   a real in-session flow.
 - S15 hardened minimum partial-state sheet rendering with simple Equipment-panel
   fallbacks for missing loadout/summary/item data.
+- S16 surfaced expected mutation rejections in the main sheet flow with a
+  visible banner and clearer spell/resource rejection copy.
 
 ## Drift Status
 
@@ -101,8 +103,8 @@ Primary constraints are tracked in:
 
 1. Close the **MinFunc** release bar so a real offline player session can be
    completed without functional blockers.
-2. Surface minimum expected mutation rejections next (`S16`) so the sheet flow
-   remains visible and operable when actions are rejected.
+2. Verify minimum persistence and reopen behavior next (`S17`) so any remaining
+   failure is proven or fixed only where needed.
 3. Keep broader UX depth, non-blocking edge-case breadth, and polish outside
    the minimum-functional release scope unless they prove to be blockers.
 

@@ -39,7 +39,7 @@ tracker.
 | Inventory and resource actions required for basic live play are usable | Yes | Met | Inventory quantity, charges, carry/equip, and container assignment flows are implemented with deterministic validation and persistence. |
 | Rest flows update supported resources correctly | Yes | Met | Recovery service updates HP, slot usage, class resources, death saves, and tracked charges; repository tests verify persisted results. |
 | Core mutations persist correctly after reopen | Yes | Met | Widget coverage now proves direct spell-slot spend/restore and baseline inventory mutations persist correctly after navigation and reopen. |
-| Expected rejection and recoverable error states do not break the session loop | Yes | Unclear | Inventory rejection feedback is implemented, and several missing-data defaults exist in mapping, but recoverable read/write interruption coverage is not yet proven end-to-end. |
+| Expected rejection and recoverable error states do not break the session loop | Yes | Met | Character-sheet mutation rejections now surface in a visible global banner, and expected spell/resource/inventory failures no longer collapse into silent or misleading generic flow breaks. |
 | Targeted automated coverage exists for the release-bar flows | Yes | Met | Coverage now includes create/edit/reopen, rests, combat, direct spell-slot actions, and minimum inventory smoke/regression behavior for the MinFunc path. |
 
 ## S1 Explicit Exclusions
@@ -90,7 +90,7 @@ real blockers:
 | S13  | Implement one blocking inventory action | Add only the single inventory capability proven to block the loop.                       | S12          | N/A           | Skipped because S12 found no blocking inventory gap for the minimum offline table-session loop.                                                                  |
 | S14  | Test minimum inventory flow             | Add targeted smoke/regression coverage for the inventory path needed by MinFunc.         | S13 or S12   | Done          | Added a widget smoke/regression flow covering in-sheet inventory toggles and container assignment with persisted repository state verification.                  |
 | S15  | Harden missing-data sheet states        | Prevent breakage on optional or partial valid state.                                     | S11, S14     | Done          | Added simple Equipment-panel fallbacks for missing loadout/summary/item data plus widget coverage proving the sheet still renders and remains operable.          |
-| S16  | Surface mutation rejections             | Keep expected failures visible and non-blocking.                                         | S11, S14     | Planned       | Functional feedback is enough.                                                                                                                                    |
+| S16  | Surface mutation rejections             | Keep expected failures visible and non-blocking.                                         | S11, S14     | Done          | Added a global sheet error banner and preserved expected `StateError` rejection messages for spells/resources, with widget coverage proving the flow stays operable. |
 | S17  | Verify persistence and reopen           | Confirm or fix reopen behavior for minimum session changes.                              | S15, S16     | Planned       | Focus on spells, inventory, rests.                                                                                                                                |
 | S18  | Validate full minimal loop              | Re-audit the complete `MinFuncSpec` flow end-to-end.                                     | S17          | Planned       | Decide if MinFunc is achieved.                                                                                                                                    |
 | S19  | Declare post-MVP debt                   | Separate non-blocking UI/UX and future-depth work from release blockers.                 | S18          | Planned       | Freeze what is out of scope.                                                                                                                                      |
@@ -254,5 +254,6 @@ step is obvious.
 
 ## Current Recommendation
 
-Proceed to **S16**. Surface the minimum expected mutation rejections so the
-main flow stays visible and operable instead of silently failing.
+Proceed to **S17**. Verify the minimum persistence and reopen behavior across
+spells, inventory, rests, and character reopen, fixing only what actually
+fails.
