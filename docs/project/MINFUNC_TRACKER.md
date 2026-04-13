@@ -89,7 +89,7 @@ real blockers:
 | S12  | Audit minimum inventory usability       | Decide whether current inventory already supports real table use.                        | S2           | Done          | Audit confirms the current sheet/repository flow is already sufficient for MinFunc live-play needs; no single blocking inventory action remains.                |
 | S13  | Implement one blocking inventory action | Add only the single inventory capability proven to block the loop.                       | S12          | N/A           | Skipped because S12 found no blocking inventory gap for the minimum offline table-session loop.                                                                  |
 | S14  | Test minimum inventory flow             | Add targeted smoke/regression coverage for the inventory path needed by MinFunc.         | S13 or S12   | Done          | Added a widget smoke/regression flow covering in-sheet inventory toggles and container assignment with persisted repository state verification.                  |
-| S15  | Harden missing-data sheet states        | Prevent breakage on optional or partial valid state.                                     | S11, S14     | Planned       | Stability, not redesign.                                                                                                                                          |
+| S15  | Harden missing-data sheet states        | Prevent breakage on optional or partial valid state.                                     | S11, S14     | Done          | Added simple Equipment-panel fallbacks for missing loadout/summary/item data plus widget coverage proving the sheet still renders and remains operable.          |
 | S16  | Surface mutation rejections             | Keep expected failures visible and non-blocking.                                         | S11, S14     | Planned       | Functional feedback is enough.                                                                                                                                    |
 | S17  | Verify persistence and reopen           | Confirm or fix reopen behavior for minimum session changes.                              | S15, S16     | Planned       | Focus on spells, inventory, rests.                                                                                                                                |
 | S18  | Validate full minimal loop              | Re-audit the complete `MinFuncSpec` flow end-to-end.                                     | S17          | Planned       | Decide if MinFunc is achieved.                                                                                                                                    |
@@ -254,6 +254,5 @@ step is obvious.
 
 ## Current Recommendation
 
-Proceed to **S15**. Harden the minimum missing-data or partial-state sheet
-scenarios needed to keep the character sheet operable without redesigning the
-UI.
+Proceed to **S16**. Surface the minimum expected mutation rejections so the
+main flow stays visible and operable instead of silently failing.

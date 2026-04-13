@@ -108,5 +108,8 @@ Prioritize the **MinFunc** execution path before broader hardening work:
 - S14 is complete: widget smoke/regression coverage now proves the sheet can
   perform a minimum inventory interaction flow with persisted equip/carry and
   container updates.
-- The next step is S15: harden the minimum missing-data or partial-state sheet
-  scenarios without redesigning the UI.
+- S15 is complete: the sheet now has simple Equipment-panel fallbacks for
+  missing loadout text, missing summary text, and empty inventory lists, with
+  widget coverage proving the screen still renders and remains operable.
+- The next step is S16: surface expected mutation rejections so failures stay
+  visible and non-blocking in the main flow.

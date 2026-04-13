@@ -72,6 +72,8 @@ Primary constraints are tracked in:
 - S14 added minimum widget smoke/regression coverage for the inventory path,
   proving the sheet can persist equip/carry toggles and container assignment in
   a real in-session flow.
+- S15 hardened minimum partial-state sheet rendering with simple Equipment-panel
+  fallbacks for missing loadout/summary/item data.
 
 ## Drift Status
 
@@ -99,8 +101,8 @@ Primary constraints are tracked in:
 
 1. Close the **MinFunc** release bar so a real offline player session can be
    completed without functional blockers.
-2. Harden minimum missing-data or partial-state sheet scenarios next (`S15`)
-   so the sheet remains operable under incomplete but valid-enough data.
+2. Surface minimum expected mutation rejections next (`S16`) so the sheet flow
+   remains visible and operable when actions are rejected.
 3. Keep broader UX depth, non-blocking edge-case breadth, and polish outside
    the minimum-functional release scope unless they prove to be blockers.
 
