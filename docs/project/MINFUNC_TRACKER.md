@@ -85,7 +85,7 @@ real blockers:
 | S9B  | Implement restore mutation behavior     | Implement the minimum non-widget restore-slot behavior in persistence layers.            | S9A          | Done          | Drift and in-memory restore paths now mirror spend validation, persist decrements, and reject restore below zero usage.                                          |
 | S9C  | Close restore non-UI slice              | Verify parity/docs state for the restore mutation path before UI work.                   | S9B          | Done          | Restore-slot non-UI parity is confirmed; the next slice is sheet wiring only.                                                                                    |
 | S10  | Expose restore from sheet               | Wire the existing restore contract into the character sheet UI.                          | S9C          | Done          | Added minimal `Restore 1` controls beside `Spend 1` and completed the minimum slot loop in-sheet without widget-side rules logic.                               |
-| S11  | Test restore persistence                | Add targeted coverage for restore + persist + reopen.                                    | S10          | Planned       | Restore only.                                                                                                                                                     |
+| S11  | Test restore persistence                | Add targeted coverage for restore + persist + reopen.                                    | S10          | Done          | Added widget coverage proving restore returns slot usage to zero, persists immediately, and remains correct after navigating back and reopening the character.    |
 | S12  | Audit minimum inventory usability       | Decide whether current inventory already supports real table use.                        | S2           | Planned       | Distinguish blockers from comfort issues.                                                                                                                         |
 | S13  | Implement one blocking inventory action | Add only the single inventory capability proven to block the loop.                       | S12          | Planned / N/A | Skip if audit says inventory is already sufficient.                                                                                                               |
 | S14  | Test minimum inventory flow             | Add targeted smoke/regression coverage for the inventory path needed by MinFunc.         | S13 or S12   | Planned       | Keep scope minimal.                                                                                                                                               |
@@ -254,5 +254,6 @@ step is obvious.
 
 ## Current Recommendation
 
-Proceed to **S11**. Add the minimum restore persistence coverage so the
-spell-slot restore path is proven through action, persistence, and reopen.
+Proceed to **S12**. Audit whether the current inventory behavior is already
+sufficient for a real minimum offline table session and identify only a true
+blocking gap if one remains.
