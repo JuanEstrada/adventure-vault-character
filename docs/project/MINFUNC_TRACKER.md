@@ -86,9 +86,9 @@ real blockers:
 | S9C  | Close restore non-UI slice              | Verify parity/docs state for the restore mutation path before UI work.                   | S9B          | Done          | Restore-slot non-UI parity is confirmed; the next slice is sheet wiring only.                                                                                    |
 | S10  | Expose restore from sheet               | Wire the existing restore contract into the character sheet UI.                          | S9C          | Done          | Added minimal `Restore 1` controls beside `Spend 1` and completed the minimum slot loop in-sheet without widget-side rules logic.                               |
 | S11  | Test restore persistence                | Add targeted coverage for restore + persist + reopen.                                    | S10          | Done          | Added widget coverage proving restore returns slot usage to zero, persists immediately, and remains correct after navigating back and reopening the character.    |
-| S12  | Audit minimum inventory usability       | Decide whether current inventory already supports real table use.                        | S2           | Planned       | Distinguish blockers from comfort issues.                                                                                                                         |
-| S13  | Implement one blocking inventory action | Add only the single inventory capability proven to block the loop.                       | S12          | Planned / N/A | Skip if audit says inventory is already sufficient.                                                                                                               |
-| S14  | Test minimum inventory flow             | Add targeted smoke/regression coverage for the inventory path needed by MinFunc.         | S13 or S12   | Planned       | Keep scope minimal.                                                                                                                                               |
+| S12  | Audit minimum inventory usability       | Decide whether current inventory already supports real table use.                        | S2           | Done          | Audit confirms the current sheet/repository flow is already sufficient for MinFunc live-play needs; no single blocking inventory action remains.                |
+| S13  | Implement one blocking inventory action | Add only the single inventory capability proven to block the loop.                       | S12          | N/A           | Skipped because S12 found no blocking inventory gap for the minimum offline table-session loop.                                                                  |
+| S14  | Test minimum inventory flow             | Add targeted smoke/regression coverage for the inventory path needed by MinFunc.         | S13 or S12   | Done          | Added a widget smoke/regression flow covering in-sheet inventory toggles and container assignment with persisted repository state verification.                  |
 | S15  | Harden missing-data sheet states        | Prevent breakage on optional or partial valid state.                                     | S11, S14     | Planned       | Stability, not redesign.                                                                                                                                          |
 | S16  | Surface mutation rejections             | Keep expected failures visible and non-blocking.                                         | S11, S14     | Planned       | Functional feedback is enough.                                                                                                                                    |
 | S17  | Verify persistence and reopen           | Confirm or fix reopen behavior for minimum session changes.                              | S15, S16     | Planned       | Focus on spells, inventory, rests.                                                                                                                                |
@@ -254,6 +254,6 @@ step is obvious.
 
 ## Current Recommendation
 
-Proceed to **S12**. Audit whether the current inventory behavior is already
-sufficient for a real minimum offline table session and identify only a true
-blocking gap if one remains.
+Proceed to **S15**. Harden the minimum missing-data or partial-state sheet
+scenarios needed to keep the character sheet operable without redesigning the
+UI.

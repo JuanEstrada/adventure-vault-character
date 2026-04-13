@@ -50,8 +50,8 @@ Prioritize the **MinFunc** execution path before broader hardening work:
    and closeout (`S6C3`, done), followed by spend UI (`S7`, done), spend test (`S8`, done), restore
    contract (`S9A`, done), restore behavior (`S9B`, done), restore closeout (`S9C`, done),
    restore UI (`S10`, done), and restore test (`S11`, done).
-3. Treat inventory as already sufficient for MinFunc unless a later regression
-   proves otherwise; keep all later sessions equally atomic.
+3. Inventory is now audit-confirmed as sufficient for MinFunc; skip any new
+   inventory feature work unless a later regression proves a real blocker.
 
 ## Guardrails
 
@@ -105,5 +105,11 @@ Prioritize the **MinFunc** execution path before broader hardening work:
 - S11 is complete: targeted widget coverage now proves restore returns the slot
   state to zero, persists immediately, and remains correct after navigating
   back and reopening the same character.
-- The next step is S12: audit whether inventory already satisfies the minimum
-  offline table-session bar without adding non-blocking UX depth.
+- S12 is complete: the current inventory sheet/repository flow is already
+  sufficient for the minimum offline table-session bar, so no blocking
+  inventory action remains for S13.
+- S14 is complete: widget smoke/regression coverage now proves the sheet can
+  perform a minimum inventory interaction flow with persisted equip/carry and
+  container updates.
+- The next step is S15: harden the minimum missing-data or partial-state sheet
+  scenarios without redesigning the UI.
