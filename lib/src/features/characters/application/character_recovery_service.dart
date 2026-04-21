@@ -109,19 +109,19 @@ class CharacterRecoveryService {
     );
     final matchingSlot = slotProgression.where(
       (slot) => slot.spellLevel == spellLevel,
-    );
-    if (matchingSlot.isEmpty) {
+    ).firstOrNull;
+    if (matchingSlot == null) {
       throw StateError('Spell slot level is not available for this character.');
     }
 
-    final slot = matchingSlot.single;
     final persistedUsages = await _readDao.getSpellSlotUsagesByCharacterId(id);
     final currentUsage = persistedUsages
-        .where((usage) => usage.spellLevel == spellLevel)
-        .map((usage) => usage.slotsExpended)
-        .fold<int>(0, (_, value) => value);
-    if (currentUsage >= slot.slotsMax) {
-      throw StateError('Spell slot usage exceeds the derived slot maximum.');
+      .where((usage) => usage.spellLevel == spellLevel)
+      .map((usage) => usage.slotsExpended)
+      .fold<int>(0, (_, value) => value);
+    if (currentUsage < 0) {
+      // This check should be impossible with current data, but protects against state corruption.
+      throw StateError('Spell slot usage cannot be negative.');
     }
 
     await _database.transaction(() async {
@@ -141,7 +141,40 @@ class CharacterRecoveryService {
   }
 
   Future<void> restoreSpellSlot(String id, {required int spellLevel}) async {
-    throw UnimplementedError();
+    final slotProgression = _characterSpellRules.slotProgressionFor(
+      className: row.className,
+      level: row.level,
+    );
+    final matchingSlot = slotProgression.where(
+      (slot) => slot.spellLevel == spellLevel,
+    ).firstOrNull;
+    if (matchingSlot == null) {
+      throw StateError('Spell slot level is not available for this character.');
+    }
+
+    final persistedUsages = await _readDao.getSpellSlotUsagesByCharacterId(id);
+    final currentUsage = persistedUsages
+      .where((usage) => usage.spellLevel == spellLevel)
+      .map((usage) => usage.slotsExpended)
+      .fold<int>(0, (_, value) => value);
+    if (currentUsage <= 0) {
+      throw StateError('Spell slot usage is already at minimum for this level.');
+    }
+
+    await _database.transaction(() async {
+      final now = DateTime.now();
+      await _writeDao.updateCharacter(
+        id,
+        CharactersCompanion(updatedAt: Value(now)),
+      );
+      await _writeDao.upsertSpellSlotUsage(
+        CharacterSpellSlotUsagesCompanion.insert(
+          characterId: id,
+          spellLevel: spellLevel,
+          slotsExpended: Value(currentUsage - 1),
+        ),
+      );
+    });
   }
 
   Future<void> _applyRecovery(String id, {required bool isLongRest}) async {

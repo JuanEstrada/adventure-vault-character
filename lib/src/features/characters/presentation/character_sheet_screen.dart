@@ -31,10 +31,11 @@ class CharacterSheetScreen extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback onEdit;
   final Future<void> Function() onApplyShortRest;
-  final Future<void> Function() onApplyLongRest;
-  final Future<void> Function({required int spellLevel}) onSpendSpellSlot;
-  final Future<void> Function(String resourceKey, int currentUses)
-  onSetClassResourceUses;
+   final Future<void> Function() onApplyLongRest;
+   final Future<void> Function({required int spellLevel}) onSpendSpellSlot;
+   final Future<void> Function({required int spellLevel}) onRestoreSpellSlot;
+   final Future<void> Function(String resourceKey, int currentUses)
+   onSetClassResourceUses;
   final Future<void> Function() onRecordDeathSaveSuccess;
   final Future<void> Function() onRecordDeathSaveFailure;
   final Future<void> Function() onResetDeathSaves;

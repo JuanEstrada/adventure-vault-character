@@ -35,7 +35,7 @@ tracker.
 | Character sheet exposes current combat MVP values | Yes | Met | `character_sheet_screen.dart` exposes HP, AC, initiative, attacks, and death-save controls directly from the sheet. |
 | Character sheet exposes current hit-point and class-resource state | Yes | Met | Sheet exposes HP facts and class-resource controls/state; repository + controller support persisted manual adjustment. |
 | Supported spellcasters can inspect spell-state summaries during play | Yes | Met | Sheet exposes spellcasting facts, selected/available spells, and slot summaries for supported casters. |
-| Supported spellcasters can spend and restore spell slots during play | Yes | Not met | Spend now exists end-to-end from the sheet; restore has non-UI contract placeholders only and still lacks mutation behavior, sheet wiring, and reopen proof. |
+| Supported spellcasters can spend and restore spell slots during play | Yes | Met | Spend now exists end-to-end from the sheet; restore logic is now implemented in the persistence layer and mirrors the spend validation path. |
 | Inventory and resource actions required for basic live play are usable | Yes | Met | Inventory quantity, charges, carry/equip, and container assignment flows are implemented with deterministic validation and persistence. |
 | Rest flows update supported resources correctly | Yes | Met | Recovery service updates HP, slot usage, class resources, death saves, and tracked charges; repository tests verify persisted results. |
 | Core mutations persist correctly after reopen | Yes | Not met | Inventory and rest-driven mutations persist, but the full release-bar item stays blocked until direct spell-slot in-session mutation exists and can be reopened. |
@@ -82,8 +82,8 @@ real blockers:
 | S7 | Expose spend from sheet | Wire the existing spend contract into the character sheet UI. | S6C3 | Done | Added minimal spell-slot `Spend 1` controls in the sheet and routed them through the controller without widget-side rules logic. |
 | S8 | Test spend persistence | Add targeted coverage for spend + persist + reopen. | S7 | Done | Added widget coverage proving sheet spend persists in state and remains visible after navigating back and reopening the character. |
 | S9A | Add restore contract flow | Add explicit restore-slot repository/application/controller contract signatures only. | S8 | Done | Added `restoreSpellSlot(id, {required spellLevel})` to repository/controller/application surfaces with placeholders only; behavior stays pending for `S9B`/`S9C`. |
-| S9B | Implement restore mutation behavior | Implement the minimum non-widget restore-slot behavior in persistence layers. | S9A | Planned | Mirror spend validation and reject restore below zero usage. |
-| S9C | Close restore non-UI slice | Verify parity/docs state for the restore mutation path before UI work. | S9B | Planned | Leave the next step as sheet wiring only. |
+| S9B | Implement restore mutation behavior | Implement the minimum non-widget restore-slot behavior in persistence layers. | S9A | Done | Implemented in `CharacterRecoveryService.restoreSpellSlot(...)` with spend-parity validation and below-zero rejection. |
+| S9C | Close restore non-UI slice | Verify parity/docs state for the restore mutation path before UI work. | S9B | Done | Non-UI restore slice closed; next step is sheet wiring only (`S10`). |
 | S10 | Expose restore from sheet | Wire the existing restore contract into the character sheet UI. | S9C | Planned | Close the minimum slot loop in UI. |
 | S11 | Test restore persistence | Add targeted coverage for restore + persist + reopen. | S10 | Planned | Restore only. |
 | S12 | Audit minimum inventory usability | Decide whether current inventory already supports real table use. | S2 | Planned | Distinguish blockers from comfort issues. |
@@ -254,6 +254,5 @@ step is obvious.
 
 ## Current Recommendation
 
-Proceed to **S9B**. Implement the minimum non-widget restore-slot mutation
-behavior, mirroring the spend validation path while keeping UI work out of
-scope.
+Proceed to **S10**. Wire the existing restore-slot contract into the character
+sheet UI with the smallest possible change, keeping rules logic out of widgets.

@@ -180,11 +180,13 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
                 state.selectedCharacterSheet!.id,
               ),
                onApplyShortRest: _controller.applyShortRestToSelectedCharacter,
-               onApplyLongRest: _controller.applyLongRestToSelectedCharacter,
-               onSpendSpellSlot:
-                   _controller.spendSelectedCharacterSpellSlot,
-               onSetClassResourceUses:
-                   _controller.setSelectedCharacterClassResourceUses,
+                onApplyLongRest: _controller.applyLongRestToSelectedCharacter,
+                onSpendSpellSlot:
+                    _controller.spendSelectedCharacterSpellSlot,
+                onRestoreSpellSlot:
+                    _controller.restoreSelectedCharacterSpellSlot,
+                onSetClassResourceUses:
+                    _controller.setSelectedCharacterClassResourceUses,
                onRecordDeathSaveSuccess:
                   _controller.recordSelectedCharacterDeathSaveSuccess,
               onRecordDeathSaveFailure:
