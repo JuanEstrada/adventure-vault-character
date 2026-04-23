@@ -46,7 +46,7 @@ This tracker focuses on **UI/UX debt** items marked as P1.
 
 | Task | Description | Backend Status | UI Status |
 |------|-------------|----------------|-----------|
-| Add spellbook management screen | Screen to add/remove spells from wizard spellbook | ✅ Complete | ❌ Missing |
+| Add spellbook management screen | Screen to add/remove spells from wizard spellbook | ✅ Complete | ✅ Complete |
 | Add prepared spell selection screen | Screen to select/deselect prepared spells (bard, cleric, druid, paladin) | ✅ Complete | ❌ Missing |
 
 ## P1 Open Ambiguities
