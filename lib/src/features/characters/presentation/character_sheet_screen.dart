@@ -12,6 +12,7 @@ class CharacterSheetScreen extends StatelessWidget {
     required this.onApplyShortRest,
     required this.onApplyLongRest,
     required this.onSpendSpellSlot,
+    required this.onRestoreSpellSlot,
     required this.onSetClassResourceUses,
     required this.onRecordDeathSaveSuccess,
     required this.onRecordDeathSaveFailure,

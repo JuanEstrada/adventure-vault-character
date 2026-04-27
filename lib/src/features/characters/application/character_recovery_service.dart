@@ -141,6 +141,11 @@ class CharacterRecoveryService {
   }
 
   Future<void> restoreSpellSlot(String id, {required int spellLevel}) async {
+    final row = await _readDao.getCharacterRowById(id);
+    if (row == null) {
+      throw StateError('Character not found.');
+    }
+
     final slotProgression = _characterSpellRules.slotProgressionFor(
       className: row.className,
       level: row.level,
