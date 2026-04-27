@@ -6,7 +6,8 @@ class TransferToContainerDialog extends StatefulWidget {
   final int sourceQuantity;
   final String sourceName;
   final VoidCallback onDismiss;
-  final Function(String containerId, String containerName, int quantity) onTransfer;
+  final Function(String containerId, String containerName, int quantity)
+  onTransfer;
 
   const TransferToContainerDialog({
     super.key,
@@ -35,7 +36,9 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
   void initState() {
     super.initState();
     _transferQuantity = widget.sourceQuantity;
-    _quantityController = TextEditingController(text: _transferQuantity.toString());
+    _quantityController = TextEditingController(
+      text: _transferQuantity.toString(),
+    );
     _fetchContainers();
   }
 
@@ -51,7 +54,10 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
     });
   }
 
-  Future<void> _selectContainer(String containerId, String containerName) async {
+  Future<void> _selectContainer(
+    String containerId,
+    String containerName,
+  ) async {
     setState(() {
       _selectedContainerId = containerId;
       _selectedContainerName = containerName;
@@ -82,8 +88,10 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
     }
 
     if (transferQuantity > widget.sourceQuantity) {
-      setState(() => _error =
-          'Transfer quantity cannot exceed source stack ($widget.sourceQuantity)');
+      setState(
+        () => _error =
+            'Transfer quantity cannot exceed source stack ($widget.sourceQuantity)',
+      );
       return;
     }
 
@@ -92,7 +100,11 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
       _error = null;
     });
 
-    widget.onTransfer(_selectedContainerId!, _selectedContainerName, _transferQuantity);
+    widget.onTransfer(
+      _selectedContainerId!,
+      _selectedContainerName,
+      _transferQuantity,
+    );
 
     Future.delayed(const Duration(milliseconds: 100), () {
       widget.onDismiss();
@@ -140,9 +152,9 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
           if (_error != null)
             Text(
               _error!,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.red,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.red),
             ),
           const SizedBox(height: 8),
           TextField(
@@ -176,10 +188,7 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: widget.onDismiss,
-          child: const Text('Cancel'),
-        ),
+        TextButton(onPressed: widget.onDismiss, child: const Text('Cancel')),
         ElevatedButton(
           onPressed: _isTransferring ? null : _validateAndTransfer,
           child: const Text('Transfer'),

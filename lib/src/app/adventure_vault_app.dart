@@ -179,15 +179,13 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
               onEdit: () => _controller.loadEditableCharacter(
                 state.selectedCharacterSheet!.id,
               ),
-               onApplyShortRest: _controller.applyShortRestToSelectedCharacter,
-                onApplyLongRest: _controller.applyLongRestToSelectedCharacter,
-                onSpendSpellSlot:
-                    _controller.spendSelectedCharacterSpellSlot,
-                onRestoreSpellSlot:
-                    _controller.restoreSelectedCharacterSpellSlot,
-                onSetClassResourceUses:
-                    _controller.setSelectedCharacterClassResourceUses,
-               onRecordDeathSaveSuccess:
+              onApplyShortRest: _controller.applyShortRestToSelectedCharacter,
+              onApplyLongRest: _controller.applyLongRestToSelectedCharacter,
+              onSpendSpellSlot: _controller.spendSelectedCharacterSpellSlot,
+              onRestoreSpellSlot: _controller.restoreSelectedCharacterSpellSlot,
+              onSetClassResourceUses:
+                  _controller.setSelectedCharacterClassResourceUses,
+              onRecordDeathSaveSuccess:
                   _controller.recordSelectedCharacterDeathSaveSuccess,
               onRecordDeathSaveFailure:
                   _controller.recordSelectedCharacterDeathSaveFailure,

@@ -15,7 +15,10 @@ void main() {
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
       final summary = await repository.createCharacter(
-        _createCharacterInput(name: 'Spend from zero', items: <String>['Torch']),
+        _createCharacterInput(
+          name: 'Spend from zero',
+          items: <String>['Torch'],
+        ),
       );
 
       await repository.spendSpellSlot(summary.id, spellLevel: 1);

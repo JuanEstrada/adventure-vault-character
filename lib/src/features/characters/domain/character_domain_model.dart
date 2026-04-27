@@ -390,17 +390,19 @@ class CharacterSpellReferenceDomainModel {
 class CharacterSpellSlotDomainModel {
   const CharacterSpellSlotDomainModel({
     required this.spellLevel,
+    required this.slotIndex,
     required this.slotsExpended,
     required this.slotsMax,
   });
 
   final int spellLevel;
+  final int slotIndex; // 0-based index within the spell level (0, 1, 2, ...)
   final int slotsExpended;
   final int slotsMax;
 
   int get slotsRemaining => slotsMax - slotsExpended;
 
-  String get label => 'Level $spellLevel';
+  String get label => 'Level $spellLevel Slot ${slotIndex + 1}';
 
   String get displaySummary => '$slotsRemaining / $slotsMax';
 }

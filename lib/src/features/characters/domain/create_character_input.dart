@@ -104,9 +104,16 @@ class CharacterSpellSelectionInput {
 class CharacterSpellSlotUsageInput {
   const CharacterSpellSlotUsageInput({
     required this.spellLevel,
-    required this.slotsExpended,
+    required this.expendedSlotIndices,
   });
 
   final int spellLevel;
-  final int slotsExpended;
+  final List<String> expendedSlotIndices; // 0-based indices of expended slots
+
+  int get slotsExpended => expendedSlotIndices.length;
+
+  List<int> get availableSlotIndices {
+    final allIndices = List<int>.generate(slotsExpended, (i) => i);
+    return allIndices.where((i) => !expendedSlotIndices.contains(i.toString())).toList();
+  }
 }

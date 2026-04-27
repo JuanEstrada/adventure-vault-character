@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 enum WizardSpellSelectionMode {
   /// Select spells to prepare (limited by level)
   prepared,
+
   /// Select spells to know (no limit)
   known,
 }
@@ -65,10 +66,7 @@ class CharacterSpellReferenceDomainModel {
 
 /// Spell selection result for wizard spellbook
 class SpellSelectionResult {
-  const SpellSelectionResult({
-    required this.spells,
-    required this.spellCount,
-  });
+  const SpellSelectionResult({required this.spells, required this.spellCount});
 
   final List<CharacterSpellReferenceDomainModel> spells;
   final int spellCount;
@@ -97,10 +95,7 @@ class CharacterSpellbookService {
       spell,
     ];
 
-    return SpellSelectionResult(
-      spells: updated,
-      spellCount: updated.length,
-    );
+    return SpellSelectionResult(spells: updated, spellCount: updated.length);
   }
 
   /// Remove a spell from the wizard's spellbook
@@ -108,9 +103,7 @@ class CharacterSpellbookService {
     List<CharacterSpellReferenceDomainModel> currentSpells,
     String spellId,
   ) {
-    final index = currentSpells.indexWhere(
-      (spell) => spell.id == spellId,
-    );
+    final index = currentSpells.indexWhere((spell) => spell.id == spellId);
 
     if (index == -1) {
       return null;
@@ -120,10 +113,7 @@ class CharacterSpellbookService {
       ...currentSpells.where((s) => s.id != spellId),
     ];
 
-    return SpellSelectionResult(
-      spells: updated,
-      spellCount: updated.length,
-    );
+    return SpellSelectionResult(spells: updated, spellCount: updated.length);
   }
 
   /// Get spells grouped by level
@@ -134,7 +124,10 @@ class CharacterSpellbookService {
 
     for (final spell in spells) {
       byLevel
-          .putIfAbsent(spell.level, () => <CharacterSpellReferenceDomainModel>[])
+          .putIfAbsent(
+            spell.level,
+            () => <CharacterSpellReferenceDomainModel>[],
+          )
           .add(spell);
     }
 

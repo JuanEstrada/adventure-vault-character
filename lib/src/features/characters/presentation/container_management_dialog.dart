@@ -46,7 +46,10 @@ class _ContainerManagementDialogState extends State<ContainerManagementDialog> {
     });
   }
 
-  Future<void> _selectContainer(String containerId, String containerName) async {
+  Future<void> _selectContainer(
+    String containerId,
+    String containerName,
+  ) async {
     setState(() {
       _selectedContainerId = containerId;
     });
@@ -117,13 +120,13 @@ class _ContainerManagementDialogState extends State<ContainerManagementDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Containers:',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          Text('Containers:', style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: 8),
           if (_containers.isEmpty)
-            const Text('No containers found', style: TextStyle(color: Colors.grey))
+            const Text(
+              'No containers found',
+              style: TextStyle(color: Colors.grey),
+            )
           else
             ..._containers.map((container) {
               final isSelected = _selectedContainerId == container['id'];
@@ -157,7 +160,8 @@ class _ContainerManagementDialogState extends State<ContainerManagementDialog> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _deleteContainer(containerId, containerName),
+                      onPressed: () =>
+                          _deleteContainer(containerId, containerName),
                     ),
                   ],
                 ),
@@ -190,18 +194,12 @@ class _ContainerManagementDialogState extends State<ContainerManagementDialog> {
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: widget.onDismiss,
-          child: const Text('Cancel'),
-        ),
+        TextButton(onPressed: widget.onDismiss, child: const Text('Cancel')),
         ElevatedButton(
           onPressed: _selectedContainerId != null ? _renameContainer : null,
           child: const Text('Rename'),
         ),
-        ElevatedButton(
-          onPressed: _addContainer,
-          child: const Text('Add'),
-        ),
+        ElevatedButton(onPressed: _addContainer, child: const Text('Add')),
       ],
     );
   }

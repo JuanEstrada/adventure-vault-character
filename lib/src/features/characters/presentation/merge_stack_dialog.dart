@@ -33,7 +33,9 @@ class _MergeStackDialogState extends State<MergeStackDialog> {
   void initState() {
     super.initState();
     _mergeQuantity = widget.sourceQuantity;
-    _quantityController = TextEditingController(text: _mergeQuantity.toString());
+    _quantityController = TextEditingController(
+      text: _mergeQuantity.toString(),
+    );
   }
 
   void _validateAndMerge() {
@@ -54,8 +56,10 @@ class _MergeStackDialogState extends State<MergeStackDialog> {
     }
 
     if (mergeQuantity > widget.sourceQuantity) {
-      setState(() => _error =
-          'Merge quantity cannot exceed source stack ($widget.sourceQuantity)');
+      setState(
+        () => _error =
+            'Merge quantity cannot exceed source stack ($widget.sourceQuantity)',
+      );
       return;
     }
 
@@ -88,9 +92,9 @@ class _MergeStackDialogState extends State<MergeStackDialog> {
           if (_error != null)
             Text(
               _error!,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.red,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.red),
             ),
           const SizedBox(height: 8),
           TextField(
@@ -113,33 +117,36 @@ class _MergeStackDialogState extends State<MergeStackDialog> {
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: Text(
-                'Source: $widget.sourceQuantity',
-                style: Theme.of(context).textTheme.bodySmall,
-              )),
+              Expanded(
+                child: Text(
+                  'Source: $widget.sourceQuantity',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
               const SizedBox(width: 16),
-              Expanded(child: Text(
-                'Target: $widget.targetQuantity',
-                style: Theme.of(context).textTheme.bodySmall,
-              )),
+              Expanded(
+                child: Text(
+                  'Target: $widget.targetQuantity',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(child: Text(
-                'After: ${widget.targetQuantity + _mergeQuantity}',
-                style: Theme.of(context).textTheme.bodySmall,
-              )),
+              Expanded(
+                child: Text(
+                  'After: ${widget.targetQuantity + _mergeQuantity}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
             ],
           ),
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: widget.onDismiss,
-          child: const Text('Cancel'),
-        ),
+        TextButton(onPressed: widget.onDismiss, child: const Text('Cancel')),
         ElevatedButton(
           onPressed: _isMerging ? null : _validateAndMerge,
           child: const Text('Merge'),

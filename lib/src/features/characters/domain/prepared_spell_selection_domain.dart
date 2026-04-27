@@ -28,9 +28,7 @@ class PreparedSpellSelectionService {
     List<CharacterSpellReferenceDomainModel> currentSpells,
     CharacterSpellReferenceDomainModel spell,
   ) {
-    final index = currentSpells.indexWhere(
-      (s) => s.id == spell.id,
-    );
+    final index = currentSpells.indexWhere((s) => s.id == spell.id);
 
     if (index != -1) {
       // Spell already selected, remove it
@@ -64,7 +62,10 @@ class PreparedSpellSelectionService {
 
     for (final spell in spells) {
       byLevel
-          .putIfAbsent(spell.level, () => <CharacterSpellReferenceDomainModel>[])
+          .putIfAbsent(
+            spell.level,
+            () => <CharacterSpellReferenceDomainModel>[],
+          )
           .add(spell);
     }
 

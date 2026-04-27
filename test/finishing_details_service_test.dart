@@ -19,18 +19,21 @@ void main() {
     expect(groups.single.id, 'ideals-acolyte');
   });
 
-  test('falls back to field-wide groups when background-specific groups are absent', () {
-    const service = FinishingDetailsService();
+  test(
+    'falls back to field-wide groups when background-specific groups are absent',
+    () {
+      const service = FinishingDetailsService();
 
-    final groups = service.availableGroups(
-      catalog: _catalog,
-      fieldKey: NarrativeFieldKey.alignment,
-      backgroundId: 'acolyte',
-    );
+      final groups = service.availableGroups(
+        catalog: _catalog,
+        fieldKey: NarrativeFieldKey.alignment,
+        backgroundId: 'acolyte',
+      );
 
-    expect(groups, hasLength(1));
-    expect(groups.single.id, 'alignment-core');
-  });
+      expect(groups, hasLength(1));
+      expect(groups.single.id, 'alignment-core');
+    },
+  );
 
   test('rolled selection is deterministic for a fixed roller', () {
     const service = FinishingDetailsService(
@@ -57,10 +60,7 @@ class _FixedRoller implements DeterministicRoller {
   final int value;
 
   @override
-  int roll({
-    required String seed,
-    required int sides,
-  }) {
+  int roll({required String seed, required int sides}) {
     if (value > sides) {
       return sides;
     }

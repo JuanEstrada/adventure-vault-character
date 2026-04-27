@@ -178,8 +178,8 @@ class CharacterSpellSlotUsages extends Table {
 
   IntColumn get spellLevel => integer().named('spell_level')();
 
-  IntColumn get slotsExpended =>
-      integer().named('slots_expended').withDefault(const Constant(0))();
+  TextColumn get expendedSlotIndices =>
+      text().named('expended_slot_indices').withDefault(const Constant('[]'))();
 
   @override
   Set<Column<Object>> get primaryKey => {characterId, spellLevel};

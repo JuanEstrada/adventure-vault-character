@@ -142,6 +142,30 @@ class CharacterWriteDao {
         .insertOnConflictUpdate(companion);
   }
 
+  Future<void> insertSpellSlotUsage(
+    CharacterSpellSlotUsagesCompanion companion,
+  ) async {
+    await _database
+        .into(_database.characterSpellSlotUsages)
+        .insert(companion);
+  }
+
+  Future<void> replaceSpellSlotUsage(
+    CharacterSpellSlotUsagesCompanion companion,
+  ) async {
+    await _database
+        .into(_database.characterSpellSlotUsages)
+        .insertOnConflictUpdate(companion);
+  }
+
+  Future<void> deleteSpellSlotUsage(
+    CharacterSpellSlotUsagesCompanion companion,
+  ) async {
+    await _database
+        .into(_database.characterSpellSlotUsages)
+        .deleteWith(companion);
+  }
+
   Future<void> insertSkills(List<CharacterSkillsCompanion> companions) async {
     if (companions.isEmpty) {
       return;

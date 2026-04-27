@@ -32,11 +32,17 @@ class CharacterSheetScreen extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback onEdit;
   final Future<void> Function() onApplyShortRest;
-   final Future<void> Function() onApplyLongRest;
-   final Future<void> Function({required int spellLevel}) onSpendSpellSlot;
-   final Future<void> Function({required int spellLevel}) onRestoreSpellSlot;
-   final Future<void> Function(String resourceKey, int currentUses)
-   onSetClassResourceUses;
+  final Future<void> Function() onApplyLongRest;
+  final Future<void> Function({
+    required int spellLevel,
+    required int slotIndex,
+  }) onSpendSpellSlot;
+  final Future<void> Function({
+    required int spellLevel,
+    required int slotIndex,
+  }) onRestoreSpellSlot;
+  final Future<void> Function(String resourceKey, int currentUses)
+  onSetClassResourceUses;
   final Future<void> Function() onRecordDeathSaveSuccess;
   final Future<void> Function() onRecordDeathSaveFailure;
   final Future<void> Function() onResetDeathSaves;
@@ -224,11 +230,11 @@ class CharacterSheetScreen extends StatelessWidget {
                     _SpellsPanel(
                       character: character,
                       isApplyingRest: isApplyingRest,
-                        supportsShortRestRecovery: supportsShortRestRecovery,
-                        onApplyShortRest: onApplyShortRest,
-                        onApplyLongRest: onApplyLongRest,
-                        onSpendSpellSlot: onSpendSpellSlot,
-                      ),
+                      supportsShortRestRecovery: supportsShortRestRecovery,
+                      onApplyShortRest: onApplyShortRest,
+                      onApplyLongRest: onApplyLongRest,
+                      onSpendSpellSlot: onSpendSpellSlot,
+                    ),
                     const SizedBox(height: 16),
                   ],
                   _FeaturesNotesPanel(character: character),
@@ -872,8 +878,11 @@ class _SpellsPanel extends StatelessWidget {
   final bool isApplyingRest;
   final bool supportsShortRestRecovery;
   final Future<void> Function() onApplyShortRest;
-  final Future<void> Function() onApplyLongRest;
-  final Future<void> Function({required int spellLevel}) onSpendSpellSlot;
+    final Future<void> Function() onApplyLongRest;
+    final Future<void> Function({required int spellLevel, required int slotIndex})
+        onSpendSpellSlot;
+    final Future<void> Function({required int spellLevel, required int slotIndex})
+        onRestoreSpellSlot;
 
   @override
   Widget build(BuildContext context) {
@@ -972,15 +981,46 @@ class _SpellsPanel extends StatelessWidget {
                             : slot.slotsRemaining / slot.slotsMax,
                       ),
                       const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: ActionChip(
-                          label: const Text('Spend 1'),
-                          onPressed: isApplyingRest || slot.slotsRemaining <= 0
-                              ? null
-                              : () {
-                                  onSpendSpellSlot(spellLevel: slot.spellLevel);
-                                },
+                        Wrap(
+                        spacing: 4,
+                        runSpacing: 4,
+                        children: List.generate(
+                          slot.slotsMax,
+                          (slotIndex) {
+                            final index = slotIndex + 1;
+                            final isSpent = slot.slotsExpended >= index;
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ActionChip(
+                                  label: Text('Spend $index'),
+                                  onPressed: isApplyingRest || isSpent
+                                      ? null
+                                      : () {
+                                          onSpendSpellSlot(
+                                            spellLevel: slot.spellLevel,
+                                            slotIndex: slot.slotIndex,
+                                          );
+                                        },
+                                  disabledColor: Colors.grey.shade200,
+                                ),
+                                if (slot.slotsMax > index && !isSpent) ...[
+                                  const SizedBox(width: 4),
+                                  ActionChip(
+                                    label: const Text('Restore'),
+                                    onPressed: isApplyingRest
+                                        ? null
+                                        : () {
+                                            onRestoreSpellSlot(
+                                              spellLevel: slot.spellLevel,
+                                              slotIndex: slot.slotIndex,
+                                            );
+                                          },
+                                  ),
+                                ],
+                              ],
+                            );
+                          },
                         ),
                       ),
                     ],

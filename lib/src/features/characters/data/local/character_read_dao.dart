@@ -95,6 +95,16 @@ class CharacterReadDao {
         .get();
   }
 
+  Future<CharacterSpellSlotUsage?> getSpellSlotUsageByCharacterIdAndLevel(
+    String id,
+    int spellLevel,
+  ) {
+    return (_database.select(_database.characterSpellSlotUsages)
+          ..where((table) => table.characterId.equals(id))
+          ..where((table) => table.spellLevel.equals(spellLevel)))
+        .getSingleOrNull();
+  }
+
   Future<CharacterCurrencyData?> getCurrencyByCharacterId(String id) {
     return (_database.select(
       _database.characterCurrency,

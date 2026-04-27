@@ -468,9 +468,9 @@ class CharacterDomainMapper {
       className: record.row.className,
       level: record.row.level,
     );
-    final slotUsageByLevel = <int, int>{
+    final slotUsageByLevel = <int, List<String>>{
       for (final usage in record.spellSlotUsages)
-        usage.spellLevel: usage.slotsExpended,
+        usage.spellLevel: List<String>.from(usage.expendedSlotIndices.split(',')),
     };
     final abilityScore = _abilityScoreForKey(
       abilityKey: abilityKey,
@@ -491,18 +491,46 @@ class CharacterDomainMapper {
         abilityModifier: _characterSpellAbilityModifier(abilityScore),
       ),
       slotProgression: slotProgression
+          .asMap()
+          .entries
           .map(
-            (slot) => CharacterSpellSlotDomainModel(
-              spellLevel: slot.spellLevel,
-              slotsExpended: (slotUsageByLevel[slot.spellLevel] ?? 0).clamp(
-                0,
-                slot.slotsMax,
-              ),
-              slotsMax: slot.slotsMax,
-            ),
+            (entry) {
+              final slot = entry.value;
+              final currentIndex = entry.key;
+              final slotIndex = slot.spellLevel == slotProgression.last.spellLevel
+                  ? currentIndex
+                  : _getSlotIndexForLevel(
+                      slot.spellLevel,
+                      currentIndex,
+                      slotProgression,
+                    );
+              return CharacterSpellSlotDomainModel(
+                spellLevel: slot.spellLevel,
+                slotIndex: slotIndex,
+                slotsExpended: (slotUsageByLevel[slot.spellLevel] ?? 0).clamp(
+                  0,
+                  slot.slotsMax,
+                ),
+                slotsMax: slot.slotsMax,
+              );
+            },
           )
           .toList(growable: false),
     );
+  }
+
+  int _getSlotIndexForLevel(
+    int spellLevel,
+    int currentIndex,
+    List<CharacterSpellSlotProgression> slotProgression,
+  ) {
+    var count = 0;
+    for (var i = 0; i <= currentIndex; i++) {
+      if (slotProgression[i].spellLevel == spellLevel) {
+        count++;
+      }
+    }
+    return count - 1;
   }
 
   CharacterBackgroundEntryDomainModel _mapBackgroundEntry(String raw) {

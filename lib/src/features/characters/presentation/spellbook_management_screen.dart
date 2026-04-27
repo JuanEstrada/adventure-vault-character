@@ -54,55 +54,50 @@ class _SpellbookManagementScreenState extends State<SpellbookManagementScreen> {
     }
   }
 
- bool _isSaving = false;
+  bool _isSaving = false;
 
   void _selectSpell(String spellId, bool value) {
-  if (_isSaving) return;
+    if (_isSaving) return;
 
-  final spellIndex = _spellbook.spells.indexWhere(
-    (spell) => spell.id == spellId,
-  );
-
-  if (value && spellIndex == -1) {
-    // Add spell
-    final spell = widget.availableSpells.firstWhere(
-      (s) => s.id == spellId,
+    final spellIndex = _spellbook.spells.indexWhere(
+      (spell) => spell.id == spellId,
     );
 
-    final result = _spellbookService.addSpell(
-      _spellbook.spells,
-      spell,
-      widget.selectionLimit,
-      widget.spellSelectionMode,
-    );
+    if (value && spellIndex == -1) {
+      // Add spell
+      final spell = widget.availableSpells.firstWhere((s) => s.id == spellId);
 
-    if (result != null && mounted) {
-      setState(() {
-        _spellbook = CharacterSpellbookDomainModel(
-          spells: result.spells,
-          spellSelectionMode: _spellbook.spellSelectionMode,
-          selectionLimit: _spellbook.selectionLimit,
-        );
-      });
-    }
-  } else if (!value && spellIndex != -1) {
-    // Remove spell
-    final result = _spellbookService.removeSpell(
-      _spellbook.spells,
-      spellId,
-    );
+      final result = _spellbookService.addSpell(
+        _spellbook.spells,
+        spell,
+        widget.selectionLimit,
+        widget.spellSelectionMode,
+      );
 
-    if (result != null && mounted) {
-      setState(() {
-        _spellbook = CharacterSpellbookDomainModel(
-          spells: result.spells,
-          spellSelectionMode: _spellbook.spellSelectionMode,
-          selectionLimit: _spellbook.selectionLimit,
-        );
-      });
+      if (result != null && mounted) {
+        setState(() {
+          _spellbook = CharacterSpellbookDomainModel(
+            spells: result.spells,
+            spellSelectionMode: _spellbook.spellSelectionMode,
+            selectionLimit: _spellbook.selectionLimit,
+          );
+        });
+      }
+    } else if (!value && spellIndex != -1) {
+      // Remove spell
+      final result = _spellbookService.removeSpell(_spellbook.spells, spellId);
+
+      if (result != null && mounted) {
+        setState(() {
+          _spellbook = CharacterSpellbookDomainModel(
+            spells: result.spells,
+            spellSelectionMode: _spellbook.spellSelectionMode,
+            selectionLimit: _spellbook.selectionLimit,
+          );
+        });
+      }
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -119,9 +114,7 @@ class _SpellbookManagementScreenState extends State<SpellbookManagementScreen> {
           ),
         ],
       ),
-      body: _spellbook.spells.isEmpty
-          ? _emptyState()
-          : _spellbookListView(),
+      body: _spellbook.spells.isEmpty ? _emptyState() : _spellbookListView(),
     );
   }
 
@@ -130,11 +123,7 @@ class _SpellbookManagementScreenState extends State<SpellbookManagementScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.book_outlined,
-            size: 80,
-            color: Colors.grey.shade400,
-          ),
+          Icon(Icons.book_outlined, size: 80, color: Colors.grey.shade400),
           const SizedBox(height: 16),
           Text(
             'No spells selected',
@@ -143,9 +132,9 @@ class _SpellbookManagementScreenState extends State<SpellbookManagementScreen> {
           const SizedBox(height: 8),
           Text(
             'Select spells from the list below',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey.shade600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
           ),
         ],
       ),
@@ -225,10 +214,7 @@ class _SpellbookSpellItem extends StatelessWidget {
           '${spell.school} • ${spell.castingTime} • ${spell.range} • ${spell.duration}',
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        trailing: Switch(
-          value: isSelected,
-          onChanged: onToggle,
-        ),
+        trailing: Switch(value: isSelected, onChanged: onToggle),
       ),
     );
   }

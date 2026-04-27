@@ -56,12 +56,12 @@ class EditableCharacterMapper {
             .whereType<CharacterSpellSelectionInput>()
             .toList(growable: false),
         slotUsages: record.spellSlotUsages
-            .map(
-              (row) => CharacterSpellSlotUsageInput(
-                spellLevel: row.spellLevel,
-                slotsExpended: row.slotsExpended,
-              ),
-            )
+           .map(
+               (row) => CharacterSpellSlotUsageInput(
+                 spellLevel: row.spellLevel,
+                 expendedSlotIndices: List<String>.from(row.expendedSlotIndices.split(',')),
+               ),
+             )
             .toList(growable: false),
       ),
       equipment: EditableCharacterEquipment(

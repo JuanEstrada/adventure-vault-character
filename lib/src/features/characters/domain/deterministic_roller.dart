@@ -1,18 +1,12 @@
 abstract interface class DeterministicRoller {
-  int roll({
-    required String seed,
-    required int sides,
-  });
+  int roll({required String seed, required int sides});
 }
 
 class HashDeterministicRoller implements DeterministicRoller {
   const HashDeterministicRoller();
 
   @override
-  int roll({
-    required String seed,
-    required int sides,
-  }) {
+  int roll({required String seed, required int sides}) {
     if (sides <= 1) {
       return 1;
     }

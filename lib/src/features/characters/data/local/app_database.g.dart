@@ -4051,23 +4051,23 @@ class $CharacterSpellSlotUsagesTable extends CharacterSpellSlotUsages
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _slotsExpendedMeta = const VerificationMeta(
-    'slotsExpended',
-  );
+  static const VerificationMeta _expendedSlotIndicesMeta =
+      const VerificationMeta('expendedSlotIndices');
   @override
-  late final GeneratedColumn<int> slotsExpended = GeneratedColumn<int>(
-    'slots_expended',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
+  late final GeneratedColumn<String> expendedSlotIndices =
+      GeneratedColumn<String>(
+        'expended_slot_indices',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('[]'),
+      );
   @override
   List<GeneratedColumn> get $columns => [
     characterId,
     spellLevel,
-    slotsExpended,
+    expendedSlotIndices,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4100,12 +4100,12 @@ class $CharacterSpellSlotUsagesTable extends CharacterSpellSlotUsages
     } else if (isInserting) {
       context.missing(_spellLevelMeta);
     }
-    if (data.containsKey('slots_expended')) {
+    if (data.containsKey('expended_slot_indices')) {
       context.handle(
-        _slotsExpendedMeta,
-        slotsExpended.isAcceptableOrUnknown(
-          data['slots_expended']!,
-          _slotsExpendedMeta,
+        _expendedSlotIndicesMeta,
+        expendedSlotIndices.isAcceptableOrUnknown(
+          data['expended_slot_indices']!,
+          _expendedSlotIndicesMeta,
         ),
       );
     }
@@ -4129,9 +4129,9 @@ class $CharacterSpellSlotUsagesTable extends CharacterSpellSlotUsages
         DriftSqlType.int,
         data['${effectivePrefix}spell_level'],
       )!,
-      slotsExpended: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}slots_expended'],
+      expendedSlotIndices: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}expended_slot_indices'],
       )!,
     );
   }
@@ -4146,18 +4146,18 @@ class CharacterSpellSlotUsage extends DataClass
     implements Insertable<CharacterSpellSlotUsage> {
   final String characterId;
   final int spellLevel;
-  final int slotsExpended;
+  final String expendedSlotIndices;
   const CharacterSpellSlotUsage({
     required this.characterId,
     required this.spellLevel,
-    required this.slotsExpended,
+    required this.expendedSlotIndices,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['character_id'] = Variable<String>(characterId);
     map['spell_level'] = Variable<int>(spellLevel);
-    map['slots_expended'] = Variable<int>(slotsExpended);
+    map['expended_slot_indices'] = Variable<String>(expendedSlotIndices);
     return map;
   }
 
@@ -4165,7 +4165,7 @@ class CharacterSpellSlotUsage extends DataClass
     return CharacterSpellSlotUsagesCompanion(
       characterId: Value(characterId),
       spellLevel: Value(spellLevel),
-      slotsExpended: Value(slotsExpended),
+      expendedSlotIndices: Value(expendedSlotIndices),
     );
   }
 
@@ -4177,7 +4177,9 @@ class CharacterSpellSlotUsage extends DataClass
     return CharacterSpellSlotUsage(
       characterId: serializer.fromJson<String>(json['characterId']),
       spellLevel: serializer.fromJson<int>(json['spellLevel']),
-      slotsExpended: serializer.fromJson<int>(json['slotsExpended']),
+      expendedSlotIndices: serializer.fromJson<String>(
+        json['expendedSlotIndices'],
+      ),
     );
   }
   @override
@@ -4186,18 +4188,18 @@ class CharacterSpellSlotUsage extends DataClass
     return <String, dynamic>{
       'characterId': serializer.toJson<String>(characterId),
       'spellLevel': serializer.toJson<int>(spellLevel),
-      'slotsExpended': serializer.toJson<int>(slotsExpended),
+      'expendedSlotIndices': serializer.toJson<String>(expendedSlotIndices),
     };
   }
 
   CharacterSpellSlotUsage copyWith({
     String? characterId,
     int? spellLevel,
-    int? slotsExpended,
+    String? expendedSlotIndices,
   }) => CharacterSpellSlotUsage(
     characterId: characterId ?? this.characterId,
     spellLevel: spellLevel ?? this.spellLevel,
-    slotsExpended: slotsExpended ?? this.slotsExpended,
+    expendedSlotIndices: expendedSlotIndices ?? this.expendedSlotIndices,
   );
   CharacterSpellSlotUsage copyWithCompanion(
     CharacterSpellSlotUsagesCompanion data,
@@ -4209,9 +4211,9 @@ class CharacterSpellSlotUsage extends DataClass
       spellLevel: data.spellLevel.present
           ? data.spellLevel.value
           : this.spellLevel,
-      slotsExpended: data.slotsExpended.present
-          ? data.slotsExpended.value
-          : this.slotsExpended,
+      expendedSlotIndices: data.expendedSlotIndices.present
+          ? data.expendedSlotIndices.value
+          : this.expendedSlotIndices,
     );
   }
 
@@ -4220,51 +4222,52 @@ class CharacterSpellSlotUsage extends DataClass
     return (StringBuffer('CharacterSpellSlotUsage(')
           ..write('characterId: $characterId, ')
           ..write('spellLevel: $spellLevel, ')
-          ..write('slotsExpended: $slotsExpended')
+          ..write('expendedSlotIndices: $expendedSlotIndices')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(characterId, spellLevel, slotsExpended);
+  int get hashCode => Object.hash(characterId, spellLevel, expendedSlotIndices);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is CharacterSpellSlotUsage &&
           other.characterId == this.characterId &&
           other.spellLevel == this.spellLevel &&
-          other.slotsExpended == this.slotsExpended);
+          other.expendedSlotIndices == this.expendedSlotIndices);
 }
 
 class CharacterSpellSlotUsagesCompanion
     extends UpdateCompanion<CharacterSpellSlotUsage> {
   final Value<String> characterId;
   final Value<int> spellLevel;
-  final Value<int> slotsExpended;
+  final Value<String> expendedSlotIndices;
   final Value<int> rowid;
   const CharacterSpellSlotUsagesCompanion({
     this.characterId = const Value.absent(),
     this.spellLevel = const Value.absent(),
-    this.slotsExpended = const Value.absent(),
+    this.expendedSlotIndices = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   CharacterSpellSlotUsagesCompanion.insert({
     required String characterId,
     required int spellLevel,
-    this.slotsExpended = const Value.absent(),
+    this.expendedSlotIndices = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : characterId = Value(characterId),
        spellLevel = Value(spellLevel);
   static Insertable<CharacterSpellSlotUsage> custom({
     Expression<String>? characterId,
     Expression<int>? spellLevel,
-    Expression<int>? slotsExpended,
+    Expression<String>? expendedSlotIndices,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (characterId != null) 'character_id': characterId,
       if (spellLevel != null) 'spell_level': spellLevel,
-      if (slotsExpended != null) 'slots_expended': slotsExpended,
+      if (expendedSlotIndices != null)
+        'expended_slot_indices': expendedSlotIndices,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4272,13 +4275,13 @@ class CharacterSpellSlotUsagesCompanion
   CharacterSpellSlotUsagesCompanion copyWith({
     Value<String>? characterId,
     Value<int>? spellLevel,
-    Value<int>? slotsExpended,
+    Value<String>? expendedSlotIndices,
     Value<int>? rowid,
   }) {
     return CharacterSpellSlotUsagesCompanion(
       characterId: characterId ?? this.characterId,
       spellLevel: spellLevel ?? this.spellLevel,
-      slotsExpended: slotsExpended ?? this.slotsExpended,
+      expendedSlotIndices: expendedSlotIndices ?? this.expendedSlotIndices,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4292,8 +4295,10 @@ class CharacterSpellSlotUsagesCompanion
     if (spellLevel.present) {
       map['spell_level'] = Variable<int>(spellLevel.value);
     }
-    if (slotsExpended.present) {
-      map['slots_expended'] = Variable<int>(slotsExpended.value);
+    if (expendedSlotIndices.present) {
+      map['expended_slot_indices'] = Variable<String>(
+        expendedSlotIndices.value,
+      );
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -4306,7 +4311,7 @@ class CharacterSpellSlotUsagesCompanion
     return (StringBuffer('CharacterSpellSlotUsagesCompanion(')
           ..write('characterId: $characterId, ')
           ..write('spellLevel: $spellLevel, ')
-          ..write('slotsExpended: $slotsExpended, ')
+          ..write('expendedSlotIndices: $expendedSlotIndices, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -18861,14 +18866,14 @@ typedef $$CharacterSpellSlotUsagesTableCreateCompanionBuilder =
     CharacterSpellSlotUsagesCompanion Function({
       required String characterId,
       required int spellLevel,
-      Value<int> slotsExpended,
+      Value<String> expendedSlotIndices,
       Value<int> rowid,
     });
 typedef $$CharacterSpellSlotUsagesTableUpdateCompanionBuilder =
     CharacterSpellSlotUsagesCompanion Function({
       Value<String> characterId,
       Value<int> spellLevel,
-      Value<int> slotsExpended,
+      Value<String> expendedSlotIndices,
       Value<int> rowid,
     });
 
@@ -18922,8 +18927,8 @@ class $$CharacterSpellSlotUsagesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get slotsExpended => $composableBuilder(
-    column: $table.slotsExpended,
+  ColumnFilters<String> get expendedSlotIndices => $composableBuilder(
+    column: $table.expendedSlotIndices,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -18965,8 +18970,8 @@ class $$CharacterSpellSlotUsagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get slotsExpended => $composableBuilder(
-    column: $table.slotsExpended,
+  ColumnOrderings<String> get expendedSlotIndices => $composableBuilder(
+    column: $table.expendedSlotIndices,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -19008,8 +19013,8 @@ class $$CharacterSpellSlotUsagesTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<int> get slotsExpended => $composableBuilder(
-    column: $table.slotsExpended,
+  GeneratedColumn<String> get expendedSlotIndices => $composableBuilder(
+    column: $table.expendedSlotIndices,
     builder: (column) => column,
   );
 
@@ -19078,24 +19083,24 @@ class $$CharacterSpellSlotUsagesTableTableManager
               ({
                 Value<String> characterId = const Value.absent(),
                 Value<int> spellLevel = const Value.absent(),
-                Value<int> slotsExpended = const Value.absent(),
+                Value<String> expendedSlotIndices = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CharacterSpellSlotUsagesCompanion(
                 characterId: characterId,
                 spellLevel: spellLevel,
-                slotsExpended: slotsExpended,
+                expendedSlotIndices: expendedSlotIndices,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required String characterId,
                 required int spellLevel,
-                Value<int> slotsExpended = const Value.absent(),
+                Value<String> expendedSlotIndices = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CharacterSpellSlotUsagesCompanion.insert(
                 characterId: characterId,
                 spellLevel: spellLevel,
-                slotsExpended: slotsExpended,
+                expendedSlotIndices: expendedSlotIndices,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -157,18 +157,28 @@ class DriftCharacterRepository implements CharacterRepository {
   }
 
   @override
-  Future<void> spendSpellSlot(String id, {required int spellLevel}) {
+  Future<void> spendSpellSlot(
+    String id, {
+    required int spellLevel,
+    required int slotIndex,
+  }) {
     return _characterRecoveryService.spendSpellSlot(
       id,
       spellLevel: spellLevel,
+      slotIndex: slotIndex,
     );
   }
 
   @override
-  Future<void> restoreSpellSlot(String id, {required int spellLevel}) {
+  Future<void> restoreSpellSlot(
+    String id, {
+    required int spellLevel,
+    required int slotIndex,
+  }) {
     return _characterRecoveryService.restoreSpellSlot(
       id,
       spellLevel: spellLevel,
+      slotIndex: slotIndex,
     );
   }
 

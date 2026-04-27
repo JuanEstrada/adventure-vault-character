@@ -97,7 +97,11 @@ class CharacterRecoveryService {
     });
   }
 
-  Future<void> spendSpellSlot(String id, {required int spellLevel}) async {
+  Future<void> spendSpellSlot(
+    String id, {
+    required int spellLevel,
+    required int slotIndex,
+  }) async {
     final row = await _readDao.getCharacterRowById(id);
     if (row == null) {
       throw StateError('Character not found.');
@@ -107,22 +111,36 @@ class CharacterRecoveryService {
       className: row.className,
       level: row.level,
     );
-    final matchingSlot = slotProgression.where(
-      (slot) => slot.spellLevel == spellLevel,
-    ).firstOrNull;
-    if (matchingSlot == null) {
+    final matchingSlots = slotProgression
+        .where((slot) => slot.spellLevel == spellLevel)
+        .toList();
+    if (matchingSlots.isEmpty) {
       throw StateError('Spell slot level is not available for this character.');
     }
 
-    final persistedUsages = await _readDao.getSpellSlotUsagesByCharacterId(id);
-    final currentUsage = persistedUsages
-      .where((usage) => usage.spellLevel == spellLevel)
-      .map((usage) => usage.slotsExpended)
-      .fold<int>(0, (_, value) => value);
-    if (currentUsage < 0) {
-      // This check should be impossible with current data, but protects against state corruption.
-      throw StateError('Spell slot usage cannot be negative.');
+    final matchingSlot = matchingSlots[slotIndex];
+    if (matchingSlot.slotsMax <= slotIndex) {
+      throw StateError('Slot $slotIndex at level $spellLevel does not exist.');
     }
+
+    final persistedUsages = await _readDao.getSpellSlotUsagesByCharacterId(id);
+    final existingUsage = persistedUsages
+        .where((u) => u.spellLevel == spellLevel)
+        .firstOrNull;
+
+    final List<String> currentExpendedIndices = existingUsage != null
+        ? (existingUsage.expendedSlotIndices.isEmpty
+            ? const <String>[]
+            : List<String>.from(existingUsage.expendedSlotIndices
+                .split(',')
+                .where((s) => s.isNotEmpty))
+        )
+        : const <String>[];
+    if (currentExpendedIndices.contains(slotIndex.toString())) {
+      throw StateError('Slot $slotIndex at level $spellLevel is already expended.');
+    }
+
+    final updatedIndices = <String>[...currentExpendedIndices, slotIndex.toString()];
 
     await _database.transaction(() async {
       final now = DateTime.now();
@@ -130,17 +148,31 @@ class CharacterRecoveryService {
         id,
         CharactersCompanion(updatedAt: Value(now)),
       );
-      await _writeDao.upsertSpellSlotUsage(
-        CharacterSpellSlotUsagesCompanion.insert(
-          characterId: id,
-          spellLevel: spellLevel,
-          slotsExpended: Value(currentUsage + 1),
-        ),
-      );
+      if (existingUsage != null) {
+        await _writeDao.replaceSpellSlotUsage(
+          CharacterSpellSlotUsagesCompanion(
+            characterId: Value(id),
+            spellLevel: Value(spellLevel),
+            expendedSlotIndices: Value(updatedIndices.join(',')),
+          ),
+        );
+      } else {
+        await _writeDao.insertSpellSlotUsage(
+          CharacterSpellSlotUsagesCompanion.insert(
+            characterId: id,
+            spellLevel: spellLevel,
+            expendedSlotIndices: Value(updatedIndices.join(',')),
+          ),
+        );
+      }
     });
   }
 
-  Future<void> restoreSpellSlot(String id, {required int spellLevel}) async {
+  Future<void> restoreSpellSlot(
+    String id, {
+    required int spellLevel,
+    required int slotIndex,
+  }) async {
     final row = await _readDao.getCharacterRowById(id);
     if (row == null) {
       throw StateError('Character not found.');
@@ -150,21 +182,34 @@ class CharacterRecoveryService {
       className: row.className,
       level: row.level,
     );
-    final matchingSlot = slotProgression.where(
-      (slot) => slot.spellLevel == spellLevel,
-    ).firstOrNull;
-    if (matchingSlot == null) {
+    final matchingSlots = slotProgression
+        .where((slot) => slot.spellLevel == spellLevel)
+        .toList();
+    if (matchingSlots.isEmpty) {
       throw StateError('Spell slot level is not available for this character.');
     }
 
-    final persistedUsages = await _readDao.getSpellSlotUsagesByCharacterId(id);
-    final currentUsage = persistedUsages
-      .where((usage) => usage.spellLevel == spellLevel)
-      .map((usage) => usage.slotsExpended)
-      .fold<int>(0, (_, value) => value);
-    if (currentUsage <= 0) {
-      throw StateError('Spell slot usage is already at minimum for this level.');
+    final matchingSlot = matchingSlots[slotIndex];
+    if (matchingSlot.slotsMax <= slotIndex) {
+      throw StateError('Slot $slotIndex at level $spellLevel does not exist.');
     }
+
+    final persistedUsages = await _readDao.getSpellSlotUsagesByCharacterId(id);
+    final existingUsage = persistedUsages
+        .where((u) => u.spellLevel == spellLevel)
+        .firstOrNull;
+
+    final List<String> currentExpendedIndices = existingUsage != null
+        ? (existingUsage.expendedSlotIndices.isEmpty
+            ? const <String>[]
+            : List<String>.from(
+                  existingUsage.expendedSlotIndices.split(',')))
+        : const <String>[];
+    if (!currentExpendedIndices.contains(slotIndex.toString())) {
+      throw StateError('Slot $slotIndex at level $spellLevel is not expended.');
+    }
+
+    final updatedIndices = currentExpendedIndices.where((i) => i != slotIndex.toString());
 
     await _database.transaction(() async {
       final now = DateTime.now();
@@ -172,13 +217,22 @@ class CharacterRecoveryService {
         id,
         CharactersCompanion(updatedAt: Value(now)),
       );
-      await _writeDao.upsertSpellSlotUsage(
-        CharacterSpellSlotUsagesCompanion.insert(
-          characterId: id,
-          spellLevel: spellLevel,
-          slotsExpended: Value(currentUsage - 1),
-        ),
-      );
+      if (updatedIndices.isEmpty) {
+        await _writeDao.deleteSpellSlotUsage(
+          CharacterSpellSlotUsagesCompanion(
+            characterId: Value(id),
+            spellLevel: Value(spellLevel),
+          ),
+        );
+      } else {
+        await _writeDao.replaceSpellSlotUsage(
+          CharacterSpellSlotUsagesCompanion(
+            characterId: Value(id),
+            spellLevel: Value(spellLevel),
+            expendedSlotIndices: Value(updatedIndices.join(',')),
+          ),
+        );
+      }
     });
   }
 
@@ -192,8 +246,11 @@ class CharacterRecoveryService {
     final slotUsages = await _readDao.getSpellSlotUsagesByCharacterId(id);
     final classResources = await _readDao.getClassResourcesByCharacterId(id);
     final inventory = await _readDao.getInventoryByCharacterId(id);
-    final slotUsagesByLevel = <int, int>{
-      for (final slot in slotUsages) slot.spellLevel: slot.slotsExpended,
+    final slotUsagesByLevel = <int, List<String>>{
+      for (final slot in slotUsages)
+        slot.spellLevel: slot.expendedSlotIndices.isEmpty
+            ? const <String>[]
+            : List<String>.from(slot.expendedSlotIndices.split(',')),
     };
     final persistedResourceCurrentByKey = <String, int>{
       for (final row in classResources) row.resourceKey: row.currentUses,
@@ -220,7 +277,8 @@ class CharacterRecoveryService {
             maximumHitPoints: maximumHitPoints,
             temporaryHitPoints: (hitPoints?.temporary ?? 0).clamp(0, 9999),
             slotUsagesByLevel: slotUsagesByLevel,
-          );
+           )
+           as CharacterRestResult;
 
     await _database.transaction(() async {
       final now = DateTime.now();
@@ -248,12 +306,13 @@ class CharacterRecoveryService {
       }
 
       await _writeDao.deleteSpellSlotUsagesByCharacterId(id);
-      final slotCompanions = restResult.slotUsagesByLevel.entries
+    final slotCompanions = restResult.slotUsagesByLevel.entries
           .map(
             (entry) => CharacterSpellSlotUsagesCompanion.insert(
               characterId: id,
               spellLevel: entry.key,
-              slotsExpended: Value(entry.value),
+              expendedSlotIndices: Value(
+                  List<String>.generate(entry.value, (i) => i.toString())),
             ),
           )
           .toList(growable: false);

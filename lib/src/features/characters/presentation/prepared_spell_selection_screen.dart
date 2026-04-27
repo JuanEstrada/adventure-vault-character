@@ -71,9 +71,7 @@ class _PreparedSpellSelectionScreenState
     );
 
     if (value && spellIndex == -1) {
-      final spell = widget.availableSpells.firstWhere(
-        (s) => s.id == spellId,
-      );
+      final spell = widget.availableSpells.firstWhere((s) => s.id == spellId);
 
       final result = _selectionService.selectSpell(
         _spellcasting.selectedSpells,
@@ -152,11 +150,7 @@ class _PreparedSpellSelectionScreenState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.book_outlined,
-            size: 80,
-            color: Colors.grey.shade400,
-          ),
+          Icon(Icons.book_outlined, size: 80, color: Colors.grey.shade400),
           const SizedBox(height: 16),
           Text(
             'No spells prepared',
@@ -165,9 +159,9 @@ class _PreparedSpellSelectionScreenState
           const SizedBox(height: 8),
           Text(
             'Select spells from the list below',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey.shade600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
           ),
         ],
       ),
@@ -247,10 +241,7 @@ class _SpellbookSpellItem extends StatelessWidget {
           '${spell.school} • ${spell.castingTime} • ${spell.range} • ${spell.duration}',
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        trailing: Switch(
-          value: isSelected,
-          onChanged: (value) => onToggle(),
-        ),
+        trailing: Switch(value: isSelected, onChanged: (value) => onToggle()),
       ),
     );
   }

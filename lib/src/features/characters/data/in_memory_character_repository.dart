@@ -278,7 +278,11 @@ class InMemoryCharacterRepository implements CharacterRepository {
   }
 
   @override
-  Future<void> spendSpellSlot(String id, {required int spellLevel}) async {
+  Future<void> spendSpellSlot(
+    String id, {
+    required int spellLevel,
+    required int slotIndex,
+  }) async {
     final summary = await getCharacterSummaryById(id);
     if (summary == null) {
       throw StateError('Character not found.');
@@ -293,24 +297,51 @@ class InMemoryCharacterRepository implements CharacterRepository {
       className: createdInput.className,
       level: createdInput.level,
     );
-    final matchingSlot = slotProgression.where(
+    final matchingSlots = slotProgression.where(
       (slot) => slot.spellLevel == spellLevel,
-    );
-    if (matchingSlot.isEmpty) {
+    ).toList();
+    if (matchingSlots.isEmpty) {
       throw StateError('Spell slot level is not available for this character.');
     }
 
-    final slot = matchingSlot.single;
-    final slotUsagesByLevel = <int, int>{
+    // Find the matching slot by index within the spell level
+    final slot = matchingSlots[slotIndex];
+    final slotUsage = createdInput.spellState.slotUsages
+        .firstWhere(
+          (u) => u.spellLevel == spellLevel,
+          orElse: () => CharacterSpellSlotUsageInput(
+            spellLevel: spellLevel,
+            slotsExpended: 0,
+          ),
+        );
+    if (slotUsage.slotsExpended <= slotIndex) {
+      throw StateError('Slot $slotIndex at level $spellLevel is already expended.');
+    }
+
+    final slotUsagesByLevel = <int, CharacterSpellSlotUsageInput>{
       for (final usage in createdInput.spellState.slotUsages)
-        usage.spellLevel: usage.slotsExpended,
+        usage.spellLevel: usage,
     };
-    final currentUsage = slotUsagesByLevel[spellLevel] ?? 0;
+    final currentUsage = slotUsagesByLevel[spellLevel]?.slotsExpended ?? 0;
     if (currentUsage >= slot.slotsMax) {
       throw StateError('Spell slot usage exceeds the derived slot maximum.');
     }
 
-    slotUsagesByLevel[spellLevel] = currentUsage + 1;
+    final currentSlotUsage = slotUsagesByLevel[spellLevel] ??
+        CharacterSpellSlotUsageInput(
+          spellLevel: spellLevel,
+          slotsExpended: 0,
+          expendedSlotIndices: const [],
+        );
+    final updatedSlotUsage = CharacterSpellSlotUsageInput(
+      spellLevel: spellLevel,
+      slotsExpended: currentUsage + 1,
+      expendedSlotIndices: [
+        ...currentSlotUsage.expendedSlotIndices,
+        slotIndex,
+      ],
+    );
+    slotUsagesByLevel[spellLevel] = updatedSlotUsage;
     _createdInputsById[id] = CreateCharacterInput(
       name: createdInput.name,
       raceName: createdInput.raceName,
@@ -338,14 +369,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
       spellState: CharacterSpellStateInput(
         selectionMode: createdInput.spellState.selectionMode,
         selectedSpells: createdInput.spellState.selectedSpells,
-        slotUsages: slotUsagesByLevel.entries
-            .map(
-              (entry) => CharacterSpellSlotUsageInput(
-                spellLevel: entry.key,
-                slotsExpended: entry.value,
-              ),
-            )
-            .toList(growable: false),
+        slotUsages: slotUsagesByLevel.values.toList(growable: false),
       ),
       finishingDetails: createdInput.finishingDetails,
     );
@@ -353,8 +377,97 @@ class InMemoryCharacterRepository implements CharacterRepository {
   }
 
   @override
-  Future<void> restoreSpellSlot(String id, {required int spellLevel}) async {
-    throw UnimplementedError();
+  Future<void> restoreSpellSlot(
+    String id, {
+    required int spellLevel,
+    required int slotIndex,
+  }) async {
+    final summary = await getCharacterSummaryById(id);
+    if (summary == null) {
+      throw StateError('Character not found.');
+    }
+
+    final createdInput = _createdInputsById[id];
+    if (createdInput == null) {
+      throw StateError('Character data unavailable for spell slots.');
+    }
+
+    final slotProgression = _characterSpellRules.slotProgressionFor(
+      className: createdInput.className,
+      level: createdInput.level,
+    );
+    final matchingSlots = slotProgression.where(
+      (slot) => slot.spellLevel == spellLevel,
+    ).toList();
+    if (matchingSlots.isEmpty) {
+      throw StateError('Spell slot level is not available for this character.');
+    }
+
+    // Find the matching slot by index within the spell level
+    final slot = matchingSlots[slotIndex];
+    final slotUsage = createdInput.spellState.slotUsages
+        .firstWhere(
+          (u) => u.spellLevel == spellLevel,
+          orElse: () => CharacterSpellSlotUsageInput(
+            spellLevel: spellLevel,
+            slotsExpended: 0,
+          ),
+        );
+    if (slotUsage.slotsExpended <= slotIndex) {
+      throw StateError('Slot $slotIndex at level $spellLevel is not expended.');
+    }
+
+    final slotUsagesByLevel = <int, CharacterSpellSlotUsageInput>{
+      for (final usage in createdInput.spellState.slotUsages)
+        usage.spellLevel: usage,
+    };
+    final currentSlotUsage = slotUsagesByLevel[spellLevel] ??
+        CharacterSpellSlotUsageInput(
+          spellLevel: spellLevel,
+          slotsExpended: 0,
+          expendedSlotIndices: const [],
+        );
+    final updatedSlotIndices = currentSlotUsage.expendedSlotIndices
+        .where((i) => i != slotIndex)
+        .toList();
+    final updatedSlotUsage = CharacterSpellSlotUsageInput(
+      spellLevel: spellLevel,
+      slotsExpended: currentSlotUsage.slotsExpended - 1,
+      expendedSlotIndices: updatedSlotIndices,
+    );
+    slotUsagesByLevel[spellLevel] = updatedSlotUsage;
+    _createdInputsById[id] = CreateCharacterInput(
+      name: createdInput.name,
+      raceName: createdInput.raceName,
+      backgroundId: createdInput.backgroundId,
+      backgroundName: createdInput.backgroundName,
+      backgroundSummary: createdInput.backgroundSummary,
+      abilityScoreMethod: createdInput.abilityScoreMethod,
+      abilityScoreProvenance: createdInput.abilityScoreProvenance,
+      strength: createdInput.strength,
+      dexterity: createdInput.dexterity,
+      constitution: createdInput.constitution,
+      intelligence: createdInput.intelligence,
+      wisdom: createdInput.wisdom,
+      charisma: createdInput.charisma,
+      className: createdInput.className,
+      level: createdInput.level,
+      experience: createdInput.experience,
+      equipmentLoadoutId: createdInput.equipmentLoadoutId,
+      equipmentLoadoutLabel: createdInput.equipmentLoadoutLabel,
+      startingMoneySummary: createdInput.startingMoneySummary,
+      selectedEquipmentItems: createdInput.selectedEquipmentItems,
+      currentHitPoints: createdInput.currentHitPoints,
+      maximumHitPoints: createdInput.maximumHitPoints,
+      temporaryHitPoints: createdInput.temporaryHitPoints,
+      spellState: CharacterSpellStateInput(
+        selectionMode: createdInput.spellState.selectionMode,
+        selectedSpells: createdInput.spellState.selectedSpells,
+        slotUsages: slotUsagesByLevel.values.toList(growable: false),
+      ),
+      finishingDetails: createdInput.finishingDetails,
+    );
+    _changes.add(null);
   }
 
   @override

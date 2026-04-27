@@ -25,7 +25,6 @@ between high-level architecture and the roadmap.
   retained as reference while the main menu hub replaces it.
 - [Empty State Screen](empty-state-screen.md): no-data entry point for first
   use and zero-character states. Retained as reference while main menu is now
-  the primary hub.
 - [Create Character Screen](create-character-screen.md): minimum viable
   character creation flow.
 - [Character Card](character-card.md): proposed main-menu summary card for

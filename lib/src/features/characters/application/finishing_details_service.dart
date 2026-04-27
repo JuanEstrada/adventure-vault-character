@@ -167,7 +167,9 @@ class FinishingDetailsService {
   }) {
     final matches = group.options.any((candidate) => candidate.id == option.id);
     if (!matches) {
-      throw StateError('Selected narrative option does not belong to the group.');
+      throw StateError(
+        'Selected narrative option does not belong to the group.',
+      );
     }
   }
 }

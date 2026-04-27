@@ -465,19 +465,19 @@ class CreateCharacterService {
   }
 
   List<CharacterSpellSlotUsagesCompanion> _buildSpellSlotUsageRows({
-    required String characterId,
-    required CreateCharacterInput input,
-  }) {
-    return input.spellState.slotUsages
-        .map(
-          (usage) => CharacterSpellSlotUsagesCompanion.insert(
-            characterId: characterId,
-            spellLevel: usage.spellLevel,
-            slotsExpended: Value(usage.slotsExpended),
-          ),
-        )
-        .toList(growable: false);
-  }
+      required String characterId,
+      required CreateCharacterInput input,
+    }) {
+      return input.spellState.slotUsages
+          .map(
+            (usage) => CharacterSpellSlotUsagesCompanion.insert(
+              characterId: characterId,
+              spellLevel: usage.spellLevel,
+              expendedSlotIndices: Value(usage.expendedSlotIndices.join(',')),
+            ),
+          )
+          .toList(growable: false);
+    }
 
   Future<CompendiumCatalog> _loadCatalog() {
     return _catalogFuture ??= _compendiumRepository.loadCatalog();
@@ -1136,7 +1136,7 @@ class CreateCharacterService {
       if (!seenSlotLevels.add(usage.spellLevel)) {
         throw StateError('Duplicate spell slot usage rows are not allowed.');
       }
-      if (usage.slotsExpended < 0 || usage.slotsExpended > slotsMax) {
+      if (usage.expendedSlotIndices.length > slotsMax) {
         throw StateError('Spell slot usage exceeds the derived slot maximum.');
       }
     }

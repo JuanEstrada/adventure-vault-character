@@ -51,7 +51,9 @@ class CharacterEditorController extends ChangeNotifier {
     );
   }
 
-  List<CompendiumNarrativeOptionGroup> groupsForField(NarrativeFieldKey fieldKey) {
+  List<CompendiumNarrativeOptionGroup> groupsForField(
+    NarrativeFieldKey fieldKey,
+  ) {
     return _finishingDetailsService.availableGroups(
       catalog: catalog,
       fieldKey: fieldKey,

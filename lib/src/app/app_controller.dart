@@ -544,7 +544,10 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> spendSelectedCharacterSpellSlot({required int spellLevel}) async {
+  Future<void> spendSelectedCharacterSpellSlot({
+    required int spellLevel,
+    required int slotIndex,
+  }) async {
     final selected = _state.selectedCharacterSheet;
     if (selected == null) {
       _state = _state.copyWith(
@@ -561,6 +564,7 @@ class AppController extends ChangeNotifier {
       await _characterRepository.spendSpellSlot(
         selected.id,
         spellLevel: spellLevel,
+        slotIndex: slotIndex,
       );
       _state = _state.copyWith(isSavingCharacter: false, clearError: true);
     } catch (_) {
@@ -575,6 +579,7 @@ class AppController extends ChangeNotifier {
 
   Future<void> restoreSelectedCharacterSpellSlot({
     required int spellLevel,
+    required int slotIndex,
   }) async {
     final selected = _state.selectedCharacterSheet;
     if (selected == null) {
@@ -592,6 +597,7 @@ class AppController extends ChangeNotifier {
       await _characterRepository.restoreSpellSlot(
         selected.id,
         spellLevel: spellLevel,
+        slotIndex: slotIndex,
       );
       _state = _state.copyWith(isSavingCharacter: false, clearError: true);
     } catch (_) {
