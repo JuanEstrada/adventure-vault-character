@@ -311,10 +311,10 @@ class InMemoryCharacterRepository implements CharacterRepository {
           (u) => u.spellLevel == spellLevel,
           orElse: () => CharacterSpellSlotUsageInput(
             spellLevel: spellLevel,
-            slotsExpended: 0,
+            expendedSlotIndices: const <String>[],
           ),
         );
-    if (slotUsage.slotsExpended <= slotIndex) {
+    if (slotUsage.expendedSlotIndices.length <= slotIndex) {
       throw StateError('Slot $slotIndex at level $spellLevel is already expended.');
     }
 
@@ -322,7 +322,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
       for (final usage in createdInput.spellState.slotUsages)
         usage.spellLevel: usage,
     };
-    final currentUsage = slotUsagesByLevel[spellLevel]?.slotsExpended ?? 0;
+    final currentUsage = slotUsagesByLevel[spellLevel]?.expendedSlotIndices.length ?? 0;
     if (currentUsage >= slot.slotsMax) {
       throw StateError('Spell slot usage exceeds the derived slot maximum.');
     }
@@ -330,15 +330,13 @@ class InMemoryCharacterRepository implements CharacterRepository {
     final currentSlotUsage = slotUsagesByLevel[spellLevel] ??
         CharacterSpellSlotUsageInput(
           spellLevel: spellLevel,
-          slotsExpended: 0,
-          expendedSlotIndices: const [],
+          expendedSlotIndices: const <String>[],
         );
     final updatedSlotUsage = CharacterSpellSlotUsageInput(
       spellLevel: spellLevel,
-      slotsExpended: currentUsage + 1,
       expendedSlotIndices: [
         ...currentSlotUsage.expendedSlotIndices,
-        slotIndex,
+        slotIndex.toString(),
       ],
     );
     slotUsagesByLevel[spellLevel] = updatedSlotUsage;
@@ -410,10 +408,10 @@ class InMemoryCharacterRepository implements CharacterRepository {
           (u) => u.spellLevel == spellLevel,
           orElse: () => CharacterSpellSlotUsageInput(
             spellLevel: spellLevel,
-            slotsExpended: 0,
+            expendedSlotIndices: const <String>[],
           ),
         );
-    if (slotUsage.slotsExpended <= slotIndex) {
+    if (slotUsage.expendedSlotIndices.length <= slotIndex) {
       throw StateError('Slot $slotIndex at level $spellLevel is not expended.');
     }
 
@@ -424,16 +422,17 @@ class InMemoryCharacterRepository implements CharacterRepository {
     final currentSlotUsage = slotUsagesByLevel[spellLevel] ??
         CharacterSpellSlotUsageInput(
           spellLevel: spellLevel,
-          slotsExpended: 0,
-          expendedSlotIndices: const [],
+          expendedSlotIndices: const <String>[],
         );
     final updatedSlotIndices = currentSlotUsage.expendedSlotIndices
         .where((i) => i != slotIndex)
         .toList();
     final updatedSlotUsage = CharacterSpellSlotUsageInput(
       spellLevel: spellLevel,
-      slotsExpended: currentSlotUsage.slotsExpended - 1,
-      expendedSlotIndices: updatedSlotIndices,
+     expendedSlotIndices: [
+        ...currentSlotUsage.expendedSlotIndices,
+        slotIndex.toString(),
+      ],
     );
     slotUsagesByLevel[spellLevel] = updatedSlotUsage;
     _createdInputsById[id] = CreateCharacterInput(
@@ -1298,7 +1297,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
 
     final slotUsagesByLevel = <int, int>{
       for (final usage in createdInput.spellState.slotUsages)
-        usage.spellLevel: usage.slotsExpended,
+        usage.spellLevel: usage.expendedSlotIndices.length,
     };
     final result = isLongRest
         ? _characterRestRules.applyLongRest(
@@ -1346,7 +1345,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
             .map(
               (entry) => CharacterSpellSlotUsageInput(
                 spellLevel: entry.key,
-                slotsExpended: entry.value,
+                expendedSlotIndices: [0.toString()]
               ),
             )
             .toList(growable: false),
@@ -1896,7 +1895,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
     );
     final slotUsageByLevel = <int, int>{
       for (final usage in spellState.slotUsages)
-        usage.spellLevel: usage.slotsExpended,
+        usage.spellLevel: usage.expendedSlotIndices.length,
     };
 
     return CharacterSpellcastingDomainModel(
@@ -1912,18 +1911,16 @@ class InMemoryCharacterRepository implements CharacterRepository {
         level: progression.level,
         abilityModifier: CharacterRules.abilityModifier(abilityScore),
       ),
-      slotProgression: slotProgression
-          .map(
-            (slot) => CharacterSpellSlotDomainModel(
-              spellLevel: slot.spellLevel,
-              slotsExpended: (slotUsageByLevel[slot.spellLevel] ?? 0).clamp(
-                0,
-                slot.slotsMax,
-              ),
-              slotsMax: slot.slotsMax,
-            ),
-          )
-          .toList(growable: false),
+     slotProgression: slotProgression
+    .map(
+       (slot) => CharacterSpellSlotDomainModel(
+         spellLevel: slot.spellLevel,
+         slotIndex: 0,
+         slotsExpended: 0,
+         slotsMax: slot.slotsMax,
+       ),
+     )
+         .toList(growable: false),
     );
   }
 

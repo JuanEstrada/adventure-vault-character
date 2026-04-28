@@ -21,7 +21,7 @@ void main() {
         ),
       );
 
-      await repository.spendSpellSlot(summary.id, spellLevel: 1);
+      await repository.spendSpellSlot(summary.id, spellLevel: 1, slotIndex: 0);
 
       final sheet = await repository.getCharacterSheetById(summary.id);
       expect(sheet, isNotNull);
@@ -29,7 +29,7 @@ void main() {
       final slot = sheet.spellcasting!.slotProgression.firstWhere(
         (entry) => entry.spellLevel == 1,
       );
-      expect(slot.slotsExpended, 1);
+      expect(slot.slotsExpended, equals(1));
     },
   );
 
@@ -47,7 +47,7 @@ void main() {
             selectionMode: CharacterSpellSelectionMode.spellbook,
             selectedSpells: <CharacterSpellSelectionInput>[],
             slotUsages: <CharacterSpellSlotUsageInput>[
-              CharacterSpellSlotUsageInput(spellLevel: 1, slotsExpended: 3),
+              CharacterSpellSlotUsageInput(spellLevel: 1, expendedSlotIndices: <String>["3"]),
             ],
           ),
         ),
@@ -57,7 +57,7 @@ void main() {
       expect(sheetBefore, isNotNull);
 
       await expectLater(
-        repository.spendSpellSlot(summary.id, spellLevel: 1),
+        repository.spendSpellSlot(summary.id, spellLevel: 1, slotIndex: 0),
         throwsA(
           isA<StateError>().having(
             (error) => error.message,
@@ -75,7 +75,7 @@ void main() {
       final slotAfter = sheetAfter!.spellcasting!.slotProgression.firstWhere(
         (entry) => entry.spellLevel == 1,
       );
-      expect(slotAfter.slotsExpended, slotBefore.slotsExpended);
+      expect(slotAfter.slotsExpended, equals(slotBefore.slotsExpended));
     },
   );
 

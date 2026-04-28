@@ -197,10 +197,10 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     _spellSlotUsages
       ..clear()
       ..addEntries(
-        initialDraft?.spellState.slotUsages.map(
-              (usage) => MapEntry(usage.spellLevel, usage.slotsExpended),
-            ) ??
-            const Iterable<MapEntry<int, int>>.empty(),
+    initialDraft?.spellState.slotUsages.map(
+         (usage) => MapEntry(usage.spellLevel, usage.expendedSlotIndices.length),
+       ) ??
+       const Iterable<MapEntry<int, int>>.empty(),
       );
 
     final initialSelections =
@@ -613,13 +613,15 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           selectionMode: _spellSelectionMode,
           selectedSpells: _buildSpellSelectionsForSubmit(),
           slotUsages: _spellSlotProgression
-              .map(
-                (slot) => CharacterSpellSlotUsageInput(
-                  spellLevel: slot.spellLevel,
-                  slotsExpended: _spellSlotUsages[slot.spellLevel] ?? 0,
-                ),
-              )
-              .toList(growable: false),
+        .map(
+           (slot) => CharacterSpellSlotUsageInput(
+             spellLevel: slot.spellLevel,
+             expendedSlotIndices: _spellSlotUsages[slot.spellLevel] != null
+                 ? <String>[_spellSlotUsages[slot.spellLevel].toString()]
+                 : const <String>[],
+           ),
+         )
+         .toList(growable: false),
         ),
         finishingDetails: CharacterFinishingDetailsInput(
           portraitAssetPath: _portraitAssetPath,

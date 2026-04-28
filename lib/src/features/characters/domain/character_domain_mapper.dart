@@ -504,15 +504,12 @@ class CharacterDomainMapper {
                       currentIndex,
                       slotProgression,
                     );
-              return CharacterSpellSlotDomainModel(
-                spellLevel: slot.spellLevel,
-                slotIndex: slotIndex,
-                slotsExpended: (slotUsageByLevel[slot.spellLevel] ?? 0).clamp(
-                  0,
-                  slot.slotsMax,
-                ),
-                slotsMax: slot.slotsMax,
-              );
+            return CharacterSpellSlotDomainModel(
+               spellLevel: slot.spellLevel,
+               slotIndex: slotIndex,
+               slotsExpended: 0,
+               slotsMax: slot.slotsMax,
+             );
             },
           )
           .toList(growable: false),

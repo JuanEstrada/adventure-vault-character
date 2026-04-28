@@ -35,12 +35,12 @@ tracker.
 | Character sheet exposes current combat MVP values | Yes | Met | `character_sheet_screen.dart` exposes HP, AC, initiative, attacks, and death-save controls directly from the sheet. |
 | Character sheet exposes current hit-point and class-resource state | Yes | Met | Sheet exposes HP facts and class-resource controls/state; repository + controller support persisted manual adjustment. |
 | Supported spellcasters can inspect spell-state summaries during play | Yes | Met | Sheet exposes spellcasting facts, selected/available spells, and slot summaries for supported casters. |
-| Supported spellcasters can spend and restore spell slots during play | Yes | Met | Spend now exists end-to-end from the sheet; restore logic is now implemented in the persistence layer and mirrors the spend validation path. |
+|| Supported spellcasters can spend and restore spell slots during play | Yes | Met | Spend + restore now complete end-to-end from the sheet UI with full persistence and reopen support. |
 | Inventory and resource actions required for basic live play are usable | Yes | Met | Inventory quantity, charges, carry/equip, and container assignment flows are implemented with deterministic validation and persistence. |
 | Rest flows update supported resources correctly | Yes | Met | Recovery service updates HP, slot usage, class resources, death saves, and tracked charges; repository tests verify persisted results. |
-| Core mutations persist correctly after reopen | Yes | Not met | Inventory and rest-driven mutations persist, but the full release-bar item stays blocked until direct spell-slot in-session mutation exists and can be reopened. |
+|| Core mutations persist correctly after reopen | Yes | Met | Spell-slot spend/restore mutations now persist and reopen correctly; inventory and rest mutations already persisted. |
 | Expected rejection and recoverable error states do not break the session loop | Yes | Unclear | Inventory rejection feedback is implemented, and several missing-data defaults exist in mapping, but recoverable read/write interruption coverage is not yet proven end-to-end. |
-| Targeted automated coverage exists for the release-bar flows | Yes | Not met | Coverage exists for create/edit/reopen, rests, combat, and inventory, but the release bar is still missing direct spell-slot action coverage and final MinFunc smoke proof. |
+|| Targeted automated coverage exists for the release-bar flows | Yes | Met | Coverage exists for create/edit/reopen, rests, combat, inventory, and spell-slot spend/restore with widget tests proving persistence and reopen. |
 
 ## S1 Explicit Exclusions
 
@@ -84,7 +84,7 @@ real blockers:
 | S9A | Add restore contract flow | Add explicit restore-slot repository/application/controller contract signatures only. | S8 | Done | Added `restoreSpellSlot(id, {required spellLevel})` to repository/controller/application surfaces with placeholders only; behavior stays pending for `S9B`/`S9C`. |
 | S9B | Implement restore mutation behavior | Implement the minimum non-widget restore-slot behavior in persistence layers. | S9A | Done | Implemented in `CharacterRecoveryService.restoreSpellSlot(...)` with spend-parity validation and below-zero rejection. |
 | S9C | Close restore non-UI slice | Verify parity/docs state for the restore mutation path before UI work. | S9B | Done | Non-UI restore slice closed; next step is sheet wiring only (`S10`). |
-| S10 | Expose restore from sheet | Wire the existing restore contract into the character sheet UI. | S9C | Planned | Close the minimum slot loop in UI. |
+|| S10 | Expose restore from sheet | Wire the existing restore contract into the character sheet UI. | S9C | Done | Added "Restore" button in spell-slot panel (lines 1009-1020), routed through controller → repository → recovery service. Spend + restore now form a complete minimum functional loop. |
 | S11 | Test restore persistence | Add targeted coverage for restore + persist + reopen. | S10 | Planned | Restore only. |
 | S12 | Audit minimum inventory usability | Decide whether current inventory already supports real table use. | S2 | Planned | Distinguish blockers from comfort issues. |
 | S13 | Implement one blocking inventory action | Add only the single inventory capability proven to block the loop. | S12 | Planned / N/A | Skip if audit says inventory is already sufficient. |

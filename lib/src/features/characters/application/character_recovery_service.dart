@@ -246,11 +246,11 @@ class CharacterRecoveryService {
     final slotUsages = await _readDao.getSpellSlotUsagesByCharacterId(id);
     final classResources = await _readDao.getClassResourcesByCharacterId(id);
     final inventory = await _readDao.getInventoryByCharacterId(id);
-    final slotUsagesByLevel = <int, List<String>>{
+    final slotUsagesByLevel = <int, int>{
       for (final slot in slotUsages)
         slot.spellLevel: slot.expendedSlotIndices.isEmpty
-            ? const <String>[]
-            : List<String>.from(slot.expendedSlotIndices.split(',')),
+            ? 0
+            : slot.expendedSlotIndices.length,
     };
     final persistedResourceCurrentByKey = <String, int>{
       for (final row in classResources) row.resourceKey: row.currentUses,
@@ -277,8 +277,7 @@ class CharacterRecoveryService {
             maximumHitPoints: maximumHitPoints,
             temporaryHitPoints: (hitPoints?.temporary ?? 0).clamp(0, 9999),
             slotUsagesByLevel: slotUsagesByLevel,
-           )
-           as CharacterRestResult;
+          );
 
     await _database.transaction(() async {
       final now = DateTime.now();
@@ -311,8 +310,7 @@ class CharacterRecoveryService {
             (entry) => CharacterSpellSlotUsagesCompanion.insert(
               characterId: id,
               spellLevel: entry.key,
-              expendedSlotIndices: Value(
-                  List<String>.generate(entry.value, (i) => i.toString())),
+              expendedSlotIndices: Value(entry.value.toString()),
             ),
           )
           .toList(growable: false);

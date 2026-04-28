@@ -66,7 +66,7 @@ void main() {
               ),
             ],
             slotUsages: <CharacterSpellSlotUsageInput>[
-              CharacterSpellSlotUsageInput(spellLevel: 1, slotsExpended: 1),
+              CharacterSpellSlotUsageInput(spellLevel: 1, expendedSlotIndices: ["1"]),
             ],
           ),
           finishingDetails: CharacterFinishingDetailsInput(
@@ -116,7 +116,7 @@ void main() {
           CharacterSpellSelectionMode.prepared,
         ]),
       );
-      expect(editable.spellState.slotUsages.single.slotsExpended, 1);
+      expect(editable.spellState.slotUsages.single.expendedSlotIndices, 1);
       expect(editable.equipment.items[1].name, 'Torch');
       expect(editable.equipment.items[1].quantity, 2);
       expect(

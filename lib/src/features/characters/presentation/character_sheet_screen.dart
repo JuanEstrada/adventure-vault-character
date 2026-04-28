@@ -179,6 +179,7 @@ class CharacterSheetScreen extends StatelessWidget {
                               onApplyShortRest: onApplyShortRest,
                               onApplyLongRest: onApplyLongRest,
                               onSpendSpellSlot: onSpendSpellSlot,
+                              onRestoreSpellSlot: onRestoreSpellSlot,
                             ),
                             const SizedBox(height: 16),
                           ],
@@ -234,6 +235,7 @@ class CharacterSheetScreen extends StatelessWidget {
                       onApplyShortRest: onApplyShortRest,
                       onApplyLongRest: onApplyLongRest,
                       onSpendSpellSlot: onSpendSpellSlot,
+                      onRestoreSpellSlot: onRestoreSpellSlot,
                     ),
                     const SizedBox(height: 16),
                   ],
@@ -872,17 +874,18 @@ class _SpellsPanel extends StatelessWidget {
     required this.onApplyShortRest,
     required this.onApplyLongRest,
     required this.onSpendSpellSlot,
+    required this.onRestoreSpellSlot,
   });
 
   final CharacterDomainModel character;
   final bool isApplyingRest;
   final bool supportsShortRestRecovery;
   final Future<void> Function() onApplyShortRest;
-    final Future<void> Function() onApplyLongRest;
-    final Future<void> Function({required int spellLevel, required int slotIndex})
-        onSpendSpellSlot;
-    final Future<void> Function({required int spellLevel, required int slotIndex})
-        onRestoreSpellSlot;
+  final Future<void> Function() onApplyLongRest;
+  final Future<void> Function({required int spellLevel, required int slotIndex})
+      onSpendSpellSlot;
+  final Future<void> Function({required int spellLevel, required int slotIndex})
+      onRestoreSpellSlot;
 
   @override
   Widget build(BuildContext context) {

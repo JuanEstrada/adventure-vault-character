@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_spellbook_domain.dart' as domain;
 import 'package:adventure_vault_character/src/features/characters/presentation/merge_stack_dialog.dart';
 import 'package:adventure_vault_character/src/features/characters/presentation/transfer_to_container_dialog.dart';
 import 'package:adventure_vault_character/src/features/characters/presentation/container_management_dialog.dart';
 import 'package:adventure_vault_character/src/features/characters/presentation/spellbook_management_screen.dart';
 import 'package:adventure_vault_character/src/features/characters/presentation/prepared_spell_selection_screen.dart';
-import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart' as domain;
 
 void main() {
   group('P1 Integration Tests', () {
     testWidgets('MergeStackDialog renders correctly',
         (WidgetTester tester) async {
       final dialog = MergeStackDialog(
-        sourceStackId: 'stack-1',
-        targetStackId: 'stack-2',
-        sourceName: 'Potion',
+        sourceItemId: 'stack-1',
+        targetItemId: 'stack-2',
         sourceQuantity: 5,
         targetQuantity: 3,
-        availableStacks: [],
         onDismiss: () {},
-        onMerge: (_, __) {},
+        onMerge: (String, int) => {},
       );
 
       await tester.pumpWidget(
@@ -41,7 +40,7 @@ void main() {
         sourceQuantity: 10,
         sourceName: 'Potions',
         onDismiss: () {},
-        onTransfer: (_, __, ___) {},
+        onTransfer: (var sourceItemId, var sourceQuantity, var targetContainerId) => {},
       );
 
       await tester.pumpWidget(
@@ -61,9 +60,9 @@ void main() {
       final dialog = ContainerManagementDialog(
         characterId: 'char-1',
         onDismiss: () {},
-        onRename: (_, __) {},
-        onDelete: (_) {},
-        onAdd: (_, __) {},
+        onRename: (var itemId, var newName) => {},
+        onDelete: (var itemId) => {},
+        onAdd: (var itemId, var quantity) => {},
       );
 
       await tester.pumpWidget(
@@ -83,7 +82,7 @@ void main() {
       final screen = SpellbookManagementScreen(
         characterId: 'char-1',
         availableSpells: <domain.CharacterSpellReferenceDomainModel>[],
-        spellSelectionMode: WizardSpellSelectionMode.prepared,
+        spellSelectionMode: domain.WizardSpellSelectionMode.prepared,
         selectionLimit: 10,
         onDismiss: () {},
         onSave: (_) {},
@@ -104,7 +103,7 @@ void main() {
         (WidgetTester tester) async {
       final screen = PreparedSpellSelectionScreen(
         characterId: 'char-1',
-        availableSpells: <domain.CharacterSpellReferenceDomainModel>[],
+        availableSpells: <CharacterSpellReferenceDomainModel>[],
         selectionLimit: 10,
         onDismiss: () {},
         onSave: (_) {},
