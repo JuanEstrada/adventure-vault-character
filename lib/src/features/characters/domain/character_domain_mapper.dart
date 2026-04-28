@@ -468,10 +468,7 @@ class CharacterDomainMapper {
       className: record.row.className,
       level: record.row.level,
     );
-    final slotUsageByLevel = <int, List<String>>{
-      for (final usage in record.spellSlotUsages)
-        usage.spellLevel: List<String>.from(usage.expendedSlotIndices.split(',')),
-    };
+ 
     final abilityScore = _abilityScoreForKey(
       abilityKey: abilityKey,
       scores: resolvedAbilityScores,

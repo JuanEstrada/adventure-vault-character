@@ -401,8 +401,6 @@ class InMemoryCharacterRepository implements CharacterRepository {
       throw StateError('Spell slot level is not available for this character.');
     }
 
-    // Find the matching slot by index within the spell level
-    final slot = matchingSlots[slotIndex];
     final slotUsage = createdInput.spellState.slotUsages
         .firstWhere(
           (u) => u.spellLevel == spellLevel,
@@ -424,9 +422,6 @@ class InMemoryCharacterRepository implements CharacterRepository {
           spellLevel: spellLevel,
           expendedSlotIndices: const <String>[],
         );
-    final updatedSlotIndices = currentSlotUsage.expendedSlotIndices
-        .where((i) => i != slotIndex)
-        .toList();
     final updatedSlotUsage = CharacterSpellSlotUsageInput(
       spellLevel: spellLevel,
      expendedSlotIndices: [
@@ -1893,10 +1888,6 @@ class InMemoryCharacterRepository implements CharacterRepository {
       className: className,
       level: progression.level,
     );
-    final slotUsageByLevel = <int, int>{
-      for (final usage in spellState.slotUsages)
-        usage.spellLevel: usage.expendedSlotIndices.length,
-    };
 
     return CharacterSpellcastingDomainModel(
       abilityKey: abilityKey,

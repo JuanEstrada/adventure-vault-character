@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:adventure_vault_character/src/features/characters/presentation/spellbook_management_screen.dart';
-import 'package:adventure_vault_character/src/features/characters/presentation/prepared_spell_selection_screen.dart';
 
 void main() {
   group('P1 End-to-End Integration Tests', () {
