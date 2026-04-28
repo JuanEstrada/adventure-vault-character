@@ -2,8 +2,8 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:flutter/material.dart';
 
-class CharacterSheetScreen extends StatelessWidget {
-  const CharacterSheetScreen({
+class _CharacterSheetScreen extends StatefulWidget {
+  const _CharacterSheetScreen({
     required this.character,
     required this.isApplyingRest,
     required this.errorMessage,
@@ -23,6 +23,9 @@ class CharacterSheetScreen extends StatelessWidget {
     required this.onSpendInventoryItemQuantity,
     required this.onSetInventoryItemCharges,
     required this.onSetInventoryItemContainer,
+    required this.onSplitStack,
+    required this.onMergeStacks,
+    required this.onTransferToContainer,
     super.key,
   });
 
@@ -65,13 +68,34 @@ class CharacterSheetScreen extends StatelessWidget {
     String? containerInventoryItemId,
   )
   onSetInventoryItemContainer;
+  final Future<void> Function(String itemId, int quantity) onSplitStack;
+  final Future<void> Function(List<String> stackIds, int quantity) onMergeStacks;
+  final Future<void> Function(String sourceItemId, int quantity) onTransferToContainer;
+
+  @override
+  State<_CharacterSheetScreen> createState() => _CharacterSheetScreenState();
+}
+
+class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
+  bool _showSplitDialog = false;
+  String? _splitItemId;
+  int? _splitQuantity;
+
+  bool _showMergeDialog = false;
+  List<String>? _mergeStackIds;
+  int? _mergeQuantity;
+
+  bool _showTransferDialog = false;
+  String? _transferSourceItemId;
+  int? _transferSourceQuantity;
+  String? _transferSourceName;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final supportsShortRestSlotRecovery =
-        character.identity.className.trim().toLowerCase() == 'warlock';
-    final supportsShortRestResourceRecovery = character.combat.classResources
+        widget.character.identity.className.trim().toLowerCase() == 'warlock';
+    final supportsShortRestResourceRecovery = widget.character.combat.classResources
         .any((resource) => resource.recoversOnShortRest);
     final supportsShortRestRecovery =
         supportsShortRestSlotRecovery || supportsShortRestResourceRecovery;
@@ -82,7 +106,7 @@ class CharacterSheetScreen extends StatelessWidget {
           onPressed: onBack,
           icon: const Icon(Icons.arrow_back),
         ),
-        title: Text(character.identity.name),
+        title: Text(widget.character.identity.name),
         actions: [TextButton(onPressed: onEdit, child: const Text('Edit'))],
       ),
       body: ListView(
@@ -105,14 +129,14 @@ class CharacterSheetScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            character.identity.name,
+                            widget.character.identity.name,
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '${character.identity.raceName}  •  ${character.identity.className}  •  Lv ${character.identity.progression.level}  •  XP ${character.identity.progression.experience}',
+                            '${widget.character.identity.raceName}  •  ${widget.character.identity.className}  •  Lv ${widget.character.identity.progression.level}  •  XP ${widget.character.identity.progression.experience}',
                             style: theme.textTheme.titleMedium,
                           ),
                         ],
@@ -120,7 +144,7 @@ class CharacterSheetScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 16),
                     _PortraitPreview(
-                      portraitPath: character
+                      portraitPath: widget.character
                           .featuresNotes
                           .finishingDetails
                           .portraitAssetPath,
@@ -150,13 +174,13 @@ class CharacterSheetScreen extends StatelessWidget {
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(child: _IdentityPanel(character: character)),
+                    Expanded(child: _IdentityPanel(character: widget.character)),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         children: [
                           _CombatPanel(
-                            character: character,
+                            character: widget.character,
                             isApplyingRest: isApplyingRest,
                             supportsShortRestRecovery:
                                 supportsShortRestRecovery,
@@ -168,11 +192,11 @@ class CharacterSheetScreen extends StatelessWidget {
                             onResetDeathSaves: onResetDeathSaves,
                           ),
                           const SizedBox(height: 16),
-                          _AbilitiesPanel(character: character),
+                          _AbilitiesPanel(character: widget.character),
                           const SizedBox(height: 16),
-                          if (character.spellcasting != null) ...[
+                          if (widget.character.spellcasting != null) ...[
                             _SpellsPanel(
-                              character: character,
+                              character: widget.character,
                               isApplyingRest: isApplyingRest,
                               supportsShortRestRecovery:
                                   supportsShortRestRecovery,
@@ -183,10 +207,10 @@ class CharacterSheetScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 16),
                           ],
-                          _FeaturesNotesPanel(character: character),
+                          _FeaturesNotesPanel(character: widget.character),
                           const SizedBox(height: 16),
                           _EquipmentPanel(
-                            character: character,
+                            character: widget.character,
                             isUpdating: isApplyingRest,
                             errorMessage: errorMessage,
                             onSetInventoryItemEquipped:
@@ -211,10 +235,10 @@ class CharacterSheetScreen extends StatelessWidget {
 
               return Column(
                 children: [
-                  _IdentityPanel(character: character),
+                  _IdentityPanel(character: widget.character),
                   const SizedBox(height: 16),
                   _CombatPanel(
-                    character: character,
+                    character: widget.character,
                     isApplyingRest: isApplyingRest,
                     supportsShortRestRecovery: supportsShortRestRecovery,
                     onApplyShortRest: onApplyShortRest,
@@ -225,11 +249,11 @@ class CharacterSheetScreen extends StatelessWidget {
                     onResetDeathSaves: onResetDeathSaves,
                   ),
                   const SizedBox(height: 16),
-                  _AbilitiesPanel(character: character),
+                  _AbilitiesPanel(character: widget.character),
                   const SizedBox(height: 16),
-                  if (character.spellcasting != null) ...[
+                  if (widget.character.spellcasting != null) ...[
                     _SpellsPanel(
-                      character: character,
+                      character: widget.character,
                       isApplyingRest: isApplyingRest,
                       supportsShortRestRecovery: supportsShortRestRecovery,
                       onApplyShortRest: onApplyShortRest,
@@ -239,10 +263,10 @@ class CharacterSheetScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                   ],
-                  _FeaturesNotesPanel(character: character),
+                  _FeaturesNotesPanel(character: widget.character),
                   const SizedBox(height: 16),
                   _EquipmentPanel(
-                    character: character,
+                    character: widget.character,
                     isUpdating: isApplyingRest,
                     errorMessage: errorMessage,
                     onSetInventoryItemEquipped: onSetInventoryItemEquipped,
@@ -251,14 +275,91 @@ class CharacterSheetScreen extends StatelessWidget {
                     onSpendInventoryItemQuantity: onSpendInventoryItemQuantity,
                     onSetInventoryItemCharges: onSetInventoryItemCharges,
                     onSetInventoryItemContainer: onSetInventoryItemContainer,
+                    onSplitStack: _onSplitStack,
+                    onMergeStacks: _onMergeStacks,
+                    onTransferToContainer: _onTransferToContainer,
                   ),
                 ],
               );
             },
           ),
         ],
+        if (_showSplitDialog) ...[
+          SplitStackDialog(
+            itemId: _splitItemId!,
+            quantity: _splitQuantity!,
+            onClose: () {
+              setState(() {
+                _showSplitDialog = false;
+                _splitItemId = null;
+                _splitQuantity = null;
+              });
+            },
+            onSplit: (itemId, splitQuantity) {
+              widget.onSplitStack(itemId, splitQuantity);
+            },
+          ),
+        ],
+        if (_showMergeDialog) ...[
+          MergeStackDialog(
+            stackIds: _mergeStackIds!,
+            quantityOverride: _mergeQuantity,
+            onDismiss: () {
+              setState(() {
+                _showMergeDialog = false;
+                _mergeStackIds = null;
+                _mergeQuantity = null;
+              });
+            },
+            onMerge: (stackIds, mergeQuantity) {
+              widget.onMergeStacks(stackIds, mergeQuantity);
+            },
+          ),
+        ],
+        if (_showTransferDialog) ...[
+          TransferToContainerDialog(
+            sourceItemId: _transferSourceItemId!,
+            sourceQuantity: _transferSourceQuantity!,
+            onDismiss: () {
+              setState(() {
+                _showTransferDialog = false;
+                _transferSourceItemId = null;
+                _transferSourceQuantity = null;
+                _transferSourceName = null;
+              });
+            },
+            onTransfer: (containerId, quantity) {
+              widget.onTransferToContainer(_transferSourceItemId!, quantity);
+            },
+          ),
+        ],
       ),
     );
+  }
+
+  void _onSplitStack(String itemId, int quantity) {
+    setState(() {
+      _showSplitDialog = true;
+      _splitItemId = itemId;
+      _splitQuantity = quantity ~/ 2;
+    });
+  }
+
+  void _onMergeStacks(List<String> stackIds, int quantity) {
+    setState(() {
+      _showMergeDialog = true;
+      _mergeStackIds = stackIds;
+      _mergeQuantity = quantity;
+    });
+  }
+
+  void _onTransferToContainer(String sourceItemId, int quantity) {
+    setState(() {
+      _showTransferDialog = true;
+      _transferSourceItemId = sourceItemId;
+      _transferSourceQuantity = quantity;
+      _transferSourceName = null;
+    });
   }
 }
 
@@ -1268,6 +1369,9 @@ class _InventoryItemRow extends StatelessWidget {
     required this.onSetCharges,
     required this.containers,
     required this.onSetContainer,
+    required this.onSplitStack,
+    required this.onMergeStacks,
+    required this.onTransferToContainer,
   });
 
   final CharacterEquipmentItemDomainModel item;
@@ -1282,6 +1386,9 @@ class _InventoryItemRow extends StatelessWidget {
   onSetCharges;
   final List<CharacterEquipmentItemDomainModel> containers;
   final Future<void> Function(String? containerInventoryItemId) onSetContainer;
+  final Future<void> Function(String itemId, int quantity) onSplitStack;
+  final Future<void> Function(List<String> stackIds, int quantity) onMergeStacks;
+  final Future<void> Function(String sourceItemId, int quantity) onTransferToContainer;
 
   @override
   Widget build(BuildContext context) {
@@ -1433,6 +1540,38 @@ class _InventoryItemRow extends StatelessWidget {
                       onSetContainer(value);
                     },
             ),
+            // Stack operation buttons (split/merge/transfer) - only for non-container items
+            if (!item.isContainer && item.quantity > 1) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    onPressed: isUpdating || item.quantity <= 1
+                        ? null
+                        : () => onSplitStack(item.id, item.quantity ~/ 2),
+                    icon: const Icon(Icons.split),
+                    tooltip: 'Split stack',
+                  ),
+                  if (containers.isNotEmpty) ...[
+                    IconButton(
+                      onPressed: isUpdating
+                          ? null
+                          : () => onTransferToContainer(item.id, item.quantity),
+                      icon: const Icon(Icons.inventory_2_outlined),
+                      tooltip: 'Transfer to container',
+                    ),
+                    IconButton(
+                      onPressed: isUpdating
+                          ? null
+                          : () => onMergeStacks([item.id, ...containers.map((c) => c.id)], item.quantity),
+                      icon: const Icon(Icons.merge_type),
+                      tooltip: 'Merge with containers',
+                    ),
+                  ],
+                ],
+              ),
+            ],
             if (containers.isEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 4),

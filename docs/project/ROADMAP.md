@@ -2,7 +2,7 @@
 
 ## Last Updated
 
-2026-04-03
+2026-04-28
 
 ## Roadmap Intent
 
@@ -32,8 +32,8 @@ tracks what is complete versus what still needs delivery hardening.
 |---|---|---|
 | Phase 1 — Character Sheet Completion | ✅ Complete | Header, portrait, passive perception, skills, and proficiency/language readability are implemented in the sheet domain+UI path. |
 | Phase 2 — Core Combat Rules (Deterministic MVP) | ✅ Complete | AC, initiative, death-save state/mutations, and equipped-weapon attack helpers are implemented and surfaced on sheet. |
-| Phase 3 — Spellcasting Workflow Completion | 🟡 In progress | Selection modes/limits, persisted selected spells, and slot tracking are implemented; in-session spell-use ergonomics still need refinement. |
-| Phase 4 — Inventory & Resource Session UX | 🟡 In progress | Core mutations (equip/carry/quantity/charges/container/stack operations) and rest/resource actions exist; transfer UX depth and compact clarity still need improvement. |
+| Phase 3 — Spellcasting Workflow Completion | ✅ Complete | Class-specific selection modes, persisted spells/slots, slot recovery, and per-slot spend/restore controls are all implemented and functional. |
+| Phase 4 — Inventory & Resource Session UX | ✅ Complete | Core mutations (equip/carry/quantity/charges/container/stack operations) and rest/resource actions are implemented. Split/merge/transfer dialogs integrated with explicit controls for stack operations. |
 | Phase 5 — Rules Coverage & Validation Hardening | 🟡 In progress | Combat/spell/inventory/migration tests exist; broader edge/path parity and deeper mixed-source regressions remain. |
 | Phase 6 — Finish-the-App Polish & Recovery | ⚪ Not started | Partial improvements exist, but no full missing-data/error-recovery polish pass yet. |
 
@@ -44,6 +44,8 @@ tracks what is complete versus what still needs delivery hardening.
   obsolete; those scope items are complete.
 - Immediate-next guidance to "continue Phase 1, then start Phase 2" is obsolete;
   the project is already beyond both phases.
+- Phase 4 "transfer UX depth and compact clarity still need improvement" is obsolete;
+  split/merge/transfer dialogs are now fully integrated with explicit controls.
 
 ## Phase 1 — Character Sheet Completion
 
@@ -100,10 +102,11 @@ Goal: Move from spell foundation to full day-to-day spell use flow.
   the existing mutation path.
 - ✅ Targeted spend coverage now proves the spent slot state persists across
   back-navigation and character reopen.
-- 🟡 Remaining: direct per-slot spend/restore controls from the sheet are still
-  pending.
-- 🟡 Restore-slot symmetry and final spend/restore loop completion are still
-  pending for the minimum in-session spell workflow.
+- ✅ Direct per-slot spend/restore controls implemented in sheet UI with
+   individual slot buttons.
+- ✅ Restore-slot symmetry and full spend/restore loop completed.
+- 🟡 Remaining: broader spell edge case coverage and mixed-source regression
+   tests.
 
 ### Exit Criteria
 
