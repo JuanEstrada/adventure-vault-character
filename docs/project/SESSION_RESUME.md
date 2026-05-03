@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-04-12
+Last updated: 2026-05-02
 
 This is the canonical, short handoff file for resuming work quickly.
 
@@ -102,5 +102,9 @@ Prioritize the **MinFunc** execution path before broader hardening work:
 - S9A is complete: the restore-slot contract now exists on repository,
   application, controller, and repository-implementation surfaces as a
   placeholder-only path.
+- S12 is complete: inventory minimum usability is already sufficient for the
+  MinFunc bar; no code changes were needed.
+- S14 is complete: the existing inventory regression/smoke coverage already
+  proves the minimum inventory flow needed by MinFunc.
 - Deferred gap captured for the roadmap: restore-slot symmetry still remains;
   the next step is implementing the non-UI restore behavior in S9B.

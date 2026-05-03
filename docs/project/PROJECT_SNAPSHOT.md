@@ -1,7 +1,7 @@
 # Adventure Vault Character — Project Snapshot
 
 ## Last Updated
-2026-04-12
+2026-05-02
 
 ## Role of This Document
 
@@ -58,6 +58,9 @@ Primary constraints are tracked in:
 - S6A-S6C3 closed the non-UI spend-slot slice: explicit repository/application
   spend mutation now exists with Drift + in-memory parity and minimum non-widget
   coverage.
+- S12 confirmed inventory minimum usability is already sufficient for MinFunc;
+  S14 confirmed the existing inventory regression/smoke coverage is enough for
+  the minimum flow.
 - The main remaining functional blocker is now restore-slot symmetry for the
   full minimum spell loop; the restore contract exists, but non-UI behavior,
   sheet wiring, and reopen proof are still pending.

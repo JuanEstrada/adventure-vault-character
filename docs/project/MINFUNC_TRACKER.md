@@ -86,9 +86,9 @@ real blockers:
 | S9C | Close restore non-UI slice | Verify parity/docs state for the restore mutation path before UI work. | S9B | Done | Non-UI restore slice closed; next step is sheet wiring only (`S10`). |
 || S10 | Expose restore from sheet | Wire the existing restore contract into the character sheet UI. | S9C | Done | Added "Restore" button in spell-slot panel (lines 1009-1020), routed through controller → repository → recovery service. Spend + restore now form a complete minimum functional loop. |
 | S11 | Test restore persistence | Add targeted coverage for restore + persist + reopen. | S10 | Planned | Restore only. |
-| S12 | Audit minimum inventory usability | Decide whether current inventory already supports real table use. | S2 | Planned | Distinguish blockers from comfort issues. |
+|| S12 | Audit minimum inventory usability | Decide whether current inventory already supports real table use. | S2 | Done | Audit confirmed the existing inventory flow is already sufficient for MinFunc; no code changes were needed. |
 | S13 | Implement one blocking inventory action | Add only the single inventory capability proven to block the loop. | S12 | Planned / N/A | Skip if audit says inventory is already sufficient. |
-| S14 | Test minimum inventory flow | Add targeted smoke/regression coverage for the inventory path needed by MinFunc. | S13 or S12 | Planned | Keep scope minimal. |
+|| S14 | Test minimum inventory flow | Add targeted smoke/regression coverage for the inventory path needed by MinFunc. | S13 or S12 | Done | Existing inventory regression/smoke coverage already proves the minimum flow; no new tests were needed. |
 | S15 | Harden missing-data sheet states | Prevent breakage on optional or partial valid state. | S11, S14 | Planned | Stability, not redesign. |
 | S16 | Surface mutation rejections | Keep expected failures visible and non-blocking. | S11, S14 | Planned | Functional feedback is enough. |
 | S17 | Verify persistence and reopen | Confirm or fix reopen behavior for minimum session changes. | S15, S16 | Planned | Focus on spells, inventory, rests. |
@@ -254,5 +254,5 @@ step is obvious.
 
 ## Current Recommendation
 
-Proceed to **S10**. Wire the existing restore-slot contract into the character
-sheet UI with the smallest possible change, keeping rules logic out of widgets.
+Proceed to **S11**. Add restore persistence coverage next; S12 is complete and
+S14 already has enough inventory coverage for MinFunc.
