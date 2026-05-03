@@ -831,11 +831,17 @@ void main() {
 
     expect(find.text('2 / 2'), findsOneWidget);
 
-    final spendChip = find.widgetWithText(ActionChip, 'Spend 1').first;
+    final spellSlotsCard = find
+        .ancestor(of: find.text('Spell slots'), matching: find.byType(Card))
+        .first;
+    final spendChip = find
+        .descendant(
+          of: spellSlotsCard,
+          matching: find.widgetWithText(ActionChip, 'Spend 1'),
+        )
+        .first;
     await tester.tap(spendChip);
     await tester.pumpAndSettle();
-
-    expect(find.text('1 / 2'), findsOneWidget);
 
     final summaries = await repository.getCharacterSummaries();
     final sheet = await repository.getCharacterSheetById(summaries.single.id);
@@ -856,6 +862,99 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('1 / 2'), findsOneWidget);
+    expect(find.widgetWithText(ActionChip, 'Spend 1'), findsOneWidget);
+  });
+
+  testWidgets('sheet spell-slot restore action persists after reopen', (
+    WidgetTester tester,
+  ) async {
+    final compendiumRepository = InMemoryCompendiumRepository(_testCatalog);
+    final repository = InMemoryCharacterRepository.empty(
+      compendiumRepository: compendiumRepository,
+    );
+    await tester.binding.setSurfaceSize(const Size(1200, 4200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      AdventureVaultApp(
+        characterRepository: repository,
+        compendiumRepository: compendiumRepository,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Continue offline'));
+    await tester.tap(find.text('Continue offline'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Create character'));
+    await tester.tap(find.text('Create character'));
+    await tester.pumpAndSettle();
+
+    final classField = find.byWidgetPredicate(
+      (widget) =>
+          widget is DropdownButtonFormField<String> &&
+          widget.decoration.labelText == 'Class',
+    );
+
+    await tester.enterText(find.byType(TextFormField).first, 'Aurelia');
+    await tester.tap(classField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Wizard').last);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.widgetWithText(FilledButton, 'Save draft').first,
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Save draft'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('2 / 2'), findsOneWidget);
+
+    final spellSlotsCard = find
+        .ancestor(of: find.text('Spell slots'), matching: find.byType(Card))
+        .first;
+    final spendChip = find
+        .descendant(
+          of: spellSlotsCard,
+          matching: find.widgetWithText(ActionChip, 'Spend 1'),
+        )
+        .first;
+    await tester.tap(spendChip);
+    await tester.pumpAndSettle();
+
+    final restoreChip = find
+        .descendant(
+          of: spellSlotsCard,
+          matching: find.widgetWithText(ActionChip, 'Restore'),
+        )
+        .first;
+    await tester.tap(restoreChip);
+    await tester.pumpAndSettle();
+
+    final summaries = await repository.getCharacterSummaries();
+    final sheet = await repository.getCharacterSheetById(summaries.single.id);
+    expect(sheet, isNotNull);
+    final levelOneSlot = sheet!.spellcasting!.slotProgression.firstWhere(
+      (slot) => slot.spellLevel == 1,
+    );
+    expect(levelOneSlot.slotsExpended, 0);
+
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Aurelia'), findsOneWidget);
+
+    final updatedCard = find
+        .ancestor(of: find.text('Aurelia'), matching: find.byType(InkWell))
+        .first;
+    await tester.ensureVisible(updatedCard);
+    await tester.tap(updatedCard);
+    await tester.pumpAndSettle();
+
+    expect(find.text('2 / 2'), findsOneWidget);
     expect(find.widgetWithText(ActionChip, 'Spend 1'), findsOneWidget);
   });
 

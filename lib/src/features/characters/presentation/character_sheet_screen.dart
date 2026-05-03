@@ -2,6 +2,31 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:flutter/material.dart';
 
+class CharacterSheetScreen extends _CharacterSheetScreen {
+  const CharacterSheetScreen({
+    required super.character,
+    required super.isApplyingRest,
+    required super.errorMessage,
+    required super.onBack,
+    required super.onEdit,
+    required super.onApplyShortRest,
+    required super.onApplyLongRest,
+    required super.onSpendSpellSlot,
+    required super.onRestoreSpellSlot,
+    required super.onSetClassResourceUses,
+    required super.onRecordDeathSaveSuccess,
+    required super.onRecordDeathSaveFailure,
+    required super.onResetDeathSaves,
+    required super.onSetInventoryItemEquipped,
+    required super.onSetInventoryItemCarried,
+    required super.onSetInventoryItemQuantity,
+    required super.onSpendInventoryItemQuantity,
+    required super.onSetInventoryItemCharges,
+    required super.onSetInventoryItemContainer,
+    super.key,
+  });
+}
+
 class _CharacterSheetScreen extends StatefulWidget {
   const _CharacterSheetScreen({
     required this.character,
@@ -23,9 +48,9 @@ class _CharacterSheetScreen extends StatefulWidget {
     required this.onSpendInventoryItemQuantity,
     required this.onSetInventoryItemCharges,
     required this.onSetInventoryItemContainer,
-    required this.onSplitStack,
-    required this.onMergeStacks,
-    required this.onTransferToContainer,
+    this.onSplitStack,
+    this.onMergeStacks,
+    this.onTransferToContainer,
     super.key,
   });
 
@@ -36,14 +61,10 @@ class _CharacterSheetScreen extends StatefulWidget {
   final VoidCallback onEdit;
   final Future<void> Function() onApplyShortRest;
   final Future<void> Function() onApplyLongRest;
-  final Future<void> Function({
-    required int spellLevel,
-    required int slotIndex,
-  }) onSpendSpellSlot;
-  final Future<void> Function({
-    required int spellLevel,
-    required int slotIndex,
-  }) onRestoreSpellSlot;
+  final Future<void> Function({required int spellLevel, required int slotIndex})
+  onSpendSpellSlot;
+  final Future<void> Function({required int spellLevel, required int slotIndex})
+  onRestoreSpellSlot;
   final Future<void> Function(String resourceKey, int currentUses)
   onSetClassResourceUses;
   final Future<void> Function() onRecordDeathSaveSuccess;
@@ -68,9 +89,11 @@ class _CharacterSheetScreen extends StatefulWidget {
     String? containerInventoryItemId,
   )
   onSetInventoryItemContainer;
-  final Future<void> Function(String itemId, int quantity) onSplitStack;
-  final Future<void> Function(List<String> stackIds, int quantity) onMergeStacks;
-  final Future<void> Function(String sourceItemId, int quantity) onTransferToContainer;
+  final Future<void> Function(String itemId, int quantity)? onSplitStack;
+  final Future<void> Function(List<String> stackIds, int quantity)?
+  onMergeStacks;
+  final Future<void> Function(String sourceItemId, int quantity)?
+  onTransferToContainer;
 
   @override
   State<_CharacterSheetScreen> createState() => _CharacterSheetScreenState();
@@ -90,12 +113,64 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
   int? _transferSourceQuantity;
   String? _transferSourceName;
 
+  bool get isApplyingRest => widget.isApplyingRest;
+  String? get errorMessage => widget.errorMessage;
+  Future<void> Function() get onApplyShortRest => widget.onApplyShortRest;
+  Future<void> Function() get onApplyLongRest => widget.onApplyLongRest;
+  Future<void> Function({required int spellLevel, required int slotIndex})
+  get onSpendSpellSlot => widget.onSpendSpellSlot;
+  Future<void> Function({required int spellLevel, required int slotIndex})
+  get onRestoreSpellSlot => widget.onRestoreSpellSlot;
+  Future<void> Function(String resourceKey, int currentUses)
+  get onSetClassResourceUses => widget.onSetClassResourceUses;
+  Future<void> Function() get onRecordDeathSaveSuccess =>
+      widget.onRecordDeathSaveSuccess;
+  Future<void> Function() get onRecordDeathSaveFailure =>
+      widget.onRecordDeathSaveFailure;
+  Future<void> Function() get onResetDeathSaves => widget.onResetDeathSaves;
+  Future<void> Function(String inventoryItemId, bool isEquipped)
+  get onSetInventoryItemEquipped => widget.onSetInventoryItemEquipped;
+  Future<void> Function(String inventoryItemId, bool isCarried)
+  get onSetInventoryItemCarried => widget.onSetInventoryItemCarried;
+  Future<void> Function(String inventoryItemId, int quantity)
+  get onSetInventoryItemQuantity => widget.onSetInventoryItemQuantity;
+  Future<void> Function(String inventoryItemId, {int amount})
+  get onSpendInventoryItemQuantity => widget.onSpendInventoryItemQuantity;
+  Future<void> Function(
+    String inventoryItemId, {
+    int? chargesCurrent,
+    int? chargesMax,
+  })
+  get onSetInventoryItemCharges => widget.onSetInventoryItemCharges;
+  Future<void> Function(
+    String inventoryItemId,
+    String? containerInventoryItemId,
+  )
+  get onSetInventoryItemContainer => widget.onSetInventoryItemContainer;
+  Future<void> Function(String itemId, int quantity) get onSplitStack =>
+      widget.onSplitStack ?? _noopSplitStack;
+  Future<void> Function(List<String> stackIds, int quantity)
+  get onMergeStacks => widget.onMergeStacks ?? _noopMergeStacks;
+  Future<void> Function(String sourceItemId, int quantity)
+  get onTransferToContainer =>
+      widget.onTransferToContainer ?? _noopTransferToContainer;
+
+  Future<void> _noopSplitStack(String itemId, int quantity) async {}
+  Future<void> _noopMergeStacks(List<String> stackIds, int quantity) async {}
+  Future<void> _noopTransferToContainer(
+    String sourceItemId,
+    int quantity,
+  ) async {}
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final supportsShortRestSlotRecovery =
         widget.character.identity.className.trim().toLowerCase() == 'warlock';
-    final supportsShortRestResourceRecovery = widget.character.combat.classResources
+    final supportsShortRestResourceRecovery = widget
+        .character
+        .combat
+        .classResources
         .any((resource) => resource.recoversOnShortRest);
     final supportsShortRestRecovery =
         supportsShortRestSlotRecovery || supportsShortRestResourceRecovery;
@@ -103,11 +178,13 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: onBack,
+          onPressed: widget.onBack,
           icon: const Icon(Icons.arrow_back),
         ),
         title: Text(widget.character.identity.name),
-        actions: [TextButton(onPressed: onEdit, child: const Text('Edit'))],
+        actions: [
+          TextButton(onPressed: widget.onEdit, child: const Text('Edit')),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(24),
@@ -144,7 +221,8 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
                     ),
                     const SizedBox(width: 16),
                     _PortraitPreview(
-                      portraitPath: widget.character
+                      portraitPath: widget
+                          .character
                           .featuresNotes
                           .finishingDetails
                           .portraitAssetPath,
@@ -174,7 +252,9 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(child: _IdentityPanel(character: widget.character)),
+                    Expanded(
+                      child: _IdentityPanel(character: widget.character),
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
@@ -225,6 +305,9 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
                                 onSetInventoryItemCharges,
                             onSetInventoryItemContainer:
                                 onSetInventoryItemContainer,
+                            onSplitStack: onSplitStack,
+                            onMergeStacks: onMergeStacks,
+                            onTransferToContainer: onTransferToContainer,
                           ),
                         ],
                       ),
@@ -275,61 +358,12 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
                     onSpendInventoryItemQuantity: onSpendInventoryItemQuantity,
                     onSetInventoryItemCharges: onSetInventoryItemCharges,
                     onSetInventoryItemContainer: onSetInventoryItemContainer,
-                    onSplitStack: _onSplitStack,
-                    onMergeStacks: _onMergeStacks,
-                    onTransferToContainer: _onTransferToContainer,
+                    onSplitStack: onSplitStack,
+                    onMergeStacks: onMergeStacks,
+                    onTransferToContainer: onTransferToContainer,
                   ),
                 ],
               );
-            },
-          ),
-        ],
-        if (_showSplitDialog) ...[
-          SplitStackDialog(
-            itemId: _splitItemId!,
-            quantity: _splitQuantity!,
-            onClose: () {
-              setState(() {
-                _showSplitDialog = false;
-                _splitItemId = null;
-                _splitQuantity = null;
-              });
-            },
-            onSplit: (itemId, splitQuantity) {
-              widget.onSplitStack(itemId, splitQuantity);
-            },
-          ),
-        ],
-        if (_showMergeDialog) ...[
-          MergeStackDialog(
-            stackIds: _mergeStackIds!,
-            quantityOverride: _mergeQuantity,
-            onDismiss: () {
-              setState(() {
-                _showMergeDialog = false;
-                _mergeStackIds = null;
-                _mergeQuantity = null;
-              });
-            },
-            onMerge: (stackIds, mergeQuantity) {
-              widget.onMergeStacks(stackIds, mergeQuantity);
-            },
-          ),
-        ],
-        if (_showTransferDialog) ...[
-          TransferToContainerDialog(
-            sourceItemId: _transferSourceItemId!,
-            sourceQuantity: _transferSourceQuantity!,
-            onDismiss: () {
-              setState(() {
-                _showTransferDialog = false;
-                _transferSourceItemId = null;
-                _transferSourceQuantity = null;
-                _transferSourceName = null;
-              });
-            },
-            onTransfer: (containerId, quantity) {
-              widget.onTransferToContainer(_transferSourceItemId!, quantity);
             },
           ),
         ],
@@ -984,9 +1018,9 @@ class _SpellsPanel extends StatelessWidget {
   final Future<void> Function() onApplyShortRest;
   final Future<void> Function() onApplyLongRest;
   final Future<void> Function({required int spellLevel, required int slotIndex})
-      onSpendSpellSlot;
+  onSpendSpellSlot;
   final Future<void> Function({required int spellLevel, required int slotIndex})
-      onRestoreSpellSlot;
+  onRestoreSpellSlot;
 
   @override
   Widget build(BuildContext context) {
@@ -1085,47 +1119,44 @@ class _SpellsPanel extends StatelessWidget {
                             : slot.slotsRemaining / slot.slotsMax,
                       ),
                       const SizedBox(height: 8),
-                        Wrap(
+                      Wrap(
                         spacing: 4,
                         runSpacing: 4,
-                        children: List.generate(
-                          slot.slotsMax,
-                          (slotIndex) {
-                            final index = slotIndex + 1;
-                            final isSpent = slot.slotsExpended >= index;
-                            return Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
+                        children: List.generate(slot.slotsMax, (slotIndex) {
+                          final index = slotIndex + 1;
+                          final isSpent = slot.slotsExpended >= index;
+                          return Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ActionChip(
+                                label: Text('Spend $index'),
+                                onPressed: isApplyingRest || isSpent
+                                    ? null
+                                    : () {
+                                        onSpendSpellSlot(
+                                          spellLevel: slot.spellLevel,
+                                          slotIndex: slot.slotIndex,
+                                        );
+                                      },
+                                disabledColor: Colors.grey.shade200,
+                              ),
+                              if (slot.slotsMax > index && !isSpent) ...[
+                                const SizedBox(width: 4),
                                 ActionChip(
-                                  label: Text('Spend $index'),
-                                  onPressed: isApplyingRest || isSpent
+                                  label: const Text('Restore'),
+                                  onPressed: isApplyingRest
                                       ? null
                                       : () {
-                                          onSpendSpellSlot(
+                                          onRestoreSpellSlot(
                                             spellLevel: slot.spellLevel,
                                             slotIndex: slot.slotIndex,
                                           );
                                         },
-                                  disabledColor: Colors.grey.shade200,
                                 ),
-                                if (slot.slotsMax > index && !isSpent) ...[
-                                  const SizedBox(width: 4),
-                                  ActionChip(
-                                    label: const Text('Restore'),
-                                    onPressed: isApplyingRest
-                                        ? null
-                                        : () {
-                                            onRestoreSpellSlot(
-                                              spellLevel: slot.spellLevel,
-                                              slotIndex: slot.slotIndex,
-                                            );
-                                          },
-                                  ),
-                                ],
                               ],
-                            );
-                          },
-                        ),
+                            ],
+                          );
+                        }),
                       ),
                     ],
                   ),
@@ -1215,6 +1246,9 @@ class _EquipmentPanel extends StatelessWidget {
     required this.onSpendInventoryItemQuantity,
     required this.onSetInventoryItemCharges,
     required this.onSetInventoryItemContainer,
+    required this.onSplitStack,
+    required this.onMergeStacks,
+    required this.onTransferToContainer,
   });
 
   final CharacterDomainModel character;
@@ -1239,6 +1273,11 @@ class _EquipmentPanel extends StatelessWidget {
     String? containerInventoryItemId,
   )
   onSetInventoryItemContainer;
+  final Future<void> Function(String itemId, int quantity) onSplitStack;
+  final Future<void> Function(List<String> stackIds, int quantity)
+  onMergeStacks;
+  final Future<void> Function(String sourceItemId, int quantity)
+  onTransferToContainer;
 
   @override
   Widget build(BuildContext context) {
@@ -1347,6 +1386,9 @@ class _EquipmentPanel extends StatelessWidget {
                     containerInventoryItemId,
                   );
                 },
+                onSplitStack: onSplitStack,
+                onMergeStacks: onMergeStacks,
+                onTransferToContainer: onTransferToContainer,
               ),
             ),
           ],
@@ -1387,8 +1429,10 @@ class _InventoryItemRow extends StatelessWidget {
   final List<CharacterEquipmentItemDomainModel> containers;
   final Future<void> Function(String? containerInventoryItemId) onSetContainer;
   final Future<void> Function(String itemId, int quantity) onSplitStack;
-  final Future<void> Function(List<String> stackIds, int quantity) onMergeStacks;
-  final Future<void> Function(String sourceItemId, int quantity) onTransferToContainer;
+  final Future<void> Function(List<String> stackIds, int quantity)
+  onMergeStacks;
+  final Future<void> Function(String sourceItemId, int quantity)
+  onTransferToContainer;
 
   @override
   Widget build(BuildContext context) {
@@ -1550,7 +1594,7 @@ class _InventoryItemRow extends StatelessWidget {
                     onPressed: isUpdating || item.quantity <= 1
                         ? null
                         : () => onSplitStack(item.id, item.quantity ~/ 2),
-                    icon: const Icon(Icons.split),
+                    icon: const Icon(Icons.call_split),
                     tooltip: 'Split stack',
                   ),
                   if (containers.isNotEmpty) ...[
@@ -1564,7 +1608,10 @@ class _InventoryItemRow extends StatelessWidget {
                     IconButton(
                       onPressed: isUpdating
                           ? null
-                          : () => onMergeStacks([item.id, ...containers.map((c) => c.id)], item.quantity),
+                          : () => onMergeStacks([
+                              item.id,
+                              ...containers.map((c) => c.id),
+                            ], item.quantity),
                       icon: const Icon(Icons.merge_type),
                       tooltip: 'Merge with containers',
                     ),
