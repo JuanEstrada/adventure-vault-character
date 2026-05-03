@@ -89,12 +89,12 @@ real blockers:
 || S12 | Audit minimum inventory usability | Decide whether current inventory already supports real table use. | S2 | Done | Audit confirmed the existing inventory flow is already sufficient for MinFunc; no code changes were needed. |
 | S13 | Implement one blocking inventory action | Add only the single inventory capability proven to block the loop. | S12 | Planned / N/A | Skip if audit says inventory is already sufficient. |
 || S14 | Test minimum inventory flow | Add targeted smoke/regression coverage for the inventory path needed by MinFunc. | S13 or S12 | Done | Existing inventory regression/smoke coverage already proves the minimum flow; no new tests were needed. |
-| S15 | Harden missing-data sheet states | Prevent breakage on optional or partial valid state. | S11, S14 | Planned | Stability, not redesign. |
-| S16 | Surface mutation rejections | Keep expected failures visible and non-blocking. | S11, S14 | Planned | Functional feedback is enough. |
-| S17 | Verify persistence and reopen | Confirm or fix reopen behavior for minimum session changes. | S15, S16 | Planned | Focus on spells, inventory, rests. |
-| S18 | Validate full minimal loop | Re-audit the complete `MinFuncSpec` flow end-to-end. | S17 | Planned | Decide if MinFunc is achieved. |
-| S19 | Declare post-MVP debt | Separate non-blocking UI/UX and future-depth work from release blockers. | S18 | Planned | Freeze what is out of scope. |
-| S20 | Update canonical docs | Align continuity docs with real MinFunc status. | S19 | Planned | Update only source-of-truth docs. |
+||| S15 | Harden missing-data sheet states | Prevent breakage on optional or partial valid state. | S11, S14 | Done | Added stable fallbacks for blank identity, background, finishing-details, and equipment summary fields; sheet now stays readable when optional values are missing. |
+||| S16 | Surface mutation rejections | Keep expected failures visible and non-blocking. | S11, S14 | Done | Added controller-level visibility for expected mutation rejections and recoverable errors across spells, inventory, and class resources. |
+||| S17 | Verify persistence and reopen | Confirm or fix reopen behavior for minimum session changes. | S15, S16 | Planned | Focus on spells, inventory, rests. |
+||| S18 | Validate full minimal loop | Re-audit the complete `MinFuncSpec` flow end-to-end. | S17 | Planned | Decide if MinFunc is achieved. |
+||| S19 | Declare post-MVP debt | Separate non-blocking UI/UX and future-depth work from release blockers. | S18 | Planned | Freeze what is out of scope. |
+||| S20 | Update canonical docs | Align continuity docs with real MinFunc status. | S19 | Planned | Update only source-of-truth docs. |
 
 ## Local-Model Prompts
 
@@ -254,5 +254,5 @@ step is obvious.
 
 ## Current Recommendation
 
-Proceed to **S11**. Add restore persistence coverage next; S12 is complete and
-S14 already has enough inventory coverage for MinFunc.
+Proceed to **S17**. Surface mutation rejections is complete; next up is
+persistence and reopen verification.

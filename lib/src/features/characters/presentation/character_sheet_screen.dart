@@ -2,6 +2,29 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:flutter/material.dart';
 
+String _fallbackText(String value, String fallback) {
+  final trimmed = value.trim();
+  return trimmed.isEmpty ? fallback : trimmed;
+}
+
+Widget _mutationErrorBanner(BuildContext context, String message) {
+  final theme = Theme.of(context);
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: theme.colorScheme.errorContainer,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Text(
+      message,
+      style: theme.textTheme.bodyMedium?.copyWith(
+        color: theme.colorScheme.onErrorContainer,
+      ),
+    ),
+  );
+}
+
 class CharacterSheetScreen extends _CharacterSheetScreen {
   const CharacterSheetScreen({
     required super.character,
@@ -181,7 +204,9 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
           onPressed: widget.onBack,
           icon: const Icon(Icons.arrow_back),
         ),
-        title: Text(widget.character.identity.name),
+        title: Text(
+          _fallbackText(widget.character.identity.name, 'Unnamed character'),
+        ),
         actions: [
           TextButton(onPressed: widget.onEdit, child: const Text('Edit')),
         ],
@@ -206,14 +231,17 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.character.identity.name,
+                            _fallbackText(
+                              widget.character.identity.name,
+                              'Unnamed character',
+                            ),
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '${widget.character.identity.raceName}  •  ${widget.character.identity.className}  •  Lv ${widget.character.identity.progression.level}  •  XP ${widget.character.identity.progression.experience}',
+                            '${_fallbackText(widget.character.identity.raceName, 'Unknown race')}  •  ${_fallbackText(widget.character.identity.className, 'Unknown class')}  •  Lv ${widget.character.identity.progression.level}  •  XP ${widget.character.identity.progression.experience}',
                             style: theme.textTheme.titleMedium,
                           ),
                         ],
@@ -262,6 +290,7 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
                           _CombatPanel(
                             character: widget.character,
                             isApplyingRest: isApplyingRest,
+                            errorMessage: errorMessage,
                             supportsShortRestRecovery:
                                 supportsShortRestRecovery,
                             onApplyShortRest: onApplyShortRest,
@@ -275,17 +304,18 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
                           _AbilitiesPanel(character: widget.character),
                           const SizedBox(height: 16),
                           if (widget.character.spellcasting != null) ...[
-                            _SpellsPanel(
-                              character: widget.character,
-                              isApplyingRest: isApplyingRest,
-                              supportsShortRestRecovery:
-                                  supportsShortRestRecovery,
-                              onApplyShortRest: onApplyShortRest,
-                              onApplyLongRest: onApplyLongRest,
-                              onSpendSpellSlot: onSpendSpellSlot,
-                              onRestoreSpellSlot: onRestoreSpellSlot,
-                            ),
-                            const SizedBox(height: 16),
+                    _SpellsPanel(
+                      character: widget.character,
+                      isApplyingRest: isApplyingRest,
+                      errorMessage: errorMessage,
+                      supportsShortRestRecovery:
+                          supportsShortRestRecovery,
+                      onApplyShortRest: onApplyShortRest,
+                      onApplyLongRest: onApplyLongRest,
+                      onSpendSpellSlot: onSpendSpellSlot,
+                      onRestoreSpellSlot: onRestoreSpellSlot,
+                    ),
+const SizedBox(height: 16),
                           ],
                           _FeaturesNotesPanel(character: widget.character),
                           const SizedBox(height: 16),
@@ -320,9 +350,10 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
                 children: [
                   _IdentityPanel(character: widget.character),
                   const SizedBox(height: 16),
-                  _CombatPanel(
+                    _CombatPanel(
                     character: widget.character,
                     isApplyingRest: isApplyingRest,
+                    errorMessage: errorMessage,
                     supportsShortRestRecovery: supportsShortRestRecovery,
                     onApplyShortRest: onApplyShortRest,
                     onApplyLongRest: onApplyLongRest,
@@ -331,13 +362,14 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
                     onRecordDeathSaveFailure: onRecordDeathSaveFailure,
                     onResetDeathSaves: onResetDeathSaves,
                   ),
-                  const SizedBox(height: 16),
+const SizedBox(height: 16),
                   _AbilitiesPanel(character: widget.character),
                   const SizedBox(height: 16),
                   if (widget.character.spellcasting != null) ...[
                     _SpellsPanel(
                       character: widget.character,
                       isApplyingRest: isApplyingRest,
+                      errorMessage: errorMessage,
                       supportsShortRestRecovery: supportsShortRestRecovery,
                       onApplyShortRest: onApplyShortRest,
                       onApplyLongRest: onApplyLongRest,
@@ -554,6 +586,7 @@ class _CombatPanel extends StatelessWidget {
   const _CombatPanel({
     required this.character,
     required this.isApplyingRest,
+    required this.errorMessage,
     required this.supportsShortRestRecovery,
     required this.onApplyShortRest,
     required this.onApplyLongRest,
@@ -565,6 +598,7 @@ class _CombatPanel extends StatelessWidget {
 
   final CharacterDomainModel character;
   final bool isApplyingRest;
+  final String? errorMessage;
   final bool supportsShortRestRecovery;
   final Future<void> Function() onApplyShortRest;
   final Future<void> Function() onApplyLongRest;
@@ -590,6 +624,10 @@ class _CombatPanel extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
+            if (errorMessage != null) ...[
+              const SizedBox(height: 10),
+              _mutationErrorBanner(context, errorMessage!),
+            ],
             const SizedBox(height: 12),
             _FactRow(
               label: 'Current HP',
@@ -859,6 +897,14 @@ class _FeaturesNotesPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final background = character.featuresNotes.background;
+    final backgroundName = _fallbackText(background.name, 'Background unavailable');
+    final backgroundSummary = _fallbackText(
+      background.summary,
+      'No background summary available.',
+    );
+    final backgroundBonusDescriptions = background.bonusDescriptions;
+    final backgroundSocialPerkDescriptions = background.socialPerkDescriptions;
     final languageProficiencies =
         character.featuresNotes.otherProficiencies
             .where(
@@ -922,28 +968,40 @@ class _FeaturesNotesPanel extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              character.featuresNotes.background.name,
+              backgroundName,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              character.featuresNotes.background.summary,
+              backgroundSummary,
               style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 12),
             Text('Bonuses', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
-            ...character.featuresNotes.background.bonusDescriptions.map(
-              (item) => Text('• $item'),
-            ),
+            if (backgroundBonusDescriptions.isEmpty)
+              Text(
+                'No background bonuses recorded.',
+                style: theme.textTheme.bodyMedium,
+              )
+            else
+              ...backgroundBonusDescriptions.map(
+                (item) => Text('• $item'),
+              ),
             const SizedBox(height: 12),
             Text('Social perks', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
-            ...character.featuresNotes.background.socialPerkDescriptions.map(
-              (item) => Text('• $item'),
-            ),
+            if (backgroundSocialPerkDescriptions.isEmpty)
+              Text(
+                'No social perks recorded.',
+                style: theme.textTheme.bodyMedium,
+              )
+            else
+              ...backgroundSocialPerkDescriptions.map(
+                (item) => Text('• $item'),
+              ),
             if (character.featuresNotes.proficientSkills.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text('Skill proficiencies', style: theme.textTheme.titleMedium),
@@ -983,17 +1041,27 @@ class _FeaturesNotesPanel extends StatelessWidget {
                   value: item.valueText!,
                 ),
               ),
+            ] else ...[
+              const SizedBox(height: 12),
+              Text(
+                'No finishing details recorded.',
+                style: theme.textTheme.bodyMedium,
+              ),
             ],
-            if (character.featuresNotes.appearanceDetails.isNotEmpty)
-              _FactRow(
-                label: 'Appearance',
-                value: character.featuresNotes.appearanceDetails,
+            _FactRow(
+              label: 'Appearance',
+              value: _fallbackText(
+                character.featuresNotes.appearanceDetails,
+                'Not recorded',
               ),
-            if (character.featuresNotes.narrativeDetails.isNotEmpty)
-              _FactRow(
-                label: 'Notes',
-                value: character.featuresNotes.narrativeDetails,
+            ),
+            _FactRow(
+              label: 'Notes',
+              value: _fallbackText(
+                character.featuresNotes.narrativeDetails,
+                'Not recorded',
               ),
+            ),
           ],
         ),
       ),
@@ -1005,6 +1073,7 @@ class _SpellsPanel extends StatelessWidget {
   const _SpellsPanel({
     required this.character,
     required this.isApplyingRest,
+    required this.errorMessage,
     required this.supportsShortRestRecovery,
     required this.onApplyShortRest,
     required this.onApplyLongRest,
@@ -1014,6 +1083,7 @@ class _SpellsPanel extends StatelessWidget {
 
   final CharacterDomainModel character;
   final bool isApplyingRest;
+  final String? errorMessage;
   final bool supportsShortRestRecovery;
   final Future<void> Function() onApplyShortRest;
   final Future<void> Function() onApplyLongRest;
@@ -1042,6 +1112,10 @@ class _SpellsPanel extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
+            if (errorMessage != null) ...[
+              const SizedBox(height: 10),
+              _mutationErrorBanner(context, errorMessage!),
+            ],
             const SizedBox(height: 12),
             _FactRow(
               label: 'Casting ability',
@@ -1297,7 +1371,10 @@ class _EquipmentPanel extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              character.equipment.selectedEquipmentLabel,
+              _fallbackText(
+                character.equipment.selectedEquipmentLabel,
+                'Equipment loadout unavailable',
+              ),
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
@@ -1323,7 +1400,10 @@ class _EquipmentPanel extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              character.equipment.equipmentSummary.description,
+              _fallbackText(
+                character.equipment.equipmentSummary.description,
+                'No equipment summary available.',
+              ),
               style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 12),

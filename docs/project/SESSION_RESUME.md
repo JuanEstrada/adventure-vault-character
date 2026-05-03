@@ -98,6 +98,10 @@ Prioritize the **MinFunc** execution path before broader hardening work:
   rules logic.
 - S8 is complete: targeted widget coverage now proves spend remains persisted
   after navigating back and reopening the same character.
+- S15 is complete: the sheet now has stable fallbacks for blank identity,
+  background, finishing-details, and equipment summary fields.
+- S16 is complete: expected mutation rejections and recoverable errors are now
+  visible for spells, inventory, and class resources.
 - Direct spell-slot spend/restore remains the confirmed MinFunc blocker.
 - S9A is complete: the restore-slot contract now exists on repository,
   application, controller, and repository-implementation surfaces as a
@@ -107,4 +111,5 @@ Prioritize the **MinFunc** execution path before broader hardening work:
 - S14 is complete: the existing inventory regression/smoke coverage already
   proves the minimum inventory flow needed by MinFunc.
 - Deferred gap captured for the roadmap: restore-slot symmetry still remains;
-  the next step is implementing the non-UI restore behavior in S9B.
+  the next step for the current MinFunc slice is persistence/reopen verification
+  in S17.

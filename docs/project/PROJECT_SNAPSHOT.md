@@ -61,9 +61,15 @@ Primary constraints are tracked in:
 - S12 confirmed inventory minimum usability is already sufficient for MinFunc;
   S14 confirmed the existing inventory regression/smoke coverage is enough for
   the minimum flow.
+- S15 is complete: the character sheet now uses stable fallbacks for blank
+  identity, background, finishing-details, and equipment summary fields.
+- S16 is complete: controller-level handling now surfaces expected mutation
+  rejections and recoverable errors for spells, inventory, and class resources.
 - The main remaining functional blocker is now restore-slot symmetry for the
   full minimum spell loop; the restore contract exists, but non-UI behavior,
   sheet wiring, and reopen proof are still pending.
+- Next verification focus is S17: persistence and reopen behavior for the
+  minimum session changes.
 
 ## Drift Status
 

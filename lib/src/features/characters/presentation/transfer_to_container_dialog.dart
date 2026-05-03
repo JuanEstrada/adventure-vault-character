@@ -1,19 +1,17 @@
+import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:flutter/material.dart';
 
 /// Dialog for transferring an inventory stack to a container
 class TransferToContainerDialog extends StatefulWidget {
   final String sourceItemId;
   final int sourceQuantity;
-  final String sourceName;
   final VoidCallback onDismiss;
-  final Function(String containerId, String containerName, int quantity)
-  onTransfer;
+  final Function(String containerId, int quantity) onTransfer;
 
   const TransferToContainerDialog({
     super.key,
     required this.sourceItemId,
     required this.sourceQuantity,
-    required this.sourceName,
     required this.onDismiss,
     required this.onTransfer,
   });
@@ -28,7 +26,7 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
   int _transferQuantity = 0;
   bool _isTransferring = false;
   String? _error;
-  List<dynamic> _containers = [];
+  List<CharacterEquipmentItemDomainModel> _containers = [];
   String? _selectedContainerId;
   String _selectedContainerName = 'Select container';
 
@@ -47,9 +45,57 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
     // For now, using static sample data
     setState(() {
       _containers = [
-        {'id': 'char-1-container-1', 'name': 'Backpack'},
-        {'id': 'char-1-container-2', 'name': 'Pouch'},
-        {'id': 'char-1-container-3', 'name': 'Bag of Holding'},
+        CharacterEquipmentItemDomainModel(
+          id: 'char-1-container-1',
+          name: 'Backpack',
+          type: CharacterEquipmentItemDomainModelType.container,
+          quantity: 999,
+          isContainer: true,
+          isEquipped: false,
+          isCarried: true,
+          weight: 5.0,
+          inventoryItemId: null,
+          chargesMax: null,
+          chargesCurrent: null,
+          stackStateLabel: 'Backpack',
+          containerLabel: 'Backpack',
+          containerDisplayName: 'Backpack',
+          summaryLabel: 'Backpack',
+        ),
+        CharacterEquipmentItemDomainModel(
+          id: 'char-1-container-2',
+          name: 'Pouch',
+          type: CharacterEquipmentItemDomainModelType.container,
+          quantity: 999,
+          isContainer: true,
+          isEquipped: false,
+          isCarried: true,
+          weight: 1.0,
+          inventoryItemId: null,
+          chargesMax: null,
+          chargesCurrent: null,
+          stackStateLabel: 'Pouch',
+          containerLabel: 'Pouch',
+          containerDisplayName: 'Pouch',
+          summaryLabel: 'Pouch',
+        ),
+        CharacterEquipmentItemDomainModel(
+          id: 'char-1-container-3',
+          name: 'Bag of Holding',
+          type: CharacterEquipmentItemDomainModelType.container,
+          quantity: 999,
+          isContainer: true,
+          isEquipped: false,
+          isCarried: true,
+          weight: 1.0,
+          inventoryItemId: null,
+          chargesMax: null,
+          chargesCurrent: null,
+          stackStateLabel: 'Bag of Holding',
+          containerLabel: 'Bag of Holding',
+          containerDisplayName: 'Bag of Holding',
+          summaryLabel: 'Bag of Holding',
+        ),
       ];
     });
   }
@@ -100,11 +146,7 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
       _error = null;
     });
 
-    widget.onTransfer(
-      _selectedContainerId!,
-      _selectedContainerName,
-      _transferQuantity,
-    );
+    widget.onTransfer(_selectedContainerId!, _transferQuantity);
 
     Future.delayed(const Duration(milliseconds: 100), () {
       widget.onDismiss();
@@ -120,7 +162,7 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Transfer from: ${widget.sourceName} (${widget.sourceQuantity})',
+            'Transfer from: ${widget.sourceItemId} (${widget.sourceQuantity})',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
@@ -133,16 +175,13 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
             spacing: 8,
             runSpacing: 8,
             children: _containers.map((container) {
-              final isSelected = _selectedContainerId == container['id'];
+              final isSelected = _selectedContainerId == container.id;
               return ChoiceChip(
-                label: Text(container['name'] as String),
+                label: Text(container.name),
                 selected: isSelected,
                 onSelected: (selected) {
                   if (selected) {
-                    _selectContainer(
-                      container['id'] as String,
-                      container['name'] as String,
-                    );
+                    _selectContainer(container.id, container.name);
                   }
                 },
               );

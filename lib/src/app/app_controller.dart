@@ -534,6 +534,14 @@ class AppController extends ChangeNotifier {
         currentUses,
       );
       _state = _state.copyWith(isSavingCharacter: false, clearError: true);
+    } on StateError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: _stateErrorMessage(
+          error,
+          fallback: 'Failed to update class resource usage.',
+        ),
+      );
     } catch (_) {
       _state = _state.copyWith(
         isSavingCharacter: false,
@@ -567,6 +575,14 @@ class AppController extends ChangeNotifier {
         slotIndex: slotIndex,
       );
       _state = _state.copyWith(isSavingCharacter: false, clearError: true);
+    } on StateError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: _stateErrorMessage(
+          error,
+          fallback: 'Failed to spend spell slot.',
+        ),
+      );
     } catch (_) {
       _state = _state.copyWith(
         isSavingCharacter: false,
@@ -600,6 +616,14 @@ class AppController extends ChangeNotifier {
         slotIndex: slotIndex,
       );
       _state = _state.copyWith(isSavingCharacter: false, clearError: true);
+    } on StateError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: _stateErrorMessage(
+          error,
+          fallback: 'Failed to restore spell slot.',
+        ),
+      );
     } catch (_) {
       _state = _state.copyWith(
         isSavingCharacter: false,
@@ -762,6 +786,14 @@ class AppController extends ChangeNotifier {
           error: error,
         ),
       );
+    } on StateError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: _stateErrorMessage(
+          error,
+          fallback: 'Failed to update inventory item: $inventoryItemId.',
+        ),
+      );
     } catch (_) {
       _state = _state.copyWith(
         isSavingCharacter: false,
@@ -795,6 +827,13 @@ class AppController extends ChangeNotifier {
       _ => error.message,
     };
     return 'Inventory action rejected for $inventoryItemId: $actionMessage Current stack and container state were not changed.';
+  }
+
+  String _stateErrorMessage(Object error, {required String fallback}) {
+    if (error case StateError(:final message) && message.trim().isNotEmpty) {
+      return message;
+    }
+    return fallback;
   }
 
   Future<void> _updateSelectedCharacterDeathSaves(
