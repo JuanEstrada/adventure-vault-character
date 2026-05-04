@@ -5,6 +5,7 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/domain/character_combat_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rest_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_spell_rules.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_spell_slot_usage_codec.dart';
 import 'package:drift/drift.dart';
 
 class CharacterRecoveryService {
@@ -130,17 +131,23 @@ class CharacterRecoveryService {
 
     final List<String> currentExpendedIndices = existingUsage != null
         ? (existingUsage.expendedSlotIndices.isEmpty
-            ? const <String>[]
-            : List<String>.from(existingUsage.expendedSlotIndices
-                .split(',')
-                .where((s) => s.isNotEmpty))
-        )
+              ? const <String>[]
+              : List<String>.from(
+                  existingUsage.expendedSlotIndices
+                      .split(',')
+                      .where((s) => s.isNotEmpty),
+                ))
         : const <String>[];
     if (currentExpendedIndices.contains(slotIndex.toString())) {
-      throw StateError('Slot $slotIndex at level $spellLevel is already expended.');
+      throw StateError(
+        'Slot $slotIndex at level $spellLevel is already expended.',
+      );
     }
 
-    final updatedIndices = <String>[...currentExpendedIndices, slotIndex.toString()];
+    final updatedIndices = <String>[
+      ...currentExpendedIndices,
+      slotIndex.toString(),
+    ];
 
     await _database.transaction(() async {
       final now = DateTime.now();
@@ -199,17 +206,30 @@ class CharacterRecoveryService {
         .where((u) => u.spellLevel == spellLevel)
         .firstOrNull;
 
-    final List<String> currentExpendedIndices = existingUsage != null
-        ? (existingUsage.expendedSlotIndices.isEmpty
-            ? const <String>[]
-            : List<String>.from(
-                  existingUsage.expendedSlotIndices.split(',')))
-        : const <String>[];
-    if (!currentExpendedIndices.contains(slotIndex.toString())) {
-      throw StateError('Slot $slotIndex at level $spellLevel is not expended.');
+    final currentSerialized = existingUsage?.expendedSlotIndices ?? '';
+    final currentExpendedCount =
+        CharacterSpellSlotUsageCodec.expendedCountFromSerialized(
+          currentSerialized,
+        );
+    if (currentExpendedCount >= matchingSlot.slotsMax) {
+      throw StateError('Spell slot usage exceeds the derived slot maximum.');
     }
 
-    final updatedIndices = currentExpendedIndices.where((i) => i != slotIndex.toString());
+    final currentExplicitIndices =
+        CharacterSpellSlotUsageCodec.explicitIndicesFromSerialized(
+          currentSerialized,
+        );
+    if (currentExplicitIndices.contains(slotIndex.toString())) {
+      throw StateError(
+        'Slot $slotIndex at level $spellLevel is already expended.',
+      );
+    }
+
+    final updatedSerialized =
+        CharacterSpellSlotUsageCodec.serializeUpdatedIndices(
+          currentSerialized: currentSerialized,
+          expendedCount: currentExpendedCount + 1,
+        );
 
     await _database.transaction(() async {
       final now = DateTime.now();
@@ -217,7 +237,7 @@ class CharacterRecoveryService {
         id,
         CharactersCompanion(updatedAt: Value(now)),
       );
-      if (updatedIndices.isEmpty) {
+      if (updatedSerialized.isEmpty) {
         await _writeDao.deleteSpellSlotUsage(
           CharacterSpellSlotUsagesCompanion(
             characterId: Value(id),
@@ -229,11 +249,21 @@ class CharacterRecoveryService {
           CharacterSpellSlotUsagesCompanion(
             characterId: Value(id),
             spellLevel: Value(spellLevel),
-            expendedSlotIndices: Value(updatedIndices.join(',')),
+            expendedSlotIndices: Value(updatedSerialized),
           ),
         );
       }
     });
+  }
+
+  String _serializeExpendedSlotIndices({
+    required CharacterSpellSlotUsage? currentRow,
+    required int expendedCount,
+  }) {
+    return CharacterSpellSlotUsageCodec.serializeUpdatedIndices(
+      currentSerialized: currentRow?.expendedSlotIndices,
+      expendedCount: expendedCount,
+    );
   }
 
   Future<void> _applyRecovery(String id, {required bool isLongRest}) async {
@@ -248,9 +278,10 @@ class CharacterRecoveryService {
     final inventory = await _readDao.getInventoryByCharacterId(id);
     final slotUsagesByLevel = <int, int>{
       for (final slot in slotUsages)
-        slot.spellLevel: slot.expendedSlotIndices.isEmpty
-            ? 0
-            : slot.expendedSlotIndices.length,
+        slot.spellLevel:
+            CharacterSpellSlotUsageCodec.expendedCountFromSerialized(
+              slot.expendedSlotIndices,
+            ),
     };
     final persistedResourceCurrentByKey = <String, int>{
       for (final row in classResources) row.resourceKey: row.currentUses,
@@ -305,12 +336,20 @@ class CharacterRecoveryService {
       }
 
       await _writeDao.deleteSpellSlotUsagesByCharacterId(id);
-    final slotCompanions = restResult.slotUsagesByLevel.entries
+      final slotUsageRowsByLevel = {
+        for (final row in slotUsages) row.spellLevel: row,
+      };
+      final slotCompanions = restResult.slotUsagesByLevel.entries
           .map(
             (entry) => CharacterSpellSlotUsagesCompanion.insert(
               characterId: id,
               spellLevel: entry.key,
-              expendedSlotIndices: Value(entry.value.toString()),
+              expendedSlotIndices: Value(
+                _serializeExpendedSlotIndices(
+                  currentRow: slotUsageRowsByLevel[entry.key],
+                  expendedCount: entry.value,
+                ),
+              ),
             ),
           )
           .toList(growable: false);

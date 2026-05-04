@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
-import 'package:adventure_vault_character/src/features/characters/domain/character_spellbook_domain.dart' as domain;
+import 'package:adventure_vault_character/src/features/characters/domain/character_spellbook_domain.dart'
+    as domain;
 import 'package:adventure_vault_character/src/features/characters/presentation/merge_stack_dialog.dart';
 import 'package:adventure_vault_character/src/features/characters/presentation/transfer_to_container_dialog.dart';
 import 'package:adventure_vault_character/src/features/characters/presentation/container_management_dialog.dart';
@@ -10,53 +11,41 @@ import 'package:adventure_vault_character/src/features/characters/presentation/p
 
 void main() {
   group('P1 Integration Tests', () {
-    testWidgets('MergeStackDialog renders correctly',
-        (WidgetTester tester) async {
+    testWidgets('MergeStackDialog renders correctly', (
+      WidgetTester tester,
+    ) async {
       final dialog = MergeStackDialog(
-        sourceItemId: 'stack-1',
-        targetItemId: 'stack-2',
-        sourceQuantity: 5,
-        targetQuantity: 3,
+        stackIds: const ['stack-1', 'stack-2'],
         onDismiss: () {},
-        onMerge: (String, int) => {},
+        onMerge: (stackIds, quantity) {},
       );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: dialog,
-          ),
-        ),
-      );
+      await tester.pumpWidget(MaterialApp(home: Scaffold(body: dialog)));
 
       expect(find.text('Merge Stacks'), findsOneWidget);
       expect(find.text('Potion'), findsOneWidget);
     });
 
-    testWidgets('TransferToContainerDialog renders correctly',
-        (WidgetTester tester) async {
+    testWidgets('TransferToContainerDialog renders correctly', (
+      WidgetTester tester,
+    ) async {
       final dialog = TransferToContainerDialog(
         sourceItemId: 'item-1',
         sourceQuantity: 10,
         sourceName: 'Potions',
         onDismiss: () {},
-        onTransfer: (var sourceItemId, var sourceQuantity, var targetContainerId) => {},
+        onTransfer: (containerId, quantity) {},
       );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: dialog,
-          ),
-        ),
-      );
+      await tester.pumpWidget(MaterialApp(home: Scaffold(body: dialog)));
 
       expect(find.text('Transfer to Container'), findsOneWidget);
       expect(find.text('Potions'), findsOneWidget);
     });
 
-    testWidgets('ContainerManagementDialog renders correctly',
-        (WidgetTester tester) async {
+    testWidgets('ContainerManagementDialog renders correctly', (
+      WidgetTester tester,
+    ) async {
       final dialog = ContainerManagementDialog(
         characterId: 'char-1',
         onDismiss: () {},
@@ -65,20 +54,15 @@ void main() {
         onAdd: (var itemId, var quantity) => {},
       );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: dialog,
-          ),
-        ),
-      );
+      await tester.pumpWidget(MaterialApp(home: Scaffold(body: dialog)));
 
       expect(find.text('Container'), findsOneWidget);
       expect(find.text('Add Container'), findsOneWidget);
     });
 
-    testWidgets('SpellbookManagementScreen renders correctly',
-        (WidgetTester tester) async {
+    testWidgets('SpellbookManagementScreen renders correctly', (
+      WidgetTester tester,
+    ) async {
       final screen = SpellbookManagementScreen(
         characterId: 'char-1',
         availableSpells: <domain.CharacterSpellReferenceDomainModel>[],
@@ -88,19 +72,14 @@ void main() {
         onSave: (_) {},
       );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: screen,
-          ),
-        ),
-      );
+      await tester.pumpWidget(MaterialApp(home: Scaffold(body: screen)));
 
       expect(find.text('Prepared Spells'), findsOneWidget);
     });
 
-    testWidgets('PreparedSpellSelectionScreen renders correctly',
-        (WidgetTester tester) async {
+    testWidgets('PreparedSpellSelectionScreen renders correctly', (
+      WidgetTester tester,
+    ) async {
       final screen = PreparedSpellSelectionScreen(
         characterId: 'char-1',
         availableSpells: <CharacterSpellReferenceDomainModel>[],
@@ -109,13 +88,7 @@ void main() {
         onSave: (_) {},
       );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: screen,
-          ),
-        ),
-      );
+      await tester.pumpWidget(MaterialApp(home: Scaffold(body: screen)));
 
       expect(find.text('Prepared Spells'), findsOneWidget);
     });

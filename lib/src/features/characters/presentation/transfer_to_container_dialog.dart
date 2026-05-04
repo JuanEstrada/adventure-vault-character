@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 /// Dialog for transferring an inventory stack to a container
 class TransferToContainerDialog extends StatefulWidget {
   final String sourceItemId;
+  final String? sourceName;
   final int sourceQuantity;
   final VoidCallback onDismiss;
   final Function(String containerId, int quantity) onTransfer;
@@ -11,6 +12,7 @@ class TransferToContainerDialog extends StatefulWidget {
   const TransferToContainerDialog({
     super.key,
     required this.sourceItemId,
+    this.sourceName,
     required this.sourceQuantity,
     required this.onDismiss,
     required this.onTransfer,
@@ -48,53 +50,44 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
         CharacterEquipmentItemDomainModel(
           id: 'char-1-container-1',
           name: 'Backpack',
-          type: CharacterEquipmentItemDomainModelType.container,
           quantity: 999,
-          isContainer: true,
           isEquipped: false,
           isCarried: true,
-          weight: 5.0,
-          inventoryItemId: null,
+          isFavorite: false,
+          weightPerUnit: 5,
+          isContainer: true,
           chargesMax: null,
           chargesCurrent: null,
-          stackStateLabel: 'Backpack',
-          containerLabel: 'Backpack',
           containerDisplayName: 'Backpack',
-          summaryLabel: 'Backpack',
+          containerInventoryItemId: null,
         ),
         CharacterEquipmentItemDomainModel(
           id: 'char-1-container-2',
           name: 'Pouch',
-          type: CharacterEquipmentItemDomainModelType.container,
           quantity: 999,
-          isContainer: true,
           isEquipped: false,
           isCarried: true,
-          weight: 1.0,
-          inventoryItemId: null,
+          isFavorite: false,
+          weightPerUnit: 1,
+          isContainer: true,
           chargesMax: null,
           chargesCurrent: null,
-          stackStateLabel: 'Pouch',
-          containerLabel: 'Pouch',
           containerDisplayName: 'Pouch',
-          summaryLabel: 'Pouch',
+          containerInventoryItemId: null,
         ),
         CharacterEquipmentItemDomainModel(
           id: 'char-1-container-3',
           name: 'Bag of Holding',
-          type: CharacterEquipmentItemDomainModelType.container,
           quantity: 999,
-          isContainer: true,
           isEquipped: false,
           isCarried: true,
-          weight: 1.0,
-          inventoryItemId: null,
+          isFavorite: false,
+          weightPerUnit: 1,
+          isContainer: true,
           chargesMax: null,
           chargesCurrent: null,
-          stackStateLabel: 'Bag of Holding',
-          containerLabel: 'Bag of Holding',
           containerDisplayName: 'Bag of Holding',
-          summaryLabel: 'Bag of Holding',
+          containerInventoryItemId: null,
         ),
       ];
     });
@@ -162,7 +155,7 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Transfer from: ${widget.sourceItemId} (${widget.sourceQuantity})',
+            'Transfer from: ${widget.sourceName ?? widget.sourceItemId} (${widget.sourceQuantity})',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
@@ -170,6 +163,13 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
             'Select container:',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
+          if (_selectedContainerId != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Selected container: $_selectedContainerName',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,

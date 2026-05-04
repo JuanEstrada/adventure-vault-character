@@ -574,7 +574,14 @@ class AppController extends ChangeNotifier {
         spellLevel: spellLevel,
         slotIndex: slotIndex,
       );
-      _state = _state.copyWith(isSavingCharacter: false, clearError: true);
+      final refreshed = await _characterRepository.getCharacterSheetById(
+        selected.id,
+      );
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        selectedCharacterSheet: refreshed ?? selected,
+        clearError: true,
+      );
     } on StateError catch (error) {
       _state = _state.copyWith(
         isSavingCharacter: false,
@@ -615,7 +622,14 @@ class AppController extends ChangeNotifier {
         spellLevel: spellLevel,
         slotIndex: slotIndex,
       );
-      _state = _state.copyWith(isSavingCharacter: false, clearError: true);
+      final refreshed = await _characterRepository.getCharacterSheetById(
+        selected.id,
+      );
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        selectedCharacterSheet: refreshed ?? selected,
+        clearError: true,
+      );
     } on StateError catch (error) {
       _state = _state.copyWith(
         isSavingCharacter: false,
@@ -830,8 +844,11 @@ class AppController extends ChangeNotifier {
   }
 
   String _stateErrorMessage(Object error, {required String fallback}) {
-    if (error case StateError(:final message) && message.trim().isNotEmpty) {
-      return message;
+    if (error is StateError) {
+      final message = error.message.trim();
+      if (message.isNotEmpty) {
+        return message;
+      }
     }
     return fallback;
   }

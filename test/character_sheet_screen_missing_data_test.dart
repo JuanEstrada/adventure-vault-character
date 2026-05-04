@@ -1,6 +1,6 @@
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
-import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
+
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/presentation/character_sheet_screen.dart';
 import 'package:flutter/material.dart';
@@ -63,7 +63,7 @@ void main() {
                 portraitAssetPath: null,
                 appearanceDetails: '',
                 narrativeNotes: '',
-                narrativeSelections: const <CharacterNarrativeSelectionDomainModel>[
+                narrativeSelections: <CharacterNarrativeSelectionDomainModel>[
                   CharacterNarrativeSelectionDomainModel(
                     fieldKey: NarrativeFieldKey.alignment,
                     mode: NarrativeSelectionMode.empty,
@@ -129,8 +129,10 @@ void main() {
           onEdit: () {},
           onApplyShortRest: () async {},
           onApplyLongRest: () async {},
-          onSpendSpellSlot: ({required int spellLevel, required int slotIndex}) async {},
-          onRestoreSpellSlot: ({required int spellLevel, required int slotIndex}) async {},
+          onSpendSpellSlot:
+              ({required int spellLevel, required int slotIndex}) async {},
+          onRestoreSpellSlot:
+              ({required int spellLevel, required int slotIndex}) async {},
           onSetClassResourceUses: (resourceKey, currentUses) async {},
           onRecordDeathSaveSuccess: () async {},
           onRecordDeathSaveFailure: () async {},
@@ -138,16 +140,12 @@ void main() {
           onSetInventoryItemEquipped: (inventoryItemId, isEquipped) async {},
           onSetInventoryItemCarried: (inventoryItemId, isCarried) async {},
           onSetInventoryItemQuantity: (inventoryItemId, quantity) async {},
-          onSpendInventoryItemQuantity: (inventoryItemId, {int amount = 1}) async {},
-          onSetInventoryItemCharges: (
-            inventoryItemId, {
-            chargesCurrent,
-            chargesMax,
-          }) async {},
-          onSetInventoryItemContainer: (
-            inventoryItemId,
-            containerInventoryItemId,
-          ) async {},
+          onSpendInventoryItemQuantity:
+              (inventoryItemId, {int amount = 1}) async {},
+          onSetInventoryItemCharges:
+              (inventoryItemId, {chargesCurrent, chargesMax}) async {},
+          onSetInventoryItemContainer:
+              (inventoryItemId, containerInventoryItemId) async {},
         ),
       ),
     );

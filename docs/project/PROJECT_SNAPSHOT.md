@@ -1,7 +1,7 @@
 # Adventure Vault Character — Project Snapshot
 
 ## Last Updated
-2026-05-02
+2026-05-03
 
 ## Role of This Document
 
@@ -13,12 +13,12 @@ This file is the consolidated project-state reference.
 
 ## Current Phase
 
-Post-foundation implementation and hardening.
+Post-foundation implementation, validation hardening, and documentation alignment.
 
 - Character-sheet completion slice: implemented.
 - Deterministic combat MVP slice: implemented.
-- Current work posture: MinFunc gap closure focused on direct spell-slot
-  in-session actions, then targeted regression hardening.
+- Current work posture: MinFunc is complete; focus now shifts to validation
+  hardening and keeping canonical docs aligned with the real state.
 
 ## Architecture Baseline (Current)
 
@@ -48,6 +48,12 @@ Primary constraints are tracked in:
   implemented on top of normalized persistence.
 - Compendium flow includes local source policy visibility, imported-pack
   registration, pack activation state, and effective-catalog filtering.
+- Phase 5 validation hardening now includes a regression for merging imported
+  XML content into a fallback JSON base catalog.
+- Phase 5 now also includes a regression for multiple imported XML packs staying
+  independently active while keeping merged source notes deterministic.
+- Phase 5 now also includes codec regression coverage for spell-slot usage
+  serialization edge cases.
 - The bundled runtime asset set is currently reduced to `assets/compendium/catalog.json`; missing local XML source trees now fall through to the repository's existing fallback behavior instead of blocking asset-bundle builds.
 - Character sheet renders deterministic derived state for key gameplay areas,
   including combat helpers, spell-state summaries, rest effects, and inventory
@@ -58,6 +64,8 @@ Primary constraints are tracked in:
 - S6A-S6C3 closed the non-UI spend-slot slice: explicit repository/application
   spend mutation now exists with Drift + in-memory parity and minimum non-widget
   coverage.
+- S11 is complete: targeted widget coverage now proves restore persistence after
+  navigating back and reopening the same character.
 - S12 confirmed inventory minimum usability is already sufficient for MinFunc;
   S14 confirmed the existing inventory regression/smoke coverage is enough for
   the minimum flow.
@@ -65,11 +73,13 @@ Primary constraints are tracked in:
   identity, background, finishing-details, and equipment summary fields.
 - S16 is complete: controller-level handling now surfaces expected mutation
   rejections and recoverable errors for spells, inventory, and class resources.
-- The main remaining functional blocker is now restore-slot symmetry for the
-  full minimum spell loop; the restore contract exists, but non-UI behavior,
-  sheet wiring, and reopen proof are still pending.
-- Next verification focus is S17: persistence and reopen behavior for the
-  minimum session changes.
+- S18 is complete: the full minimum loop audit passed, including creation,
+  save/reopen, spell slots, inventory, rests/resources, and offline continuation.
+- S19 is complete: post-MVP debt has been separated into UI/UX debt, future
+  functional depth, non-critical hardening, and future features.
+- S20 is complete: canonical docs now reflect the finished MinFunc status and
+  the post-MVP focus split.
+- Next verification focus is Phase 5 validation hardening.
 
 ## Drift Status
 
@@ -95,10 +105,9 @@ Primary constraints are tracked in:
 
 ## Active Delivery Focus
 
-1. Close the **MinFunc** release bar so a real offline player session can be
-   completed without functional blockers.
-2. Implement restore-slot restore behavior in non-UI layers next (`S9B`), then
-   expose and test the restore flow in later slices.
+1. Keep the canonical project docs aligned with the finished MinFunc state.
+2. Expand Phase 5 validation hardening where concrete regressions or gaps still
+   exist, especially broader rule and mixed-source coverage.
 3. Keep broader UX depth, non-blocking edge-case breadth, and polish outside
    the minimum-functional release scope unless they prove to be blockers.
 

@@ -2,7 +2,7 @@
 
 ## Last Updated
 
-2026-04-28
+2026-05-03
 
 ## Roadmap Intent
 
@@ -158,8 +158,14 @@ Goal: Raise confidence that deterministic rules stay correct as scope expands.
   behavior parity across in-memory and Drift paths for key flows.
 - ✅ Transfer compatibility coverage now includes mixed same-item target-stack
   state rejection parity in both in-memory and Drift repository paths.
-- 🟡 Remaining: additional advanced spell edge cases and broader mixed
-  compendium regression breadth.
+- ✅ Added regression coverage for a fallback-JSON base catalog merged with an
+  imported XML pack.
+- ✅ Added regression coverage for multiple imported XML packs staying
+  independently active while keeping merged source notes deterministic.
+- ✅ Added codec regression coverage for spell-slot usage serialization edge
+  cases.
+- 🟡 Remaining: additional advanced spell edge cases and any further mixed
+  compendium precedence permutations not yet exercised.
 
 ### Exit Criteria
 
@@ -187,12 +193,14 @@ Goal: Close quality gaps before broader feature expansion.
 
 ## Immediate Next Slice
 
-Prioritize **Phase 3 + Phase 4 completion quality** by delivering one cohesive
-"in-session action loop" slice:
+Prioritize **Phase 5 validation hardening** by expanding rule-level and
+mixed-source regression coverage around the finished in-session loop:
 
 1. ✅ Strengthened same-item transfer compatibility validation/coverage for
    container/stack states.
 2. ✅ Exposed clearer in-sheet feedback for rejected inventory mutations and
    current stack/container state.
-3. 🟡 Improved spell/resource session visibility by adding in-panel recovery
-   actions and slot progress; direct per-slot mutation controls remain.
+3. ✅ Improved spell/resource session visibility by adding in-panel recovery
+   actions and slot progress; direct per-slot mutation controls are complete.
+4. 🟡 Remaining: broader spell edge cases, mixed-source regressions, and
+   finish-the-app polish/recovery.

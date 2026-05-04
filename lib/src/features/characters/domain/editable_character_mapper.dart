@@ -2,6 +2,7 @@ import 'package:adventure_vault_character/src/features/characters/data/local/app
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_mapper.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_record.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_spell_slot_usage_codec.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/editable_character.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
@@ -56,12 +57,15 @@ class EditableCharacterMapper {
             .whereType<CharacterSpellSelectionInput>()
             .toList(growable: false),
         slotUsages: record.spellSlotUsages
-           .map(
-               (row) => CharacterSpellSlotUsageInput(
-                 spellLevel: row.spellLevel,
-                 expendedSlotIndices: List<String>.from(row.expendedSlotIndices.split(',')),
-               ),
-             )
+            .map(
+              (row) => CharacterSpellSlotUsageInput(
+                spellLevel: row.spellLevel,
+                expendedSlotIndices:
+                    CharacterSpellSlotUsageCodec.explicitIndicesFromSerialized(
+                      row.expendedSlotIndices,
+                    ),
+              ),
+            )
             .toList(growable: false),
       ),
       equipment: EditableCharacterEquipment(

@@ -46,6 +46,9 @@ class CharacterSheetScreen extends _CharacterSheetScreen {
     required super.onSpendInventoryItemQuantity,
     required super.onSetInventoryItemCharges,
     required super.onSetInventoryItemContainer,
+    super.onSplitStack,
+    super.onMergeStacks,
+    super.onTransferToContainer,
     super.key,
   });
 }
@@ -123,19 +126,6 @@ class _CharacterSheetScreen extends StatefulWidget {
 }
 
 class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
-  bool _showSplitDialog = false;
-  String? _splitItemId;
-  int? _splitQuantity;
-
-  bool _showMergeDialog = false;
-  List<String>? _mergeStackIds;
-  int? _mergeQuantity;
-
-  bool _showTransferDialog = false;
-  String? _transferSourceItemId;
-  int? _transferSourceQuantity;
-  String? _transferSourceName;
-
   bool get isApplyingRest => widget.isApplyingRest;
   String? get errorMessage => widget.errorMessage;
   Future<void> Function() get onApplyShortRest => widget.onApplyShortRest;
@@ -304,18 +294,18 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
                           _AbilitiesPanel(character: widget.character),
                           const SizedBox(height: 16),
                           if (widget.character.spellcasting != null) ...[
-                    _SpellsPanel(
-                      character: widget.character,
-                      isApplyingRest: isApplyingRest,
-                      errorMessage: errorMessage,
-                      supportsShortRestRecovery:
-                          supportsShortRestRecovery,
-                      onApplyShortRest: onApplyShortRest,
-                      onApplyLongRest: onApplyLongRest,
-                      onSpendSpellSlot: onSpendSpellSlot,
-                      onRestoreSpellSlot: onRestoreSpellSlot,
-                    ),
-const SizedBox(height: 16),
+                            _SpellsPanel(
+                              character: widget.character,
+                              isApplyingRest: isApplyingRest,
+                              errorMessage: errorMessage,
+                              supportsShortRestRecovery:
+                                  supportsShortRestRecovery,
+                              onApplyShortRest: onApplyShortRest,
+                              onApplyLongRest: onApplyLongRest,
+                              onSpendSpellSlot: onSpendSpellSlot,
+                              onRestoreSpellSlot: onRestoreSpellSlot,
+                            ),
+                            const SizedBox(height: 16),
                           ],
                           _FeaturesNotesPanel(character: widget.character),
                           const SizedBox(height: 16),
@@ -350,7 +340,7 @@ const SizedBox(height: 16),
                 children: [
                   _IdentityPanel(character: widget.character),
                   const SizedBox(height: 16),
-                    _CombatPanel(
+                  _CombatPanel(
                     character: widget.character,
                     isApplyingRest: isApplyingRest,
                     errorMessage: errorMessage,
@@ -362,7 +352,7 @@ const SizedBox(height: 16),
                     onRecordDeathSaveFailure: onRecordDeathSaveFailure,
                     onResetDeathSaves: onResetDeathSaves,
                   ),
-const SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   _AbilitiesPanel(character: widget.character),
                   const SizedBox(height: 16),
                   if (widget.character.spellcasting != null) ...[
@@ -401,31 +391,6 @@ const SizedBox(height: 16),
         ],
       ),
     );
-  }
-
-  void _onSplitStack(String itemId, int quantity) {
-    setState(() {
-      _showSplitDialog = true;
-      _splitItemId = itemId;
-      _splitQuantity = quantity ~/ 2;
-    });
-  }
-
-  void _onMergeStacks(List<String> stackIds, int quantity) {
-    setState(() {
-      _showMergeDialog = true;
-      _mergeStackIds = stackIds;
-      _mergeQuantity = quantity;
-    });
-  }
-
-  void _onTransferToContainer(String sourceItemId, int quantity) {
-    setState(() {
-      _showTransferDialog = true;
-      _transferSourceItemId = sourceItemId;
-      _transferSourceQuantity = quantity;
-      _transferSourceName = null;
-    });
   }
 }
 
@@ -898,7 +863,10 @@ class _FeaturesNotesPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final background = character.featuresNotes.background;
-    final backgroundName = _fallbackText(background.name, 'Background unavailable');
+    final backgroundName = _fallbackText(
+      background.name,
+      'Background unavailable',
+    );
     final backgroundSummary = _fallbackText(
       background.summary,
       'No background summary available.',
@@ -974,10 +942,7 @@ class _FeaturesNotesPanel extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              backgroundSummary,
-              style: theme.textTheme.bodyLarge,
-            ),
+            Text(backgroundSummary, style: theme.textTheme.bodyLarge),
             const SizedBox(height: 12),
             Text('Bonuses', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
@@ -987,9 +952,7 @@ class _FeaturesNotesPanel extends StatelessWidget {
                 style: theme.textTheme.bodyMedium,
               )
             else
-              ...backgroundBonusDescriptions.map(
-                (item) => Text('• $item'),
-              ),
+              ...backgroundBonusDescriptions.map((item) => Text('• $item')),
             const SizedBox(height: 12),
             Text('Social perks', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
@@ -1214,7 +1177,7 @@ class _SpellsPanel extends StatelessWidget {
                                       },
                                 disabledColor: Colors.grey.shade200,
                               ),
-                              if (slot.slotsMax > index && !isSpent) ...[
+                              if (isSpent) ...[
                                 const SizedBox(width: 4),
                                 ActionChip(
                                   label: const Text('Restore'),
@@ -1223,7 +1186,7 @@ class _SpellsPanel extends StatelessWidget {
                                       : () {
                                           onRestoreSpellSlot(
                                             spellLevel: slot.spellLevel,
-                                            slotIndex: slot.slotIndex,
+                                            slotIndex: 0,
                                           );
                                         },
                                 ),

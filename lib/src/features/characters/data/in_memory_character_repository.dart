@@ -12,6 +12,7 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/domain/character_rest_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_spell_rules.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_spell_slot_usage_codec.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary_mapper.dart';
@@ -318,19 +319,36 @@ class InMemoryCharacterRepository implements CharacterRepository {
           spellLevel: spellLevel,
           expendedSlotIndices: const <String>[],
         );
+    final currentSerialized = currentSlotUsage.expendedSlotIndices.join(',');
+    final currentCount =
+        CharacterSpellSlotUsageCodec.expendedCountFromSerialized(
+          currentSerialized,
+        );
+    if (currentCount >= slot.slotsMax) {
+      throw StateError('Spell slot usage exceeds the derived slot maximum.');
+    }
+
+    final currentExplicitIndices =
+        CharacterSpellSlotUsageCodec.explicitIndicesFromSerialized(
+          currentSerialized,
+        );
     final slotKey = slotIndex.toString();
-    if (currentSlotUsage.expendedSlotIndices.contains(slotKey)) {
+    if (currentExplicitIndices.contains(slotKey)) {
       throw StateError(
         'Slot $slotIndex at level $spellLevel is already expended.',
       );
     }
-    if (currentSlotUsage.expendedSlotIndices.length >= slot.slotsMax) {
-      throw StateError('Spell slot usage exceeds the derived slot maximum.');
-    }
 
+    final updatedSerialized =
+        CharacterSpellSlotUsageCodec.serializeUpdatedIndices(
+          currentSerialized: currentSerialized,
+          expendedCount: currentCount + 1,
+        );
     slotUsagesByLevel[spellLevel] = CharacterSpellSlotUsageInput(
       spellLevel: spellLevel,
-      expendedSlotIndices: [...currentSlotUsage.expendedSlotIndices, slotKey],
+      expendedSlotIndices: updatedSerialized.isEmpty
+          ? const <String>[]
+          : updatedSerialized.split(','),
     );
     _createdInputsById[id] = CreateCharacterInput(
       name: createdInput.name,
@@ -407,11 +425,16 @@ class InMemoryCharacterRepository implements CharacterRepository {
           expendedSlotIndices: const <String>[],
         );
     final slotKey = slotIndex.toString();
-    if (!currentSlotUsage.expendedSlotIndices.contains(slotKey)) {
+    final currentSerialized = currentSlotUsage.expendedSlotIndices.join(',');
+    final currentExplicitIndices =
+        CharacterSpellSlotUsageCodec.explicitIndicesFromSerialized(
+          currentSerialized,
+        );
+    if (!currentExplicitIndices.contains(slotKey)) {
       throw StateError('Slot $slotIndex at level $spellLevel is not expended.');
     }
 
-    final updatedIndices = currentSlotUsage.expendedSlotIndices
+    final updatedIndices = currentExplicitIndices
         .where((value) => value != slotKey)
         .toList(growable: false);
     if (updatedIndices.isEmpty) {
@@ -1881,6 +1904,10 @@ class InMemoryCharacterRepository implements CharacterRepository {
       className: className,
       level: progression.level,
     );
+    final slotUsageCountsByLevel = <int, int>{
+      for (final usage in spellState.slotUsages)
+        usage.spellLevel: usage.expendedSlotIndices.length,
+    };
 
     return CharacterSpellcastingDomainModel(
       abilityKey: abilityKey,
@@ -1896,16 +1923,42 @@ class InMemoryCharacterRepository implements CharacterRepository {
         abilityModifier: CharacterRules.abilityModifier(abilityScore),
       ),
       slotProgression: slotProgression
-          .map(
-            (slot) => CharacterSpellSlotDomainModel(
+          .asMap()
+          .entries
+          .map((entry) {
+            final slot = entry.value;
+            final currentIndex = entry.key;
+            final slotIndex =
+                slot.spellLevel == slotProgression.last.spellLevel
+                ? currentIndex
+                : _getSlotIndexForLevel(
+                    slot.spellLevel,
+                    currentIndex,
+                    slotProgression,
+                  );
+            return CharacterSpellSlotDomainModel(
               spellLevel: slot.spellLevel,
-              slotIndex: 0,
-              slotsExpended: 0,
+              slotIndex: slotIndex,
+              slotsExpended: slotUsageCountsByLevel[slot.spellLevel] ?? 0,
               slotsMax: slot.slotsMax,
-            ),
-          )
+            );
+          })
           .toList(growable: false),
     );
+  }
+
+  int _getSlotIndexForLevel(
+    int spellLevel,
+    int currentIndex,
+    List<CharacterSpellSlotProgression> slotProgression,
+  ) {
+    var count = 0;
+    for (var i = 0; i <= currentIndex; i++) {
+      if (slotProgression[i].spellLevel == spellLevel) {
+        count++;
+      }
+    }
+    return count - 1;
   }
 
   List<String> _extractBackgroundSkillLabels(CompendiumBackground background) {

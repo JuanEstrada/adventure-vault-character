@@ -85,16 +85,27 @@ real blockers:
 | S9B | Implement restore mutation behavior | Implement the minimum non-widget restore-slot behavior in persistence layers. | S9A | Done | Implemented in `CharacterRecoveryService.restoreSpellSlot(...)` with spend-parity validation and below-zero rejection. |
 | S9C | Close restore non-UI slice | Verify parity/docs state for the restore mutation path before UI work. | S9B | Done | Non-UI restore slice closed; next step is sheet wiring only (`S10`). |
 || S10 | Expose restore from sheet | Wire the existing restore contract into the character sheet UI. | S9C | Done | Added "Restore" button in spell-slot panel (lines 1009-1020), routed through controller → repository → recovery service. Spend + restore now form a complete minimum functional loop. |
-| S11 | Test restore persistence | Add targeted coverage for restore + persist + reopen. | S10 | Planned | Restore only. |
+| S11 | Test restore persistence | Add targeted coverage for restore + persist + reopen. | S10 | Done | Added widget coverage proving restore persists in state and remains visible after navigating back and reopening the character. |
 || S12 | Audit minimum inventory usability | Decide whether current inventory already supports real table use. | S2 | Done | Audit confirmed the existing inventory flow is already sufficient for MinFunc; no code changes were needed. |
-| S13 | Implement one blocking inventory action | Add only the single inventory capability proven to block the loop. | S12 | Planned / N/A | Skip if audit says inventory is already sufficient. |
+| S13 | Implement one blocking inventory action | Add only the single inventory capability proven to block the loop. | S12 | N/A | Audit confirmed inventory is already sufficient; no implementation needed. |
 || S14 | Test minimum inventory flow | Add targeted smoke/regression coverage for the inventory path needed by MinFunc. | S13 or S12 | Done | Existing inventory regression/smoke coverage already proves the minimum flow; no new tests were needed. |
 ||| S15 | Harden missing-data sheet states | Prevent breakage on optional or partial valid state. | S11, S14 | Done | Added stable fallbacks for blank identity, background, finishing-details, and equipment summary fields; sheet now stays readable when optional values are missing. |
 ||| S16 | Surface mutation rejections | Keep expected failures visible and non-blocking. | S11, S14 | Done | Added controller-level visibility for expected mutation rejections and recoverable errors across spells, inventory, and class resources. |
-||| S17 | Verify persistence and reopen | Confirm or fix reopen behavior for minimum session changes. | S15, S16 | Planned | Focus on spells, inventory, rests. |
-||| S18 | Validate full minimal loop | Re-audit the complete `MinFuncSpec` flow end-to-end. | S17 | Planned | Decide if MinFunc is achieved. |
-||| S19 | Declare post-MVP debt | Separate non-blocking UI/UX and future-depth work from release blockers. | S18 | Planned | Freeze what is out of scope. |
-||| S20 | Update canonical docs | Align continuity docs with real MinFunc status. | S19 | Planned | Update only source-of-truth docs. |
+||| S17 | Verify persistence and reopen | Confirm or fix reopen behavior for minimum session changes. | S15, S16 | Done | Verified spell-slot, inventory, and rest/resource reopen behavior; reopen tests now pass. |
+|||| S18 | Validate full minimal loop | Re-audit the complete `MinFuncSpec` flow end-to-end. | S17 | Done | Re-audit passed; creation, save/reopen, spells, inventory, rests/resources, and offline continuation all have passing verification. |
+||||| S19 | Declare post-MVP debt | Separate non-blocking UI/UX and future-depth work from release blockers. | S18 | Done | Debt separated into UI/UX, future functional depth, non-critical hardening, and future features. |
+||||| S20 | Update canonical docs | Align continuity docs with real MinFunc status. | S19 | Done | Canonical continuity docs now reflect the completed MinFunc audit and post-MVP split. |
+
+## Phase 5 Remaining Micro-Tasks
+
+| ID | Session | Objective | Dependencies | Status | Notes |
+| --- | --- | --- | --- | --- | --- |
+| S21 | Audit remaining spell edge cases | Enumerate the specific advanced spell scenarios that are still untested or only partially covered. | S18 | Done | Highest-risk gaps found: spell-slot behavior is still mostly exercised on simple level-1 paths; higher spell levels / nonzero-row interactions and prepared-caster limit edges remain the best S22 targets. |
+| S22 | Add advanced spell regression tests | Add the smallest targeted tests that close the highest-risk remaining spell edge cases. | S21 | Planned | Keep scope to concrete regressions; avoid expanding into UX polish. |
+| S23 | Audit mixed-source precedence gaps | Identify the remaining compendium/base/imported-content precedence permutations that still need coverage. | S18 | Planned | Focus on precedence and source-policy interactions that can change effective catalog results. |
+| S24 | Add mixed-source regression tests | Add targeted regressions for the remaining precedence permutations and source-merge behaviors. | S23 | Planned | Keep tests small and deterministic; reuse existing catalog fixtures where possible. |
+| S25 | Verify parity for new hardening cases | Confirm repository/migration parity for any newly added validation slices. | S22, S24 | Planned | Ensure in-memory and Drift behavior stay aligned before closing Phase 5. |
+| S26 | Close Phase 5 hardening slice | Update tracker/docs once the remaining validation gaps are proven closed or explicitly deferred. | S25 | Planned | This is the documentation and closeout step before Phase 6 polish/recovery. |
 
 ## Local-Model Prompts
 
@@ -254,5 +265,5 @@ step is obvious.
 
 ## Current Recommendation
 
-Proceed to **S17**. Surface mutation rejections is complete; next up is
-persistence and reopen verification.
+Proceed to **Phase 5 validation hardening**. MinFunc is complete; next up is
+broader rule/regression coverage.

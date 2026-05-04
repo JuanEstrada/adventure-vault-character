@@ -7,6 +7,7 @@ import 'package:adventure_vault_character/src/features/characters/data/local/cha
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_spell_rules.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_spell_slot_usage_codec.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_summary_mapper.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
@@ -465,19 +466,23 @@ class CreateCharacterService {
   }
 
   List<CharacterSpellSlotUsagesCompanion> _buildSpellSlotUsageRows({
-      required String characterId,
-      required CreateCharacterInput input,
-    }) {
-      return input.spellState.slotUsages
-          .map(
-            (usage) => CharacterSpellSlotUsagesCompanion.insert(
-              characterId: characterId,
-              spellLevel: usage.spellLevel,
-              expendedSlotIndices: Value(usage.expendedSlotIndices.join(',')),
+    required String characterId,
+    required CreateCharacterInput input,
+  }) {
+    return input.spellState.slotUsages
+        .map(
+          (usage) => CharacterSpellSlotUsagesCompanion.insert(
+            characterId: characterId,
+            spellLevel: usage.spellLevel,
+            expendedSlotIndices: Value(
+              CharacterSpellSlotUsageCodec.serializeInputIndices(
+                usage.expendedSlotIndices,
+              ),
             ),
-          )
-          .toList(growable: false);
-    }
+          ),
+        )
+        .toList(growable: false);
+  }
 
   Future<CompendiumCatalog> _loadCatalog() {
     return _catalogFuture ??= _compendiumRepository.loadCatalog();

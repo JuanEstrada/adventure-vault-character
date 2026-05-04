@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-05-02
+Last updated: 2026-05-03
 
 This is the canonical, short handoff file for resuming work quickly.
 
@@ -23,9 +23,10 @@ This is the canonical, short handoff file for resuming work quickly.
 - Architecture: feature-first with layered separation
   (`presentation -> application -> domain -> data`).
 - Drift schema: **`v20`** (canonical current version).
-- Current phase: MinFunc gap-closure after code audit.
-- Active planning focus: `MinFunc` minimal functional release tracking in
-  `docs/project/MINFUNC_TRACKER.md`.
+- Current phase: MinFunc complete; canonical doc alignment and validation
+  hardening.
+- Active planning focus: post-MinFunc validation hardening in
+  `docs/project/ROADMAP.md`, with continuity docs kept in sync.
 
 ## What Is Stable (Do Not Reopen)
 
@@ -40,18 +41,15 @@ This is the canonical, short handoff file for resuming work quickly.
 
 ## Next Actionable Slice
 
-Prioritize the **MinFunc** execution path before broader hardening work:
+Prioritize **Phase 5 validation hardening** before broader polish work:
 
-1. Spell-slot mapping is complete through `S5`: read path, existing mutation
-   path, and the minimum missing gap are now verified.
-2. Execute one atomic implementation session at a time starting with the split
-   spend path: contract (`S6A`, done), Drift persistence (`S6B`, done), then
-   the in-memory parity sub-slice: behavior (`S6C1`, done), parity tests (`S6C2`, done),
-   and closeout (`S6C3`, done), followed by spend UI (`S7`, done), spend test (`S8`, done), restore
-   contract (`S9A`, done), restore behavior (`S9B`), restore closeout (`S9C`),
-   restore UI (`S10`), and restore test (`S11`).
-3. Treat inventory as already sufficient for MinFunc unless a later regression
-   proves otherwise; keep all later sessions equally atomic.
+1. MinFunc is complete; do not reopen frozen minimum-scope work unless a
+   regression is confirmed.
+2. Start the next implementation slice from Phase 5 validation hardening in
+   `docs/project/ROADMAP.md`, focusing on broader rule parity and mixed-source
+   regressions.
+3. Keep inventory and spell workflows frozen at the verified minimum bar while
+   broader post-MVP work continues.
 
 ## Guardrails
 
@@ -98,18 +96,28 @@ Prioritize the **MinFunc** execution path before broader hardening work:
   rules logic.
 - S8 is complete: targeted widget coverage now proves spend remains persisted
   after navigating back and reopening the same character.
+- S10 is complete: the sheet now exposes the restore control through the
+  existing controller/repository path.
+- S11 is complete: targeted widget coverage now proves spell-slot restore
+  persists after navigating back and reopening the same character.
+- S12 is complete: inventory minimum usability is already sufficient for the
+  MinFunc bar; no code changes were needed.
 - S15 is complete: the sheet now has stable fallbacks for blank identity,
   background, finishing-details, and equipment summary fields.
 - S16 is complete: expected mutation rejections and recoverable errors are now
   visible for spells, inventory, and class resources.
-- Direct spell-slot spend/restore remains the confirmed MinFunc blocker.
-- S9A is complete: the restore-slot contract now exists on repository,
-  application, controller, and repository-implementation surfaces as a
-  placeholder-only path.
-- S12 is complete: inventory minimum usability is already sufficient for the
-  MinFunc bar; no code changes were needed.
+- Phase 5 now has one mixed-source regression guard: fallback JSON base catalogs
+  correctly merge imported XML packs.
+- Phase 5 now also has a second mixed-source regression guard for multiple
+  imported XML packs staying independently active while keeping merged source
+  notes deterministic.
+- Phase 5 now also has codec regression coverage for spell-slot usage
+  serialization edge cases.
 - S14 is complete: the existing inventory regression/smoke coverage already
   proves the minimum inventory flow needed by MinFunc.
-- Deferred gap captured for the roadmap: restore-slot symmetry still remains;
-  the next step for the current MinFunc slice is persistence/reopen verification
-  in S17.
+- S18 is complete: the full minimum loop audit passed, including creation,
+  save/reopen, spell slots, inventory, rests/resources, and offline continuation.
+- S19 is complete: post-MVP debt has been separated into UI/UX debt, future
+  functional depth, non-critical hardening, and future features.
+- S20 is complete: canonical docs now reflect the finished MinFunc status and
+  the next post-MVP focus split.

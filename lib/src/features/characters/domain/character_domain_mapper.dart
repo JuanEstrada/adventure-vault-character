@@ -2,6 +2,7 @@ import 'package:adventure_vault_character/src/features/characters/data/local/app
 import 'package:adventure_vault_character/src/features/characters/domain/character_encumbrance_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_class_resource_rules.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_spell_slot_usage_codec.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_combat_rules.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_record.dart';
@@ -445,6 +446,13 @@ class CharacterDomainMapper {
     final expectedMode = _characterSpellRules.selectionModeForClass(
       record.row.className,
     );
+    final slotUsageCountsByLevel = <int, int>{
+      for (final usage in record.spellSlotUsages)
+        usage.spellLevel:
+            CharacterSpellSlotUsageCodec.expendedCountFromSerialized(
+              usage.expendedSlotIndices,
+            ),
+    };
     final spellbookSpells = record.spellSelections
         .where((row) => row.selectionKind == 'spellbook')
         .map((row) => availableSpellsById[row.spellDefinitionId])
@@ -468,7 +476,7 @@ class CharacterDomainMapper {
       className: record.row.className,
       level: record.row.level,
     );
- 
+
     final abilityScore = _abilityScoreForKey(
       abilityKey: abilityKey,
       scores: resolvedAbilityScores,
@@ -490,25 +498,23 @@ class CharacterDomainMapper {
       slotProgression: slotProgression
           .asMap()
           .entries
-          .map(
-            (entry) {
-              final slot = entry.value;
-              final currentIndex = entry.key;
-              final slotIndex = slot.spellLevel == slotProgression.last.spellLevel
-                  ? currentIndex
-                  : _getSlotIndexForLevel(
-                      slot.spellLevel,
-                      currentIndex,
-                      slotProgression,
-                    );
+          .map((entry) {
+            final slot = entry.value;
+            final currentIndex = entry.key;
+            final slotIndex = slot.spellLevel == slotProgression.last.spellLevel
+                ? currentIndex
+                : _getSlotIndexForLevel(
+                    slot.spellLevel,
+                    currentIndex,
+                    slotProgression,
+                  );
             return CharacterSpellSlotDomainModel(
-               spellLevel: slot.spellLevel,
-               slotIndex: slotIndex,
-               slotsExpended: 0,
-               slotsMax: slot.slotsMax,
-             );
-            },
-          )
+              spellLevel: slot.spellLevel,
+              slotIndex: slotIndex,
+              slotsExpended: slotUsageCountsByLevel[slot.spellLevel] ?? 0,
+              slotsMax: slot.slotsMax,
+            );
+          })
           .toList(growable: false),
     );
   }

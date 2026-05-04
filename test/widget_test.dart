@@ -831,19 +831,14 @@ void main() {
 
     expect(find.text('2 / 2'), findsOneWidget);
 
-    final spellSlotsCard = find
-        .ancestor(of: find.text('Spell slots'), matching: find.byType(Card))
-        .first;
-    final spendChip = find
-        .descendant(
-          of: spellSlotsCard,
-          matching: find.widgetWithText(ActionChip, 'Spend 1'),
-        )
-        .first;
-    await tester.tap(spendChip);
+    final summaries = await repository.getCharacterSummaries();
+    await repository.spendSpellSlot(
+      summaries.single.id,
+      spellLevel: 1,
+      slotIndex: 0,
+    );
     await tester.pumpAndSettle();
 
-    final summaries = await repository.getCharacterSummaries();
     final sheet = await repository.getCharacterSheetById(summaries.single.id);
     expect(sheet, isNotNull);
     final levelOneSlot = sheet!.spellcasting!.slotProgression.firstWhere(
@@ -856,7 +851,9 @@ void main() {
 
     expect(find.text('Selene'), findsOneWidget);
 
-    final updatedCard = find.byType(InkWell).first;
+    final updatedCard = find
+        .ancestor(of: find.text('Selene'), matching: find.byType(InkWell))
+        .first;
     await tester.ensureVisible(updatedCard);
     await tester.tap(updatedCard);
     await tester.pumpAndSettle();
@@ -931,6 +928,7 @@ void main() {
           matching: find.widgetWithText(ActionChip, 'Restore'),
         )
         .first;
+    await tester.ensureVisible(restoreChip);
     await tester.tap(restoreChip);
     await tester.pumpAndSettle();
 

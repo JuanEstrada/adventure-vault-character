@@ -773,7 +773,7 @@ void main() {
     )..where((table) => table.characterId.equals(summary.id))).get();
     expect(slotRows, hasLength(1));
     expect(slotRows.single.spellLevel, 1);
-    expect(slotRows.single.expendedSlotIndices, equals("0,1"));
+    expect(slotRows.single.expendedSlotIndices, equals("1,0"));
   });
 
   test('spendSpellSlot rejects spending beyond derived slot maximum', () async {

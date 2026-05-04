@@ -627,6 +627,101 @@ void main() {
     },
   );
 
+  test(
+    'multiple imported packs stay independently active and keep merged source notes deterministic',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = AssetCompendiumRepository(
+        database: database,
+        bundle: _FakeAssetBundle(_buildCompendiumImportBundleAssets()),
+      );
+
+      final firstImport = await repository.importXmlPack(_importFixture);
+      final secondImport = await repository.importXmlPack(
+        _importCollisionFixture,
+      );
+
+      final firstPackId = firstImport.packStates
+          .firstWhere(
+            (packState) =>
+                packState.id == 'imported-imported-acolyte-expansion',
+          )
+          .id;
+      final secondPackId = secondImport.packStates
+          .firstWhere((packState) => packState.title == 'Acolyte')
+          .id;
+
+      expect(
+        secondImport.packStates.map((packState) => packState.id),
+        containsAll(<String>[firstPackId, secondPackId]),
+      );
+      expect(secondImport.packStateById(firstPackId)?.isActive, isTrue);
+      expect(secondImport.packStateById(secondPackId)?.isActive, isTrue);
+      expect(
+        secondImport.sourcePolicyForSection('spells')?.notes,
+        contains(
+          'Imported XML packs active: Imported Acolyte Expansion (2), Acolyte (2).',
+        ),
+      );
+      expect(
+        secondImport.sourcePolicyForSection('spells')?.notes,
+        contains('Accepted after precedence: 2.'),
+      );
+      expect(
+        secondImport.sourcePolicyForSection('spells')?.notes,
+        contains('Conflicts skipped by base precedence: 2.'),
+      );
+
+      final deactivatedCatalog = await repository.setPackActive(
+        secondPackId,
+        false,
+      );
+
+      expect(
+        deactivatedCatalog.backgrounds.map((background) => background.name),
+        contains('Imported Acolyte Expansion'),
+      );
+      expect(
+        deactivatedCatalog.backgrounds.map((background) => background.name),
+        isNot(contains('Imported Sailor')),
+      );
+      expect(
+        deactivatedCatalog.spells.map((spell) => spell.name),
+        contains('Imported Arc Bolt'),
+      );
+      expect(
+        deactivatedCatalog.spells.map((spell) => spell.name),
+        isNot(contains('Imported Spark')),
+      );
+      expect(
+        deactivatedCatalog.feats.map((feat) => feat.name),
+        contains('Imported Adept'),
+      );
+      expect(
+        deactivatedCatalog.feats.map((feat) => feat.name),
+        isNot(contains('Imported Veteran')),
+      );
+      expect(
+        deactivatedCatalog.sourcePolicyForSection('spells')?.notes,
+        contains('Imported XML packs active: Imported Acolyte Expansion (2).'),
+      );
+      expect(
+        deactivatedCatalog.sourcePolicyForSection('spells')?.notes,
+        isNot(contains('Imported Collision Source (2).')),
+      );
+      expect(
+        deactivatedCatalog.sourcePolicyForSection('spells')?.notes,
+        contains('Accepted after precedence: 1.'),
+      );
+      expect(
+        deactivatedCatalog.sourcePolicyForSection('spells')?.notes,
+        contains('Conflicts skipped by base precedence: 1.'),
+      );
+    },
+  );
+
   test('rejects malformed imported XML payloads', () async {
     final database = AppDatabase.executor(NativeDatabase.memory());
     addTearDown(database.close);
@@ -770,6 +865,87 @@ void main() {
       expect(catalog.packStates.single.isFixed, isTrue);
     },
   );
+
+  test('merges imported XML packs into a fallback JSON base catalog', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final repository = AssetCompendiumRepository(
+      database: database,
+      bundle: _FakeAssetBundle({
+        'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{
+          'races': <String>['Human'],
+          'classes': <String>['Fighter'],
+          'backgrounds': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'id': 'acolyte',
+              'name': 'Acolyte',
+              'summary': 'Fallback summary',
+              'bonuses': <String>['Fallback bonus'],
+              'socialPerks': <String>['Fallback perk'],
+            },
+          ],
+          'generatedAbilityScoreSet': <int>[15, 14, 13, 12, 10, 8],
+          'manualAbilityScoreOptions': <int>[8, 9, 10, 11, 12, 13, 14, 15],
+          'equipmentSummariesByClass': <String, dynamic>{
+            'Fighter': <String, dynamic>{
+              'statusLabel': 'Fallback',
+              'description': 'Fallback description',
+              'highlightItems': <String>['Fallback item'],
+            },
+          },
+          'equipmentLoadoutsByClass': <String, dynamic>{
+            'Fighter': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 'fighter-fallback',
+                'label': 'Fallback loadout',
+                'startingMoneySummary': 'Fallback money',
+                'selectedItems': <String>['Fallback item'],
+              },
+            ],
+          },
+        }),
+      }),
+    );
+
+    final baseCatalog = await repository.loadCatalog();
+    expect(baseCatalog.sourcePolicy.activeSourceType, 'fallback_json');
+    expect(
+      baseCatalog.backgrounds.map((item) => item.name),
+      contains('Acolyte'),
+    );
+    expect(baseCatalog.spells, isEmpty);
+
+    final mergedCatalog = await repository.importXmlPack(_importFixture);
+
+    expect(mergedCatalog.sourcePolicy.activeSourceType, 'fallback_json');
+    expect(
+      mergedCatalog.backgrounds.map((item) => item.name),
+      containsAll(<String>['Acolyte', 'Imported Acolyte Expansion']),
+    );
+    expect(
+      mergedCatalog.spells.map((item) => item.name),
+      contains('Imported Arc Bolt'),
+    );
+    expect(
+      mergedCatalog.feats.map((item) => item.name),
+      contains('Imported Adept'),
+    );
+    expect(
+      mergedCatalog.monsters.map((item) => item.name),
+      contains('Imported Watcher'),
+    );
+    expect(
+      mergedCatalog.sourcePolicyForSection('catalog')?.primarySources,
+      <String>['assets/compendium/catalog.json'],
+    );
+    expect(
+      mergedCatalog
+          .packStateById('imported-imported-acolyte-expansion')
+          ?.isActive,
+      isTrue,
+    );
+  });
 
   test('startup catalog loads lightweight index without XML parsing', () async {
     final repository = AssetCompendiumRepository(
