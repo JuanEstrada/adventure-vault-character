@@ -1186,7 +1186,7 @@ class _SpellsPanel extends StatelessWidget {
                                       : () {
                                           onRestoreSpellSlot(
                                             spellLevel: slot.spellLevel,
-                                            slotIndex: 0,
+                                            slotIndex: slot.slotIndex,
                                           );
                                         },
                                 ),

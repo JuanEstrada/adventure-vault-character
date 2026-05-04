@@ -101,7 +101,7 @@ real blockers:
 | ID | Session | Objective | Dependencies | Status | Notes |
 | --- | --- | --- | --- | --- | --- |
 | S21 | Audit remaining spell edge cases | Enumerate the specific advanced spell scenarios that are still untested or only partially covered. | S18 | Done | Highest-risk gaps found: spell-slot behavior is still mostly exercised on simple level-1 paths; higher spell levels / nonzero-row interactions and prepared-caster limit edges remain the best S22 targets. |
-| S22 | Add advanced spell regression tests | Add the smallest targeted tests that close the highest-risk remaining spell edge cases. | S21 | Planned | Keep scope to concrete regressions; avoid expanding into UX polish. |
+| S22 | Add advanced spell regression tests | Add the smallest targeted tests that close the highest-risk remaining spell edge cases. | S21 | Done | Added regression coverage proving higher-level spell-slot Restore callbacks preserve the actual slotIndex instead of collapsing to 0. |
 | S23 | Audit mixed-source precedence gaps | Identify the remaining compendium/base/imported-content precedence permutations that still need coverage. | S18 | Planned | Focus on precedence and source-policy interactions that can change effective catalog results. |
 | S24 | Add mixed-source regression tests | Add targeted regressions for the remaining precedence permutations and source-merge behaviors. | S23 | Planned | Keep tests small and deterministic; reuse existing catalog fixtures where possible. |
 | S25 | Verify parity for new hardening cases | Confirm repository/migration parity for any newly added validation slices. | S22, S24 | Planned | Ensure in-memory and Drift behavior stay aligned before closing Phase 5. |
