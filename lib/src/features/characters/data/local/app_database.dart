@@ -26,6 +26,8 @@ class Characters extends Table {
 
   DateTimeColumn get updatedAt => dateTime().named('updated_at')();
 
+  IntColumn get lastSavedAt => integer().named('last_saved_at').nullable()();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
@@ -711,7 +713,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.executor(super.executor);
 
   @override
-  int get schemaVersion => 20;
+  int get schemaVersion => 21;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -911,6 +913,11 @@ class AppDatabase extends _$AppDatabase {
           FROM characters
           WHERE id NOT IN (SELECT character_id FROM character_death_saves)
         ''');
+      }
+      if (from < 21) {
+        await customStatement(
+          'ALTER TABLE characters ADD COLUMN last_saved_at INTEGER NULL',
+        );
       }
 
       await _createIndexes();

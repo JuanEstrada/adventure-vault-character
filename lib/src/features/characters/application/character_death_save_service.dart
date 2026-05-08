@@ -10,15 +10,18 @@ class CharacterDeathSaveService {
     required CharacterReadDao readDao,
     required CharacterWriteDao writeDao,
     CharacterCombatRules characterCombatRules = const CharacterCombatRules(),
+    void Function(String characterId)? onCharacterChanged,
   }) : _database = database,
        _readDao = readDao,
        _writeDao = writeDao,
-       _characterCombatRules = characterCombatRules;
+       _characterCombatRules = characterCombatRules,
+       _onCharacterChanged = onCharacterChanged;
 
   final AppDatabase _database;
   final CharacterReadDao _readDao;
   final CharacterWriteDao _writeDao;
   final CharacterCombatRules _characterCombatRules;
+  final void Function(String characterId)? _onCharacterChanged;
 
   Future<void> recordSuccess(String id) {
     return _updateDeathSaves(id, registerSuccess: true);
@@ -50,6 +53,8 @@ class CharacterDeathSaveService {
         ),
       );
     });
+
+    _onCharacterChanged?.call(id);
   }
 
   Future<void> _updateDeathSaves(
@@ -88,5 +93,7 @@ class CharacterDeathSaveService {
         ),
       );
     });
+
+    _onCharacterChanged?.call(id);
   }
 }

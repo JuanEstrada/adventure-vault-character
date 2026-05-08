@@ -21,6 +21,7 @@ class SplitStackDialog extends StatefulWidget {
 
 class _SplitStackDialogState extends State<SplitStackDialog> {
   late TextEditingController _quantityController;
+  late final FocusNode _quantityFocusNode;
   int _splitQuantity = 0;
   bool _isSplitting = false;
   String? _error;
@@ -32,6 +33,7 @@ class _SplitStackDialogState extends State<SplitStackDialog> {
     _quantityController = TextEditingController(
       text: _splitQuantity.toString(),
     );
+    _quantityFocusNode = FocusNode(debugLabel: 'SplitStackQuantity');
   }
 
   void _validateAndSplit() {
@@ -74,82 +76,95 @@ class _SplitStackDialogState extends State<SplitStackDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Split Stack'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Split quantity to create new stack:',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 8),
-          if (_error != null)
-            Text(
-              _error!,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.red),
-            ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _quantityController,
-            keyboardType: TextInputType.number,
-            maxLength: 5,
-            textAlign: TextAlign.center,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              hintText: 'Amount to split',
-              errorText: _error,
-            ),
-            onChanged: (value) {
-              final parsed = int.tryParse(value);
-              setState(() {
-                _splitQuantity = parsed ?? 0;
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-          Row(
+    return FocusScope(
+      autofocus: true,
+      child: Semantics(
+        container: true,
+        explicitChildNodes: true,
+        namesRoute: true,
+        label: 'Split stack dialog',
+        child: AlertDialog(
+          semanticLabel: 'Split stack dialog',
+          title: const Text('Split Stack'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  'Source: $widget.quantity',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+              Text(
+                'Split quantity to create new stack:',
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  'New: $_splitQuantity',
-                  style: Theme.of(context).textTheme.bodySmall,
+              const SizedBox(height: 8),
+              if (_error != null)
+                Text(
+                  _error!,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.red),
                 ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _quantityController,
+                focusNode: _quantityFocusNode,
+                autofocus: true,
+                keyboardType: TextInputType.number,
+                maxLength: 5,
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  hintText: 'Amount to split',
+                  errorText: _error,
+                ),
+                onChanged: (value) {
+                  final parsed = int.tryParse(value);
+                  setState(() {
+                    _splitQuantity = parsed ?? 0;
+                  });
+                },
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  'Remaining: ${widget.quantity - _splitQuantity}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Source: $widget.quantity',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      'New: $_splitQuantity',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      'Remaining: ${widget.quantity - _splitQuantity}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
-      actions: [
-        TextButton(onPressed: widget.onClose, child: const Text('Cancel')),
-        ElevatedButton(
-          onPressed: _isSplitting ? null : _validateAndSplit,
-          child: const Text('Split'),
+          actions: [
+            TextButton(onPressed: widget.onClose, child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: _isSplitting ? null : _validateAndSplit,
+              child: const Text('Split'),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
   @override
   void dispose() {
     _quantityController.dispose();
+    _quantityFocusNode.dispose();
     super.dispose();
   }
 }

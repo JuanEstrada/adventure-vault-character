@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
+import 'package:adventure_vault_character/src/features/characters/presentation/container_management_dialog.dart';
+import 'package:adventure_vault_character/src/features/characters/presentation/transfer_to_container_dialog.dart';
 import 'package:flutter/material.dart';
 
 String _fallbackText(String value, String fallback) {
@@ -49,6 +53,7 @@ class CharacterSheetScreen extends _CharacterSheetScreen {
     super.onSplitStack,
     super.onMergeStacks,
     super.onTransferToContainer,
+    super.onCreateContainer,
     super.key,
   });
 }
@@ -77,6 +82,7 @@ class _CharacterSheetScreen extends StatefulWidget {
     this.onSplitStack,
     this.onMergeStacks,
     this.onTransferToContainer,
+    this.onCreateContainer,
     super.key,
   });
 
@@ -118,8 +124,14 @@ class _CharacterSheetScreen extends StatefulWidget {
   final Future<void> Function(String itemId, int quantity)? onSplitStack;
   final Future<void> Function(List<String> stackIds, int quantity)?
   onMergeStacks;
-  final Future<void> Function(String sourceItemId, int quantity)?
+  final Future<void> Function(
+    String sourceItemId,
+    String targetContainerInventoryItemId,
+    int quantity,
+  )?
   onTransferToContainer;
+  final Future<String> Function(String characterId, String name)?
+  onCreateContainer;
 
   @override
   State<_CharacterSheetScreen> createState() => _CharacterSheetScreenState();
@@ -164,20 +176,15 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
       widget.onSplitStack ?? _noopSplitStack;
   Future<void> Function(List<String> stackIds, int quantity)
   get onMergeStacks => widget.onMergeStacks ?? _noopMergeStacks;
-  Future<void> Function(String sourceItemId, int quantity)
+  Future<void> Function(
+    String sourceItemId,
+    String targetContainerInventoryItemId,
+    int quantity,
+  )
   get onTransferToContainer =>
       widget.onTransferToContainer ?? _noopTransferToContainer;
 
-  Future<void> _noopSplitStack(String itemId, int quantity) async {}
-  Future<void> _noopMergeStacks(List<String> stackIds, int quantity) async {}
-  Future<void> _noopTransferToContainer(
-    String sourceItemId,
-    int quantity,
-  ) async {}
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  bool get supportsShortRestRecovery {
     final supportsShortRestSlotRecovery =
         widget.character.identity.className.trim().toLowerCase() == 'warlock';
     final supportsShortRestResourceRecovery = widget
@@ -185,210 +192,219 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
         .combat
         .classResources
         .any((resource) => resource.recoversOnShortRest);
-    final supportsShortRestRecovery =
-        supportsShortRestSlotRecovery || supportsShortRestResourceRecovery;
+    return supportsShortRestSlotRecovery || supportsShortRestResourceRecovery;
+  }
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: widget.onBack,
-          icon: const Icon(Icons.arrow_back),
-        ),
-        title: Text(
-          _fallbackText(widget.character.identity.name, 'Unnamed character'),
-        ),
-        actions: [
-          TextButton(onPressed: widget.onEdit, child: const Text('Edit')),
-        ],
+  Future<void> _openContainerManagementDialog() async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => ContainerManagementDialog(
+        containers: widget.character.equipment.items
+            .where((candidate) => candidate.isContainer)
+            .toList(growable: false),
+        onDismiss: () => Navigator.of(dialogContext).pop(),
+        onRename: (containerId, containerName) async {},
+        onDelete: (containerId) async {},
+        onAdd: (containerName) async {
+          return widget.onCreateContainer?.call(widget.character.id, containerName) ??
+              Future.value('');
+        },
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8DDCB),
-              borderRadius: BorderRadius.circular(20),
+    );
+  }
+
+  List<Widget> _buildSheetPanels() {
+    final panels = <Widget>[
+      _IdentityPanel(character: widget.character),
+      _CombatPanel(
+        character: widget.character,
+        isApplyingRest: isApplyingRest,
+        errorMessage: errorMessage,
+        supportsShortRestRecovery: supportsShortRestRecovery,
+        onApplyShortRest: onApplyShortRest,
+        onApplyLongRest: onApplyLongRest,
+        onSetClassResourceUses: onSetClassResourceUses,
+        onRecordDeathSaveSuccess: onRecordDeathSaveSuccess,
+        onRecordDeathSaveFailure: onRecordDeathSaveFailure,
+        onResetDeathSaves: onResetDeathSaves,
+      ),
+      _AbilitiesPanel(character: widget.character),
+      if (widget.character.spellcasting != null)
+        _SpellsPanel(
+          character: widget.character,
+          isApplyingRest: isApplyingRest,
+          errorMessage: errorMessage,
+          supportsShortRestRecovery: supportsShortRestRecovery,
+          onApplyShortRest: onApplyShortRest,
+          onApplyLongRest: onApplyLongRest,
+          onSpendSpellSlot: onSpendSpellSlot,
+          onRestoreSpellSlot: onRestoreSpellSlot,
+        ),
+      _FeaturesNotesPanel(character: widget.character),
+      _EquipmentPanel(
+        character: widget.character,
+        isUpdating: isApplyingRest,
+        errorMessage: errorMessage,
+        onManageContainers: _openContainerManagementDialog,
+        onSetInventoryItemEquipped: onSetInventoryItemEquipped,
+        onSetInventoryItemCarried: onSetInventoryItemCarried,
+        onSetInventoryItemQuantity: onSetInventoryItemQuantity,
+        onSpendInventoryItemQuantity: onSpendInventoryItemQuantity,
+        onSetInventoryItemCharges: onSetInventoryItemCharges,
+        onSetInventoryItemContainer: onSetInventoryItemContainer,
+        onSplitStack: onSplitStack,
+        onMergeStacks: onMergeStacks,
+        onTransferToContainer: onTransferToContainer,
+      ),
+    ];
+
+    return panels;
+  }
+
+  Widget _buildPanelGrid(BoxConstraints constraints) {
+    final isWide = constraints.maxWidth >= 1100;
+    final panelWidth = isWide
+        ? (constraints.maxWidth - 16) / 2
+        : constraints.maxWidth;
+
+    return Wrap(
+      spacing: 16,
+      runSpacing: 16,
+      children: _buildSheetPanels()
+          .map((panel) => SizedBox(width: panelWidth, child: panel))
+          .toList(growable: false),
+    );
+  }
+
+  Future<void> _noopSplitStack(String itemId, int quantity) async {}
+  Future<void> _noopMergeStacks(List<String> stackIds, int quantity) async {}
+  Future<void> _noopTransferToContainer(
+    String sourceItemId,
+    String targetContainerInventoryItemId,
+    int quantity,
+  ) async {}
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return FocusTraversalGroup(
+      policy: OrderedTraversalPolicy(),
+      child: FocusScope(
+        autofocus: true,
+        child: Scaffold(
+          appBar: AppBar(
+            leading: Semantics(
+              container: true,
+              label: 'Back',
+              child: IconButton(
+                onPressed: widget.onBack,
+                icon: const Icon(Icons.arrow_back),
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+            title: Semantics(
+              container: true,
+              label: widget.character.identity.name,
+              child: ExcludeSemantics(
+                child: Text(
+                  _fallbackText(
+                    widget.character.identity.name,
+                    'Unnamed character',
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              Semantics(
+                container: true,
+                label: 'Edit character',
+                child: TextButton(
+                  onPressed: widget.onEdit,
+                  child: const Text('Edit'),
+                ),
+              ),
+            ],
+          ),
+          body: ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8DDCB),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _fallbackText(
-                              widget.character.identity.name,
-                              'Unnamed character',
-                            ),
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Semantics(
+                                container: true,
+                                label:
+                                    '${widget.character.identity.name}, ${_fallbackText(widget.character.identity.raceName, 'Unknown race')} ${_fallbackText(widget.character.identity.className, 'Unknown class')} Level ${widget.character.identity.progression.level}',
+                                child: ExcludeSemantics(
+                                  child: Text(
+                                    _fallbackText(
+                                      widget.character.identity.name,
+                                      'Unnamed character',
+                                    ),
+                                    style: theme.textTheme.headlineSmall
+                                        ?.copyWith(fontWeight: FontWeight.w700),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Semantics(
+                                container: true,
+                                label:
+                                    'Race: ${_fallbackText(widget.character.identity.raceName, 'Unknown race')}, Class: ${_fallbackText(widget.character.identity.className, 'Unknown class')}, Level: ${widget.character.identity.progression.level}, XP: ${widget.character.identity.progression.experience}',
+                                child: ExcludeSemantics(
+                                  child: Text(
+                                    '${_fallbackText(widget.character.identity.raceName, 'Unknown race')}  •  ${_fallbackText(widget.character.identity.className, 'Unknown class')}  •  Lv ${widget.character.identity.progression.level}  •  XP ${widget.character.identity.progression.experience}',
+                                    style: theme.textTheme.titleMedium,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${_fallbackText(widget.character.identity.raceName, 'Unknown race')}  •  ${_fallbackText(widget.character.identity.className, 'Unknown class')}  •  Lv ${widget.character.identity.progression.level}  •  XP ${widget.character.identity.progression.experience}',
-                            style: theme.textTheme.titleMedium,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    _PortraitPreview(
-                      portraitPath: widget
-                          .character
-                          .featuresNotes
-                          .finishingDetails
-                          .portraitAssetPath,
+                        ),
+                        const SizedBox(width: 16),
+                        _PortraitPreview(
+                          portraitPath: widget
+                              .character
+                              .featuresNotes
+                              .finishingDetails
+                              .portraitAssetPath,
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          const Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            children: [
-              _PanelChip(label: 'Combat'),
-              _PanelChip(label: 'Abilities'),
-              _PanelChip(label: 'Spells'),
-              _PanelChip(label: 'Equipment'),
-              _PanelChip(label: 'Features / Notes'),
+              ),
+              const SizedBox(height: 24),
+              const Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: [
+                  _PanelChip(label: 'Combat'),
+                  _PanelChip(label: 'Abilities'),
+                  _PanelChip(label: 'Spells'),
+                  _PanelChip(label: 'Equipment'),
+                  _PanelChip(label: 'Features / Notes'),
+                ],
+              ),
+              const SizedBox(height: 24),
+              LayoutBuilder(
+                builder: (context, constraints) => _buildPanelGrid(constraints),
+              ),
             ],
           ),
-          const SizedBox(height: 24),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 900;
-              if (isWide) {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _IdentityPanel(character: widget.character),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        children: [
-                          _CombatPanel(
-                            character: widget.character,
-                            isApplyingRest: isApplyingRest,
-                            errorMessage: errorMessage,
-                            supportsShortRestRecovery:
-                                supportsShortRestRecovery,
-                            onApplyShortRest: onApplyShortRest,
-                            onApplyLongRest: onApplyLongRest,
-                            onSetClassResourceUses: onSetClassResourceUses,
-                            onRecordDeathSaveSuccess: onRecordDeathSaveSuccess,
-                            onRecordDeathSaveFailure: onRecordDeathSaveFailure,
-                            onResetDeathSaves: onResetDeathSaves,
-                          ),
-                          const SizedBox(height: 16),
-                          _AbilitiesPanel(character: widget.character),
-                          const SizedBox(height: 16),
-                          if (widget.character.spellcasting != null) ...[
-                            _SpellsPanel(
-                              character: widget.character,
-                              isApplyingRest: isApplyingRest,
-                              errorMessage: errorMessage,
-                              supportsShortRestRecovery:
-                                  supportsShortRestRecovery,
-                              onApplyShortRest: onApplyShortRest,
-                              onApplyLongRest: onApplyLongRest,
-                              onSpendSpellSlot: onSpendSpellSlot,
-                              onRestoreSpellSlot: onRestoreSpellSlot,
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                          _FeaturesNotesPanel(character: widget.character),
-                          const SizedBox(height: 16),
-                          _EquipmentPanel(
-                            character: widget.character,
-                            isUpdating: isApplyingRest,
-                            errorMessage: errorMessage,
-                            onSetInventoryItemEquipped:
-                                onSetInventoryItemEquipped,
-                            onSetInventoryItemCarried:
-                                onSetInventoryItemCarried,
-                            onSetInventoryItemQuantity:
-                                onSetInventoryItemQuantity,
-                            onSpendInventoryItemQuantity:
-                                onSpendInventoryItemQuantity,
-                            onSetInventoryItemCharges:
-                                onSetInventoryItemCharges,
-                            onSetInventoryItemContainer:
-                                onSetInventoryItemContainer,
-                            onSplitStack: onSplitStack,
-                            onMergeStacks: onMergeStacks,
-                            onTransferToContainer: onTransferToContainer,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              }
-
-              return Column(
-                children: [
-                  _IdentityPanel(character: widget.character),
-                  const SizedBox(height: 16),
-                  _CombatPanel(
-                    character: widget.character,
-                    isApplyingRest: isApplyingRest,
-                    errorMessage: errorMessage,
-                    supportsShortRestRecovery: supportsShortRestRecovery,
-                    onApplyShortRest: onApplyShortRest,
-                    onApplyLongRest: onApplyLongRest,
-                    onSetClassResourceUses: onSetClassResourceUses,
-                    onRecordDeathSaveSuccess: onRecordDeathSaveSuccess,
-                    onRecordDeathSaveFailure: onRecordDeathSaveFailure,
-                    onResetDeathSaves: onResetDeathSaves,
-                  ),
-                  const SizedBox(height: 16),
-                  _AbilitiesPanel(character: widget.character),
-                  const SizedBox(height: 16),
-                  if (widget.character.spellcasting != null) ...[
-                    _SpellsPanel(
-                      character: widget.character,
-                      isApplyingRest: isApplyingRest,
-                      errorMessage: errorMessage,
-                      supportsShortRestRecovery: supportsShortRestRecovery,
-                      onApplyShortRest: onApplyShortRest,
-                      onApplyLongRest: onApplyLongRest,
-                      onSpendSpellSlot: onSpendSpellSlot,
-                      onRestoreSpellSlot: onRestoreSpellSlot,
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  _FeaturesNotesPanel(character: widget.character),
-                  const SizedBox(height: 16),
-                  _EquipmentPanel(
-                    character: widget.character,
-                    isUpdating: isApplyingRest,
-                    errorMessage: errorMessage,
-                    onSetInventoryItemEquipped: onSetInventoryItemEquipped,
-                    onSetInventoryItemCarried: onSetInventoryItemCarried,
-                    onSetInventoryItemQuantity: onSetInventoryItemQuantity,
-                    onSpendInventoryItemQuantity: onSpendInventoryItemQuantity,
-                    onSetInventoryItemCharges: onSetInventoryItemCharges,
-                    onSetInventoryItemContainer: onSetInventoryItemContainer,
-                    onSplitStack: onSplitStack,
-                    onMergeStacks: onMergeStacks,
-                    onTransferToContainer: onTransferToContainer,
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -516,21 +532,33 @@ class _ClassResourceRow extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            onPressed: isUpdating || resource.currentUses <= 0
-                ? null
-                : onDecrease,
-            icon: const Icon(Icons.remove_circle_outline),
-            tooltip: 'Spend use',
+          Semantics(
+            container: true,
+            button: true,
+            enabled: !isUpdating && resource.currentUses > 0,
+            label: 'Spend use',
+            child: IconButton(
+              onPressed: isUpdating || resource.currentUses <= 0
+                  ? null
+                  : onDecrease,
+              icon: const Icon(Icons.remove_circle_outline),
+              tooltip: 'Spend use',
+            ),
           ),
           Text(resource.usageSummary, style: theme.textTheme.bodyLarge),
-          IconButton(
-            onPressed:
-                isUpdating || resource.currentUses >= resource.maximumUses
-                ? null
-                : onIncrease,
-            icon: const Icon(Icons.add_circle_outline),
-            tooltip: 'Restore use',
+          Semantics(
+            container: true,
+            button: true,
+            enabled: !isUpdating && resource.currentUses < resource.maximumUses,
+            label: 'Restore use',
+            child: IconButton(
+              onPressed:
+                  isUpdating || resource.currentUses >= resource.maximumUses
+                  ? null
+                  : onIncrease,
+              icon: const Icon(Icons.add_circle_outline),
+              tooltip: 'Restore use',
+            ),
           ),
         ],
       ),
@@ -627,7 +655,14 @@ class _CombatPanel extends StatelessWidget {
                 ),
               ),
             const SizedBox(height: 8),
-            Text('Attacks', style: theme.textTheme.titleMedium),
+            Semantics(
+              container: true,
+              header: true,
+              label: 'Attacks',
+              child: ExcludeSemantics(
+                child: Text('Attacks', style: theme.textTheme.titleMedium),
+              ),
+            ),
             const SizedBox(height: 8),
             if (character.combat.weaponAttacks.isEmpty)
               Text(
@@ -661,7 +696,14 @@ class _CombatPanel extends StatelessWidget {
                 ),
               ),
             const SizedBox(height: 8),
-            Text('Death Saves', style: theme.textTheme.titleMedium),
+            Semantics(
+              container: true,
+              header: true,
+              label: 'Death Saves',
+              child: ExcludeSemantics(
+                child: Text('Death Saves', style: theme.textTheme.titleMedium),
+              ),
+            ),
             const SizedBox(height: 8),
             _FactRow(
               label: 'Successes',
@@ -677,63 +719,104 @@ class _CombatPanel extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                OutlinedButton.icon(
-                  onPressed:
-                      isApplyingRest ||
-                          !character.combat.deathSaves.canRecordSuccess
-                      ? null
-                      : () {
-                          onRecordDeathSaveSuccess();
-                        },
-                  icon: const Icon(Icons.add_circle_outline),
-                  label: const Text('Mark success'),
+                Semantics(
+                  container: true,
+                  button: true,
+                  enabled:
+                      !isApplyingRest &&
+                      character.combat.deathSaves.canRecordSuccess,
+                  label: 'Record death save success',
+                  child: OutlinedButton.icon(
+                    onPressed:
+                        isApplyingRest ||
+                            !character.combat.deathSaves.canRecordSuccess
+                        ? null
+                        : () {
+                            onRecordDeathSaveSuccess();
+                          },
+                    icon: const Icon(Icons.add_circle_outline),
+                    label: const Text('Mark success'),
+                  ),
                 ),
-                OutlinedButton.icon(
-                  onPressed:
-                      isApplyingRest ||
-                          !character.combat.deathSaves.canRecordFailure
-                      ? null
-                      : () {
-                          onRecordDeathSaveFailure();
-                        },
-                  icon: const Icon(Icons.highlight_off_outlined),
-                  label: const Text('Mark failure'),
+                Semantics(
+                  container: true,
+                  button: true,
+                  enabled:
+                      !isApplyingRest &&
+                      character.combat.deathSaves.canRecordFailure,
+                  label: 'Record death save failure',
+                  child: OutlinedButton.icon(
+                    onPressed:
+                        isApplyingRest ||
+                            !character.combat.deathSaves.canRecordFailure
+                        ? null
+                        : () {
+                            onRecordDeathSaveFailure();
+                          },
+                    icon: const Icon(Icons.highlight_off_outlined),
+                    label: const Text('Mark failure'),
+                  ),
                 ),
-                OutlinedButton.icon(
-                  onPressed: isApplyingRest
-                      ? null
-                      : () {
-                          onResetDeathSaves();
-                        },
-                  icon: const Icon(Icons.refresh_outlined),
-                  label: const Text('Reset death saves'),
+                Semantics(
+                  container: true,
+                  button: true,
+                  enabled: !isApplyingRest,
+                  label: 'Reset death saves',
+                  child: OutlinedButton.icon(
+                    onPressed: isApplyingRest
+                        ? null
+                        : () {
+                            onResetDeathSaves();
+                          },
+                    icon: const Icon(Icons.refresh_outlined),
+                    label: const Text('Reset death saves'),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            Text('Recovery', style: theme.textTheme.titleMedium),
+            Semantics(
+              container: true,
+              header: true,
+              label: 'Recovery',
+              child: ExcludeSemantics(
+                child: Text('Recovery', style: theme.textTheme.titleMedium),
+              ),
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                OutlinedButton.icon(
-                  onPressed: isApplyingRest || !supportsShortRestRecovery
-                      ? null
-                      : () {
-                          onApplyShortRest();
-                        },
-                  icon: const Icon(Icons.timer_outlined),
-                  label: const Text('Apply short rest'),
+                Semantics(
+                  container: true,
+                  button: true,
+                  enabled: !isApplyingRest && supportsShortRestRecovery,
+                  label: 'Apply short rest',
+                  child: OutlinedButton.icon(
+                    onPressed: isApplyingRest || !supportsShortRestRecovery
+                        ? null
+                        : () {
+                            onApplyShortRest();
+                          },
+                    icon: const Icon(Icons.timer_outlined),
+                    label: const Text('Apply short rest'),
+                  ),
                 ),
-                OutlinedButton.icon(
-                  onPressed: isApplyingRest
-                      ? null
-                      : () {
-                          onApplyLongRest();
-                        },
-                  icon: const Icon(Icons.bed_outlined),
-                  label: const Text('Apply long rest'),
+                Semantics(
+                  container: true,
+                  button: true,
+                  enabled: !isApplyingRest,
+                  label: 'Apply long rest',
+                  child: OutlinedButton.icon(
+                    onPressed: isApplyingRest
+                        ? null
+                        : () {
+                            onApplyLongRest();
+                          },
+                    icon: const Icon(Icons.bed_outlined),
+                    label: const Text('Apply long rest'),
+                  ),
                 ),
               ],
             ),
@@ -747,7 +830,17 @@ class _CombatPanel extends StatelessWidget {
               ),
             if (character.combat.classResources.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text('Class resources', style: theme.textTheme.titleMedium),
+              Semantics(
+                container: true,
+                header: true,
+                label: 'Class resources',
+                child: ExcludeSemantics(
+                  child: Text(
+                    'Class resources',
+                    style: theme.textTheme.titleMedium,
+                  ),
+                ),
+              ),
               const SizedBox(height: 8),
               ...character.combat.classResources.map(
                 (resource) => _ClassResourceRow(
@@ -770,7 +863,17 @@ class _CombatPanel extends StatelessWidget {
             ],
             if (character.combat.savingThrows.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text('Saving Throws', style: theme.textTheme.titleMedium),
+              Semantics(
+                container: true,
+                header: true,
+                label: 'Saving Throws',
+                child: ExcludeSemantics(
+                  child: Text(
+                    'Saving Throws',
+                    style: theme.textTheme.titleMedium,
+                  ),
+                ),
+              ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -1165,30 +1268,46 @@ class _SpellsPanel extends StatelessWidget {
                           return Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              ActionChip(
-                                label: Text('Spend $index'),
-                                onPressed: isApplyingRest || isSpent
-                                    ? null
-                                    : () {
-                                        onSpendSpellSlot(
-                                          spellLevel: slot.spellLevel,
-                                          slotIndex: slot.slotIndex,
-                                        );
-                                      },
-                                disabledColor: Colors.grey.shade200,
-                              ),
-                              if (isSpent) ...[
-                                const SizedBox(width: 4),
-                                ActionChip(
-                                  label: const Text('Restore'),
-                                  onPressed: isApplyingRest
+                              Semantics(
+                                container: true,
+                                button: true,
+                                enabled: !isApplyingRest && !isSpent,
+                                label: 'Spend slot $index',
+                                child: ActionChip(
+                                  label: ExcludeSemantics(
+                                    child: Text('Spend $index'),
+                                  ),
+                                  onPressed: isApplyingRest || isSpent
                                       ? null
                                       : () {
-                                          onRestoreSpellSlot(
+                                          onSpendSpellSlot(
                                             spellLevel: slot.spellLevel,
                                             slotIndex: slot.slotIndex,
                                           );
                                         },
+                                  disabledColor: Colors.grey.shade200,
+                                ),
+                              ),
+                              if (isSpent) ...[
+                                const SizedBox(width: 4),
+                                Semantics(
+                                  container: true,
+                                  button: true,
+                                  enabled: !isApplyingRest,
+                                  label: 'Restore slot $index',
+                                  child: ActionChip(
+                                    label: const ExcludeSemantics(
+                                      child: Text('Restore'),
+                                    ),
+                                    onPressed: isApplyingRest
+                                        ? null
+                                        : () {
+                                            onRestoreSpellSlot(
+                                              spellLevel: slot.spellLevel,
+                                              slotIndex: slot.slotIndex,
+                                            );
+                                          },
+                                  ),
                                 ),
                               ],
                             ],
@@ -1200,29 +1319,51 @@ class _SpellsPanel extends StatelessWidget {
                 ),
               ),
             const SizedBox(height: 8),
-            Text('Session recovery', style: theme.textTheme.titleMedium),
+            Semantics(
+              container: true,
+              header: true,
+              label: 'Session recovery',
+              child: ExcludeSemantics(
+                child: Text(
+                  'Session recovery',
+                  style: theme.textTheme.titleMedium,
+                ),
+              ),
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                OutlinedButton.icon(
-                  onPressed: isApplyingRest || !supportsShortRestRecovery
-                      ? null
-                      : () {
-                          onApplyShortRest();
-                        },
-                  icon: const Icon(Icons.timer_outlined),
-                  label: const Text('Apply short rest'),
+                Semantics(
+                  container: true,
+                  button: true,
+                  enabled: !isApplyingRest && supportsShortRestRecovery,
+                  label: 'Apply short rest',
+                  child: OutlinedButton.icon(
+                    onPressed: isApplyingRest || !supportsShortRestRecovery
+                        ? null
+                        : () {
+                            onApplyShortRest();
+                          },
+                    icon: const Icon(Icons.timer_outlined),
+                    label: const Text('Apply short rest'),
+                  ),
                 ),
-                OutlinedButton.icon(
-                  onPressed: isApplyingRest
-                      ? null
-                      : () {
-                          onApplyLongRest();
-                        },
-                  icon: const Icon(Icons.bed_outlined),
-                  label: const Text('Apply long rest'),
+                Semantics(
+                  container: true,
+                  button: true,
+                  enabled: !isApplyingRest,
+                  label: 'Apply long rest',
+                  child: OutlinedButton.icon(
+                    onPressed: isApplyingRest
+                        ? null
+                        : () {
+                            onApplyLongRest();
+                          },
+                    icon: const Icon(Icons.bed_outlined),
+                    label: const Text('Apply long rest'),
+                  ),
                 ),
               ],
             ),
@@ -1257,8 +1398,15 @@ class _SpellsPanel extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       ...levelGroup.spells.map(
-                        (spell) => Text(
-                          '• ${spell.name} (${spell.school}, ${spell.castingTime})',
+                        (spell) => Semantics(
+                          container: true,
+                          label:
+                              '${spell.name} (${spell.school}, ${spell.castingTime})',
+                          child: ExcludeSemantics(
+                            child: Text(
+                              '• ${spell.name} (${spell.school}, ${spell.castingTime})',
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -1277,6 +1425,7 @@ class _EquipmentPanel extends StatelessWidget {
     required this.character,
     required this.isUpdating,
     required this.errorMessage,
+    required this.onManageContainers,
     required this.onSetInventoryItemEquipped,
     required this.onSetInventoryItemCarried,
     required this.onSetInventoryItemQuantity,
@@ -1291,6 +1440,7 @@ class _EquipmentPanel extends StatelessWidget {
   final CharacterDomainModel character;
   final bool isUpdating;
   final String? errorMessage;
+  final Future<void> Function() onManageContainers;
   final Future<void> Function(String inventoryItemId, bool isEquipped)
   onSetInventoryItemEquipped;
   final Future<void> Function(String inventoryItemId, bool isCarried)
@@ -1313,7 +1463,11 @@ class _EquipmentPanel extends StatelessWidget {
   final Future<void> Function(String itemId, int quantity) onSplitStack;
   final Future<void> Function(List<String> stackIds, int quantity)
   onMergeStacks;
-  final Future<void> Function(String sourceItemId, int quantity)
+  final Future<void> Function(
+    String sourceItemId,
+    String targetContainerInventoryItemId,
+    int quantity,
+  )
   onTransferToContainer;
 
   @override
@@ -1374,6 +1528,20 @@ class _EquipmentPanel extends StatelessWidget {
               character.equipment.carrying.tierDescription,
               style: theme.textTheme.bodySmall,
             ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Semantics(
+                container: true,
+                button: true,
+                label: 'Manage containers',
+                child: OutlinedButton.icon(
+                  onPressed: onManageContainers,
+                  icon: const Icon(Icons.inventory_2_outlined),
+                  label: const Text('Manage containers'),
+                ),
+              ),
+            ),
             const SizedBox(height: 10),
             if (errorMessage != null) ...[
               Container(
@@ -1431,7 +1599,31 @@ class _EquipmentPanel extends StatelessWidget {
                 },
                 onSplitStack: onSplitStack,
                 onMergeStacks: onMergeStacks,
-                onTransferToContainer: onTransferToContainer,
+                onTransferToContainer: (sourceItemId, quantity) async {
+                  await showDialog<void>(
+                    context: context,
+                    builder: (dialogContext) => TransferToContainerDialog(
+                      sourceItemId: sourceItemId,
+                      sourceQuantity: quantity,
+                      sourceName: item.name,
+                      onDismiss: () {
+                        Navigator.of(dialogContext).pop();
+                      },
+                      onTransfer:
+                          (containerId, containerName, transferQuantity) async {
+                            await onTransferToContainer(
+                              item.id,
+                              containerId,
+                              transferQuantity,
+                            );
+                          },
+                      containers: character.equipment.items
+                          .where((candidate) => candidate.id != item.id)
+                          .where((candidate) => candidate.isContainer)
+                          .toList(growable: false),
+                    ),
+                  );
+                },
               ),
             ),
           ],
@@ -1502,24 +1694,42 @@ class _InventoryItemRow extends StatelessWidget {
           const SizedBox(height: 2),
           Row(
             children: [
-              IconButton(
-                onPressed: isUpdating || item.quantity <= 0
-                    ? null
-                    : onDecreaseQuantity,
-                icon: const Icon(Icons.remove_circle_outline),
+              Semantics(
+                container: true,
+                button: true,
+                enabled: !isUpdating && item.quantity > 0,
+                label: 'Decrease quantity',
+                child: IconButton(
+                  onPressed: isUpdating || item.quantity <= 0
+                      ? null
+                      : onDecreaseQuantity,
+                  icon: const Icon(Icons.remove_circle_outline),
+                ),
               ),
               Text('Qty ${item.quantity}'),
-              IconButton(
-                onPressed: isUpdating ? null : onIncreaseQuantity,
-                icon: const Icon(Icons.add_circle_outline),
+              Semantics(
+                container: true,
+                button: true,
+                enabled: !isUpdating,
+                label: 'Increase quantity',
+                child: IconButton(
+                  onPressed: isUpdating ? null : onIncreaseQuantity,
+                  icon: const Icon(Icons.add_circle_outline),
+                ),
               ),
               if (item.isConsumable || item.isAmmunition) ...[
                 const SizedBox(width: 8),
-                ActionChip(
-                  label: const Text('Spend 1'),
-                  onPressed: isUpdating || item.safeQuantity <= 0
-                      ? null
-                      : onSpendQuantity,
+                Semantics(
+                  container: true,
+                  button: true,
+                  enabled: !isUpdating && item.safeQuantity > 0,
+                  label: 'Spend 1',
+                  child: ActionChip(
+                    label: const ExcludeSemantics(child: Text('Spend 1')),
+                    onPressed: isUpdating || item.safeQuantity <= 0
+                        ? null
+                        : onSpendQuantity,
+                  ),
                 ),
               ],
               const SizedBox(width: 12),
@@ -1530,33 +1740,58 @@ class _InventoryItemRow extends StatelessWidget {
             spacing: 10,
             runSpacing: 4,
             children: [
-              FilterChip(
-                label: const Text('Equipped'),
+              Semantics(
+                container: true,
+                button: true,
                 selected: item.isEquipped,
-                onSelected: isUpdating ? null : onSetEquipped,
+                label: 'Toggle equipped',
+                child: FilterChip(
+                  label: const ExcludeSemantics(child: Text('Equipped')),
+                  selected: item.isEquipped,
+                  onSelected: isUpdating ? null : onSetEquipped,
+                ),
               ),
-              FilterChip(
-                label: const Text('Carried'),
+              Semantics(
+                container: true,
+                button: true,
                 selected: item.isCarried,
-                onSelected: isUpdating ? null : onSetCarried,
+                label: 'Toggle carried',
+                child: FilterChip(
+                  label: const ExcludeSemantics(child: Text('Carried')),
+                  selected: item.isCarried,
+                  onSelected: isUpdating ? null : onSetCarried,
+                ),
               ),
               if (item.hasCharges)
-                ActionChip(
-                  label: const Text('Clear charges'),
-                  onPressed: isUpdating
-                      ? null
-                      : () {
-                          onSetCharges(chargesCurrent: null, chargesMax: null);
-                        },
+                Semantics(
+                  container: true,
+                  button: true,
+                  label: 'Clear charges',
+                  child: ActionChip(
+                    label: const ExcludeSemantics(child: Text('Clear charges')),
+                    onPressed: isUpdating
+                        ? null
+                        : () {
+                            onSetCharges(
+                              chargesCurrent: null,
+                              chargesMax: null,
+                            );
+                          },
+                  ),
                 )
               else
-                ActionChip(
-                  label: const Text('Track charges'),
-                  onPressed: isUpdating
-                      ? null
-                      : () {
-                          onSetCharges(chargesCurrent: 1, chargesMax: 1);
-                        },
+                Semantics(
+                  container: true,
+                  button: true,
+                  label: 'Track charges',
+                  child: ActionChip(
+                    label: const ExcludeSemantics(child: Text('Track charges')),
+                    onPressed: isUpdating
+                        ? null
+                        : () {
+                            onSetCharges(chargesCurrent: 1, chargesMax: 1);
+                          },
+                  ),
                 ),
             ],
           ),
@@ -1565,30 +1800,45 @@ class _InventoryItemRow extends StatelessWidget {
             children: [
               Text('Charges: ${item.chargesLabel}'),
               if (item.hasCharges) ...[
-                IconButton(
-                  onPressed: isUpdating || item.safeChargesCurrent <= 0
-                      ? null
-                      : () {
-                          onSetCharges(
-                            chargesCurrent: item.safeChargesCurrent - 1,
-                            chargesMax: item.chargesMax,
-                          );
-                        },
-                  icon: const Icon(Icons.remove_circle_outline),
+                Semantics(
+                  container: true,
+                  button: true,
+                  enabled: !isUpdating && item.safeChargesCurrent > 0,
+                  label: 'Decrease charges',
+                  child: IconButton(
+                    onPressed: isUpdating || item.safeChargesCurrent <= 0
+                        ? null
+                        : () {
+                            onSetCharges(
+                              chargesCurrent: item.safeChargesCurrent - 1,
+                              chargesMax: item.chargesMax,
+                            );
+                          },
+                    icon: const Icon(Icons.remove_circle_outline),
+                  ),
                 ),
-                IconButton(
-                  onPressed:
-                      isUpdating ||
-                          item.chargesMax == null ||
-                          item.safeChargesCurrent >= item.chargesMax!
-                      ? null
-                      : () {
-                          onSetCharges(
-                            chargesCurrent: item.safeChargesCurrent + 1,
-                            chargesMax: item.chargesMax,
-                          );
-                        },
-                  icon: const Icon(Icons.add_circle_outline),
+                Semantics(
+                  container: true,
+                  button: true,
+                  enabled:
+                      !isUpdating &&
+                      (item.chargesMax == null ||
+                          item.safeChargesCurrent < item.chargesMax!),
+                  label: 'Increase charges',
+                  child: IconButton(
+                    onPressed:
+                        isUpdating ||
+                            item.chargesMax == null ||
+                            item.safeChargesCurrent >= item.chargesMax!
+                        ? null
+                        : () {
+                            onSetCharges(
+                              chargesCurrent: item.safeChargesCurrent + 1,
+                              chargesMax: item.chargesMax,
+                            );
+                          },
+                    icon: const Icon(Icons.add_circle_outline),
+                  ),
                 ),
               ],
             ],
@@ -1603,29 +1853,36 @@ class _InventoryItemRow extends StatelessWidget {
           ],
           if (!item.isContainer) ...[
             const SizedBox(height: 8),
-            DropdownButtonFormField<String?>(
-              initialValue: selectedContainerId,
-              decoration: const InputDecoration(
-                labelText: 'Container',
-                isDense: true,
-              ),
-              items: <DropdownMenuItem<String?>>[
-                const DropdownMenuItem<String?>(
-                  value: null,
-                  child: Text('None'),
-                ),
-                ...containers.map(
-                  (container) => DropdownMenuItem<String?>(
-                    value: container.id,
-                    child: Text(container.name),
+            Semantics(
+              container: true,
+              explicitChildNodes: true,
+              label: 'Select container',
+              child: ExcludeSemantics(
+                child: DropdownButtonFormField<String?>(
+                  initialValue: selectedContainerId,
+                  decoration: const InputDecoration(
+                    labelText: 'Container',
+                    isDense: true,
                   ),
+                  items: <DropdownMenuItem<String?>>[
+                    const DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('None'),
+                    ),
+                    ...containers.map(
+                      (container) => DropdownMenuItem<String?>(
+                        value: container.id,
+                        child: Text(container.name),
+                      ),
+                    ),
+                  ],
+                  onChanged: isUpdating
+                      ? null
+                      : (value) {
+                          onSetContainer(value);
+                        },
                 ),
-              ],
-              onChanged: isUpdating
-                  ? null
-                  : (value) {
-                      onSetContainer(value);
-                    },
+              ),
             ),
             // Stack operation buttons (split/merge/transfer) - only for non-container items
             if (!item.isContainer && item.quantity > 1) ...[
@@ -1633,30 +1890,49 @@ class _InventoryItemRow extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: isUpdating || item.quantity <= 1
-                        ? null
-                        : () => onSplitStack(item.id, item.quantity ~/ 2),
-                    icon: const Icon(Icons.call_split),
-                    tooltip: 'Split stack',
+                  Semantics(
+                    container: true,
+                    button: true,
+                    enabled: !isUpdating && item.quantity > 1,
+                    label: 'Split stack',
+                    child: IconButton(
+                      onPressed: isUpdating || item.quantity <= 1
+                          ? null
+                          : () => onSplitStack(item.id, item.quantity ~/ 2),
+                      icon: const Icon(Icons.call_split),
+                      tooltip: 'Split stack',
+                    ),
                   ),
                   if (containers.isNotEmpty) ...[
-                    IconButton(
-                      onPressed: isUpdating
-                          ? null
-                          : () => onTransferToContainer(item.id, item.quantity),
-                      icon: const Icon(Icons.inventory_2_outlined),
-                      tooltip: 'Transfer to container',
+                    Semantics(
+                      container: true,
+                      button: true,
+                      enabled: !isUpdating,
+                      label: 'Transfer to container',
+                      child: IconButton(
+                        onPressed: isUpdating
+                            ? null
+                            : () =>
+                                  onTransferToContainer(item.id, item.quantity),
+                        icon: const Icon(Icons.inventory_2_outlined),
+                        tooltip: 'Transfer to container',
+                      ),
                     ),
-                    IconButton(
-                      onPressed: isUpdating
-                          ? null
-                          : () => onMergeStacks([
-                              item.id,
-                              ...containers.map((c) => c.id),
-                            ], item.quantity),
-                      icon: const Icon(Icons.merge_type),
-                      tooltip: 'Merge with containers',
+                    Semantics(
+                      container: true,
+                      button: true,
+                      enabled: !isUpdating,
+                      label: 'Merge with containers',
+                      child: IconButton(
+                        onPressed: isUpdating
+                            ? null
+                            : () => onMergeStacks([
+                                item.id,
+                                ...containers.map((c) => c.id),
+                              ], item.quantity),
+                        icon: const Icon(Icons.merge_type),
+                        tooltip: 'Merge with containers',
+                      ),
                     ),
                   ],
                 ],

@@ -116,6 +116,8 @@ Future<void> restoreSpellSlot(
     String? containerInventoryItemId,
   );
 
+  Future<String> createContainer(String id, String name);
+
   Future<CharacterDomainModel?> getCharacterSheetById(String id);
 
   Stream<CharacterDomainModel?> watchCharacterSheetById(String id);

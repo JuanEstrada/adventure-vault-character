@@ -18,13 +18,15 @@ class CharacterRecoveryService {
     CharacterClassResourceRules characterClassResourceRules =
         const CharacterClassResourceRules(),
     CharacterCombatRules characterCombatRules = const CharacterCombatRules(),
+    void Function(String characterId)? onCharacterChanged,
   }) : _database = database,
        _readDao = readDao,
        _writeDao = writeDao,
        _characterRestRules = characterRestRules,
        _characterSpellRules = characterSpellRules,
        _characterClassResourceRules = characterClassResourceRules,
-       _characterCombatRules = characterCombatRules;
+       _characterCombatRules = characterCombatRules,
+       _onCharacterChanged = onCharacterChanged;
 
   final AppDatabase _database;
   final CharacterReadDao _readDao;
@@ -33,6 +35,7 @@ class CharacterRecoveryService {
   final CharacterSpellRules _characterSpellRules;
   final CharacterClassResourceRules _characterClassResourceRules;
   final CharacterCombatRules _characterCombatRules;
+  final void Function(String characterId)? _onCharacterChanged;
 
   Future<void> applyShortRest(String id) {
     return _applyRecovery(id, isLongRest: false);
@@ -96,6 +99,8 @@ class CharacterRecoveryService {
           .toList(growable: false);
       await _writeDao.insertClassResources(companions);
     });
+
+    _onCharacterChanged?.call(id);
   }
 
   Future<void> spendSpellSlot(
@@ -173,6 +178,8 @@ class CharacterRecoveryService {
         );
       }
     });
+
+    _onCharacterChanged?.call(id);
   }
 
   Future<void> restoreSpellSlot(
@@ -254,6 +261,8 @@ class CharacterRecoveryService {
         );
       }
     });
+
+    _onCharacterChanged?.call(id);
   }
 
   String _serializeExpendedSlotIndices({
@@ -402,5 +411,7 @@ class CharacterRecoveryService {
         }
       }
     });
+
+    _onCharacterChanged?.call(id);
   }
 }

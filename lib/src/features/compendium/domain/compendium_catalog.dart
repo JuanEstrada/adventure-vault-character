@@ -266,6 +266,110 @@ class CompendiumCatalog {
 }
 
 @immutable
+class CompendiumEntry {
+  const CompendiumEntry({
+    required this.id,
+    required this.name,
+    required this.category,
+    this.type,
+    this.source,
+    this.packId,
+  });
+
+  final String id;
+  final String name;
+  final String category;
+  final String? type;
+  final String? source;
+  final String? packId;
+}
+
+extension CompendiumCatalogEntries on CompendiumCatalog {
+  List<CompendiumEntry> entries() {
+    final entries = <CompendiumEntry>[
+      ...races.map(
+        (raceName) => CompendiumEntry(
+          id: _slug(raceName),
+          name: raceName,
+          category: 'race',
+          type: 'race',
+          source: 'unknown',
+        ),
+      ),
+      ...classes.map(
+        (className) => CompendiumEntry(
+          id: _slug(className),
+          name: className,
+          category: 'class',
+          type: 'class',
+          source: 'bundled-base-compendium',
+        ),
+      ),
+      ...backgrounds.map(
+        (background) => CompendiumEntry(
+          id: background.id,
+          name: background.name,
+          category: 'background',
+          type: 'background',
+          source: 'unknown',
+          packId: background.packId,
+        ),
+      ),
+      ...narrativeOptionGroups.map(
+        (group) => CompendiumEntry(
+          id: group.id,
+          name: group.title,
+          category: 'narrative_option',
+          type: 'narrative_option',
+          source:
+              group.sourceBook ??
+              (group.sourceType.trim().toLowerCase() == 'base'
+                  ? 'unknown'
+                  : group.sourceType),
+          packId: group.packId,
+        ),
+      ),
+      ...spells.map(
+        (spell) => CompendiumEntry(
+          id: spell.id,
+          name: spell.name,
+          category: 'spell',
+          type: 'spell',
+          source: spell.source,
+          packId: spell.packId,
+        ),
+      ),
+      ...feats.map(
+        (feat) => CompendiumEntry(
+          id: _slug(feat.name),
+          name: feat.name,
+          category: 'feat',
+          type: 'feat',
+          source: feat.source,
+          packId: feat.packId,
+        ),
+      ),
+      ...monsters.map(
+        (monster) => CompendiumEntry(
+          id: _slug(monster.name),
+          name: monster.name,
+          category: 'monster',
+          type: 'monster',
+          source: monster.source,
+          packId: monster.packId,
+        ),
+      ),
+    ];
+
+    return List<CompendiumEntry>.unmodifiable(entries);
+  }
+
+  String _slug(String value) {
+    return value.trim().toLowerCase().replaceAll(RegExp(r'\\s+'), '-');
+  }
+}
+
+@immutable
 class CompendiumPackStateModel {
   const CompendiumPackStateModel({
     required this.id,

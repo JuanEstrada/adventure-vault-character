@@ -4,18 +4,25 @@ import 'package:flutter/material.dart';
 /// Dialog for transferring an inventory stack to a container
 class TransferToContainerDialog extends StatefulWidget {
   final String sourceItemId;
-  final String? sourceName;
   final int sourceQuantity;
+  final String sourceName;
   final VoidCallback onDismiss;
-  final Function(String containerId, int quantity) onTransfer;
+  final Future<void> Function(
+    String containerId,
+    String containerName,
+    int quantity,
+  )
+  onTransfer;
+  final List<CharacterEquipmentItemDomainModel> containers;
 
   const TransferToContainerDialog({
     super.key,
     required this.sourceItemId,
-    this.sourceName,
     required this.sourceQuantity,
+    required this.sourceName,
     required this.onDismiss,
     required this.onTransfer,
+    required this.containers,
   });
 
   @override
@@ -25,10 +32,11 @@ class TransferToContainerDialog extends StatefulWidget {
 
 class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
   late TextEditingController _quantityController;
+  late final FocusNode _quantityFocusNode;
   int _transferQuantity = 0;
   bool _isTransferring = false;
   String? _error;
-  List<CharacterEquipmentItemDomainModel> _containers = [];
+  List<dynamic> _containers = [];
   String? _selectedContainerId;
   String _selectedContainerName = 'Select container';
 
@@ -39,57 +47,15 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
     _quantityController = TextEditingController(
       text: _transferQuantity.toString(),
     );
+    _quantityFocusNode = FocusNode(debugLabel: 'TransferToContainerQuantity');
     _fetchContainers();
   }
 
   Future<void> _fetchContainers() async {
-    // Placeholder - containers should be fetched from repository
-    // For now, using static sample data
     setState(() {
-      _containers = [
-        CharacterEquipmentItemDomainModel(
-          id: 'char-1-container-1',
-          name: 'Backpack',
-          quantity: 999,
-          isEquipped: false,
-          isCarried: true,
-          isFavorite: false,
-          weightPerUnit: 5,
-          isContainer: true,
-          chargesMax: null,
-          chargesCurrent: null,
-          containerDisplayName: 'Backpack',
-          containerInventoryItemId: null,
-        ),
-        CharacterEquipmentItemDomainModel(
-          id: 'char-1-container-2',
-          name: 'Pouch',
-          quantity: 999,
-          isEquipped: false,
-          isCarried: true,
-          isFavorite: false,
-          weightPerUnit: 1,
-          isContainer: true,
-          chargesMax: null,
-          chargesCurrent: null,
-          containerDisplayName: 'Pouch',
-          containerInventoryItemId: null,
-        ),
-        CharacterEquipmentItemDomainModel(
-          id: 'char-1-container-3',
-          name: 'Bag of Holding',
-          quantity: 999,
-          isEquipped: false,
-          isCarried: true,
-          isFavorite: false,
-          weightPerUnit: 1,
-          isContainer: true,
-          chargesMax: null,
-          chargesCurrent: null,
-          containerDisplayName: 'Bag of Holding',
-          containerInventoryItemId: null,
-        ),
-      ];
+      _containers = widget.containers
+          .map((container) => {'id': container.id, 'name': container.name})
+          .toList(growable: false);
     });
   }
 
@@ -104,7 +70,7 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
     });
   }
 
-  void _validateAndTransfer() {
+  Future<void> _validateAndTransfer() async {
     if (_error != null) {
       setState(() => _error = null);
     }
@@ -139,106 +105,173 @@ class _TransferToContainerDialogState extends State<TransferToContainerDialog> {
       _error = null;
     });
 
-    widget.onTransfer(_selectedContainerId!, _transferQuantity);
-
-    Future.delayed(const Duration(milliseconds: 100), () {
+    try {
+      await widget.onTransfer(
+        _selectedContainerId!,
+        _selectedContainerName,
+        transferQuantity,
+      );
+      if (!mounted) {
+        return;
+      }
       widget.onDismiss();
-    });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isTransferring = false;
+        _error = error is String ? error : 'Transfer failed.';
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Transfer to Container'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Transfer from: ${widget.sourceName ?? widget.sourceItemId} (${widget.sourceQuantity})',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Select container:',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          if (_selectedContainerId != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Selected container: $_selectedContainerName',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _containers.map((container) {
-              final isSelected = _selectedContainerId == container.id;
-              return ChoiceChip(
-                label: Text(container.name),
-                selected: isSelected,
-                onSelected: (selected) {
-                  if (selected) {
-                    _selectContainer(container.id, container.name);
-                  }
-                },
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 16),
-          if (_error != null)
-            Text(
-              _error!,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.red),
-            ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _quantityController,
-            keyboardType: TextInputType.number,
-            maxLength: 5,
-            textAlign: TextAlign.center,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              hintText: 'Amount to transfer',
-              errorText: _error,
-            ),
-            onChanged: (value) {
-              final parsed = int.tryParse(value);
-              setState(() {
-                _transferQuantity = parsed ?? 0;
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-          Row(
+    return FocusScope(
+      autofocus: true,
+      child: Semantics(
+        container: true,
+        explicitChildNodes: true,
+        namesRoute: true,
+        label: 'Transfer to container dialog',
+        child: AlertDialog(
+          semanticLabel: 'Transfer to container dialog',
+          title: const Text('Transfer to Container'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  'After: ${widget.sourceQuantity - _transferQuantity}',
-                  style: Theme.of(context).textTheme.bodySmall,
+              Semantics(
+                container: true,
+                label:
+                    'Source item ${widget.sourceName}, quantity ${widget.sourceQuantity}',
+                child: ExcludeSemantics(
+                  child: Text(
+                    'Transfer from: ${widget.sourceName} (${widget.sourceQuantity})',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Semantics(
+                container: true,
+                label: 'Select container',
+                child: ExcludeSemantics(
+                  child: Text(
+                    'Select container:',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _containers.map((container) {
+                  final isSelected = _selectedContainerId == container['id'];
+                  return Semantics(
+                    container: true,
+                    button: true,
+                    selected: isSelected,
+                    label: 'Container ${container['name'] as String}',
+                    child: ChoiceChip(
+                      label: Text(container['name'] as String),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        if (selected) {
+                          _selectContainer(
+                            container['id'] as String,
+                            container['name'] as String,
+                          );
+                        }
+                      },
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+              if (_error != null)
+                Semantics(
+                  container: true,
+                  liveRegion: true,
+                  label: _error!,
+                  child: ExcludeSemantics(
+                    child: Text(
+                      _error!,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.red),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 8),
+              Semantics(
+                container: true,
+                label: 'Transfer quantity',
+                child: TextField(
+                  controller: _quantityController,
+                  focusNode: _quantityFocusNode,
+                  autofocus: true,
+                  keyboardType: TextInputType.number,
+                  maxLength: 5,
+                  textAlign: TextAlign.center,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    hintText: 'Amount to transfer',
+                    errorText: _error,
+                  ),
+                  onChanged: (value) {
+                    final parsed = int.tryParse(value);
+                    setState(() {
+                      _transferQuantity = parsed ?? 0;
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              Semantics(
+                container: true,
+                label: 'After: ${widget.sourceQuantity - _transferQuantity}',
+                child: ExcludeSemantics(
+                  child: Text(
+                    'After: ${widget.sourceQuantity - _transferQuantity}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ),
               ),
             ],
           ),
-        ],
-      ),
-      actions: [
-        TextButton(onPressed: widget.onDismiss, child: const Text('Cancel')),
-        ElevatedButton(
-          onPressed: _isTransferring ? null : _validateAndTransfer,
-          child: const Text('Transfer'),
+          actions: [
+            Semantics(
+              container: true,
+              button: true,
+              label: 'Cancel transfer',
+              child: TextButton(
+                onPressed: widget.onDismiss,
+                child: const Text('Cancel'),
+              ),
+            ),
+            Semantics(
+              container: true,
+              button: true,
+              enabled: !_isTransferring,
+              label: 'Transfer to container',
+              child: ElevatedButton(
+                onPressed: _isTransferring ? null : _validateAndTransfer,
+                child: const Text('Transfer'),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
   @override
   void dispose() {
     _quantityController.dispose();
+    _quantityFocusNode.dispose();
     super.dispose();
   }
 }

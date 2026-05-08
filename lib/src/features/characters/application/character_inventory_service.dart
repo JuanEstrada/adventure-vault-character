@@ -12,13 +12,16 @@ class CharacterInventoryService {
     required AppDatabase database,
     required CharacterReadDao readDao,
     required CharacterWriteDao writeDao,
+    void Function(String characterId)? onCharacterChanged,
   }) : _database = database,
        _readDao = readDao,
-       _writeDao = writeDao;
+       _writeDao = writeDao,
+       _onCharacterChanged = onCharacterChanged;
 
   final AppDatabase _database;
   final CharacterReadDao _readDao;
   final CharacterWriteDao _writeDao;
+  final void Function(String characterId)? _onCharacterChanged;
 
   Future<void> setInventoryItemEquipped(
     String id,
@@ -185,7 +188,7 @@ class CharacterInventoryService {
       throw StateError('Character not found.');
     }
 
-    return _database.transaction(() async {
+    final removed = await _database.transaction(() async {
       final removed = await _writeDao.deleteZeroQuantityInventoryByCharacterId(
         id,
       );
@@ -197,6 +200,9 @@ class CharacterInventoryService {
       }
       return removed;
     });
+
+    _onCharacterChanged?.call(id);
+    return removed;
   }
 
   Future<String> transferInventoryItemStackToContainer(
@@ -447,6 +453,7 @@ class CharacterInventoryService {
       );
     });
 
+    _onCharacterChanged?.call(id);
     return transferredStackId;
   }
 
@@ -576,6 +583,74 @@ class CharacterInventoryService {
       inventoryItemId,
       containerInventoryItemId: Value(normalizedContainerId),
     );
+  }
+
+  Future<String> createContainer(
+    String id,
+    String containerId,
+    String name,
+  ) async {
+    await _validateContainerCreation(id, containerId, name);
+
+    await _database.transaction(() async {
+      final now = DateTime.now();
+      await _writeDao.updateCharacter(
+        id,
+        CharactersCompanion(updatedAt: Value(now)),
+      );
+      await _writeDao.insertInventoryItem(
+        CharacterInventoryCompanion.insert(
+          id: containerId,
+          characterId: id,
+          equipmentDefinitionId: Value(null),
+          trinketDefinitionId: Value(null),
+          displayNameSnapshot: Value(name),
+          quantity: Value(0),
+          isEquipped: Value(false),
+          isCarried: Value(false),
+          isFavorite: Value(false),
+          containerInventoryItemId: Value(null),
+          chargesCurrent: Value(null),
+          chargesMax: Value(null),
+          notes: Value(''),
+        ),
+      );
+    });
+
+    return containerId;
+  }
+
+  Future<void> _validateContainerCreation(
+    String id,
+    String containerId,
+    String name,
+  ) async {
+    if (containerId.isEmpty) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Container ID cannot be empty.',
+      );
+    }
+
+    final normalizedContainerId = containerId.trim();
+    if (normalizedContainerId.isEmpty) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Container name cannot be empty.',
+      );
+    }
+
+    final inventoryItems = await _readDao.getInventoryByCharacterId(id);
+    final itemById = <String, CharacterInventoryData>{
+      for (final item in inventoryItems) item.id: item,
+    };
+    final existingItem = itemById[normalizedContainerId];
+    if (existingItem != null) {
+      throw const CharacterInventoryValidationError(
+        'invalid_structure',
+        'A container with this name already exists for this character.',
+      );
+    }
   }
 
   Future<void> _validateContainerAssignment(
@@ -717,6 +792,8 @@ class CharacterInventoryService {
         ),
       );
     });
+
+    _onCharacterChanged?.call(id);
   }
 
   Future<bool> _isStackable(CharacterInventoryData item) async {

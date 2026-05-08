@@ -276,32 +276,51 @@ CompendiumSectionSourcePolicy _appendImportedSourceNote(
   required Map<String, int> acceptedCountsBySection,
   required Map<String, int> duplicatesWithinImportBySection,
 }) {
-  final contributions = contents
-      .map((content) {
-        final count = content.countForSection(section.sectionKey);
-        if (count == 0) {
-          return null;
-        }
-        return '${content.packTitle} ($count)';
-      })
-      .whereType<String>()
-      .toList(growable: false);
+  final importedPackCount = contents.length;
+  if (importedPackCount == 0) {
+    return section;
+  }
+
+  final contributions = section.sectionKey == 'catalog'
+      ? contents
+            .map((content) => '${content.packTitle} ($importedPackCount)')
+            .toList(growable: false)
+      : contents
+            .map((content) {
+              final count = content.countForSection(section.sectionKey);
+              if (count == 0) {
+                return null;
+              }
+              return '${content.packTitle} ($count)';
+            })
+            .whereType<String>()
+            .toList(growable: false);
   if (contributions.isEmpty) {
     return section;
   }
 
-  final attemptedCount = attemptedCountsBySection[section.sectionKey] ?? 0;
-  final acceptedCount = acceptedCountsBySection[section.sectionKey] ?? 0;
+  final attemptedCount = section.sectionKey == 'catalog'
+      ? importedPackCount
+      : attemptedCountsBySection[section.sectionKey] ?? 0;
+  final acceptedCount = section.sectionKey == 'catalog'
+      ? importedPackCount
+      : acceptedCountsBySection[section.sectionKey] ?? 0;
+  final conflictCount = section.sectionKey == 'catalog'
+      ? conflictCountsBySection.values.fold<int>(0, (sum, value) => sum + value)
+      : conflictCountsBySection[section.sectionKey] ?? 0;
+  final duplicateCount = section.sectionKey == 'catalog'
+      ? duplicatesWithinImportBySection.values.fold<int>(
+          0,
+          (sum, value) => sum + value,
+        )
+      : duplicatesWithinImportBySection[section.sectionKey] ?? 0;
   final importedNote =
       'Imported XML packs active: ${contributions.join(', ')}. '
       'Processed entries: $attemptedCount. '
       'Accepted after precedence: $acceptedCount.';
-  final conflictCount = conflictCountsBySection[section.sectionKey] ?? 0;
   final conflictNote = conflictCount == 0
       ? null
       : 'Conflicts skipped by base precedence: $conflictCount.';
-  final duplicateCount =
-      duplicatesWithinImportBySection[section.sectionKey] ?? 0;
   final duplicateNote = duplicateCount == 0
       ? null
       : 'Duplicates skipped within imported XML packs: $duplicateCount.';

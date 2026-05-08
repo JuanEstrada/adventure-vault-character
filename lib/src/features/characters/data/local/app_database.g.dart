@@ -114,6 +114,17 @@ class $CharactersTable extends Characters
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _lastSavedAtMeta = const VerificationMeta(
+    'lastSavedAt',
+  );
+  @override
+  late final GeneratedColumn<int> lastSavedAt = GeneratedColumn<int>(
+    'last_saved_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -126,6 +137,7 @@ class $CharactersTable extends Characters
     experience,
     createdAt,
     updatedAt,
+    lastSavedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -216,6 +228,15 @@ class $CharactersTable extends Characters
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('last_saved_at')) {
+      context.handle(
+        _lastSavedAtMeta,
+        lastSavedAt.isAcceptableOrUnknown(
+          data['last_saved_at']!,
+          _lastSavedAtMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -265,6 +286,10 @@ class $CharactersTable extends Characters
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
+      lastSavedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}last_saved_at'],
+      ),
     );
   }
 
@@ -285,6 +310,7 @@ class Character extends DataClass implements Insertable<Character> {
   final int? experience;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final int? lastSavedAt;
   const Character({
     required this.id,
     required this.name,
@@ -296,6 +322,7 @@ class Character extends DataClass implements Insertable<Character> {
     this.experience,
     required this.createdAt,
     required this.updatedAt,
+    this.lastSavedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -318,6 +345,9 @@ class Character extends DataClass implements Insertable<Character> {
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || lastSavedAt != null) {
+      map['last_saved_at'] = Variable<int>(lastSavedAt);
+    }
     return map;
   }
 
@@ -340,6 +370,9 @@ class Character extends DataClass implements Insertable<Character> {
           : Value(experience),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      lastSavedAt: lastSavedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSavedAt),
     );
   }
 
@@ -363,6 +396,7 @@ class Character extends DataClass implements Insertable<Character> {
       experience: serializer.fromJson<int?>(json['experience']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      lastSavedAt: serializer.fromJson<int?>(json['lastSavedAt']),
     );
   }
   @override
@@ -381,6 +415,7 @@ class Character extends DataClass implements Insertable<Character> {
       'experience': serializer.toJson<int?>(experience),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'lastSavedAt': serializer.toJson<int?>(lastSavedAt),
     };
   }
 
@@ -395,6 +430,7 @@ class Character extends DataClass implements Insertable<Character> {
     Value<int?> experience = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
+    Value<int?> lastSavedAt = const Value.absent(),
   }) => Character(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -410,6 +446,7 @@ class Character extends DataClass implements Insertable<Character> {
     experience: experience.present ? experience.value : this.experience,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    lastSavedAt: lastSavedAt.present ? lastSavedAt.value : this.lastSavedAt,
   );
   Character copyWithCompanion(CharactersCompanion data) {
     return Character(
@@ -429,6 +466,9 @@ class Character extends DataClass implements Insertable<Character> {
           : this.experience,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      lastSavedAt: data.lastSavedAt.present
+          ? data.lastSavedAt.value
+          : this.lastSavedAt,
     );
   }
 
@@ -444,7 +484,8 @@ class Character extends DataClass implements Insertable<Character> {
           ..write('level: $level, ')
           ..write('experience: $experience, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('lastSavedAt: $lastSavedAt')
           ..write(')'))
         .toString();
   }
@@ -461,6 +502,7 @@ class Character extends DataClass implements Insertable<Character> {
     experience,
     createdAt,
     updatedAt,
+    lastSavedAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -475,7 +517,8 @@ class Character extends DataClass implements Insertable<Character> {
           other.level == this.level &&
           other.experience == this.experience &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.lastSavedAt == this.lastSavedAt);
 }
 
 class CharactersCompanion extends UpdateCompanion<Character> {
@@ -489,6 +532,7 @@ class CharactersCompanion extends UpdateCompanion<Character> {
   final Value<int?> experience;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<int?> lastSavedAt;
   final Value<int> rowid;
   const CharactersCompanion({
     this.id = const Value.absent(),
@@ -501,6 +545,7 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     this.experience = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.lastSavedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   CharactersCompanion.insert({
@@ -514,6 +559,7 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     this.experience = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
+    this.lastSavedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -533,6 +579,7 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     Expression<int>? experience,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<int>? lastSavedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -547,6 +594,7 @@ class CharactersCompanion extends UpdateCompanion<Character> {
       if (experience != null) 'experience': experience,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (lastSavedAt != null) 'last_saved_at': lastSavedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -562,6 +610,7 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     Value<int?>? experience,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
+    Value<int?>? lastSavedAt,
     Value<int>? rowid,
   }) {
     return CharactersCompanion(
@@ -576,6 +625,7 @@ class CharactersCompanion extends UpdateCompanion<Character> {
       experience: experience ?? this.experience,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      lastSavedAt: lastSavedAt ?? this.lastSavedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -615,6 +665,9 @@ class CharactersCompanion extends UpdateCompanion<Character> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (lastSavedAt.present) {
+      map['last_saved_at'] = Variable<int>(lastSavedAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -634,6 +687,7 @@ class CharactersCompanion extends UpdateCompanion<Character> {
           ..write('experience: $experience, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('lastSavedAt: $lastSavedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -14321,6 +14375,7 @@ typedef $$CharactersTableCreateCompanionBuilder =
       Value<int?> experience,
       required DateTime createdAt,
       required DateTime updatedAt,
+      Value<int?> lastSavedAt,
       Value<int> rowid,
     });
 typedef $$CharactersTableUpdateCompanionBuilder =
@@ -14335,6 +14390,7 @@ typedef $$CharactersTableUpdateCompanionBuilder =
       Value<int?> experience,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<int?> lastSavedAt,
       Value<int> rowid,
     });
 
@@ -14810,6 +14866,11 @@ class $$CharactersTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get lastSavedAt => $composableBuilder(
+    column: $table.lastSavedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
   Expression<bool> characterAbilityScoresRefs(
     Expression<bool> Function($$CharacterAbilityScoresTableFilterComposer f) f,
   ) {
@@ -15264,6 +15325,11 @@ class $$CharactersTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get lastSavedAt => $composableBuilder(
+    column: $table.lastSavedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CharactersTableAnnotationComposer
@@ -15310,6 +15376,11 @@ class $$CharactersTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get lastSavedAt => $composableBuilder(
+    column: $table.lastSavedAt,
+    builder: (column) => column,
+  );
 
   Expression<T> characterAbilityScoresRefs<T extends Object>(
     Expression<T> Function($$CharacterAbilityScoresTableAnnotationComposer a) f,
@@ -15768,6 +15839,7 @@ class $$CharactersTableTableManager
                 Value<int?> experience = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<int?> lastSavedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CharactersCompanion(
                 id: id,
@@ -15780,6 +15852,7 @@ class $$CharactersTableTableManager
                 experience: experience,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                lastSavedAt: lastSavedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -15794,6 +15867,7 @@ class $$CharactersTableTableManager
                 Value<int?> experience = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
+                Value<int?> lastSavedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CharactersCompanion.insert(
                 id: id,
@@ -15806,6 +15880,7 @@ class $$CharactersTableTableManager
                 experience: experience,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                lastSavedAt: lastSavedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

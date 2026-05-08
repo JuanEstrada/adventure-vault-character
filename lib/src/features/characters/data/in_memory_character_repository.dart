@@ -938,6 +938,43 @@ class InMemoryCharacterRepository implements CharacterRepository {
   }
 
   @override
+  Future<String> createContainer(String id, String name) async {
+    final summary = await getCharacterSummaryById(id);
+    if (summary == null) {
+      throw StateError('Character not found.');
+    }
+
+    final inventory = _inventoryByCharacterId[id];
+    if (inventory == null) {
+      throw StateError('Inventory not found.');
+    }
+
+    final containerId = _nextContainerId(id, inventory);
+    final nextInventory = <_InMemoryInventoryItem>[
+      ...inventory,
+      _InMemoryInventoryItem(
+        id: containerId,
+        name: name,
+        quantity: 0,
+        isStackable: false,
+        isEquipped: false,
+        isCarried: false,
+        isFavorite: false,
+        weightPerUnit: null,
+        isContainer: true,
+        chargesCurrent: null,
+        chargesMax: null,
+        containerInventoryItemId: null,
+      ),
+    ];
+
+    _validateProjectedInventoryInMemory(nextInventory);
+    _inventoryByCharacterId[id] = nextInventory;
+    _changes.add(null);
+    return containerId;
+  }
+
+  @override
   Future<CharacterDomainModel?> getCharacterSheetById(String id) async {
     final summary = await getCharacterSummaryById(id);
     if (summary == null) {
@@ -1602,6 +1639,25 @@ class InMemoryCharacterRepository implements CharacterRepository {
     return '$characterId-inventory-$nextIndex';
   }
 
+  String _nextContainerId(
+    String characterId,
+    List<_InMemoryInventoryItem> inventory,
+  ) {
+    var nextIndex = 1;
+    final pattern = RegExp('^${RegExp.escape(characterId)}-container-(\\d+)');
+    for (final item in inventory) {
+      final match = pattern.firstMatch(item.id);
+      if (match == null) {
+        continue;
+      }
+      final parsed = int.tryParse(match.group(1) ?? '');
+      if (parsed != null && parsed >= nextIndex) {
+        nextIndex = parsed + 1;
+      }
+    }
+    return '$characterId-container-$nextIndex';
+  }
+
   _InMemoryInventoryItem _inventoryItemById(String characterId, String itemId) {
     final inventory = _inventoryByCharacterId[characterId];
     if (inventory == null) {
@@ -1928,8 +1984,7 @@ class InMemoryCharacterRepository implements CharacterRepository {
           .map((entry) {
             final slot = entry.value;
             final currentIndex = entry.key;
-            final slotIndex =
-                slot.spellLevel == slotProgression.last.spellLevel
+            final slotIndex = slot.spellLevel == slotProgression.last.spellLevel
                 ? currentIndex
                 : _getSlotIndexForLevel(
                     slot.spellLevel,

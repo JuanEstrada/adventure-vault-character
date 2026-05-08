@@ -24,12 +24,14 @@ class CreateCharacterService {
     CharacterSummaryMapper characterSummaryMapper =
         const CharacterSummaryMapper(),
     CharacterSpellRules characterSpellRules = const CharacterSpellRules(),
+    void Function(String characterId)? onCharacterChanged,
   }) : _database = database,
        _referenceDao = referenceDao,
        _writeDao = writeDao,
        _compendiumRepository = compendiumRepository,
        _characterSummaryMapper = characterSummaryMapper,
-       _characterSpellRules = characterSpellRules;
+       _characterSpellRules = characterSpellRules,
+       _onCharacterChanged = onCharacterChanged;
 
   final AppDatabase _database;
   final CharacterReferenceDao _referenceDao;
@@ -37,6 +39,7 @@ class CreateCharacterService {
   final CompendiumRepository _compendiumRepository;
   final CharacterSummaryMapper _characterSummaryMapper;
   final CharacterSpellRules _characterSpellRules;
+  final void Function(String characterId)? _onCharacterChanged;
   Future<CompendiumCatalog>? _catalogFuture;
 
   Future<CharacterSummary> createCharacter(CreateCharacterInput input) async {
@@ -244,7 +247,12 @@ class CreateCharacterService {
       );
     });
 
-    return _characterSummaryMapper.fromCreateInput(id: id, input: input);
+    final summary = _characterSummaryMapper.fromCreateInput(
+      id: id,
+      input: input,
+    );
+    _onCharacterChanged?.call(id);
+    return summary;
   }
 
   Future<void> _writeAbilityScores(

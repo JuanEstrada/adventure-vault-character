@@ -1,4 +1,5 @@
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
+import 'package:adventure_vault_character/src/features/compendium/domain/compendium_search_service.dart';
 import 'package:flutter/material.dart';
 
 class CompendiumScreen extends StatelessWidget {
@@ -38,6 +39,8 @@ class CompendiumScreen extends StatelessWidget {
             onOpenCompendiumPacks: onOpenCompendiumPacks,
             onOpenCompendiumImport: onOpenCompendiumImport,
           ),
+          const SizedBox(height: 24),
+          _SearchAndFilterCard(catalog: catalog),
           const SizedBox(height: 24),
           Text(
             'Current coverage',
@@ -215,6 +218,211 @@ class _ManagementCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _SearchAndFilterCard extends StatefulWidget {
+  const _SearchAndFilterCard({required this.catalog});
+
+  final CompendiumCatalog catalog;
+
+  @override
+  State<_SearchAndFilterCard> createState() => _SearchAndFilterCardState();
+}
+
+class _SearchAndFilterCardState extends State<_SearchAndFilterCard> {
+  static const _allValue = '';
+
+  final CompendiumSearchService _searchService =
+      const CompendiumSearchService();
+  String _selectedCategory = _allValue;
+  String _selectedSource = _allValue;
+  String _selectedPack = _allValue;
+
+  List<CompendiumEntry> get _filteredEntries {
+    Iterable<CompendiumEntry> entries = widget.catalog.entries();
+
+    if (_selectedCategory.isNotEmpty) {
+      entries = entries.where(
+        (entry) => _matches(entry.category, _selectedCategory),
+      );
+    }
+    if (_selectedSource.isNotEmpty) {
+      entries = entries.where(
+        (entry) => _matches(entry.source, _selectedSource),
+      );
+    }
+    if (_selectedPack.isNotEmpty) {
+      entries = entries.where((entry) => _matches(entry.packId, _selectedPack));
+    }
+
+    final results = entries.toList(growable: false);
+    results.sort((left, right) {
+      final byName = left.name.toLowerCase().compareTo(
+        right.name.toLowerCase(),
+      );
+      if (byName != 0) {
+        return byName;
+      }
+      final byCategory = left.category.toLowerCase().compareTo(
+        right.category.toLowerCase(),
+      );
+      if (byCategory != 0) {
+        return byCategory;
+      }
+      return left.id.toLowerCase().compareTo(right.id.toLowerCase());
+    });
+    return results;
+  }
+
+  List<String> get _categories =>
+      _searchService.getUniqueCategories(widget.catalog).toList();
+  List<String> get _sources =>
+      _searchService.getUniqueSources(widget.catalog).toList();
+  List<String> get _packs =>
+      _searchService.getUniquePacks(widget.catalog).toList();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final results = _filteredEntries;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F4EC),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFD8C8B0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Quick search',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Narrow the compendium by category, source, or pack and jump directly to matching entries.',
+            style: theme.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              SizedBox(
+                width: 220,
+                child: _buildDropdown(
+                  key: const Key('compendium-category-filter'),
+                  label: 'Category',
+                  value: _selectedCategory,
+                  options: _categories,
+                  onChanged: (value) => setState(() {
+                    _selectedCategory = value ?? _allValue;
+                  }),
+                ),
+              ),
+              SizedBox(
+                width: 220,
+                child: _buildDropdown(
+                  key: const Key('compendium-source-filter'),
+                  label: 'Source',
+                  value: _selectedSource,
+                  options: _sources,
+                  onChanged: (value) => setState(() {
+                    _selectedSource = value ?? _allValue;
+                  }),
+                ),
+              ),
+              SizedBox(
+                width: 220,
+                child: _buildDropdown(
+                  key: const Key('compendium-pack-filter'),
+                  label: 'Pack',
+                  value: _selectedPack,
+                  options: _packs,
+                  onChanged: (value) => setState(() {
+                    _selectedPack = value ?? _allValue;
+                  }),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '${results.length} matching entries',
+            style: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (results.isEmpty)
+            const Text('No entries match the selected filters.')
+          else
+            ListView.separated(
+              itemCount: results.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              separatorBuilder: (context, index) => const Divider(height: 1),
+              itemBuilder: (context, index) {
+                final entry = results[index];
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  title: Text(entry.name),
+                  subtitle: Text(_entryMetadata(entry)),
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdown({
+    required Key key,
+    required String label,
+    required String value,
+    required List<String> options,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      key: key,
+      initialValue: value,
+      isExpanded: true,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        isDense: true,
+        filled: true,
+        fillColor: Colors.white,
+      ),
+      items: [
+        const DropdownMenuItem<String>(value: _allValue, child: Text('All')),
+        ...options.map(
+          (option) =>
+              DropdownMenuItem<String>(value: option, child: Text(option)),
+        ),
+      ],
+      onChanged: onChanged,
+    );
+  }
+
+  bool _matches(String? value, String filter) {
+    return value != null &&
+        value.trim().toLowerCase() == filter.trim().toLowerCase();
+  }
+
+  String _entryMetadata(CompendiumEntry entry) {
+    final parts = <String>[
+      entry.category,
+      if ((entry.source ?? '').trim().isNotEmpty) entry.source!.trim(),
+      if ((entry.packId ?? '').trim().isNotEmpty) entry.packId!.trim(),
+    ];
+    return parts.join(' • ');
   }
 }
 

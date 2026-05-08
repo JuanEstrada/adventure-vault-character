@@ -752,6 +752,120 @@ class AppController extends ChangeNotifier {
     );
   }
 
+  Future<String> createContainer(String characterId, String name) async {
+    final selected = _state.selectedCharacterSheet;
+    if (selected == null) {
+      _state = _state.copyWith(
+        errorMessage: 'No character is currently selected.',
+      );
+      notifyListeners();
+      return '';
+    }
+
+    _state = _state.copyWith(isSavingCharacter: true, clearError: true);
+    notifyListeners();
+
+    try {
+      final containerId = await _characterRepository.createContainer(
+        characterId,
+        name,
+      );
+      final refreshed = await _characterRepository.getCharacterSheetById(
+        selected.id,
+      );
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        selectedCharacterSheet: refreshed ?? selected,
+        clearError: true,
+      );
+      notifyListeners();
+      return containerId;
+    } on CharacterInventoryValidationError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: _inventoryValidationMessage(
+          inventoryItemId: characterId,
+          error: error,
+        ),
+      );
+    } on StateError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: _stateErrorMessage(
+          error,
+          fallback: 'Failed to create container.',
+        ),
+      );
+    } catch (_) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: 'Failed to create container.',
+      );
+    }
+
+    notifyListeners();
+    return '';
+  }
+
+  Future<void> transferSelectedCharacterInventoryItemToContainer(
+    String sourceInventoryItemId,
+    String targetContainerInventoryItemId,
+    int quantity,
+  ) async {
+    final selected = _state.selectedCharacterSheet;
+    if (selected == null) {
+      _state = _state.copyWith(
+        errorMessage: 'No character is currently selected.',
+      );
+      notifyListeners();
+      return;
+    }
+
+    _state = _state.copyWith(isSavingCharacter: true, clearError: true);
+    notifyListeners();
+
+    try {
+      await _characterRepository.transferInventoryItemStackToContainer(
+        selected.id,
+        sourceInventoryItemId,
+        targetContainerInventoryItemId: targetContainerInventoryItemId,
+        quantity: quantity,
+      );
+      final refreshed = await _characterRepository.getCharacterSheetById(
+        selected.id,
+      );
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        selectedCharacterSheet: refreshed ?? selected,
+        clearError: true,
+      );
+    } on CharacterInventoryValidationError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: _inventoryValidationMessage(
+          inventoryItemId: sourceInventoryItemId,
+          error: error,
+        ),
+      );
+    } on StateError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: _stateErrorMessage(
+          error,
+          fallback: 'Failed to update inventory item: $sourceInventoryItemId.',
+        ),
+      );
+    } catch (_) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage:
+            'Failed to update inventory item: $sourceInventoryItemId.',
+      );
+    }
+
+    notifyListeners();
+  }
+
   Future<void> setIncludeCoinWeightInEncumbrance(bool value) async {
     _state = _state.copyWith(isSavingSettings: true, clearError: true);
     notifyListeners();

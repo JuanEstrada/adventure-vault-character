@@ -1,7 +1,9 @@
+import 'package:adventure_vault_character/src/features/characters/application/character_change_tracker.dart';
 import 'package:adventure_vault_character/src/features/characters/application/character_sheet_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/create_character_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/character_death_save_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/editable_character_service.dart';
+import 'package:adventure_vault_character/src/features/characters/application/auto_save_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/character_inventory_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/character_recovery_service.dart';
 import 'package:adventure_vault_character/src/features/characters/application/character_record_loader.dart';
@@ -25,52 +27,63 @@ class DriftCharacterRepository implements CharacterRepository {
     required CompendiumRepository compendiumRepository,
     CharacterSummaryMapper characterSummaryMapper =
         const CharacterSummaryMapper(),
-  }) : _readDao = CharacterReadDao(database),
-       _database = database,
-       _characterSummaryMapper = characterSummaryMapper,
-       _createCharacterService = CreateCharacterService(
-         database: database,
-         referenceDao: CharacterReferenceDao(database),
-         writeDao: CharacterWriteDao(database),
-         compendiumRepository: compendiumRepository,
-         characterSummaryMapper: characterSummaryMapper,
-       ),
-       _characterSheetService = CharacterSheetService(
-         database: database,
-         readDao: CharacterReadDao(database),
-         compendiumRepository: compendiumRepository,
-       ),
-       _editableCharacterService = EditableCharacterService(
-         recordLoader: CharacterRecordLoader(
-           readDao: CharacterReadDao(database),
-           compendiumRepository: compendiumRepository,
-         ),
-       ),
-       _characterRecoveryService = CharacterRecoveryService(
-         database: database,
-         readDao: CharacterReadDao(database),
-         writeDao: CharacterWriteDao(database),
-       ),
-       _characterInventoryService = CharacterInventoryService(
-         database: database,
-         readDao: CharacterReadDao(database),
-         writeDao: CharacterWriteDao(database),
-       ),
-       _characterDeathSaveService = CharacterDeathSaveService(
-         database: database,
-         readDao: CharacterReadDao(database),
-         writeDao: CharacterWriteDao(database),
-       );
+  }) {
+    _database = database;
+    _readDao = CharacterReadDao(database);
+    _characterSummaryMapper = characterSummaryMapper;
+    _characterChangeTracker = CharacterChangeTracker(database: database);
+    _autoSaveService = AutoSaveService(changeTracker: _characterChangeTracker);
 
-  final CharacterReadDao _readDao;
-  final AppDatabase _database;
-  final CharacterSummaryMapper _characterSummaryMapper;
-  final CreateCharacterService _createCharacterService;
-  final CharacterSheetService _characterSheetService;
-  final EditableCharacterService _editableCharacterService;
-  final CharacterRecoveryService _characterRecoveryService;
-  final CharacterInventoryService _characterInventoryService;
-  final CharacterDeathSaveService _characterDeathSaveService;
+    _createCharacterService = CreateCharacterService(
+      database: database,
+      referenceDao: CharacterReferenceDao(database),
+      writeDao: CharacterWriteDao(database),
+      compendiumRepository: compendiumRepository,
+      characterSummaryMapper: characterSummaryMapper,
+      onCharacterChanged: _autoSaveService.recordChange,
+    );
+    _characterSheetService = CharacterSheetService(
+      database: database,
+      readDao: CharacterReadDao(database),
+      compendiumRepository: compendiumRepository,
+    );
+    _editableCharacterService = EditableCharacterService(
+      recordLoader: CharacterRecordLoader(
+        readDao: CharacterReadDao(database),
+        compendiumRepository: compendiumRepository,
+      ),
+    );
+    _characterRecoveryService = CharacterRecoveryService(
+      database: database,
+      readDao: CharacterReadDao(database),
+      writeDao: CharacterWriteDao(database),
+      onCharacterChanged: _autoSaveService.recordChange,
+    );
+    _characterInventoryService = CharacterInventoryService(
+      database: database,
+      readDao: CharacterReadDao(database),
+      writeDao: CharacterWriteDao(database),
+      onCharacterChanged: _autoSaveService.recordChange,
+    );
+    _characterDeathSaveService = CharacterDeathSaveService(
+      database: database,
+      readDao: CharacterReadDao(database),
+      writeDao: CharacterWriteDao(database),
+      onCharacterChanged: _autoSaveService.recordChange,
+    );
+  }
+
+  late final CharacterReadDao _readDao;
+  late final AppDatabase _database;
+  late final CharacterSummaryMapper _characterSummaryMapper;
+  late final CharacterChangeTracker _characterChangeTracker;
+  late final AutoSaveService _autoSaveService;
+  late final CreateCharacterService _createCharacterService;
+  late final CharacterSheetService _characterSheetService;
+  late final EditableCharacterService _editableCharacterService;
+  late final CharacterRecoveryService _characterRecoveryService;
+  late final CharacterInventoryService _characterInventoryService;
+  late final CharacterDeathSaveService _characterDeathSaveService;
 
   @override
   Future<List<CharacterSummary>> getCharacterSummaries() async {
@@ -337,6 +350,28 @@ class DriftCharacterRepository implements CharacterRepository {
   }
 
   @override
+  Future<String> createContainer(String id, String name) async {
+    final containerId = await _nextContainerId(id);
+    await _characterInventoryService.createContainer(id, containerId, name);
+    return containerId;
+  }
+
+  Future<String> _nextContainerId(String characterId) async {
+    var nextIndex = 1;
+    final pattern = RegExp('^${RegExp.escape(characterId)}-container-(\\d+)');
+    final inventoryItems = await _readDao.getInventoryByCharacterId(characterId);
+    for (final item in inventoryItems) {
+      final match = pattern.firstMatch(item.id);
+      if (match == null) continue;
+      final parsed = int.tryParse(match.group(1) ?? '');
+      if (parsed != null && parsed >= nextIndex) {
+        nextIndex = parsed + 1;
+      }
+    }
+    return '$characterId-container-$nextIndex';
+  }
+
+  @override
   Future<void> recordDeathSaveSuccess(String id) {
     return _characterDeathSaveService.recordSuccess(id);
   }
@@ -365,6 +400,9 @@ class DriftCharacterRepository implements CharacterRepository {
   Future<EditableCharacter?> getEditableCharacterById(String id) {
     return _editableCharacterService.getEditableCharacterById(id);
   }
+
+  /// Gets the auto-save service for managing background saves.
+  AutoSaveService get autoSaveService => _autoSaveService;
 
   Future<List<CharacterSummary>> _mapSummaries(List<Character> rows) async {
     final summaries = <CharacterSummary>[];
