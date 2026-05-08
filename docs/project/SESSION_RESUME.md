@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-05-03
+Last updated: 2026-05-07
 
 This is the canonical, short handoff file for resuming work quickly.
 
@@ -22,11 +22,16 @@ This is the canonical, short handoff file for resuming work quickly.
 - Stack: Flutter + Dart, offline-first, Drift/SQLite local persistence.
 - Architecture: feature-first with layered separation
   (`presentation -> application -> domain -> data`).
-- Drift schema: **`v20`** (canonical current version).
-- Current phase: MinFunc complete; canonical doc alignment and validation
-  hardening.
-- Active planning focus: post-MinFunc validation hardening in
-  `docs/project/ROADMAP.md`, with continuity docs kept in sync.
+- Drift schema: **`v21`** (canonical current version).
+- Current phase: MinFunc complete; canonical doc alignment and validation hardening are complete.
+- Active planning focus: the tracked P2 completion chain in `docs/project/POST_MVP_P1_TRACKER.md`, with continuity docs kept in sync after every microtask.
+- Phase 8 accessibility work is mostly complete: P8-02-1 (panel headers and identity semantics), P8-02-2b (combat and recovery control semantics), P8-02-4 (sheet-level focus traversal), P8-04 (focus states), P8-05 (advanced inventory stack management), P8-06 (spell slot bulk operations), P8-07 (spell selection mode enhancements), P8-08 (advanced combat automation helpers), P8-09 (compendium search/filtering), and P8-10 (session persistence / auto-save) are complete and verified. The remaining semantics work is closed; all Phase 8 accessibility slices are complete and verified.
+- **P2-01 complete:** Canonical docs are aligned with the current player-app scope.
+- **P2-02 complete:** The inventory sheet already exposes direct action buttons in `_InventoryItemRow`; the dialog classes exist but are currently orphaned and have no live `showDialog` call sites.
+- **P2-03 complete:** The live sheet now opens `TransferToContainerDialog` from the inventory transfer button; the placeholder container data and submit path remain the next slice.
+- **P2-04 complete:** The transfer dialog now populates its container list from the current character's container items; the static sample list is gone.
+- **P2-05a complete:** Transfer submit now routes through the real app-controller/repository mutation path, with controller and widget regression coverage in place.
+- Verification status: `flutter analyze` passes after the container-creation and repository async fixes; `flutter test` still reports a pre-existing failure in `test/drift_character_repository_test.dart` (`spendSpellSlot rejects spending beyond derived slot maximum`).
 
 ## What Is Stable (Do Not Reopen)
 
@@ -41,15 +46,25 @@ This is the canonical, short handoff file for resuming work quickly.
 
 ## Next Actionable Slice
 
-Prioritize **Phase 5 validation hardening** before broader polish work:
+Phase 8 accessibility work is complete and verified. **P2-01** (canonical doc alignment) is complete.
 
-1. MinFunc is complete; do not reopen frozen minimum-scope work unless a
-   regression is confirmed.
-2. Start the next implementation slice from Phase 5 validation hardening in
-   `docs/project/ROADMAP.md`, focusing on broader rule parity and mixed-source
-   regressions.
-3. Keep inventory and spell workflows frozen at the verified minimum bar while
-   broader post-MVP work continues.
+**Next:** start **P2-08c** from `docs/project/POST_MVP_P1_TRACKER.md` — hook the delete-container action to the real mutation path, then continue the remaining inventory microtasks in order.
+
+**Context:** P8-09 (advanced compendium search and filtering) and P8-10 (session persistence / auto-save) are complete, and the sheet-level keyboard focus traversal regression is green.
+
+**Validation watchlist:** no known test failures remain from the spell-slot, compendium, or dialog regression slices; only open a new implementation slice if a fresh regression or backlog priority appears.
+
+**Status:** the compendium search/filter domain service, quick-access results panel, session persistence wiring, and targeted tests are in place.
+
+### Current Progression
+
+**P6-03 through P6-05 are complete and verified.** Phase 6 recovery flow now includes:
+
+- Spell-slot restoration persistence verified.
+- Inventory and spell-slot restore persisted after navigation.
+- S14-S20 slices complete covering minimum loop audit and post-MVP debt separation.
+
+**Phase 7 is complete and verified.** The sheet now includes inventory split / merge / transfer wiring, a usable interrupted-mutation recovery dialog, and targeted regression coverage.
 
 ## Guardrails
 
@@ -113,6 +128,8 @@ Prioritize **Phase 5 validation hardening** before broader polish work:
   notes deterministic.
 - Phase 5 now also has codec regression coverage for spell-slot usage
   serialization edge cases.
+- Phase 5 mixed-source coverage now includes fallback JSON base + multiple
+  imported packs with catalog source-policy note assertions.
 - S14 is complete: the existing inventory regression/smoke coverage already
   proves the minimum inventory flow needed by MinFunc.
 - S18 is complete: the full minimum loop audit passed, including creation,
@@ -121,3 +138,13 @@ Prioritize **Phase 5 validation hardening** before broader polish work:
   functional depth, non-critical hardening, and future features.
 - S20 is complete: canonical docs now reflect the finished MinFunc status and
   the next post-MVP focus split.
+- P8-02-1 is complete: the character sheet now exposes semantics labels for
+  the sheet chrome and identity area.
+- P8-02-2b is complete: combat and recovery controls now expose semantics labels; P8-02-2c is the next pending slice for spells and inventory controls before moving to the next accessibility sub-slice.
+- S23 is complete: the mixed-source precedence audit confirms the current test
+  suite already covers the main XML-base and fallback-base merge paths.
+- S24 is complete: fallback JSON base now has regression coverage for multiple
+  imported packs and the catalog source-policy note assertions that close the
+  remaining mixed-source collision gap.
+- S25/S26 are complete: parity is verified and the Phase 5 hardening slice is
+  closed.

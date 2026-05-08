@@ -1,7 +1,8 @@
 # Adventure Vault Character — Project Snapshot
 
 ## Last Updated
-2026-05-03
+
+2026-05-07
 
 ## Role of This Document
 
@@ -17,8 +18,17 @@ Post-foundation implementation, validation hardening, and documentation alignmen
 
 - Character-sheet completion slice: implemented.
 - Deterministic combat MVP slice: implemented.
-- Current work posture: MinFunc is complete; focus now shifts to validation
-  hardening and keeping canonical docs aligned with the real state.
+- Current work posture: MinFunc is complete; validation hardening is complete and the canonical docs are aligned with the current state.
+- Phase 8 accessibility work is complete and verified.
+- P2-02 audit is complete: the character sheet already exposes direct inventory action buttons in `_InventoryItemRow`, while the dialog classes remain orphaned with no live `showDialog` call sites.
+- P2-03 is complete: the live sheet now opens `TransferToContainerDialog` from the inventory transfer button; the placeholder container data and submit path remain the next slice.
+- P2-04 is complete: the transfer dialog now populates its container list from the current character's container items; the static sample list is gone.
+- P2-05a is complete: transfer submit now routes through the real app-controller/repository mutation path, with regression coverage in place.
+- P2-05b is complete: the selected character sheet reloads immediately after a successful transfer so the equipment/container panels reflect the new state.
+- P2-05c is complete: the transferred stack remains visible after reopening the character, with controller and repository-backed assertions in place.
+- P2-06 is complete: the transfer dialog widget tests now cover opening the dialog, validation, container selection, and successful submit behavior.
+- P2-07 is complete: the character sheet now exposes a live manage-containers button that opens `ContainerManagementDialog`; widget coverage verifies the entry point.
+- P2-08a is complete: the management dialog now reads container items from the live character sheet instead of a hard-coded sample list.
 
 ## Architecture Baseline (Current)
 
@@ -54,6 +64,8 @@ Primary constraints are tracked in:
   independently active while keeping merged source notes deterministic.
 - Phase 5 now also includes codec regression coverage for spell-slot usage
   serialization edge cases.
+- Phase 5 mixed-source coverage now also includes fallback JSON base catalog note
+  assertions and reload parity checks for multiple imported packs.
 - The bundled runtime asset set is currently reduced to `assets/compendium/catalog.json`; missing local XML source trees now fall through to the repository's existing fallback behavior instead of blocking asset-bundle builds.
 - Character sheet renders deterministic derived state for key gameplay areas,
   including combat helpers, spell-state summaries, rest effects, and inventory
@@ -79,37 +91,46 @@ Primary constraints are tracked in:
   functional depth, non-critical hardening, and future features.
 - S20 is complete: canonical docs now reflect the finished MinFunc status and
   the post-MVP focus split.
-- Next verification focus is Phase 5 validation hardening.
+- P8-02-1 is complete: the sheet header and identity area now expose semantics
+  labels.
+- P8-02-2b is complete: combat and recovery controls now expose semantics
+  labels, and the remaining Phase 8 accessibility work continues with the
+  spells/inventory slice.
+- S23 is complete: the mixed-source precedence audit confirmed the existing
+  regression coverage for XML-base and fallback-base merges, while leaving a
+  small gap for fallback JSON base plus multiple imported packs and explicit
+  source-policy note assertions around mixed-source collisions.
+- Next verification focus is **P2-08c**: hook the delete-container action to the real mutation path, then continue the remaining inventory microtasks in order.
+- Verification status: `flutter analyze` passes after the inventory container-creation and repository async fixes; `flutter test` still reports a pre-existing failure in `test/drift_character_repository_test.dart` (`spendSpellSlot rejects spending beyond derived slot maximum`).
 
 ## Drift Status
 
-- Current schema version is **`v20`**.
+- Current schema version is **`v21`**.
+
 - Character-side normalized tables include abilities, provenance, hit points,
   finishing details, narrative selections, equipment loadout, saves, skills,
   proficiencies, inventory, currency, and death saves.
 - Compendium-side tables include definitions and pack-state metadata used by
   current offline catalog behavior.
 - Migration coverage is documented as active for legacy-to-current upgrades;
-  references to `v19` in project-state docs are obsolete and replaced by `v20`.
+  references to `v19` in project-state docs are obsolete and replaced by `v21`.
 
 ## Progress by Roadmap Area
 
 - **Phase 1 — Character Sheet Completion:** complete.
 - **Phase 2 — Core Combat Rules (Deterministic MVP):** complete.
-- **Phase 3 — Spellcasting Workflow Completion:** partially complete
-  (foundation implemented; in-session ergonomics still expandable).
-- **Phase 4 — Inventory & Resource Session UX:** partially complete
-  (deterministic mutation model implemented; UX depth still expandable).
-- **Phase 5 — Rules Coverage & Validation Hardening:** partially complete.
-- **Phase 6 — Finish-the-App Polish & Recovery:** mostly pending.
+- **Phase 3 — Spellcasting Workflow Completion:** complete.
+- **Phase 4 — Inventory & Resource Session UX:** complete.
+- **Phase 5 — Rules Coverage & Validation Hardening:** in progress.
+- **Phase 6 — Finish-the-App Polish & Recovery:** complete.
+- **Phase 7 — Post-MVP Polish & Feature Expansion:** complete.
+- Phase 8 — Advanced Features & Accessibility: complete.
 
 ## Active Delivery Focus
 
-1. Keep the canonical project docs aligned with the finished MinFunc state.
-2. Expand Phase 5 validation hardening where concrete regressions or gaps still
-   exist, especially broader rule and mixed-source coverage.
-3. Keep broader UX depth, non-blocking edge-case breadth, and polish outside
-   the minimum-functional release scope unless they prove to be blockers.
+1. Keep the canonical project docs aligned with the finished MinFunc state and completed Phase 8 slices.
+2. Continue the P2 inventory chain from the audit result: decide whether the direct inventory buttons remain canonical or whether the orphaned dialog classes should be wired in.
+3. Keep broader UX depth, non-blocking edge-case breadth, and post-Phase-8 polish outside the minimum-functional release scope unless they prove to be blockers.
 
 ## Risks and Follow-Ups
 
@@ -117,8 +138,8 @@ Primary constraints are tracked in:
   domain/application contracts.
 - Imported-content conflict diagnostics may need richer visibility if more
   sections become pack-sensitive.
-- Remaining polish work (recovery and interruption handling) is still required
-  before declaring finish-the-app quality.
+- Future accessibility work, if any, should be treated as a new backlog item
+  rather than a continuation of the completed Phase 8 slices.
 
 ## Primary References
 

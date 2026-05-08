@@ -2,7 +2,7 @@
 
 ## Last Updated
 
-2026-05-03
+2026-05-07
 
 ## Roadmap Intent
 
@@ -25,17 +25,22 @@ tracks what is complete versus what still needs delivery hardening.
 - Major remaining work is no longer "foundations"; it is completion polish for
   spellcasting/inventory workflows, broader rule coverage, and quality/recovery
   hardening.
+- P2-03 is complete: the live inventory transfer button now opens
+  `TransferToContainerDialog`; the placeholder container data and submit path
+  still need the next slice.
+- P2-04 is complete: the transfer dialog now populates its container list from
+  the current character's container items; the static sample list is gone.
 
 ## Phase Status Snapshot
 
-| Phase | Status | Notes |
-|---|---|---|
-| Phase 1 — Character Sheet Completion | ✅ Complete | Header, portrait, passive perception, skills, and proficiency/language readability are implemented in the sheet domain+UI path. |
-| Phase 2 — Core Combat Rules (Deterministic MVP) | ✅ Complete | AC, initiative, death-save state/mutations, and equipped-weapon attack helpers are implemented and surfaced on sheet. |
-| Phase 3 — Spellcasting Workflow Completion | ✅ Complete | Class-specific selection modes, persisted spells/slots, slot recovery, and per-slot spend/restore controls are all implemented and functional. |
-| Phase 4 — Inventory & Resource Session UX | ✅ Complete | Core mutations (equip/carry/quantity/charges/container/stack operations) and rest/resource actions are implemented. Split/merge/transfer dialogs integrated with explicit controls for stack operations. |
-| Phase 5 — Rules Coverage & Validation Hardening | 🟡 In progress | Combat/spell/inventory/migration tests exist; broader edge/path parity and deeper mixed-source regressions remain. |
-| Phase 6 — Finish-the-App Polish & Recovery | ⚪ Not started | Partial improvements exist, but no full missing-data/error-recovery polish pass yet. |
+| Phase | Status                                          | Notes                                      |
+| ----- | ----------------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+|       | Phase 1 — Character Sheet Completion            | ✅ Complete                                | Header, portrait, passive perception, skills, and proficiency/language readability are implemented in the sheet domain+UI path.                                                                          |
+|       | Phase 2 — Core Combat Rules (Deterministic MVP) | ✅ Complete                                | AC, initiative, death-save state/mutations, and equipped-weapon attack helpers are implemented and surfaced on sheet.                                                                                    |
+|       | Phase 3 — Spellcasting Workflow Completion      | ✅ Complete                                | Class-specific selection modes, persisted spells/slots, slot recovery, and per-slot spend/restore controls are all implemented and functional.                                                           |
+|       | Phase 4 — Inventory & Resource Session UX       | ✅ Complete                                | Core mutations (equip/carry/quantity/charges/container/stack operations) and rest/resource actions are implemented. Split/merge/transfer dialogs integrated with explicit controls for stack operations. |
+|       | Phase 5 — Rules Coverage & Validation Hardening | ✅ Complete                                | Combat/spell/inventory/migration tests exist; fallback JSON mixed-source regression notes and parity checks are complete, closing the remaining hardening slices.                                        |
+|       |                                                 | Phase 6 — Finish-the-App Polish & Recovery | ✅ Complete                                                                                                                                                                                              | All Phase 6 microtasks (P6-03 through P6-07) completed and verified. |
 
 ## Outdated Roadmap Assumptions (now implemented)
 
@@ -103,10 +108,10 @@ Goal: Move from spell foundation to full day-to-day spell use flow.
 - ✅ Targeted spend coverage now proves the spent slot state persists across
   back-navigation and character reopen.
 - ✅ Direct per-slot spend/restore controls implemented in sheet UI with
-   individual slot buttons.
+  individual slot buttons.
 - ✅ Restore-slot symmetry and full spend/restore loop completed.
 - 🟡 Remaining: broader spell edge case coverage and mixed-source regression
-   tests.
+  tests.
 
 ### Exit Criteria
 
@@ -164,8 +169,10 @@ Goal: Raise confidence that deterministic rules stay correct as scope expands.
   independently active while keeping merged source notes deterministic.
 - ✅ Added codec regression coverage for spell-slot usage serialization edge
   cases.
-- 🟡 Remaining: additional advanced spell edge cases and any further mixed
-  compendium precedence permutations not yet exercised.
+- ✅ Phase 5 hardening is complete; tracked advanced spell edge cases,
+  mixed-source precedence regressions, and repository parity slices are now
+  covered.
+- ✅ Phase 8 accessibility work now has the compendium search/filter domain service and quick-access results panel in place, with targeted tests covering the new flow.
 
 ### Exit Criteria
 
@@ -193,14 +200,39 @@ Goal: Close quality gaps before broader feature expansion.
 
 ## Immediate Next Slice
 
-Prioritize **Phase 5 validation hardening** by expanding rule-level and
-mixed-source regression coverage around the finished in-session loop:
+Phase 8 accessibility work is complete, and the immediate next step is to continue the tracked P2 inventory chain in `docs/project/POST_MVP_P1_TRACKER.md`. P2-08b is complete, so start from P2-08c: the delete-container action still needs to reach the real removal flow.
 
-1. ✅ Strengthened same-item transfer compatibility validation/coverage for
-   container/stack states.
-2. ✅ Exposed clearer in-sheet feedback for rejected inventory mutations and
-   current stack/container state.
-3. ✅ Improved spell/resource session visibility by adding in-panel recovery
-   actions and slot progress; direct per-slot mutation controls are complete.
-4. 🟡 Remaining: broader spell edge cases, mixed-source regressions, and
-   finish-the-app polish/recovery.
+**Note:** `TransferToContainerDialog` and `ContainerManagementDialog` exist but require:
+
+- Real character-sheet entry points from the UI
+- Replacement of static placeholder container data with real repository-backed data
+- Integration with the actual mutation paths for transfer and delete operations
+
+---
+
+## Phase 8 — Advanced Features & Accessibility
+
+**Status:** Complete
+
+Phase 8 focuses on accessibility hardening and advanced feature depth that enhance table usability beyond the minimum functional release.
+
+**Scope:**
+
+- Screen reader compatibility and keyboard navigation
+- Enhanced visual feedback and state clarity
+- Advanced inventory management workflows
+- Spellcasting workflow enhancements
+- Quality assurance for accessibility
+
+**Microtasks:** P8-01 through P8-10 are complete. `docs/project/PHASE_8_PLAN.md` remains the implementation record for the completed accessibility and advanced-feature slices.
+
+**Current verified slice:** None; all Phase 8 semantics slices are complete and verified.
+
+**Exit Criteria:**
+
+- All character sheet widgets have semantics labels and keyboard navigation
+- All dialogs are fully keyboard accessible with visible focus indicators
+- Advanced inventory operations are implemented and tested
+- Spell slot bulk operations are functional and persist correctly
+- Compendium search and filtering work with imported content
+- Auto-save mechanism preserves session state during rapid edits

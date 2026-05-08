@@ -42,6 +42,20 @@ When instructions overlap, apply them in this order:
 - App controller: `lib/src/app/app_controller.dart`
 - Baseline widget test: `test/widget_test.dart`
 
+## Local Tooling Notes
+
+- `opencode` is a local CLI helper, not part of the Flutter app itself.
+- If the installer places it in `~/.local/bin`, add that directory to your
+  `PATH` in `~/.zshrc`:
+
+  ```sh
+  export PATH="$HOME/.local/bin:$PATH"
+  ```
+
+- Reload the shell and verify with `command -v opencode`.
+- If `opencode` is installed somewhere else, add that install directory to
+  `PATH` instead.
+
 ## Working Rules
 
 - Do not duplicate documentation when a source-of-truth document already covers
