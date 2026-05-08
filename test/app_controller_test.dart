@@ -1,8 +1,11 @@
 import 'package:adventure_vault_character/src/app/app_controller.dart';
 import 'package:adventure_vault_character/src/core/navigation/app_screen.dart';
 import 'package:adventure_vault_character/src/features/characters/data/in_memory_character_repository.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
+import 'package:adventure_vault_character/src/features/compendium/data/in_memory_compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:adventure_vault_character/src/features/settings/data/in_memory_system_settings_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -93,6 +96,216 @@ void main() {
     expect(repository.fullLoadCount, 1);
     expect(controller.state.screen, AppScreen.createCharacter);
   });
+
+  test(
+    'transfer inventory stack routes through the controller mutation path',
+    () async {
+      final catalog = _buildTransferCatalog();
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(catalog),
+      );
+      final controller = AppController(
+        characterRepository: repository,
+        compendiumRepository: InMemoryCompendiumRepository(catalog),
+        systemSettingsRepository: InMemorySystemSettingsRepository(),
+      );
+      addTearDown(controller.dispose);
+
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Controller transfer',
+          items: <String>['Backpack', '2 Torch'],
+        ),
+      );
+      final sheetBefore = await repository.getCharacterSheetById(summary.id);
+      expect(sheetBefore, isNotNull);
+      final backpack = sheetBefore!.equipment.items.firstWhere(
+        (item) => item.name == 'Backpack',
+      );
+      final torch = sheetBefore.equipment.items.firstWhere(
+        (item) => item.name == 'Torch',
+      );
+
+      await controller.openCharacter(summary.id);
+      await controller.transferSelectedCharacterInventoryItemToContainer(
+        torch.id,
+        backpack.id,
+        2,
+      );
+
+      final visibleSheet = controller.state.selectedCharacterSheet;
+      expect(visibleSheet, isNotNull);
+      final visibleTorchStacks = visibleSheet!.equipment.items
+          .where((item) => item.name == 'Torch')
+          .toList(growable: false);
+      expect(
+        visibleTorchStacks.any(
+          (item) =>
+              item.containerInventoryItemId == backpack.id &&
+              item.quantity == 2,
+        ),
+        isTrue,
+      );
+
+      await controller.openCharacter(summary.id);
+      final reopenedSheet = controller.state.selectedCharacterSheet;
+      expect(reopenedSheet, isNotNull);
+      final reopenedTorchStacks = reopenedSheet!.equipment.items
+          .where((item) => item.name == 'Torch')
+          .toList(growable: false);
+      expect(
+        reopenedTorchStacks.any(
+          (item) =>
+              item.containerInventoryItemId == backpack.id &&
+              item.quantity == 2,
+        ),
+        isTrue,
+      );
+
+      final sheetAfter = await repository.getCharacterSheetById(summary.id);
+      expect(sheetAfter, isNotNull);
+      final torchStacks = sheetAfter!.equipment.items
+          .where((item) => item.name == 'Torch')
+          .toList(growable: false);
+      expect(
+        torchStacks.any(
+          (item) =>
+              item.containerInventoryItemId == backpack.id &&
+              item.quantity == 2,
+        ),
+        isTrue,
+      );
+      expect(controller.state.errorMessage, isNull);
+    },
+  );
+}
+
+CreateCharacterInput _createCharacterInput({
+  required String name,
+  required List<String> items,
+  CharacterSpellStateInput spellState = const CharacterSpellStateInput(
+    selectionMode: CharacterSpellSelectionMode.spellbook,
+    selectedSpells: <CharacterSpellSelectionInput>[],
+    slotUsages: <CharacterSpellSlotUsageInput>[],
+  ),
+}) {
+  return CreateCharacterInput(
+    name: name,
+    raceName: 'Human',
+    backgroundId: 'acolyte',
+    backgroundName: 'Acolyte',
+    backgroundSummary: 'Temple acolyte',
+    abilityScoreMethod: 'manualPointAllocation',
+    abilityScoreProvenance: 'method=manualPointAllocation',
+    strength: 10,
+    dexterity: 12,
+    constitution: 13,
+    intelligence: 10,
+    wisdom: 14,
+    charisma: 8,
+    className: 'Wizard',
+    level: 2,
+    experience: 300,
+    equipmentLoadoutId: 'wizard-focus',
+    equipmentLoadoutLabel: 'Arcane focus kit',
+    startingMoneySummary: '0 gp',
+    selectedEquipmentItems: items,
+    currentHitPoints: 12,
+    maximumHitPoints: 12,
+    temporaryHitPoints: 0,
+    spellState: spellState,
+    finishingDetails: const CharacterFinishingDetailsInput(
+      appearanceDetails: '',
+      narrativeNotes: '',
+      narrativeSelections: <NarrativeSelection>[
+        NarrativeSelection.empty(NarrativeFieldKey.alignment),
+        NarrativeSelection.empty(NarrativeFieldKey.faction),
+        NarrativeSelection.empty(NarrativeFieldKey.personalityTraits),
+        NarrativeSelection.empty(NarrativeFieldKey.ideals),
+        NarrativeSelection.empty(NarrativeFieldKey.bonds),
+        NarrativeSelection.empty(NarrativeFieldKey.flaws),
+      ],
+    ),
+  );
+}
+
+CompendiumCatalog _buildTransferCatalog() {
+  return CompendiumCatalog(
+    races: const <String>['Human'],
+    classes: const <String>['Wizard'],
+    backgrounds: const <CompendiumBackground>[
+      CompendiumBackground(
+        id: 'acolyte',
+        name: 'Acolyte',
+        summary: 'Temple acolyte',
+        bonuses: <String>['Skills: Insight, Religion'],
+        socialPerks: <String>['Shelter of the Faithful'],
+      ),
+    ],
+    narrativeOptionGroups: const <CompendiumNarrativeOptionGroup>[],
+    generatedAbilityScoreSet: const <int>[15, 14, 13, 12, 10, 8],
+    manualAbilityScoreOptions: const <int>[8, 9, 10, 11, 12, 13, 14, 15],
+    characterAdvancement: const <CharacterAdvancementEntry>[
+      CharacterAdvancementEntry(
+        level: 1,
+        experience: 0,
+        proficiencyBonus: '+2',
+      ),
+      CharacterAdvancementEntry(
+        level: 2,
+        experience: 300,
+        proficiencyBonus: '+2',
+      ),
+    ],
+    standardArrayByClass: const <StandardArrayByClassEntry>[
+      StandardArrayByClassEntry(
+        classId: 'wizard',
+        className: 'Wizard',
+        strength: 8,
+        dexterity: 12,
+        constitution: 13,
+        intelligence: 15,
+        wisdom: 14,
+        charisma: 10,
+      ),
+    ],
+    spells: const <CompendiumSpell>[],
+    feats: const <CompendiumFeat>[],
+    monsters: const <CompendiumMonster>[],
+    equipmentSummariesByClass: const <String, EquipmentSummaryViewData>{
+      'Wizard': EquipmentSummaryViewData(
+        statusLabel: 'MVP minimal',
+        description: 'Equipment summary',
+        highlightItems: <String>['Torch'],
+      ),
+    },
+    equipmentLoadoutsByClass: const <String, List<CompendiumEquipmentLoadout>>{
+      'Wizard': <CompendiumEquipmentLoadout>[
+        CompendiumEquipmentLoadout(
+          id: 'wizard-focus',
+          label: 'Arcane focus kit',
+          startingMoneySummary: '0 gp',
+          selectedItems: <String>['Torch'],
+        ),
+      ],
+    },
+    packStates: const <CompendiumPackStateModel>[
+      CompendiumPackStateModel(
+        id: 'bundled-base-compendium',
+        title: 'Base compendium',
+        description: 'Bundled',
+        kind: 'bundled_base',
+        isFixed: true,
+        isActive: true,
+      ),
+    ],
+    sourcePolicy: const CompendiumSourcePolicy(
+      activeSourceType: 'startup_index',
+      activeSourceLabel: 'startup_index',
+      fallbackSourceLabel: 'assets/compendium/catalog.json',
+      sections: <CompendiumSectionSourcePolicy>[],
+    ),
+  );
 }
 
 CompendiumCatalog _buildCatalog({

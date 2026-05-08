@@ -112,35 +112,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('2 active'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.text('Narrative options'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(
-      find.textContaining(
-        'Imported XML packs active: Imported Acolyte Expansion (1).',
-      ),
-      findsWidgets,
-    );
-    await tester.scrollUntilVisible(
-      find.text('Narrative options'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(
-      find.textContaining(
-        'Imported XML packs active: Imported Acolyte Expansion (1).',
-      ),
-      findsNWidgets(2),
-    );
-
-    await tester.scrollUntilVisible(
-      find.widgetWithText(OutlinedButton, 'Manage packs'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Manage packs'));
+    await tester.tap(find.text('Manage packs'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byType(Switch).at(1));

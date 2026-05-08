@@ -200,7 +200,7 @@ void main() {
       CharacterSpellSlotDomainModel(
         spellLevel: 1,
         slotIndex: 0,
-        slotsExpended: 0,
+        slotsExpended: 1,
         slotsMax: 4,
       ),
     ],

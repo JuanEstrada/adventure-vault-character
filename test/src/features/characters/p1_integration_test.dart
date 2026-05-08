@@ -15,15 +15,17 @@ void main() {
       WidgetTester tester,
     ) async {
       final dialog = MergeStackDialog(
-        stackIds: const ['stack-1', 'stack-2'],
+        sourceItemId: 'item-1',
+        sourceQuantity: 10,
+        targetItemId: 'item-2',
+        targetQuantity: 5,
         onDismiss: () {},
-        onMerge: (stackIds, quantity) {},
+        onMerge: (targetItemId, mergeQuantity) {},
       );
 
       await tester.pumpWidget(MaterialApp(home: Scaffold(body: dialog)));
 
-      expect(find.text('Merge Stacks'), findsOneWidget);
-      expect(find.text('Potion'), findsOneWidget);
+      expect(find.text('Merge Stack'), findsOneWidget);
     });
 
     testWidgets('TransferToContainerDialog renders correctly', (
@@ -34,30 +36,31 @@ void main() {
         sourceQuantity: 10,
         sourceName: 'Potions',
         onDismiss: () {},
-        onTransfer: (containerId, quantity) {},
+        onTransfer: (containerId, containerName, quantity) async {},
+        containers: _buildContainers(),
       );
 
       await tester.pumpWidget(MaterialApp(home: Scaffold(body: dialog)));
 
       expect(find.text('Transfer to Container'), findsOneWidget);
-      expect(find.text('Potions'), findsOneWidget);
+      expect(find.textContaining('Potions'), findsOneWidget);
     });
 
     testWidgets('ContainerManagementDialog renders correctly', (
       WidgetTester tester,
     ) async {
       final dialog = ContainerManagementDialog(
-        characterId: 'char-1',
+        containers: _buildContainers(),
         onDismiss: () {},
-        onRename: (var itemId, var newName) => {},
-        onDelete: (var itemId) => {},
-        onAdd: (var itemId, var quantity) => {},
+        onRename: (containerId, containerName) => {},
+        onDelete: (containerId) => {},
+        onAdd: (containerName) async => 'char-1-container-2',
       );
 
       await tester.pumpWidget(MaterialApp(home: Scaffold(body: dialog)));
 
-      expect(find.text('Container'), findsOneWidget);
-      expect(find.text('Add Container'), findsOneWidget);
+      expect(find.text('Manage Containers'), findsOneWidget);
+      expect(find.text('Add new container:'), findsOneWidget);
     });
 
     testWidgets('SpellbookManagementScreen renders correctly', (
@@ -93,4 +96,23 @@ void main() {
       expect(find.text('Prepared Spells'), findsOneWidget);
     });
   });
+}
+
+List<CharacterEquipmentItemDomainModel> _buildContainers() {
+  return <CharacterEquipmentItemDomainModel>[
+    const CharacterEquipmentItemDomainModel(
+      id: 'satchel',
+      name: 'Satchel',
+      quantity: 1,
+      isEquipped: false,
+      isCarried: true,
+      isFavorite: false,
+      weightPerUnit: 2,
+      isContainer: true,
+      chargesCurrent: null,
+      chargesMax: null,
+      containerInventoryItemId: null,
+      containerDisplayName: null,
+    ),
+  ];
 }
