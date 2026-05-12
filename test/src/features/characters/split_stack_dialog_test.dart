@@ -22,6 +22,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Split Stack'), findsOneWidget);
-    expect(FocusManager.instance.primaryFocus?.debugLabel, 'SplitStackQuantity');
+    expect(
+      FocusManager.instance.primaryFocus?.debugLabel,
+      'SplitStackQuantity',
+    );
   });
 }

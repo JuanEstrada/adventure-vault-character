@@ -24,6 +24,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Merge Stack'), findsOneWidget);
-    expect(FocusManager.instance.primaryFocus?.debugLabel, 'MergeStackQuantity');
+    expect(
+      FocusManager.instance.primaryFocus?.debugLabel,
+      'MergeStackQuantity',
+    );
   });
 }

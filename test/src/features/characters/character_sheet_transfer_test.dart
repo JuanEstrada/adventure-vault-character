@@ -12,7 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets(
-    'CharacterSheetScreen add-container action wires to real mutation path',
+    'CharacterSheetScreen transfer-to-container action wires to real mutation path',
     (WidgetTester tester) async {
       final compendiumRepository = InMemoryCompendiumRepository(
         _buildCatalog(),
@@ -21,7 +21,10 @@ void main() {
         compendiumRepository: compendiumRepository,
       );
       final createdCharacter = await characterRepository.createCharacter(
-        _createCharacterInput(name: 'Test Character', items: <String>['Torch']),
+        _createCharacterInput(
+          name: 'Transfer Test Character',
+          items: <String>['Backpack', '3 Torch'],
+        ),
       );
       final appController = AppController(
         characterRepository: characterRepository,
@@ -35,71 +38,97 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: CharacterSheetScreen(
-            character: appController.state.selectedCharacterSheet!,
-            isApplyingRest: false,
-            errorMessage: null,
-            onBack: () {},
-            onEdit: () {},
-            onApplyShortRest: () async {},
-            onApplyLongRest: () async {},
-            onSpendSpellSlot:
-                ({required int spellLevel, required int slotIndex}) async {},
-            onRestoreSpellSlot:
-                ({required int spellLevel, required int slotIndex}) async {},
-            onSetClassResourceUses: (resourceKey, currentUses) async {},
-            onRecordDeathSaveSuccess: () async {},
-            onRecordDeathSaveFailure: () async {},
-            onResetDeathSaves: () async {},
-            onSetInventoryItemEquipped: (inventoryItemId, isEquipped) async {},
-            onSetInventoryItemCarried: (inventoryItemId, isCarried) async {},
-            onSetInventoryItemQuantity: (inventoryItemId, quantity) async {},
-            onSpendInventoryItemQuantity:
-                (inventoryItemId, {int amount = 1}) async {},
-            onSetInventoryItemCharges:
-                (inventoryItemId, {chargesCurrent, chargesMax}) async {},
-            onSetInventoryItemContainer:
-                (inventoryItemId, containerInventoryItemId) async {},
-            onCreateContainer: appController.createContainer,
+          home: AnimatedBuilder(
+            animation: appController,
+            builder: (context, _) {
+              final selectedCharacter =
+                  appController.state.selectedCharacterSheet!;
+              return CharacterSheetScreen(
+                character: selectedCharacter,
+                isApplyingRest: false,
+                errorMessage: null,
+                onBack: () {},
+                onEdit: () {},
+                onApplyShortRest: () async {},
+                onApplyLongRest: () async {},
+                onSpendSpellSlot:
+                    ({
+                      required int spellLevel,
+                      required int slotIndex,
+                    }) async {},
+                onRestoreSpellSlot:
+                    ({
+                      required int spellLevel,
+                      required int slotIndex,
+                    }) async {},
+                onSetClassResourceUses: (resourceKey, currentUses) async {},
+                onRecordDeathSaveSuccess: () async {},
+                onRecordDeathSaveFailure: () async {},
+                onResetDeathSaves: () async {},
+                onSetInventoryItemEquipped:
+                    (inventoryItemId, isEquipped) async {},
+                onSetInventoryItemCarried:
+                    (inventoryItemId, isCarried) async {},
+                onSetInventoryItemQuantity:
+                    (inventoryItemId, quantity) async {},
+                onSpendInventoryItemQuantity:
+                    (inventoryItemId, {int amount = 1}) async {},
+                onSetInventoryItemCharges:
+                    (inventoryItemId, {chargesCurrent, chargesMax}) async {},
+                onSetInventoryItemContainer:
+                    (inventoryItemId, containerInventoryItemId) async {},
+                onTransferToContainer: appController
+                    .transferSelectedCharacterInventoryItemToContainer,
+              );
+            },
           ),
         ),
       );
 
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
+      expect(find.text('Stored in Backpack'), findsNothing);
 
-      final button = tester.widget<OutlinedButton>(
-        find.widgetWithText(OutlinedButton, 'Manage containers'),
-      );
-      expect(button.onPressed, isNotNull);
-
-      button.onPressed!.call();
-      await tester.pumpAndSettle();
-
-      expect(find.text('Manage Containers'), findsOneWidget);
-      expect(find.text('Add new container:'), findsOneWidget);
-
-      await tester.enterText(find.byType(TextField), 'New Spell Pouch');
-      await tester.pumpAndSettle();
-      await appController.createContainer(
-        createdCharacter.id,
-        'New Spell Pouch',
+      await tester.dragUntilVisible(
+        find.text('Torch'),
+        find.byType(ListView),
+        const Offset(0, -300),
       );
       await tester.pumpAndSettle();
-      await appController.openCharacter(createdCharacter.id);
+
+      await tester.tap(find.byTooltip('Transfer to container'));
       await tester.pumpAndSettle();
 
-      final containers = appController
-          .state
-          .selectedCharacterSheet!
-          .equipment
-          .items
-          .where((item) => item.isContainer)
+      expect(find.text('Transfer to Container'), findsOneWidget);
+      expect(find.text('Backpack'), findsWidgets);
+
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Backpack'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '2');
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Transfer'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Transfer to Container'), findsNothing);
+      expect(find.text('Stored in Backpack'), findsWidgets);
+
+      final updatedSheet = appController.state.selectedCharacterSheet!;
+      final torchStacks = updatedSheet.equipment.items
+          .where((item) => item.name == 'Torch')
           .toList(growable: false);
-
-      expect(containers, hasLength(1));
-      expect(containers.single.name, 'New Spell Pouch');
-      expect(containers.single.id, contains('container-'));
+      expect(
+        torchStacks.any(
+          (item) =>
+              item.containerDisplayName == 'Backpack' && item.quantity == 2,
+        ),
+        isTrue,
+      );
+      expect(
+        torchStacks.any(
+          (item) => item.containerInventoryItemId == null && item.quantity == 1,
+        ),
+        isTrue,
+      );
     },
   );
 }

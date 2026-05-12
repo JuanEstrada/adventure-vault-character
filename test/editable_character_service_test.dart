@@ -66,7 +66,10 @@ void main() {
               ),
             ],
             slotUsages: <CharacterSpellSlotUsageInput>[
-              CharacterSpellSlotUsageInput(spellLevel: 1, expendedSlotIndices: ["1"]),
+              CharacterSpellSlotUsageInput(
+                spellLevel: 1,
+                expendedSlotIndices: ["1"],
+              ),
             ],
           ),
           finishingDetails: CharacterFinishingDetailsInput(

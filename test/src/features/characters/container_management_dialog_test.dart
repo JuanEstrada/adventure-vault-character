@@ -14,7 +14,7 @@ void main() {
               containers: _buildContainers(),
               onDismiss: () {},
               onRename: (containerId, containerName) {},
-              onDelete: (containerId) {},
+              onDelete: (containerId) async {},
               onAdd: (containerName) async => 'char-1-container-2',
             ),
           ),
@@ -32,36 +32,35 @@ void main() {
     },
   );
 
-  testWidgets(
-    'ContainerManagementDialog forwards the entered name to onAdd',
-    (WidgetTester tester) async {
-      String? addedContainerName;
+  testWidgets('ContainerManagementDialog forwards the entered name to onAdd', (
+    WidgetTester tester,
+  ) async {
+    String? addedContainerName;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ContainerManagementDialog(
-              containers: _buildContainers(),
-              onDismiss: () {},
-              onRename: (containerId, containerName) {},
-              onDelete: (containerId) {},
-              onAdd: (containerName) async {
-                addedContainerName = containerName;
-                return 'char-1-container-2';
-              },
-            ),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ContainerManagementDialog(
+            containers: _buildContainers(),
+            onDismiss: () {},
+            onRename: (containerId, containerName) {},
+            onDelete: (containerId) async {},
+            onAdd: (containerName) async {
+              addedContainerName = containerName;
+              return 'char-1-container-2';
+            },
           ),
         ),
-      );
+      ),
+    );
 
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField), 'Spell Pouch');
-      await tester.tap(find.text('Add'));
-      await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'Spell Pouch');
+    await tester.tap(find.text('Add'));
+    await tester.pumpAndSettle();
 
-      expect(addedContainerName, 'Spell Pouch');
-    },
-  );
+    expect(addedContainerName, 'Spell Pouch');
+  });
 }
 
 List<CharacterEquipmentItemDomainModel> _buildContainers() {

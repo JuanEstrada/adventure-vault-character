@@ -2,7 +2,7 @@
 
 ## Last Updated
 
-2026-05-11
+2026-05-12
 
 ## Roadmap Intent
 
@@ -27,6 +27,8 @@ tracks what is complete versus what still needs delivery hardening.
   hardening.
 - P2-12b is complete: the roadmap, snapshot, resume, and tracker now agree that
   the current player-app scope is closed.
+- VR-03c is complete: ROADMAP, tracker, and briefs are synchronized; only the
+  final recovery closeout remains.
 
 ## Phase Status Snapshot
 
@@ -198,16 +200,15 @@ Goal: Close quality gaps before broader feature expansion.
 
 ## Immediate Next Slice
 
-The current visible blockers are the validation recovery backlog:
+The current visible blocker is the final recovery closeout:
 
-1. `VR-01 — Fix spell-slot overspend validation parity`
-2. `VR-02 — Stabilize container-management dialog interactions`
-3. `VR-03 — Re-run validation and reconcile docs`
+1. `VR-03d — Commit and push the recovery closeout`
 
 **Notes:**
 - `flutter analyze` is green.
-- `flutter test` currently exposes the spell-slot overspend rejection failure and the container-management dialog interaction failures.
-- Keep the recovery work isolated from broader scope expansion.
+- `flutter test` passes for the recovery slices that were fixed.
+- The docs-sync slice is complete; keep the final closeout isolated from broader
+  scope expansion.
 
 ---
 

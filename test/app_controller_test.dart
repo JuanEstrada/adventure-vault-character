@@ -178,6 +178,118 @@ void main() {
       expect(controller.state.errorMessage, isNull);
     },
   );
+
+  test(
+    'create container persists across reopen through the controller mutation path',
+    () async {
+      final catalog = _buildTransferCatalog();
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(catalog),
+      );
+      final controller = AppController(
+        characterRepository: repository,
+        compendiumRepository: InMemoryCompendiumRepository(catalog),
+        systemSettingsRepository: InMemorySystemSettingsRepository(),
+      );
+      addTearDown(controller.dispose);
+
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Controller create container',
+          items: <String>['Backpack', 'Torch'],
+        ),
+      );
+
+      await controller.openCharacter(summary.id);
+      final containerId = await controller.createContainer(
+        summary.id,
+        'Spell Pouch',
+      );
+
+      final visibleSheet = controller.state.selectedCharacterSheet;
+      expect(visibleSheet, isNotNull);
+      expect(
+        visibleSheet!.equipment.items.any(
+          (item) => item.id == containerId && item.name == 'Spell Pouch',
+        ),
+        isTrue,
+      );
+
+      await controller.openCharacter(summary.id);
+      final reopenedSheet = controller.state.selectedCharacterSheet;
+      expect(reopenedSheet, isNotNull);
+      expect(
+        reopenedSheet!.equipment.items.any(
+          (item) => item.id == containerId && item.name == 'Spell Pouch',
+        ),
+        isTrue,
+      );
+
+      final persistedSheet = await repository.getCharacterSheetById(summary.id);
+      expect(persistedSheet, isNotNull);
+      expect(
+        persistedSheet!.equipment.items.any(
+          (item) => item.id == containerId && item.name == 'Spell Pouch',
+        ),
+        isTrue,
+      );
+      expect(controller.state.errorMessage, isNull);
+    },
+  );
+
+  test(
+    'delete container persists across reopen through the controller mutation path',
+    () async {
+      final catalog = _buildTransferCatalog();
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(catalog),
+      );
+      final controller = AppController(
+        characterRepository: repository,
+        compendiumRepository: InMemoryCompendiumRepository(catalog),
+        systemSettingsRepository: InMemorySystemSettingsRepository(),
+      );
+      addTearDown(controller.dispose);
+
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Controller delete container',
+          items: <String>['Backpack', 'Torch'],
+        ),
+      );
+      final sheetBefore = await repository.getCharacterSheetById(summary.id);
+      expect(sheetBefore, isNotNull);
+      final containerId = sheetBefore!.equipment.items
+          .firstWhere((item) => item.isContainer)
+          .id;
+
+      await controller.openCharacter(summary.id);
+      await controller.deleteContainer(containerId);
+
+      final visibleSheet = controller.state.selectedCharacterSheet;
+      expect(visibleSheet, isNotNull);
+      expect(
+        visibleSheet!.equipment.items.any((item) => item.isContainer),
+        isFalse,
+      );
+
+      await controller.openCharacter(summary.id);
+      final reopenedSheet = controller.state.selectedCharacterSheet;
+      expect(reopenedSheet, isNotNull);
+      expect(
+        reopenedSheet!.equipment.items.any((item) => item.isContainer),
+        isFalse,
+      );
+
+      final persistedSheet = await repository.getCharacterSheetById(summary.id);
+      expect(persistedSheet, isNotNull);
+      expect(
+        persistedSheet!.equipment.items.any((item) => item.isContainer),
+        isFalse,
+      );
+      expect(controller.state.errorMessage, isNull);
+    },
+  );
 }
 
 CreateCharacterInput _createCharacterInput({

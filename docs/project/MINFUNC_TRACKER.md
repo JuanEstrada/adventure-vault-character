@@ -15,6 +15,8 @@ Use this file to track:
 
 Keep this document operational. Do not turn it into a second roadmap.
 
+**Canonical naming rule:** reference MinFunc tasks as `<ID> — <Session>` so historical notes, follow-up docs, and any kanban backfills use the same full task name.
+
 ## Release Bar Rule
 
 A task belongs to **MinFunc** only if at least one of these is true:
@@ -97,6 +99,46 @@ real blockers:
 ||||| S20 | Update canonical docs | Align continuity docs with real MinFunc status. | S19 | Done | Canonical continuity docs now reflect the completed MinFunc audit and post-MVP split. |
 
 ## Phase 5 Remaining Micro-Tasks
+
+### Canonical MinFunc task names
+
+Core MinFunc chain:
+
+1. `S1 — Freeze release bar`
+2. `S2 — Audit real gaps`
+3. `S3 — Audit sheet slot view path`
+4. `S4 — Audit slot mutation path`
+5. `S5 — Freeze minimum slot gap`
+6. `S6A — Add spend repository contract`
+7. `S6B — Persist spend in Drift`
+8. `S6C1 — Add in-memory spend behavior`
+9. `S6C2 — Add spend parity tests`
+10. `S6C3 — Close spend parity slice`
+11. `S7 — Expose spend from sheet`
+12. `S8 — Test spend persistence`
+13. `S9A — Add restore contract flow`
+14. `S9B — Implement restore mutation behavior`
+15. `S9C — Close restore non-UI slice`
+16. `S10 — Expose restore from sheet`
+17. `S11 — Test restore persistence`
+18. `S12 — Audit minimum inventory usability`
+19. `S13 — Implement one blocking inventory action`
+20. `S14 — Test minimum inventory flow`
+21. `S15 — Harden missing-data sheet states`
+22. `S16 — Surface mutation rejections`
+23. `S17 — Verify persistence and reopen`
+24. `S18 — Validate full minimal loop`
+25. `S19 — Declare post-MVP debt`
+26. `S20 — Update canonical docs`
+
+Phase 5 hardening follow-up:
+
+1. `S21 — Audit remaining spell edge cases`
+2. `S22 — Add advanced spell regression tests`
+3. `S23 — Audit mixed-source precedence gaps`
+4. `S24 — Add mixed-source regression tests`
+5. `S25 — Verify parity for new hardening cases`
+6. `S26 — Close Phase 5 hardening slice`
 
 | ID | Session | Objective | Dependencies | Status | Notes |
 | --- | --- | --- | --- | --- | --- |

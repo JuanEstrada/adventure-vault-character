@@ -96,11 +96,18 @@ class _SplitStackDialogState extends State<SplitStackDialog> {
               ),
               const SizedBox(height: 8),
               if (_error != null)
-                Text(
-                  _error!,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: Colors.red),
+                Semantics(
+                  container: true,
+                  liveRegion: true,
+                  label: _error!,
+                  child: ExcludeSemantics(
+                    child: Text(
+                      _error!,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.red),
+                    ),
+                  ),
                 ),
               const SizedBox(height: 8),
               TextField(
@@ -151,9 +158,15 @@ class _SplitStackDialogState extends State<SplitStackDialog> {
           ),
           actions: [
             TextButton(onPressed: widget.onClose, child: const Text('Cancel')),
-            ElevatedButton(
-              onPressed: _isSplitting ? null : _validateAndSplit,
-              child: const Text('Split'),
+            Semantics(
+              container: true,
+              button: true,
+              enabled: !_isSplitting,
+              label: 'Confirm split',
+              child: ElevatedButton(
+                onPressed: _isSplitting ? null : _validateAndSplit,
+                child: const Text('Split'),
+              ),
             ),
           ],
         ),

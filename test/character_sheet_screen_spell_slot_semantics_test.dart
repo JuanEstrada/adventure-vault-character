@@ -61,6 +61,7 @@ void main() {
       expect(find.bySemanticsLabel('Track charges'), findsWidgets);
       expect(find.bySemanticsLabel('Decrease charges'), findsOneWidget);
       expect(find.bySemanticsLabel('Increase charges'), findsOneWidget);
+      expect(find.bySemanticsLabel('Inventory actions'), findsOneWidget);
       expect(find.bySemanticsLabel('Select container'), findsWidgets);
       expect(find.bySemanticsLabel('Split stack'), findsOneWidget);
       expect(find.bySemanticsLabel('Transfer to container'), findsOneWidget);

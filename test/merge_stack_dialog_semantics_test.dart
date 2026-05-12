@@ -47,4 +47,32 @@ void main() {
       handle.dispose();
     }
   });
+
+  testWidgets('merge stack dialog shows validation errors', (tester) async {
+    bool called = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: MergeStackDialog(
+            sourceItemId: 'source-1',
+            sourceQuantity: 8,
+            targetItemId: 'target-1',
+            targetQuantity: 4,
+            onDismiss: () {},
+            onMerge: (targetItemId, mergeQuantity) {
+              called = true;
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField), '0');
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Merge'));
+    await tester.pump();
+
+    expect(called, isFalse);
+    expect(find.text('Merge quantity must be greater than zero'), findsWidgets);
+  });
 }

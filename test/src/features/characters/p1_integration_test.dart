@@ -53,7 +53,7 @@ void main() {
         containers: _buildContainers(),
         onDismiss: () {},
         onRename: (containerId, containerName) => {},
-        onDelete: (containerId) => {},
+        onDelete: (containerId) async {},
         onAdd: (containerName) async => 'char-1-container-2',
       );
 

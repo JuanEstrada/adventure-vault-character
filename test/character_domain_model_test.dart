@@ -196,14 +196,14 @@ void main() {
               source: 'SRD',
             ),
           ],
-  slotProgression: <CharacterSpellSlotDomainModel>[
-      CharacterSpellSlotDomainModel(
-        spellLevel: 1,
-        slotIndex: 0,
-        slotsExpended: 1,
-        slotsMax: 4,
-      ),
-    ],
+          slotProgression: <CharacterSpellSlotDomainModel>[
+            CharacterSpellSlotDomainModel(
+              spellLevel: 1,
+              slotIndex: 0,
+              slotsExpended: 1,
+              slotsMax: 4,
+            ),
+          ],
           availableSpells: <CharacterSpellReferenceDomainModel>[
             CharacterSpellReferenceDomainModel(
               id: 'mage-hand',

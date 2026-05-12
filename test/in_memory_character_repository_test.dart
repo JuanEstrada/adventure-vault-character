@@ -47,7 +47,10 @@ void main() {
             selectionMode: CharacterSpellSelectionMode.spellbook,
             selectedSpells: <CharacterSpellSelectionInput>[],
             slotUsages: <CharacterSpellSlotUsageInput>[
-              CharacterSpellSlotUsageInput(spellLevel: 1, expendedSlotIndices: <String>["3"]),
+              CharacterSpellSlotUsageInput(
+                spellLevel: 1,
+                expendedSlotIndices: <String>["3"],
+              ),
             ],
           ),
         ),

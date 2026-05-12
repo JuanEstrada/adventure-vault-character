@@ -356,10 +356,23 @@ class DriftCharacterRepository implements CharacterRepository {
     return containerId;
   }
 
+  @override
+  Future<void> deleteContainer(
+    String id,
+    String containerInventoryItemId,
+  ) async {
+    return _characterInventoryService.deleteContainer(
+      id,
+      containerInventoryItemId,
+    );
+  }
+
   Future<String> _nextContainerId(String characterId) async {
     var nextIndex = 1;
     final pattern = RegExp('^${RegExp.escape(characterId)}-container-(\\d+)');
-    final inventoryItems = await _readDao.getInventoryByCharacterId(characterId);
+    final inventoryItems = await _readDao.getInventoryByCharacterId(
+      characterId,
+    );
     for (final item in inventoryItems) {
       final match = pattern.firstMatch(item.id);
       if (match == null) continue;

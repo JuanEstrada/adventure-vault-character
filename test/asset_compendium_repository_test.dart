@@ -866,6 +866,57 @@ void main() {
     },
   );
 
+  test(
+    'skips core XML fetches when AssetManifest omits the compendium bundle',
+    () async {
+      final repository = AssetCompendiumRepository(
+        bundle: _FakeAssetBundle({
+          'AssetManifest.json': jsonEncode(<String, List<String>>{
+            'assets/compendium/catalog.json': <String>[],
+          }),
+          'assets/compendium/catalog.json': jsonEncode(<String, dynamic>{
+            'races': <String>['Human'],
+            'classes': <String>['Fighter'],
+            'backgrounds': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 'acolyte',
+                'name': 'Acolyte',
+                'summary': 'Fallback summary',
+                'bonuses': <String>['Fallback bonus'],
+                'socialPerks': <String>['Fallback perk'],
+              },
+            ],
+            'generatedAbilityScoreSet': <int>[15, 14, 13, 12, 10, 8],
+            'manualAbilityScoreOptions': <int>[8, 9, 10, 11, 12, 13, 14, 15],
+            'equipmentSummariesByClass': <String, dynamic>{
+              'Fighter': <String, dynamic>{
+                'statusLabel': 'Fallback',
+                'description': 'Fallback description',
+                'highlightItems': <String>['Fallback item'],
+              },
+            },
+            'equipmentLoadoutsByClass': <String, dynamic>{
+              'Fighter': <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'id': 'fighter-fallback',
+                  'label': 'Fallback loadout',
+                  'startingMoneySummary': 'Fallback money',
+                  'selectedItems': <String>['Fallback item'],
+                },
+              ],
+            },
+          }),
+        }),
+      );
+
+      final catalog = await repository.loadCatalog();
+
+      expect(catalog.sourcePolicy.activeSourceType, 'fallback_json');
+      expect(catalog.races, <String>['Human']);
+      expect(catalog.classes, <String>['Fighter']);
+    },
+  );
+
   test('merges imported XML packs into a fallback JSON base catalog', () async {
     final database = AppDatabase.executor(NativeDatabase.memory());
     addTearDown(database.close);

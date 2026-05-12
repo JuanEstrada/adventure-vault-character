@@ -145,9 +145,7 @@ class CharacterWriteDao {
   Future<void> insertSpellSlotUsage(
     CharacterSpellSlotUsagesCompanion companion,
   ) async {
-    await _database
-        .into(_database.characterSpellSlotUsages)
-        .insert(companion);
+    await _database.into(_database.characterSpellSlotUsages).insert(companion);
   }
 
   Future<void> replaceSpellSlotUsage(
@@ -161,10 +159,12 @@ class CharacterWriteDao {
   Future<void> deleteSpellSlotUsage(
     CharacterSpellSlotUsagesCompanion companion,
   ) async {
-    await (_database.delete(
-      _database.characterSpellSlotUsages,
-    )..where((table) => table.characterId.equals(companion.characterId.value) &
-        table.spellLevel.equals(companion.spellLevel.value))).go();
+    await (_database.delete(_database.characterSpellSlotUsages)..where(
+          (table) =>
+              table.characterId.equals(companion.characterId.value) &
+              table.spellLevel.equals(companion.spellLevel.value),
+        ))
+        .go();
   }
 
   Future<void> insertSkills(List<CharacterSkillsCompanion> companions) async {

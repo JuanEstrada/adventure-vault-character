@@ -498,6 +498,12 @@ These briefs cover the small recovery backlog that surfaced in the latest valida
 **Done when:**
 - Overspend rejection is deterministic and the repository parity stays green.
 
+**Coder microtasks:**
+1. `VR-01a — Reproduce the overspend failure and pin the exact guard branch`
+2. `VR-01b — Align Drift and in-memory spell-slot overspend checks`
+3. `VR-01c — Tighten the overspend regression test`
+4. `VR-01d — Run targeted validation for spell-slot parity`
+
 ### VR-02 — Stabilize container-management dialog interactions
 
 **Depends on:** none
@@ -539,11 +545,19 @@ These briefs cover the small recovery backlog that surfaced in the latest valida
 **Done when:**
 - The dialog no longer throws focus/build-scope errors and forwards the entered container name correctly.
 
+**Coder microtasks:**
+1. `VR-02a — Remove controller feedback loops from the container name field`
+2. `VR-02b — Make container selection explicit and predictable`
+3. `VR-02c — Stabilize add/rename action callbacks`
+4. `VR-02d — Repair and rerun the dialog widget tests`
+
 ### VR-03 — Re-run validation and reconcile docs
 
 **Depends on:** VR-01, VR-02
 
 **Objective:** Re-run the project validation, confirm the recovery backlog is closed, and synchronize the canonical docs with the new state.
+
+**Status:** VR-03a through VR-03c are complete; VR-03d is the only remaining closeout step.
 
 **Grounded touchpoints:**
 - `docs/project/SESSION_RESUME.md`
@@ -573,3 +587,9 @@ These briefs cover the small recovery backlog that surfaced in the latest valida
 
 **Done when:**
 - The recovery queue is fully reflected in docs and the project state is consistent.
+
+**Coder microtasks:**
+1. `VR-03a — Run format/analyze/test after the code fixes`
+2. `VR-03b — Reconcile SESSION_RESUME and PROJECT_SNAPSHOT`
+3. `VR-03c — Sync ROADMAP, tracker, and briefs`
+4. `VR-03d — Commit and push the recovery closeout`

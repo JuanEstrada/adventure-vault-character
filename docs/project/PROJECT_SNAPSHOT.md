@@ -2,7 +2,7 @@
 
 ## Last Updated
 
-2026-05-11
+2026-05-12
 
 ## Role of This Document
 
@@ -18,7 +18,7 @@ Post-foundation implementation, validation hardening, and documentation alignmen
 
 - Character-sheet completion slice: implemented.
 - Deterministic combat MVP slice: implemented.
-- Current work posture: MinFunc is complete; the canonical docs are aligned; and the current live worktree has a narrow validation recovery backlog (spell-slot overspend parity and container-management dialog interaction stability).
+- Current work posture: MinFunc is complete; the canonical docs are aligned; and the validation recovery queue is closed, with only the final commit/push closeout remaining.
 - Phase 8 accessibility work is complete and verified.
 - P2-02 audit is complete: the character sheet already exposes direct inventory action buttons in `_InventoryItemRow`, and the later dialog slices wired those entry points to live call sites.
 - P2-03 is complete: the live sheet now opens `TransferToContainerDialog` from the inventory transfer button; the placeholder container data and submit path are gone.
@@ -143,9 +143,7 @@ Primary constraints are tracked in:
   domain/application contracts.
 - Imported-content conflict diagnostics may need richer visibility if more
   sections become pack-sensitive.
-- The current live worktree has a small recovery backlog: spell-slot overspend
-  validation parity and container-management dialog interactions still need
-  cleanup before the repo is green again.
+- The current live worktree has a small recovery closeout: the code fixes and validation are green, and the remaining work is the final commit/push before the repo is fully wrapped up.
 - **P2-10a complete:** Inventory actions are grouped in a dedicated section above the equipment item list, while stack actions stay on the item rows.
 - Future accessibility work, if any, should be treated as a new backlog item
   rather than a continuation of the completed Phase 8 slices.

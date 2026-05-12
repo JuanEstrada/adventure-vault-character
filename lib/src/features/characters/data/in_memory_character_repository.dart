@@ -975,6 +975,37 @@ class InMemoryCharacterRepository implements CharacterRepository {
   }
 
   @override
+  Future<void> deleteContainer(
+    String id,
+    String containerInventoryItemId,
+  ) async {
+    final summary = await getCharacterSummaryById(id);
+    if (summary == null) {
+      throw StateError('Character not found.');
+    }
+
+    final inventory = _inventoryByCharacterId[id];
+    if (inventory == null) {
+      throw StateError('Inventory not found.');
+    }
+
+    final index = inventory.indexWhere(
+      (item) => item.id == containerInventoryItemId,
+    );
+    if (index < 0) {
+      throw StateError('Container not found.');
+    }
+
+    final nextInventory = <_InMemoryInventoryItem>[
+      ...inventory.sublist(0, index),
+      ...inventory.sublist(index + 1),
+    ];
+
+    _inventoryByCharacterId[id] = nextInventory;
+    _changes.add(null);
+  }
+
+  @override
   Future<CharacterDomainModel?> getCharacterSheetById(String id) async {
     final summary = await getCharacterSummaryById(id);
     if (summary == null) {

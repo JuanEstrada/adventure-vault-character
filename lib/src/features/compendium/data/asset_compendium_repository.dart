@@ -1034,6 +1034,27 @@ class AssetCompendiumRepository implements CompendiumRepository {
     }
   }
 
+  Future<bool?> _hasBundledCoreXmlAssets() async {
+    const manifestPath = 'AssetManifest.json';
+
+    try {
+      final rawManifest = await _bundle.loadString(manifestPath);
+      final decoded = jsonDecode(rawManifest);
+      if (decoded is! Map<String, dynamic>) {
+        return null;
+      }
+
+      final bundledAssetPaths = decoded.keys.toSet();
+      return bundledAssetPaths.containsAll(<String>[
+        _backgroundsAssetPath,
+        _racesAssetPath,
+        _classesAssetPath,
+      ]);
+    } catch (_) {
+      return null;
+    }
+  }
+
   String? _extractSingleTagText(String xml, String tagName) {
     final match = RegExp(
       '<$tagName\\b[^>]*>([\\s\\S]*?)</$tagName>',
@@ -2308,58 +2329,72 @@ class AssetCompendiumRepository implements CompendiumRepository {
 
   Future<CompendiumCatalog> _loadBaseCatalog() async {
     CompendiumCatalog? catalog;
-    try {
-      final backgroundsXml = await _bundle.loadString(_backgroundsAssetPath);
-      final racesXml = await _bundle.loadString(_racesAssetPath);
-      final classesXml = await _bundle.loadString(_classesAssetPath);
-      final spellsXml = await _tryLoadString(_spellsAssetPath);
-      final featsXml = await _tryLoadString(_featsAssetPath);
-      final optionalFeaturesXml = await _tryLoadString(
-        _optionalFeaturesAssetPath,
-      );
-      final monstersXml = await _tryLoadString(_monstersAssetPath);
-      final phbBackgroundsXml = await _tryLoadString(_phbBackgroundsAssetPath);
-      final scagBackgroundsXml = await _tryLoadString(
-        _scagBackgroundsAssetPath,
-      );
-      final pamBackgroundsXml = await _tryLoadString(_pamBackgroundsAssetPath);
-      final ggrBackgroundsXml = await _tryLoadString(_ggrBackgroundsAssetPath);
-      final erlwBackgroundsXml = await _tryLoadString(
-        _erlwBackgroundsAssetPath,
-      );
-      final equipmentAssetXmls = await Future.wait(
-        _equipmentAssetPaths.map(
-          (path) async => await _tryLoadString(path) ?? '',
-        ),
-      );
-      _baseCompendiumXmlSources = <String>[
-        backgroundsXml,
-        racesXml,
-        classesXml,
-        spellsXml ?? '',
-        featsXml ?? '',
-        optionalFeaturesXml ?? '',
-        monstersXml ?? '',
-        ...equipmentAssetXmls,
-      ];
-      catalog = _parseFightClubCatalog(
-        backgroundsXml: backgroundsXml,
-        racesXml: racesXml,
-        classesXml: classesXml,
-        spellsXml: spellsXml ?? '',
-        featsXml: featsXml ?? '',
-        optionalFeaturesXml: optionalFeaturesXml ?? '',
-        monstersXml: monstersXml ?? '',
-        phbBackgroundsXml: phbBackgroundsXml ?? '',
-        scagBackgroundsXml: scagBackgroundsXml ?? '',
-        pamBackgroundsXml: pamBackgroundsXml ?? '',
-        ggrBackgroundsXml: ggrBackgroundsXml ?? '',
-        erlwBackgroundsXml: erlwBackgroundsXml ?? '',
-      );
-    } catch (_) {
+
+    final hasBundledCoreXmlAssets = await _hasBundledCoreXmlAssets();
+    if (hasBundledCoreXmlAssets == false) {
       _baseCompendiumXmlSources = const <String>[];
       final rawJson = await _bundle.loadString(_fallbackCatalogAssetPath);
       catalog = _parseJsonCatalog(rawJson);
+    } else {
+      try {
+        final backgroundsXml = await _bundle.loadString(_backgroundsAssetPath);
+        final racesXml = await _bundle.loadString(_racesAssetPath);
+        final classesXml = await _bundle.loadString(_classesAssetPath);
+        final spellsXml = await _tryLoadString(_spellsAssetPath);
+        final featsXml = await _tryLoadString(_featsAssetPath);
+        final optionalFeaturesXml = await _tryLoadString(
+          _optionalFeaturesAssetPath,
+        );
+        final monstersXml = await _tryLoadString(_monstersAssetPath);
+        final phbBackgroundsXml = await _tryLoadString(
+          _phbBackgroundsAssetPath,
+        );
+        final scagBackgroundsXml = await _tryLoadString(
+          _scagBackgroundsAssetPath,
+        );
+        final pamBackgroundsXml = await _tryLoadString(
+          _pamBackgroundsAssetPath,
+        );
+        final ggrBackgroundsXml = await _tryLoadString(
+          _ggrBackgroundsAssetPath,
+        );
+        final erlwBackgroundsXml = await _tryLoadString(
+          _erlwBackgroundsAssetPath,
+        );
+        final equipmentAssetXmls = await Future.wait(
+          _equipmentAssetPaths.map(
+            (path) async => await _tryLoadString(path) ?? '',
+          ),
+        );
+        _baseCompendiumXmlSources = <String>[
+          backgroundsXml,
+          racesXml,
+          classesXml,
+          spellsXml ?? '',
+          featsXml ?? '',
+          optionalFeaturesXml ?? '',
+          monstersXml ?? '',
+          ...equipmentAssetXmls,
+        ];
+        catalog = _parseFightClubCatalog(
+          backgroundsXml: backgroundsXml,
+          racesXml: racesXml,
+          classesXml: classesXml,
+          spellsXml: spellsXml ?? '',
+          featsXml: featsXml ?? '',
+          optionalFeaturesXml: optionalFeaturesXml ?? '',
+          monstersXml: monstersXml ?? '',
+          phbBackgroundsXml: phbBackgroundsXml ?? '',
+          scagBackgroundsXml: scagBackgroundsXml ?? '',
+          pamBackgroundsXml: pamBackgroundsXml ?? '',
+          ggrBackgroundsXml: ggrBackgroundsXml ?? '',
+          erlwBackgroundsXml: erlwBackgroundsXml ?? '',
+        );
+      } catch (_) {
+        _baseCompendiumXmlSources = const <String>[];
+        final rawJson = await _bundle.loadString(_fallbackCatalogAssetPath);
+        catalog = _parseJsonCatalog(rawJson);
+      }
     }
 
     final database = _database;

@@ -134,25 +134,30 @@ class CharacterRecoveryService {
         .where((u) => u.spellLevel == spellLevel)
         .firstOrNull;
 
-    final List<String> currentExpendedIndices = existingUsage != null
-        ? (existingUsage.expendedSlotIndices.isEmpty
-              ? const <String>[]
-              : List<String>.from(
-                  existingUsage.expendedSlotIndices
-                      .split(',')
-                      .where((s) => s.isNotEmpty),
-                ))
-        : const <String>[];
-    if (currentExpendedIndices.contains(slotIndex.toString())) {
+    final currentSerialized = existingUsage?.expendedSlotIndices ?? '';
+    final currentExpendedCount =
+        CharacterSpellSlotUsageCodec.expendedCountFromSerialized(
+          currentSerialized,
+        );
+    if (currentExpendedCount >= matchingSlot.slotsMax) {
+      throw StateError('Spell slot usage exceeds the derived slot maximum.');
+    }
+
+    final currentExplicitIndices =
+        CharacterSpellSlotUsageCodec.explicitIndicesFromSerialized(
+          currentSerialized,
+        );
+    if (currentExplicitIndices.contains(slotIndex.toString())) {
       throw StateError(
         'Slot $slotIndex at level $spellLevel is already expended.',
       );
     }
 
-    final updatedIndices = <String>[
-      ...currentExpendedIndices,
-      slotIndex.toString(),
-    ];
+    final updatedSerialized =
+        CharacterSpellSlotUsageCodec.serializeUpdatedIndices(
+          currentSerialized: currentSerialized,
+          expendedCount: currentExpendedCount + 1,
+        );
 
     await _database.transaction(() async {
       final now = DateTime.now();
@@ -165,7 +170,7 @@ class CharacterRecoveryService {
           CharacterSpellSlotUsagesCompanion(
             characterId: Value(id),
             spellLevel: Value(spellLevel),
-            expendedSlotIndices: Value(updatedIndices.join(',')),
+            expendedSlotIndices: Value(updatedSerialized),
           ),
         );
       } else {
@@ -173,7 +178,7 @@ class CharacterRecoveryService {
           CharacterSpellSlotUsagesCompanion.insert(
             characterId: id,
             spellLevel: spellLevel,
-            expendedSlotIndices: Value(updatedIndices.join(',')),
+            expendedSlotIndices: Value(updatedSerialized),
           ),
         );
       }

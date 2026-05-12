@@ -221,6 +221,23 @@ These cards capture the remaining work the latest test run exposed. Keep them se
 ### Recovery notes
 
 - `VR-01` maps to the failing overspend assertion in `test/drift_character_repository_test.dart`.
+- The guard branch to pin is `currentExpendedCount >= matchingSlot.slotsMax` in `lib/src/features/characters/application/character_recovery_service.dart` (mirrored in the in-memory repo at `lib/src/features/characters/data/in_memory_character_repository.dart`).
 - `VR-02` maps to the failing `container_management_dialog` widget tests under `test/src/features/characters/`.
 - `VR-03` closes the loop by rerunning `flutter analyze`, `flutter test`, and updating the continuity docs once the queue is green.
-(End of file - total 209 lines)
+
+### Coder microtasks
+
+| Order | Card | Depends on | Status |
+| --- | --- | --- | --- |
+| 1 | VR-01a Reproduce the overspend failure and pin the exact guard branch | VR-01 | Done |
+| 2 | VR-01b Align Drift and in-memory spell-slot overspend checks | VR-01a | Done |
+| 3 | VR-01c Tighten the overspend regression test | VR-01b | Done |
+| 4 | VR-01d Run targeted validation for spell-slot parity | VR-01c | Done |
+| 5 | VR-02a Remove controller feedback loops from the container name field | VR-02 | Done |
+| 6 | VR-02b Make container selection explicit and predictable | VR-02a | Done |
+| 7 | VR-02c Stabilize add/rename action callbacks | VR-02b | Done |
+| 8 | VR-02d Repair and rerun the dialog widget tests | VR-02c | Done |
+| 9 | VR-03a | Run format/analyze/test after the code fixes | VR-01d, VR-02d | Done |
+| 10 | VR-03b | Reconcile SESSION_RESUME and PROJECT_SNAPSHOT | VR-03a | Done | Session docs now match the recovery closeout state. |
+| 11 | VR-03c | Sync ROADMAP, tracker, and briefs | VR-03b | Done | Canonical project docs now agree on the final recovery closeout. |
+| 12 | VR-03d | Commit and push the recovery closeout | VR-03c | Planned | Final housekeeping remains after the docs sync. |

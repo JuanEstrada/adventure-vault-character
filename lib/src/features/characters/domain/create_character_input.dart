@@ -114,6 +114,8 @@ class CharacterSpellSlotUsageInput {
 
   List<int> get availableSlotIndices {
     final allIndices = List<int>.generate(slotsExpended, (i) => i);
-    return allIndices.where((i) => !expendedSlotIndices.contains(i.toString())).toList();
+    return allIndices
+        .where((i) => !expendedSlotIndices.contains(i.toString()))
+        .toList();
   }
 }

@@ -68,7 +68,10 @@ void main() {
               ),
             ],
             slotUsages: <CharacterSpellSlotUsageInput>[
-              CharacterSpellSlotUsageInput(spellLevel: 1, expendedSlotIndices: <String>["1"]),
+              CharacterSpellSlotUsageInput(
+                spellLevel: 1,
+                expendedSlotIndices: <String>["1"],
+              ),
             ],
           ),
           finishingDetails: CharacterFinishingDetailsInput(
@@ -241,7 +244,10 @@ void main() {
               ),
             ],
             slotUsages: <CharacterSpellSlotUsageInput>[
-              CharacterSpellSlotUsageInput(spellLevel: 1, expendedSlotIndices: <String>["1"]),
+              CharacterSpellSlotUsageInput(
+                spellLevel: 1,
+                expendedSlotIndices: <String>["1"],
+              ),
             ],
           ),
           finishingDetails: CharacterFinishingDetailsInput(
@@ -307,7 +313,10 @@ void main() {
               ),
             ],
             slotUsages: <CharacterSpellSlotUsageInput>[
-              CharacterSpellSlotUsageInput(spellLevel: 1, expendedSlotIndices: <String>["0"]),
+              CharacterSpellSlotUsageInput(
+                spellLevel: 1,
+                expendedSlotIndices: <String>["0"],
+              ),
             ],
           ),
           finishingDetails: CharacterFinishingDetailsInput(
@@ -487,7 +496,10 @@ void main() {
                 ),
               ],
               slotUsages: <CharacterSpellSlotUsageInput>[
-                CharacterSpellSlotUsageInput(spellLevel: 1, expendedSlotIndices: <String>["0"]),
+                CharacterSpellSlotUsageInput(
+                  spellLevel: 1,
+                  expendedSlotIndices: <String>["0"],
+                ),
               ],
             ),
             finishingDetails: CharacterFinishingDetailsInput(
@@ -562,7 +574,10 @@ void main() {
               ),
             ],
             slotUsages: <CharacterSpellSlotUsageInput>[
-              CharacterSpellSlotUsageInput(spellLevel: 3, expendedSlotIndices: <String>["1"]),
+              CharacterSpellSlotUsageInput(
+                spellLevel: 3,
+                expendedSlotIndices: <String>["1"],
+              ),
             ],
           ),
           finishingDetails: CharacterFinishingDetailsInput(
@@ -640,7 +655,10 @@ void main() {
             ),
           ],
           slotUsages: <CharacterSpellSlotUsageInput>[
-            CharacterSpellSlotUsageInput(spellLevel: 3, expendedSlotIndices: <String>["2"]),
+            CharacterSpellSlotUsageInput(
+              spellLevel: 3,
+              expendedSlotIndices: <String>["2"],
+            ),
           ],
         ),
         finishingDetails: CharacterFinishingDetailsInput(
@@ -701,7 +719,7 @@ void main() {
     expect(slotRows.single.expendedSlotIndices, equals(""));
   });
 
-  test('spendSpellSlot persists one additional expended slot', () async {
+  test('spendSpellSlot persists one expended slot', () async {
     final database = AppDatabase.executor(NativeDatabase.memory());
     addTearDown(database.close);
 
@@ -739,9 +757,7 @@ void main() {
         spellState: CharacterSpellStateInput(
           selectionMode: CharacterSpellSelectionMode.spellbook,
           selectedSpells: <CharacterSpellSelectionInput>[],
-          slotUsages: <CharacterSpellSlotUsageInput>[
-            CharacterSpellSlotUsageInput(spellLevel: 1, expendedSlotIndices: <String>["1"]),
-          ],
+          slotUsages: <CharacterSpellSlotUsageInput>[],
         ),
         finishingDetails: CharacterFinishingDetailsInput(
           appearanceDetails: '',
@@ -766,14 +782,14 @@ void main() {
     final levelOneSlot = sheet.spellcasting!.slotProgression.firstWhere(
       (slot) => slot.spellLevel == 1,
     );
-    expect(levelOneSlot.slotsExpended, equals(2));
+    expect(levelOneSlot.slotsExpended, equals(1));
 
     final slotRows = await (database.select(
       database.characterSpellSlotUsages,
     )..where((table) => table.characterId.equals(summary.id))).get();
     expect(slotRows, hasLength(1));
     expect(slotRows.single.spellLevel, 1);
-    expect(slotRows.single.expendedSlotIndices, equals("1,0"));
+    expect(slotRows.single.expendedSlotIndices, equals("1"));
   });
 
   test('spendSpellSlot rejects spending beyond derived slot maximum', () async {
@@ -815,7 +831,10 @@ void main() {
           selectionMode: CharacterSpellSelectionMode.spellbook,
           selectedSpells: <CharacterSpellSelectionInput>[],
           slotUsages: <CharacterSpellSlotUsageInput>[
-            CharacterSpellSlotUsageInput(spellLevel: 1, expendedSlotIndices: ["2"]),
+            CharacterSpellSlotUsageInput(
+              spellLevel: 1,
+              expendedSlotIndices: <String>['1', '2'],
+            ),
           ],
         ),
         finishingDetails: CharacterFinishingDetailsInput(
@@ -833,6 +852,23 @@ void main() {
       ),
     );
 
+    final characterBefore = await (database.select(
+      database.characters,
+    )..where((table) => table.id.equals(summary.id))).getSingle();
+    final slotRowsBefore = await (database.select(
+      database.characterSpellSlotUsages,
+    )..where((table) => table.characterId.equals(summary.id))).get();
+    expect(slotRowsBefore, hasLength(1));
+    expect(slotRowsBefore.single.spellLevel, 1);
+    expect(slotRowsBefore.single.expendedSlotIndices, '1,2');
+
+    final sheetBefore = await repository.getCharacterSheetById(summary.id);
+    expect(sheetBefore, isNotNull);
+    final slotBefore = sheetBefore!.spellcasting!.slotProgression.firstWhere(
+      (entry) => entry.spellLevel == 1,
+    );
+    expect(slotBefore.slotsExpended, 2);
+
     await expectLater(
       () => repository.spendSpellSlot(summary.id, spellLevel: 1, slotIndex: 0),
       throwsA(
@@ -843,6 +879,28 @@ void main() {
         ),
       ),
     );
+
+    final characterAfter = await (database.select(
+      database.characters,
+    )..where((table) => table.id.equals(summary.id))).getSingle();
+    expect(characterAfter.updatedAt, characterBefore.updatedAt);
+
+    final slotRowsAfter = await (database.select(
+      database.characterSpellSlotUsages,
+    )..where((table) => table.characterId.equals(summary.id))).get();
+    expect(slotRowsAfter, hasLength(1));
+    expect(slotRowsAfter.single.spellLevel, 1);
+    expect(
+      slotRowsAfter.single.expendedSlotIndices,
+      slotRowsBefore.single.expendedSlotIndices,
+    );
+
+    final sheetAfter = await repository.getCharacterSheetById(summary.id);
+    expect(sheetAfter, isNotNull);
+    final slotAfter = sheetAfter!.spellcasting!.slotProgression.firstWhere(
+      (entry) => entry.spellLevel == 1,
+    );
+    expect(slotAfter.slotsExpended, slotBefore.slotsExpended);
   });
 
   test('short rest restores short-rest class resources', () async {

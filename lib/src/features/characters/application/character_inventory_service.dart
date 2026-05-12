@@ -617,7 +617,43 @@ class CharacterInventoryService {
       );
     });
 
+    _onCharacterChanged?.call(id);
     return containerId;
+  }
+
+  Future<void> deleteContainer(
+    String id,
+    String containerInventoryItemId,
+  ) async {
+    if (containerInventoryItemId.isEmpty) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Container ID cannot be empty.',
+      );
+    }
+
+    final character = await _readDao.getCharacterRowById(id);
+    if (character == null) {
+      throw StateError('Character not found.');
+    }
+
+    final container = await _readDao.getInventoryItemById(
+      containerInventoryItemId,
+    );
+    if (container == null || container.characterId != id) {
+      throw StateError('Container not found for this character.');
+    }
+
+    await _database.transaction(() async {
+      final now = DateTime.now();
+      await _writeDao.updateCharacter(
+        id,
+        CharactersCompanion(updatedAt: Value(now)),
+      );
+      await _writeDao.deleteInventoryItemById(containerInventoryItemId);
+    });
+
+    _onCharacterChanged?.call(id);
   }
 
   Future<void> _validateContainerCreation(

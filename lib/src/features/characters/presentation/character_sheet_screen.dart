@@ -29,6 +29,25 @@ Widget _mutationErrorBanner(BuildContext context, String message) {
   );
 }
 
+Widget _landscapeSectionCard(BuildContext context, {required Widget child}) {
+  final theme = Theme.of(context);
+
+  return Card(
+    clipBehavior: Clip.antiAlias,
+    child: Container(
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(
+            width: 12,
+            color: theme.colorScheme.primaryContainer,
+          ),
+        ),
+      ),
+      child: child,
+    ),
+  );
+}
+
 class CharacterSheetScreen extends _CharacterSheetScreen {
   const CharacterSheetScreen({
     required super.character,
@@ -53,6 +72,7 @@ class CharacterSheetScreen extends _CharacterSheetScreen {
     super.onSplitStack,
     super.onMergeStacks,
     super.onTransferToContainer,
+    super.onDeleteContainer,
     super.onCreateContainer,
     super.key,
   });
@@ -82,6 +102,7 @@ class _CharacterSheetScreen extends StatefulWidget {
     this.onSplitStack,
     this.onMergeStacks,
     this.onTransferToContainer,
+    this.onDeleteContainer,
     this.onCreateContainer,
     super.key,
   });
@@ -130,6 +151,7 @@ class _CharacterSheetScreen extends StatefulWidget {
     int quantity,
   )?
   onTransferToContainer;
+  final Future<void> Function(String containerId)? onDeleteContainer;
   final Future<String> Function(String characterId, String name)?
   onCreateContainer;
 
@@ -183,6 +205,10 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
   )
   get onTransferToContainer =>
       widget.onTransferToContainer ?? _noopTransferToContainer;
+  Future<void> Function(String containerId) get onDeleteContainer =>
+      widget.onDeleteContainer ?? _noopDeleteContainer;
+  Future<String> Function(String characterId, String name)
+  get onCreateContainer => widget.onCreateContainer ?? _noopCreateContainer;
 
   bool get supportsShortRestRecovery {
     final supportsShortRestSlotRecovery =
@@ -204,10 +230,11 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
             .toList(growable: false),
         onDismiss: () => Navigator.of(dialogContext).pop(),
         onRename: (containerId, containerName) async {},
-        onDelete: (containerId) async {},
+        onDelete: (containerId) async {
+          await onDeleteContainer(containerId);
+        },
         onAdd: (containerName) async {
-          return widget.onCreateContainer?.call(widget.character.id, containerName) ??
-              Future.value('');
+          return onCreateContainer(widget.character.id, containerName);
         },
       ),
     );
@@ -283,6 +310,9 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
     String targetContainerInventoryItemId,
     int quantity,
   ) async {}
+  Future<void> _noopDeleteContainer(String containerId) async {}
+  Future<String> _noopCreateContainer(String characterId, String name) async =>
+      '';
 
   @override
   Widget build(BuildContext context) {
@@ -419,7 +449,8 @@ class _IdentityPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Card(
+    return _landscapeSectionCard(
+      context,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -605,7 +636,8 @@ class _CombatPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Card(
+    return _landscapeSectionCard(
+      context,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -903,7 +935,8 @@ class _AbilitiesPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Card(
+    return _landscapeSectionCard(
+      context,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -1025,7 +1058,8 @@ class _FeaturesNotesPanel extends StatelessWidget {
       groupedProficiencyWidgets.add(const SizedBox(height: 8));
     }
 
-    return Card(
+    return _landscapeSectionCard(
+      context,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -1166,7 +1200,8 @@ class _SpellsPanel extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Card(
+    return _landscapeSectionCard(
+      context,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -1474,7 +1509,8 @@ class _EquipmentPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Card(
+    return _landscapeSectionCard(
+      context,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -1529,8 +1565,20 @@ class _EquipmentPanel extends StatelessWidget {
               style: theme.textTheme.bodySmall,
             ),
             const SizedBox(height: 12),
+            Semantics(
+              container: true,
+              header: true,
+              label: 'Inventory actions',
+              child: ExcludeSemantics(
+                child: Text(
+                  'Inventory actions',
+                  style: theme.textTheme.titleMedium,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
             Align(
-              alignment: Alignment.centerRight,
+              alignment: Alignment.centerLeft,
               child: Semantics(
                 container: true,
                 button: true,
@@ -1542,7 +1590,7 @@ class _EquipmentPanel extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             if (errorMessage != null) ...[
               Container(
                 width: double.infinity,

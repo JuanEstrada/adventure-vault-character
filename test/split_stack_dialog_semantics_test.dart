@@ -39,4 +39,30 @@ void main() {
       handle.dispose();
     }
   });
+
+  testWidgets('split stack dialog shows validation errors', (tester) async {
+    bool called = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SplitStackDialog(
+            itemId: 'item-1',
+            quantity: 10,
+            onClose: () {},
+            onSplit: (itemId, splitQuantity) {
+              called = true;
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField), '0');
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Split'));
+    await tester.pump();
+
+    expect(called, isFalse);
+    expect(find.text('Split quantity must be greater than zero'), findsWidgets);
+  });
 }

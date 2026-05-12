@@ -113,6 +113,7 @@ class _MergeStackDialogState extends State<MergeStackDialog> {
               if (_error != null)
                 Semantics(
                   container: true,
+                  liveRegion: true,
                   label: _error!,
                   child: ExcludeSemantics(
                     child: Text(

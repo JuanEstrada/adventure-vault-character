@@ -807,6 +807,56 @@ class AppController extends ChangeNotifier {
     return '';
   }
 
+  Future<void> deleteContainer(String containerId) async {
+    final selected = _state.selectedCharacterSheet;
+    if (selected == null) {
+      _state = _state.copyWith(
+        errorMessage: 'No character is currently selected.',
+      );
+      notifyListeners();
+      return;
+    }
+
+    _state = _state.copyWith(isSavingCharacter: true, clearError: true);
+    notifyListeners();
+
+    try {
+      await _characterRepository.deleteContainer(selected.id, containerId);
+      final refreshed = await _characterRepository.getCharacterSheetById(
+        selected.id,
+      );
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        selectedCharacterSheet: refreshed ?? selected,
+        clearError: true,
+      );
+      notifyListeners();
+    } on CharacterInventoryValidationError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: _inventoryValidationMessage(
+          inventoryItemId: containerId,
+          error: error,
+        ),
+      );
+    } on StateError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: _stateErrorMessage(
+          error,
+          fallback: 'Failed to delete container.',
+        ),
+      );
+    } catch (_) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: 'Failed to delete container.',
+      );
+    }
+
+    notifyListeners();
+  }
+
   Future<void> transferSelectedCharacterInventoryItemToContainer(
     String sourceInventoryItemId,
     String targetContainerInventoryItemId,

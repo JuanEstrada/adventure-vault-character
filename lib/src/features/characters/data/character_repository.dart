@@ -27,13 +27,13 @@ abstract interface class CharacterRepository {
     int currentUses,
   );
 
-Future<void> spendSpellSlot(
+  Future<void> spendSpellSlot(
     String id, {
     required int spellLevel,
     required int slotIndex,
   });
 
-Future<void> restoreSpellSlot(
+  Future<void> restoreSpellSlot(
     String id, {
     required int spellLevel,
     required int slotIndex,
@@ -117,6 +117,8 @@ Future<void> restoreSpellSlot(
   );
 
   Future<String> createContainer(String id, String name);
+
+  Future<void> deleteContainer(String id, String containerInventoryItemId);
 
   Future<CharacterDomainModel?> getCharacterSheetById(String id);
 

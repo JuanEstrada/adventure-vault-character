@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-05-11
+Last updated: 2026-05-12
 
 This is the canonical, short handoff file for resuming work quickly.
 
@@ -23,8 +23,8 @@ This is the canonical, short handoff file for resuming work quickly.
 - Architecture: feature-first with layered separation
   (`presentation -> application -> domain -> data`).
 - Drift schema: **`v21`** (canonical current version).
-- Current phase: MinFunc is complete, but the live worktree has a small validation recovery backlog (spell-slot overspend parity and container-management dialog interaction stability).
-- Active planning focus: the tracked P2 completion chain in `docs/project/POST_MVP_P1_TRACKER.md` is fully closed at `P2-12b — Declare current player-app scope complete`; the next queue is backlog-only recovery work.
+- Current phase: MinFunc is complete, the validation recovery queue is green, and the remaining closeout is the final commit/push closeout.
+- Active planning focus: the tracked P2 completion chain in `docs/project/POST_MVP_P1_TRACKER.md` is fully closed at `P2-12b — Declare current player-app scope complete`; the remaining follow-up is the final recovery closeout at `VR-03d — Commit and push the recovery closeout`.
 - Phase 8 accessibility work remains complete and verified: P8-02-1 (panel headers and identity semantics), P8-02-2b (combat and recovery control semantics), P8-02-4 (sheet-level focus traversal), P8-04 (focus states), P8-05 (advanced inventory stack management), P8-06 (spell slot bulk operations), P8-07 (spell selection mode enhancements), P8-08 (advanced combat automation helpers), P8-09 (compendium search/filtering), and P8-10 (session persistence / auto-save).
 - **P2-01 complete:** Canonical docs are aligned with the current player-app scope.
 - **P2-02 complete:** The inventory sheet already exposes direct action buttons in `_InventoryItemRow`; later dialog slices wired the live transfer/manage entry points.
@@ -33,7 +33,7 @@ This is the canonical, short handoff file for resuming work quickly.
 - **P2-05a complete:** Transfer submit now routes through the real app-controller/repository mutation path, with controller and widget regression coverage in place.
 - **P2-10a complete:** Inventory actions are grouped in a dedicated section above the equipment item list, while stack actions stay on the item rows.
 - **P2-12b is complete:** The roadmap, snapshot, resume, and tracker now agree that the current player-app scope is closed.
-- Verification status: `flutter analyze` passes after the container-creation and repository async fixes; `flutter test` passes for the inventory/container regression slices exercised in this closeout.
+- Verification status: `flutter analyze` and `flutter test` passed in VR-03a; this handoff now reflects the reconciled state.
 
 ## What Is Stable (Do Not Reopen)
 
@@ -50,19 +50,19 @@ This is the canonical, short handoff file for resuming work quickly.
 
 Phase 8 accessibility work is complete and verified. **P2-12b** (scope closure) is complete.
 
-**Next:** handle the validation recovery backlog in order, then reconcile docs after the queue is green.
+**Next:** `VR-03d — Commit and push the recovery closeout`.
 
-### Validation Recovery Queue
+### Validation Recovery Closeout
 
 1. `VR-01 — Fix spell-slot overspend validation parity`
 2. `VR-02 — Stabilize container-management dialog interactions`
 3. `VR-03 — Re-run validation and reconcile docs`
 
-**Context:** current failing coverage clusters around `test/drift_character_repository_test.dart` for spell-slot overspend rejection and the container-management dialog widget tests under `test/src/features/characters/`.
+**Context:** spell-slot overspend rejection is now aligned across Drift and in-memory repositories; `test/drift_character_repository_test.dart` and `test/in_memory_character_repository_test.dart` both validate the same overspend guard, and VR-01c/VR-01d are complete.
 
-**Validation watchlist:** keep the recovery queue narrow; do not reopen closed P2 inventory scope unless a fix exposes a broader regression.
+**Validation watchlist:** keep the closeout narrow; do not reopen closed P2 inventory scope unless a fix exposes a broader regression.
 
-**Status:** the compendium search/filter domain service, quick-access results panel, session persistence wiring, and targeted tests remain in place; the open work is limited to the recovery backlog above.
+**Status:** the compendium search/filter domain service, quick-access results panel, session persistence wiring, and targeted tests remain in place; the open work is limited to the final commit/push closeout above.
 
 ### Canonical Active P2 Task Names
 
