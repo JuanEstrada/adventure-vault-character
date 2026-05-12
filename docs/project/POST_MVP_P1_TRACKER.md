@@ -76,6 +76,8 @@ This tracker focuses on **UI/UX debt** items marked as P1.
 
 This chain captures the remaining work needed to finish the current player-app scope without expanding into sync, account systems, or DM tooling.
 
+**Canonical naming rule:** reference every active P2 card as `<ID> — <Objective>` so tracker, roadmap, resume docs, briefs, and kanban all use the same task name.
+
 ### Execution Protocol
 
 Every microtask in this chain must end with the same closeout sequence:
@@ -91,9 +93,9 @@ Every microtask in this chain must end with the same closeout sequence:
 
 | ID     | Objective                                                          | Dependencies | Status  | Notes                                                                                                                                                      |
 | ------ | ------------------------------------------------------------------ | ------------ | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P2-01  | Align canonical docs with real unfinished work                     | P1-10        | Done    | Updated SESSION_RESUME.md, ROADMAP.md, and POST_MVP_P1_TRACKER.md to reflect that inventory dialogs exist but need real wiring and repository-backed data. |
-| P2-02  | Audit inventory dialog entry points in the character sheet         | P2-01        | Done    | The sheet already exposes direct inventory action buttons in `_InventoryItemRow`; the dialog classes exist but are currently orphaned (no live `showDialog` call sites). |
-| P2-03  | Wire `TransferToContainerDialog` from the real character sheet UI  | P2-02        | Done    | The live sheet now opens `TransferToContainerDialog` from the inventory transfer button; the placeholder container data and submit path are still part of the next slice. |
+| P2-01  | Align canonical docs with real unfinished work                     | P1-10        | Done    | Updated SESSION_RESUME.md, ROADMAP.md, and POST_MVP_P1_TRACKER.md to align the inventory chain before the live wiring slices completed. |
+| P2-02  | Audit inventory dialog entry points in the character sheet         | P2-01        | Done    | The sheet already exposes direct inventory action buttons in `_InventoryItemRow`; later dialog slices wired the live transfer/manage entry points. |
+| P2-03  | Wire `TransferToContainerDialog` from the real character sheet UI  | P2-02        | Done    | The live sheet now opens `TransferToContainerDialog` from the inventory transfer button; the dialog entry point is live. |
 | P2-04  | Replace static container sample data in transfer flow              | P2-03        | Done    | Transfer dialog now populates from the current character's container items; the placeholder sample list is removed.                                         |
 | P2-05a | Hook transfer submit to the real mutation path                     | P2-04        | Done    | Transfer submit now reaches the real mutation path through the app controller and character repository; widget and controller tests cover the wiring.      |
 | P2-05b | Refresh visible sheet state after successful transfer              | P2-05a       | Done    | The selected character sheet now reloads immediately after a successful transfer so the equipment/container panels reflect the new state.              |
@@ -102,16 +104,16 @@ Every microtask in this chain must end with the same closeout sequence:
 | P2-07  | Wire `ContainerManagementDialog` from the real character sheet UI  | P2-06        | Done    | The character sheet now exposes a live manage-containers button that opens `ContainerManagementDialog`; widget coverage verifies the entry point.       |
 | P2-08a | Replace static container list loading in management dialog         | P2-07        | Done    | The dialog now reads container items from the live character sheet instead of a hard-coded sample list.                                                   |
 | P2-08b | Hook add-container action to the real mutation path                | P2-08a       | Done    | New containers now flow through the real application/domain createContainer path and refresh the visible sheet state.                                       |
-| P2-08c | Hook delete-container action to the real mutation path             | P2-08b       | Planned | Delete must use the actual removal flow and preserve existing validation/invariants.                                                                       |
-| P2-09  | Add/repair widget tests for container management                   | P2-08c       | Planned | Cover add, delete, cancel, and error handling with visible refresh expectations.                                                                           |
-| P2-10a | Normalize where inventory actions appear in the sheet              | P2-09        | Planned | Make merge, split, transfer, and manage-container actions discoverable from a coherent UI area.                                                            |
-| P2-10b | Normalize labels and affordances for inventory actions             | P2-10a       | Planned | Align wording, chips/buttons, and affordance clarity so users can predict each action.                                                                     |
-| P2-10c | Normalize disabled and error states for inventory actions          | P2-10b       | Planned | Keep unavailable actions and validation feedback consistent across all inventory operations.                                                               |
-| P2-11a | Add transfer end-to-end regression coverage                        | P2-10c       | Planned | Validate open-dialog -> mutate -> visible update for transfer from the real sheet context.                                                                 |
-| P2-11b | Add container CRUD end-to-end regression coverage                  | P2-11a       | Planned | Validate add/delete container flows from the real sheet context with refreshed visible state.                                                              |
-| P2-11c | Add reopen/persistence regression coverage for inventory actions   | P2-11b       | Planned | Validate that transfer and container CRUD state survives reopen.                                                                                           |
-| P2-12a | Reconcile roadmap/snapshot/resume/tracker after inventory closeout | P2-11c       | Planned | Remove stale notes and record the final scoped status consistently across canonical docs.                                                                  |
-| P2-12b | Declare current player-app scope complete                          | P2-12a       | Planned | Close the scoped app work and leave the next work clearly in backlog form instead of hidden debt.                                                          |
+| P2-08c | Hook delete-container action to the real mutation path             | P2-08b       | Done    | Delete now routes through the real app-controller/repository mutation path, closes the confirmation and management dialogs, and is covered by regression tests. |
+| P2-09  | Add/repair widget tests for container management                   | P2-08c       | Done    | Widget coverage now closes add, delete, cancel, and error handling for container management, with visible refresh expectations verified.                |
+| P2-10a | Normalize where inventory actions appear in the sheet              | P2-09        | Done    | Inventory actions now live in a dedicated section above the equipment item list, with stack actions kept on item rows.                                     |
+| P2-10b | Normalize labels and affordances for inventory actions             | P2-10a       | Done    | Wording, chips/buttons, and affordance clarity are now normalized across inventory actions and dialogs.                                                   |
+| P2-10c | Normalize disabled and error states for inventory actions          | P2-10b       | Done    | Inventory action dialogs now present consistent disabled affordances and inline validation feedback, with error announcements normalized across split and merge flows. |
+| P2-11a | Add transfer end-to-end regression coverage                        | P2-10c       | Done    | Real sheet transfer regression now proves open-dialog -> mutate -> visible update through the controller and repository path.                                   |
+| P2-11b | Add container CRUD end-to-end regression coverage                  | P2-11a       | Done    | Real sheet container CRUD regression now proves add/delete through the controller and repository path with refreshed visible state.                             |
+| P2-11c | Add reopen/persistence regression coverage for inventory actions   | P2-11b       | Done    | Regression tests now prove transfer, container create, and container delete state survive reopen through the controller and repository paths.               |
+| P2-12a | Reconcile roadmap/snapshot/resume/tracker after inventory closeout | P2-11c       | Done    | Canonical docs now agree on the closed inventory chain and the current scope-closure step.                                                                |
+| P2-12b | Declare current player-app scope complete                          | P2-12a       | Done    | Close the scoped app work and leave any future work clearly in backlog form rather than hidden debt.                                                      |
 
 ## Local-Model Prompts
 
@@ -189,6 +191,36 @@ Allowed status values:
 
 ## Current Recommendation
 
-Post-MVP P1 is closed. The active chain now starts at **P2-05b**: refresh visible sheet state after successful transfer, then continue the remaining inventory microtasks sequentially using the execution protocol above.
+Post-MVP P1 is closed. The current player-app scope is complete, and any future work belongs in backlog form rather than hidden debt.
 
-(End of file - total 170 lines)
+### Kanban-ready queue
+
+| Order | Card | Depends on | Status |
+| --- | --- | --- | --- |
+| 1 | P2-08c Hook delete-container action to the real mutation path | P2-08b | Done |
+| 2 | P2-09 Add/repair widget tests for container management | P2-08c | Done |
+| 3 | P2-10a Normalize where inventory actions appear in the sheet | P2-09 | Done |
+| 4 | P2-10b Normalize labels and affordances for inventory actions | P2-10a | Done |
+| 5 | P2-10c Normalize disabled and error states for inventory actions | P2-10b | Done |
+| 6 | P2-11a Add transfer end-to-end regression coverage | P2-10c | Done |
+| 7 | P2-11b Add container CRUD end-to-end regression coverage | P2-11a | Done |
+| 8 | P2-11c Add reopen/persistence regression coverage for inventory actions | P2-11b | Done |
+| 9 | P2-12a Reconcile roadmap/snapshot/resume/tracker after inventory closeout | P2-11c | Done |
+| 10 | P2-12b Declare current player-app scope complete | P2-12a | Done |
+
+## Validation Recovery Queue
+
+These cards capture the remaining work the latest test run exposed. Keep them separate from the closed P2 inventory chain.
+
+| Order | Card | Depends on | Status |
+| --- | --- | --- | --- |
+| 1 | VR-01 Fix spell-slot overspend validation parity | none | Planned |
+| 2 | VR-02 Stabilize container-management dialog interactions | none | Planned |
+| 3 | VR-03 Re-run validation and reconcile docs | VR-01, VR-02 | Planned |
+
+### Recovery notes
+
+- `VR-01` maps to the failing overspend assertion in `test/drift_character_repository_test.dart`.
+- `VR-02` maps to the failing `container_management_dialog` widget tests under `test/src/features/characters/`.
+- `VR-03` closes the loop by rerunning `flutter analyze`, `flutter test`, and updating the continuity docs once the queue is green.
+(End of file - total 209 lines)

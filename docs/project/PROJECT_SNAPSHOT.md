@@ -2,7 +2,7 @@
 
 ## Last Updated
 
-2026-05-07
+2026-05-11
 
 ## Role of This Document
 
@@ -18,17 +18,18 @@ Post-foundation implementation, validation hardening, and documentation alignmen
 
 - Character-sheet completion slice: implemented.
 - Deterministic combat MVP slice: implemented.
-- Current work posture: MinFunc is complete; validation hardening is complete and the canonical docs are aligned with the current state.
+- Current work posture: MinFunc is complete; the canonical docs are aligned; and the current live worktree has a narrow validation recovery backlog (spell-slot overspend parity and container-management dialog interaction stability).
 - Phase 8 accessibility work is complete and verified.
-- P2-02 audit is complete: the character sheet already exposes direct inventory action buttons in `_InventoryItemRow`, while the dialog classes remain orphaned with no live `showDialog` call sites.
-- P2-03 is complete: the live sheet now opens `TransferToContainerDialog` from the inventory transfer button; the placeholder container data and submit path remain the next slice.
+- P2-02 audit is complete: the character sheet already exposes direct inventory action buttons in `_InventoryItemRow`, and the later dialog slices wired those entry points to live call sites.
+- P2-03 is complete: the live sheet now opens `TransferToContainerDialog` from the inventory transfer button; the placeholder container data and submit path are gone.
 - P2-04 is complete: the transfer dialog now populates its container list from the current character's container items; the static sample list is gone.
 - P2-05a is complete: transfer submit now routes through the real app-controller/repository mutation path, with regression coverage in place.
 - P2-05b is complete: the selected character sheet reloads immediately after a successful transfer so the equipment/container panels reflect the new state.
 - P2-05c is complete: the transferred stack remains visible after reopening the character, with controller and repository-backed assertions in place.
 - P2-06 is complete: the transfer dialog widget tests now cover opening the dialog, validation, container selection, and successful submit behavior.
-- P2-07 is complete: the character sheet now exposes a live manage-containers button that opens `ContainerManagementDialog`; widget coverage verifies the entry point.
-- P2-08a is complete: the management dialog now reads container items from the live character sheet instead of a hard-coded sample list.
+- P2-07 is complete: The character sheet now exposes a live manage-containers button that opens `ContainerManagementDialog`; widget coverage verifies the entry point.
+- P2-08a is complete: The management dialog now reads container items from the live character sheet instead of a hard-coded sample list.
+- P2-12b is complete: The roadmap, snapshot, resume, and tracker now agree that the current player-app scope is closed.
 
 ## Architecture Baseline (Current)
 
@@ -100,8 +101,8 @@ Primary constraints are tracked in:
   regression coverage for XML-base and fallback-base merges, while leaving a
   small gap for fallback JSON base plus multiple imported packs and explicit
   source-policy note assertions around mixed-source collisions.
-- Next verification focus is **P2-08c**: hook the delete-container action to the real mutation path, then continue the remaining inventory microtasks in order.
-- Verification status: `flutter analyze` passes after the inventory container-creation and repository async fixes; `flutter test` still reports a pre-existing failure in `test/drift_character_repository_test.dart` (`spendSpellSlot rejects spending beyond derived slot maximum`).
+- No further scope-closure slice remains; future work should be filed as backlog.
+- Verification status: `flutter analyze` passes after the inventory container-creation and repository async fixes; `flutter test` passes for the inventory/container regressions exercised in this closeout.
 
 ## Drift Status
 
@@ -129,8 +130,12 @@ Primary constraints are tracked in:
 ## Active Delivery Focus
 
 1. Keep the canonical project docs aligned with the finished MinFunc state and completed Phase 8 slices.
-2. Continue the P2 inventory chain from the audit result: decide whether the direct inventory buttons remain canonical or whether the orphaned dialog classes should be wired in.
+2. Keep future work in backlog form and separate from the finished player-app scope.
 3. Keep broader UX depth, non-blocking edge-case breadth, and post-Phase-8 polish outside the minimum-functional release scope unless they prove to be blockers.
+
+### Canonical Active P2 Task Names
+
+1. `P2-12b — Declare current player-app scope complete` (complete)
 
 ## Risks and Follow-Ups
 
@@ -138,6 +143,10 @@ Primary constraints are tracked in:
   domain/application contracts.
 - Imported-content conflict diagnostics may need richer visibility if more
   sections become pack-sensitive.
+- The current live worktree has a small recovery backlog: spell-slot overspend
+  validation parity and container-management dialog interactions still need
+  cleanup before the repo is green again.
+- **P2-10a complete:** Inventory actions are grouped in a dedicated section above the equipment item list, while stack actions stay on the item rows.
 - Future accessibility work, if any, should be treated as a new backlog item
   rather than a continuation of the completed Phase 8 slices.
 

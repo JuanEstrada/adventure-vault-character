@@ -2,7 +2,7 @@
 
 ## Last Updated
 
-2026-05-07
+2026-05-11
 
 ## Roadmap Intent
 
@@ -25,11 +25,8 @@ tracks what is complete versus what still needs delivery hardening.
 - Major remaining work is no longer "foundations"; it is completion polish for
   spellcasting/inventory workflows, broader rule coverage, and quality/recovery
   hardening.
-- P2-03 is complete: the live inventory transfer button now opens
-  `TransferToContainerDialog`; the placeholder container data and submit path
-  still need the next slice.
-- P2-04 is complete: the transfer dialog now populates its container list from
-  the current character's container items; the static sample list is gone.
+- P2-12b is complete: the roadmap, snapshot, resume, and tracker now agree that
+  the current player-app scope is closed.
 
 ## Phase Status Snapshot
 
@@ -138,8 +135,9 @@ sheet.
   equipment panel with explicit no-state-change messaging.
 - ✅ Equipment rows now expose stack/container state more explicitly,
   including stack-size labels and container content summaries.
-- 🟡 Remaining: richer explicit transfer controls (split/merge/transfer actions)
-  are still pending beyond the current inline mutation controls.
+- ✅ Inventory/resource session UX is complete, including explicit
+  split/merge/transfer controls, container workflows, and normalized action
+  affordances.
 
 ### Exit Criteria
 
@@ -200,13 +198,16 @@ Goal: Close quality gaps before broader feature expansion.
 
 ## Immediate Next Slice
 
-Phase 8 accessibility work is complete, and the immediate next step is to continue the tracked P2 inventory chain in `docs/project/POST_MVP_P1_TRACKER.md`. P2-08b is complete, so start from P2-08c: the delete-container action still needs to reach the real removal flow.
+The current visible blockers are the validation recovery backlog:
 
-**Note:** `TransferToContainerDialog` and `ContainerManagementDialog` exist but require:
+1. `VR-01 — Fix spell-slot overspend validation parity`
+2. `VR-02 — Stabilize container-management dialog interactions`
+3. `VR-03 — Re-run validation and reconcile docs`
 
-- Real character-sheet entry points from the UI
-- Replacement of static placeholder container data with real repository-backed data
-- Integration with the actual mutation paths for transfer and delete operations
+**Notes:**
+- `flutter analyze` is green.
+- `flutter test` currently exposes the spell-slot overspend rejection failure and the container-management dialog interaction failures.
+- Keep the recovery work isolated from broader scope expansion.
 
 ---
 

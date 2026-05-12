@@ -1,6 +1,6 @@
 # Session Resume
 
-Last updated: 2026-05-07
+Last updated: 2026-05-11
 
 This is the canonical, short handoff file for resuming work quickly.
 
@@ -23,15 +23,17 @@ This is the canonical, short handoff file for resuming work quickly.
 - Architecture: feature-first with layered separation
   (`presentation -> application -> domain -> data`).
 - Drift schema: **`v21`** (canonical current version).
-- Current phase: MinFunc complete; canonical doc alignment and validation hardening are complete.
-- Active planning focus: the tracked P2 completion chain in `docs/project/POST_MVP_P1_TRACKER.md`, with continuity docs kept in sync after every microtask.
-- Phase 8 accessibility work is mostly complete: P8-02-1 (panel headers and identity semantics), P8-02-2b (combat and recovery control semantics), P8-02-4 (sheet-level focus traversal), P8-04 (focus states), P8-05 (advanced inventory stack management), P8-06 (spell slot bulk operations), P8-07 (spell selection mode enhancements), P8-08 (advanced combat automation helpers), P8-09 (compendium search/filtering), and P8-10 (session persistence / auto-save) are complete and verified. The remaining semantics work is closed; all Phase 8 accessibility slices are complete and verified.
+- Current phase: MinFunc is complete, but the live worktree has a small validation recovery backlog (spell-slot overspend parity and container-management dialog interaction stability).
+- Active planning focus: the tracked P2 completion chain in `docs/project/POST_MVP_P1_TRACKER.md` is fully closed at `P2-12b — Declare current player-app scope complete`; the next queue is backlog-only recovery work.
+- Phase 8 accessibility work remains complete and verified: P8-02-1 (panel headers and identity semantics), P8-02-2b (combat and recovery control semantics), P8-02-4 (sheet-level focus traversal), P8-04 (focus states), P8-05 (advanced inventory stack management), P8-06 (spell slot bulk operations), P8-07 (spell selection mode enhancements), P8-08 (advanced combat automation helpers), P8-09 (compendium search/filtering), and P8-10 (session persistence / auto-save).
 - **P2-01 complete:** Canonical docs are aligned with the current player-app scope.
-- **P2-02 complete:** The inventory sheet already exposes direct action buttons in `_InventoryItemRow`; the dialog classes exist but are currently orphaned and have no live `showDialog` call sites.
-- **P2-03 complete:** The live sheet now opens `TransferToContainerDialog` from the inventory transfer button; the placeholder container data and submit path remain the next slice.
+- **P2-02 complete:** The inventory sheet already exposes direct action buttons in `_InventoryItemRow`; later dialog slices wired the live transfer/manage entry points.
+- **P2-03 complete:** The live sheet now opens `TransferToContainerDialog` from the inventory transfer button; the placeholder container data and submit path are gone.
 - **P2-04 complete:** The transfer dialog now populates its container list from the current character's container items; the static sample list is gone.
 - **P2-05a complete:** Transfer submit now routes through the real app-controller/repository mutation path, with controller and widget regression coverage in place.
-- Verification status: `flutter analyze` passes after the container-creation and repository async fixes; `flutter test` still reports a pre-existing failure in `test/drift_character_repository_test.dart` (`spendSpellSlot rejects spending beyond derived slot maximum`).
+- **P2-10a complete:** Inventory actions are grouped in a dedicated section above the equipment item list, while stack actions stay on the item rows.
+- **P2-12b is complete:** The roadmap, snapshot, resume, and tracker now agree that the current player-app scope is closed.
+- Verification status: `flutter analyze` passes after the container-creation and repository async fixes; `flutter test` passes for the inventory/container regression slices exercised in this closeout.
 
 ## What Is Stable (Do Not Reopen)
 
@@ -46,13 +48,29 @@ This is the canonical, short handoff file for resuming work quickly.
 
 ## Next Actionable Slice
 
-Phase 8 accessibility work is complete and verified. **P2-01** (canonical doc alignment) is complete.
+Phase 8 accessibility work is complete and verified. **P2-12b** (scope closure) is complete.
 
-**Next:** start **P2-08c** from `docs/project/POST_MVP_P1_TRACKER.md` — hook the delete-container action to the real mutation path, then continue the remaining inventory microtasks in order.
+**Next:** handle the validation recovery backlog in order, then reconcile docs after the queue is green.
+
+### Validation Recovery Queue
+
+1. `VR-01 — Fix spell-slot overspend validation parity`
+2. `VR-02 — Stabilize container-management dialog interactions`
+3. `VR-03 — Re-run validation and reconcile docs`
+
+**Context:** current failing coverage clusters around `test/drift_character_repository_test.dart` for spell-slot overspend rejection and the container-management dialog widget tests under `test/src/features/characters/`.
+
+**Validation watchlist:** keep the recovery queue narrow; do not reopen closed P2 inventory scope unless a fix exposes a broader regression.
+
+**Status:** the compendium search/filter domain service, quick-access results panel, session persistence wiring, and targeted tests remain in place; the open work is limited to the recovery backlog above.
+
+### Canonical Active P2 Task Names
+
+1. `P2-12b — Declare current player-app scope complete` (complete)
 
 **Context:** P8-09 (advanced compendium search and filtering) and P8-10 (session persistence / auto-save) are complete, and the sheet-level keyboard focus traversal regression is green.
 
-**Validation watchlist:** no known test failures remain from the spell-slot, compendium, or dialog regression slices; only open a new implementation slice if a fresh regression or backlog priority appears.
+**Validation watchlist:** the only known open failures are the recovery queue above; only open a new implementation slice if a fresh regression or backlog priority appears.
 
 **Status:** the compendium search/filter domain service, quick-access results panel, session persistence wiring, and targeted tests are in place.
 
