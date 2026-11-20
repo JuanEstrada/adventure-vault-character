@@ -2,9 +2,9 @@
 
 ## Current Inventory Handoff
 
-The [container lifecycle](../specs/inventory-container-lifecycle.md) records the latest inventory behavior and replaces older pending guidance for these slices. Qty0 reference protection and content-preserving deletion passed independent verification. Creating, renaming, and reopening a custom container passed the focused SQLite check and the 210-test suite; the separate rename verifier stopped on a network timeout.
+The [container lifecycle](../specs/inventory-container-lifecycle.md) records the latest inventory behavior and replaces older pending guidance for these slices. Qty0 reference protection, content-preserving deletion, and persistent renaming all passed independent verification. The rename verifier passed eight tests against the exact committed slice `9bad5a5`, including create → rename → SQLite reopen with contents preserved.
 
-**Next:** finish independent verification of the rename slice. Do not migrate Qty0 records or inspect real data for this handoff.
+**Next:** no work remains in this container lifecycle slice. Keep optional inventory debt in the roadmap; no Qty0 migration or inspection of real data was authorized.
 
 Last updated: 2026-05-12
 

@@ -1,6 +1,6 @@
 # Adventure Vault Character — Project Snapshot
 
-**Inventory update:** [Container lifecycle](../specs/inventory-container-lifecycle.md) records current rename, deletion, and Qty0 reference protection behavior. The flow was tested in isolated SQLite and in the 210-test Flutter suite. Separate verification of rename is pending; no stored data was migrated.
+**Inventory update:** [Container lifecycle](../specs/inventory-container-lifecycle.md) records current rename, deletion, and Qty0 reference protection behavior. The flow was tested in isolated SQLite and in the 210-test Flutter suite. Independent verification of the committed rename slice passed eight tests; no stored data was migrated.
 
 ## Last Updated
 

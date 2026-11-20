@@ -11,7 +11,7 @@
 ## Verification and remaining limits
 
 - Independent checks passed for zero-quantity reference protection and for deletion. SQLite checks covered persistence on reopen.
-- Automated rename tests cover opening the sheet action, changing the name without losing contents, and reopening SQLite. The independent rename check did not run to completion because of a network timeout.
+- Independent verification of committed rename slice `9bad5a5` passed eight tests. It covered the sheet action and creating, renaming, and reopening a custom container with its identity, name, and contents preserved.
 - General move-to-root via a nullable reference is still a separate in-memory issue. Explicit deletion clears the reference through its own path.
 - Historical cross-character inventory links are unsupported. No cleanup or repair of links already dangling was authorized. No real database was opened, and no migration was run.
 
