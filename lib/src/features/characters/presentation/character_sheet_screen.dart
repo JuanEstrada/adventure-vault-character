@@ -72,6 +72,7 @@ class CharacterSheetScreen extends _CharacterSheetScreen {
     super.onSplitStack,
     super.onMergeStacks,
     super.onTransferToContainer,
+    super.onRenameContainer,
     super.onDeleteContainer,
     super.onCreateContainer,
     super.key,
@@ -102,6 +103,7 @@ class _CharacterSheetScreen extends StatefulWidget {
     this.onSplitStack,
     this.onMergeStacks,
     this.onTransferToContainer,
+    this.onRenameContainer,
     this.onDeleteContainer,
     this.onCreateContainer,
     super.key,
@@ -154,6 +156,9 @@ class _CharacterSheetScreen extends StatefulWidget {
   final Future<void> Function(String containerId)? onDeleteContainer;
   final Future<String> Function(String characterId, String name)?
   onCreateContainer;
+
+  final Future<void> Function(String containerId, String newName)?
+  onRenameContainer;
 
   @override
   State<_CharacterSheetScreen> createState() => _CharacterSheetScreenState();
@@ -210,6 +215,9 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
   Future<String> Function(String characterId, String name)
   get onCreateContainer => widget.onCreateContainer ?? _noopCreateContainer;
 
+  Future<void> Function(String containerId, String newName)
+  get onRenameContainer => widget.onRenameContainer ?? _noopRenameContainer;
+
   bool get supportsShortRestRecovery {
     final supportsShortRestSlotRecovery =
         widget.character.identity.className.trim().toLowerCase() == 'warlock';
@@ -229,7 +237,9 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
             .where((candidate) => candidate.isContainer)
             .toList(growable: false),
         onDismiss: () => Navigator.of(dialogContext).pop(),
-        onRename: (containerId, containerName) async {},
+        onRename: (containerId, containerName) async {
+          await onRenameContainer(containerId, containerName);
+        },
         onDelete: (containerId) async {
           await onDeleteContainer(containerId);
         },
@@ -311,6 +321,7 @@ class _CharacterSheetScreenState extends State<_CharacterSheetScreen> {
     int quantity,
   ) async {}
   Future<void> _noopDeleteContainer(String containerId) async {}
+  Future<void> _noopRenameContainer(String containerId, String newName) async {}
   Future<String> _noopCreateContainer(String characterId, String name) async =>
       '';
 

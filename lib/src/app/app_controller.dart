@@ -857,6 +857,60 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> renameContainer(String containerId, String newName) async {
+    final selected = _state.selectedCharacterSheet;
+    if (selected == null) {
+      _state = _state.copyWith(
+        errorMessage: 'No character is currently selected.',
+      );
+      notifyListeners();
+      return;
+    }
+
+    _state = _state.copyWith(isSavingCharacter: true, clearError: true);
+    notifyListeners();
+
+    try {
+      await _characterRepository.renameContainer(
+        selected.id,
+        containerId,
+        newName,
+      );
+      final refreshed = await _characterRepository.getCharacterSheetById(
+        selected.id,
+      );
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        selectedCharacterSheet: refreshed ?? selected,
+        clearError: true,
+      );
+      notifyListeners();
+    } on CharacterInventoryValidationError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: _inventoryValidationMessage(
+          inventoryItemId: containerId,
+          error: error,
+        ),
+      );
+    } on StateError catch (error) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: _stateErrorMessage(
+          error,
+          fallback: 'Failed to rename container.',
+        ),
+      );
+    } catch (_) {
+      _state = _state.copyWith(
+        isSavingCharacter: false,
+        errorMessage: 'Failed to rename container.',
+      );
+    }
+
+    notifyListeners();
+  }
+
   Future<void> transferSelectedCharacterInventoryItemToContainer(
     String sourceInventoryItemId,
     String targetContainerInventoryItemId,

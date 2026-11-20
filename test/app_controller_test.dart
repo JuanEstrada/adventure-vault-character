@@ -290,6 +290,66 @@ void main() {
       expect(controller.state.errorMessage, isNull);
     },
   );
+
+  test(
+    'rename container persists across reopen through the controller mutation '
+    'path',
+    () async {
+      final catalog = _buildTransferCatalog();
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(catalog),
+      );
+      final controller = AppController(
+        characterRepository: repository,
+        compendiumRepository: InMemoryCompendiumRepository(catalog),
+        systemSettingsRepository: InMemorySystemSettingsRepository(),
+      );
+      addTearDown(controller.dispose);
+
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Controller rename container',
+          items: <String>['Backpack', 'Torch'],
+        ),
+      );
+
+      await controller.openCharacter(summary.id);
+      final containerId = await controller.createContainer(
+        summary.id,
+        'Spell Pouch',
+      );
+      await controller.renameContainer(containerId, '  Gem Pouch  ');
+
+      final visibleSheet = controller.state.selectedCharacterSheet;
+      expect(visibleSheet, isNotNull);
+      expect(
+        visibleSheet!.equipment.items
+            .singleWhere((item) => item.id == containerId)
+            .name,
+        'Gem Pouch',
+      );
+
+      await controller.openCharacter(summary.id);
+      final reopenedSheet = controller.state.selectedCharacterSheet;
+      expect(reopenedSheet, isNotNull);
+      expect(
+        reopenedSheet!.equipment.items
+            .singleWhere((item) => item.id == containerId)
+            .name,
+        'Gem Pouch',
+      );
+
+      final persistedSheet = await repository.getCharacterSheetById(summary.id);
+      expect(persistedSheet, isNotNull);
+      expect(
+        persistedSheet!.equipment.items
+            .singleWhere((item) => item.id == containerId)
+            .name,
+        'Gem Pouch',
+      );
+      expect(controller.state.errorMessage, isNull);
+    },
+  );
 }
 
 CreateCharacterInput _createCharacterInput({
