@@ -623,11 +623,21 @@ class InMemoryCharacterRepository implements CharacterRepository {
       throw StateError('Inventory not found.');
     }
 
+    // Zero-quantity rows that still back another item's container reference
+    // must survive cleanup, or stored items would point at deleted rows.
+    final referencedIds = <String>{
+      for (final item in inventory)
+        if (item.containerInventoryItemId != null &&
+            item.containerInventoryItemId!.isNotEmpty)
+          item.containerInventoryItemId!,
+    };
     final remaining = inventory
         .where(
-          (item) => !CharacterInventoryStackRules.shouldRetireZeroQuantityStack(
-            item.quantity,
-          ),
+          (item) =>
+              !CharacterInventoryStackRules.shouldRetireZeroQuantityStack(
+                item.quantity,
+              ) ||
+              referencedIds.contains(item.id),
         )
         .toList(growable: false);
     final removed = inventory.length - remaining.length;

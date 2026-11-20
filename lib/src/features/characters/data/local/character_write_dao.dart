@@ -281,10 +281,21 @@ class CharacterWriteDao {
   }
 
   Future<int> deleteZeroQuantityInventoryByCharacterId(String characterId) {
+    // Zero-quantity rows that still back another item's container reference
+    // must survive cleanup, or stored items would point at deleted rows. The
+    // reference selection is global: legacy data does not enforce same-owner
+    // references, so any non-null reference protects the row it names.
+    final referencedInventoryIds =
+        _database.selectOnly(_database.characterInventory)
+          ..addColumns([_database.characterInventory.containerInventoryItemId])
+          ..where(
+            _database.characterInventory.containerInventoryItemId.isNotNull(),
+          );
     return (_database.delete(_database.characterInventory)..where(
           (table) =>
               table.characterId.equals(characterId) &
-              table.quantity.isSmallerOrEqualValue(0),
+              table.quantity.isSmallerOrEqualValue(0) &
+              table.id.isNotInQuery(referencedInventoryIds),
         ))
         .go();
   }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:adventure_vault_character/src/features/characters/data/drift_character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
@@ -2557,6 +2558,254 @@ void main() {
         rows.map((row) => row.displayNameSnapshot),
         isNot(contains('Torch')),
       );
+    },
+  );
+
+  test(
+    'retireZeroQuantityInventoryStacks keeps rows still referenced as containers',
+    () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'avc-retire-referenced-',
+      );
+      addTearDown(() async {
+        await directory.delete(recursive: true);
+      });
+
+      var database = AppDatabase.executor(
+        NativeDatabase(File('${directory.path}/retire.sqlite')),
+      );
+      var repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      repository.autoSaveService.dispose();
+      addTearDown(() async {
+        repository.autoSaveService.dispose();
+        await database.close();
+      });
+
+      final summary = await repository.createCharacter(
+        _createInventoryCharacterInput(
+          name: 'Retire referenced',
+          items: ['Torch', 'Quarterstaff', 'Backpack'],
+        ),
+      );
+      final initial = (await repository.getCharacterSheetById(summary.id))!;
+      final torch = initial.equipment.items.singleWhere(
+        (item) => item.name == 'Torch',
+      );
+      final staff = initial.equipment.items.singleWhere(
+        (item) => item.name == 'Quarterstaff',
+      );
+      final backpack = initial.equipment.items.singleWhere(
+        (item) => item.name == 'Backpack',
+      );
+      expect(backpack.isContainer, isTrue);
+
+      // Isolated fixture setup: a pre-containers legacy row has no definition
+      // ids and a zero quantity, and the Torch still points at it. The public
+      // API cannot create this shape (it rejects non-container targets), so
+      // the rows are seeded directly, including the Torch's legacy reference.
+      const legacyContainerId = 'retire-referenced-legacy-row';
+      await database
+          .into(database.characterInventory)
+          .insert(
+            CharacterInventoryCompanion.insert(
+              id: legacyContainerId,
+              characterId: summary.id,
+              equipmentDefinitionId: const Value(null),
+              trinketDefinitionId: const Value(null),
+              displayNameSnapshot: const Value('Legacy Pouch'),
+              quantity: const Value(0),
+            ),
+          );
+      await (database.update(
+        database.characterInventory,
+      )..where((table) => table.id.equals(torch.id))).write(
+        const CharacterInventoryCompanion(
+          containerInventoryItemId: Value(legacyContainerId),
+        ),
+      );
+
+      // The ordinary zero-quantity control is not referenced by anything.
+      await repository.setInventoryItemQuantity(summary.id, staff.id, 0);
+
+      final removed = await repository.retireZeroQuantityInventoryStacks(
+        summary.id,
+      );
+      expect(removed, 1);
+
+      final sheet = (await repository.getCharacterSheetById(summary.id))!;
+      expect(sheet.equipment.items, hasLength(3));
+      expect(sheet.equipment.items.any((item) => item.id == staff.id), isFalse);
+      final legacyRow = sheet.equipment.items.singleWhere(
+        (item) => item.id == legacyContainerId,
+      );
+      expect(legacyRow.name, 'Legacy Pouch');
+      expect(legacyRow.quantity, 0);
+      expect(legacyRow.isContainer, isFalse);
+      final torchAfter = sheet.equipment.items.singleWhere(
+        (item) => item.id == torch.id,
+      );
+      expect(torchAfter.containerInventoryItemId, legacyContainerId);
+      expect(torchAfter.containerDisplayName, 'Legacy Pouch');
+      expect(torchAfter.quantity, torch.quantity);
+
+      expect(await repository.retireZeroQuantityInventoryStacks(summary.id), 0);
+
+      // Releasing the Torch through the public API lets cleanup retire the
+      // now-unreferenced legacy row without touching the current container.
+      await repository.setInventoryItemContainer(
+        summary.id,
+        torch.id,
+        backpack.id,
+      );
+      expect(await repository.retireZeroQuantityInventoryStacks(summary.id), 1);
+
+      repository.autoSaveService.dispose();
+      await database.close();
+      database = AppDatabase.executor(
+        NativeDatabase(File('${directory.path}/retire.sqlite')),
+      );
+      repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      repository.autoSaveService.dispose();
+
+      final reopened = (await repository.getCharacterSheetById(summary.id))!;
+      expect(
+        reopened.equipment.items.map((item) => item.id),
+        unorderedEquals(<String>[torch.id, backpack.id]),
+      );
+      final torchReopened = reopened.equipment.items.singleWhere(
+        (item) => item.id == torch.id,
+      );
+      expect(torchReopened.containerInventoryItemId, backpack.id);
+      expect(torchReopened.containerDisplayName, 'Backpack');
+      expect(torchReopened.quantity, torch.quantity);
+      final backpackReopened = reopened.equipment.items.singleWhere(
+        (item) => item.id == backpack.id,
+      );
+      expect(backpackReopened.name, 'Backpack');
+      expect(backpackReopened.quantity, backpack.quantity);
+      expect(backpackReopened.isContainer, isTrue);
+    },
+  );
+
+  test(
+    'retireZeroQuantityInventoryStacks keeps rows referenced from other characters',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+
+      final repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+
+      addTearDown(repository.autoSaveService.dispose);
+
+      final ownerSummary = await repository.createCharacter(
+        _createInventoryCharacterInput(
+          name: 'Retire cross owner',
+          items: ['Quarterstaff'],
+        ),
+      );
+      final holderSummary = await repository.createCharacter(
+        _createInventoryCharacterInput(
+          name: 'Retire cross holder',
+          items: ['Torch', 'Backpack'],
+        ),
+      );
+      final holderSheet = (await repository.getCharacterSheetById(
+        holderSummary.id,
+      ))!;
+      final holderTorch = holderSheet.equipment.items.singleWhere(
+        (item) => item.name == 'Torch',
+      );
+      final holderBackpack = holderSheet.equipment.items.singleWhere(
+        (item) => item.name == 'Backpack',
+      );
+
+      // Isolated fixture setup: the holder's Torch points at a
+      // zero-quantity legacy row owned by another character. The public API
+      // cannot create this cross-owner reference (the target is not in the
+      // holder's inventory), so the reference is seeded directly.
+      const legacyContainerId = 'retire-cross-owner-legacy-row';
+      await database
+          .into(database.characterInventory)
+          .insert(
+            CharacterInventoryCompanion.insert(
+              id: legacyContainerId,
+              characterId: ownerSummary.id,
+              equipmentDefinitionId: const Value(null),
+              trinketDefinitionId: const Value(null),
+              displayNameSnapshot: const Value('Legacy Pouch'),
+              quantity: const Value(0),
+            ),
+          );
+      await (database.update(
+        database.characterInventory,
+      )..where((table) => table.id.equals(holderTorch.id))).write(
+        const CharacterInventoryCompanion(
+          containerInventoryItemId: Value(legacyContainerId),
+        ),
+      );
+
+      // Cleanup of the owning character must keep the row: another item
+      // still points at it, and the database does not enforce same-owner
+      // references on legacy data.
+      expect(
+        await repository.retireZeroQuantityInventoryStacks(ownerSummary.id),
+        0,
+      );
+
+      final ownerSheet = (await repository.getCharacterSheetById(
+        ownerSummary.id,
+      ))!;
+      final legacyRow = ownerSheet.equipment.items.singleWhere(
+        (item) => item.id == legacyContainerId,
+      );
+      expect(legacyRow.name, 'Legacy Pouch');
+      expect(legacyRow.quantity, 0);
+      expect(legacyRow.isContainer, isFalse);
+      final holderSheetAfter = (await repository.getCharacterSheetById(
+        holderSummary.id,
+      ))!;
+      final torchAfter = holderSheetAfter.equipment.items.singleWhere(
+        (item) => item.id == holderTorch.id,
+      );
+      expect(torchAfter.containerInventoryItemId, legacyContainerId);
+
+      // Releasing the holder's Torch through the public API lets the owner's
+      // cleanup retire the now-unreferenced legacy row.
+      await repository.setInventoryItemContainer(
+        holderSummary.id,
+        holderTorch.id,
+        holderBackpack.id,
+      );
+      expect(
+        await repository.retireZeroQuantityInventoryStacks(ownerSummary.id),
+        1,
+      );
+      final ownerSheetFinal = (await repository.getCharacterSheetById(
+        ownerSummary.id,
+      ))!;
+      expect(
+        ownerSheetFinal.equipment.items.any(
+          (item) => item.id == legacyContainerId,
+        ),
+        isFalse,
+      );
+      final holderSheetFinal = (await repository.getCharacterSheetById(
+        holderSummary.id,
+      ))!;
+      final torchFinal = holderSheetFinal.equipment.items.singleWhere(
+        (item) => item.id == holderTorch.id,
+      );
+      expect(torchFinal.containerInventoryItemId, holderBackpack.id);
+      expect(torchFinal.containerDisplayName, 'Backpack');
     },
   );
 

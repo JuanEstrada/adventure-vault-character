@@ -960,6 +960,87 @@ void main() {
       );
     },
   );
+
+  test(
+    'retireZeroQuantityInventoryStacks keeps zero rows referenced as containers',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Retire referenced',
+          items: <String>['Torch', 'Quarterstaff'],
+        ),
+      );
+      final sheetBefore = (await repository.getCharacterSheetById(summary.id))!;
+      final torch = sheetBefore.equipment.items.singleWhere(
+        (item) => item.name == 'Torch',
+      );
+      final staff = sheetBefore.equipment.items.singleWhere(
+        (item) => item.name == 'Quarterstaff',
+      );
+
+      // In-memory custom containers start at quantity zero, so the stored
+      // Torch keeps its referenced zero-quantity container row alive.
+      final bagId = await repository.createContainer(summary.id, 'Bag');
+      await repository.setInventoryItemContainer(summary.id, torch.id, bagId);
+      await repository.setInventoryItemQuantity(summary.id, staff.id, 0);
+
+      final removed = await repository.retireZeroQuantityInventoryStacks(
+        summary.id,
+      );
+      expect(removed, 1);
+
+      final sheetAfter = (await repository.getCharacterSheetById(summary.id))!;
+      expect(sheetAfter.equipment.items, hasLength(2));
+      expect(
+        sheetAfter.equipment.items.any((item) => item.id == staff.id),
+        isFalse,
+      );
+      final bag = sheetAfter.equipment.items.singleWhere(
+        (item) => item.id == bagId,
+      );
+      expect(bag.name, 'Bag');
+      expect(bag.quantity, 0);
+      final torchAfter = sheetAfter.equipment.items.singleWhere(
+        (item) => item.id == torch.id,
+      );
+      expect(torchAfter.containerInventoryItemId, bagId);
+      expect(torchAfter.containerDisplayName, 'Bag');
+      expect(torchAfter.quantity, torch.quantity);
+
+      expect(await repository.retireZeroQuantityInventoryStacks(summary.id), 0);
+
+      // Reassigning the Torch to another current container through the public
+      // API releases the old row, and cleanup can then retire it while keeping
+      // the newly referenced zero-quantity container row.
+      final satchelId = await repository.createContainer(summary.id, 'Satchel');
+      await repository.setInventoryItemContainer(
+        summary.id,
+        torch.id,
+        satchelId,
+      );
+      expect(await repository.retireZeroQuantityInventoryStacks(summary.id), 1);
+
+      final sheetFinal = (await repository.getCharacterSheetById(summary.id))!;
+      expect(
+        sheetFinal.equipment.items.map((item) => item.id),
+        unorderedEquals(<String>[torch.id, satchelId]),
+      );
+      final torchFinal = sheetFinal.equipment.items.singleWhere(
+        (item) => item.id == torch.id,
+      );
+      expect(torchFinal.name, 'Torch');
+      expect(torchFinal.quantity, torch.quantity);
+      expect(torchFinal.containerInventoryItemId, satchelId);
+      expect(torchFinal.containerDisplayName, 'Satchel');
+      final satchelFinal = sheetFinal.equipment.items.singleWhere(
+        (item) => item.id == satchelId,
+      );
+      expect(satchelFinal.quantity, 0);
+    },
+  );
 }
 
 Future<dynamic> _torchFor(
