@@ -1,5 +1,11 @@
 # Session Resume
 
+## Current Inventory Handoff
+
+The [container lifecycle](../specs/inventory-container-lifecycle.md) records the latest inventory behavior and replaces older pending guidance for these slices. Qty0 reference protection and content-preserving deletion passed independent verification. Creating, renaming, and reopening a custom container passed the focused SQLite check and the 210-test suite; the separate rename verifier stopped on a network timeout.
+
+**Next:** finish independent verification of the rename slice. Do not migrate Qty0 records or inspect real data for this handoff.
+
 Last updated: 2026-05-12
 
 This is the canonical, short handoff file for resuming work quickly.

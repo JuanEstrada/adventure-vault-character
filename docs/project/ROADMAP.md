@@ -1,5 +1,10 @@
 # Adventure Vault Character - Roadmap
 
+## Inventory Follow-ups
+
+- Complete the independent rename check described in the [container lifecycle](../specs/inventory-container-lifecycle.md). No migration is planned in this slice.
+- Separate debt: ordinary move-to-root in the in-memory repository may retain the previous parent. Previously inconsistent cross-character links are unsupported and were not repaired. The current lifecycle change is not authorization to rewrite those records.
+
 ## Last Updated
 
 2026-05-12
