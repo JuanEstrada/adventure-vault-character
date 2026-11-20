@@ -1172,6 +1172,119 @@ void main() {
       isTrue,
     );
   });
+
+  test('renameContainer updates a custom container display name and preserves '
+      'contents and unrelated items', () async {
+    final repository = InMemoryCharacterRepository.empty(
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+    final summary = await repository.createCharacter(
+      _createCharacterInput(
+        name: 'Rename container',
+        items: <String>['Backpack', 'Torch'],
+      ),
+    );
+    final initial = (await repository.getCharacterSheetById(summary.id))!;
+    final torch = initial.equipment.items.singleWhere(
+      (item) => item.name == 'Torch',
+    );
+    final pouchId = await repository.createContainer(summary.id, 'Pouch');
+    await repository.setInventoryItemContainer(summary.id, torch.id, pouchId);
+
+    await repository.renameContainer(summary.id, pouchId, '  Gem Pouch  ');
+
+    final sheet = (await repository.getCharacterSheetById(summary.id))!;
+    final pouch = sheet.equipment.items.singleWhere(
+      (item) => item.id == pouchId,
+    );
+    expect(pouch.name, 'Gem Pouch');
+    expect(pouch.isContainer, isTrue);
+    final relocatedTorch = sheet.equipment.items.singleWhere(
+      (item) => item.id == torch.id,
+    );
+    expect(relocatedTorch.containerInventoryItemId, pouchId);
+    expect(relocatedTorch.containerDisplayName, 'Gem Pouch');
+    expect(relocatedTorch.quantity, torch.quantity);
+    expect(
+      sheet.equipment.items.singleWhere((item) => item.name == 'Backpack').name,
+      'Backpack',
+    );
+  });
+
+  test(
+    'renameContainer rejects blank names without inventory changes',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(name: 'Rename blank', items: <String>['Torch']),
+      );
+      final pouchId = await repository.createContainer(summary.id, 'Pouch');
+
+      for (final name in ['', '   ']) {
+        await expectLater(
+          repository.renameContainer(summary.id, pouchId, name),
+          throwsA(
+            isA<CharacterInventoryValidationError>()
+                .having((error) => error.code, 'code', 'invalid_target')
+                .having(
+                  (error) => error.message,
+                  'message',
+                  'Container name cannot be empty.',
+                ),
+          ),
+        );
+      }
+
+      final sheet = (await repository.getCharacterSheetById(summary.id))!;
+      expect(
+        sheet.equipment.items.singleWhere((item) => item.id == pouchId).name,
+        'Pouch',
+      );
+    },
+  );
+
+  test(
+    'renameContainer rejects noncustom containers without inventory changes',
+    () async {
+      final repository = InMemoryCharacterRepository.empty(
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      final summary = await repository.createCharacter(
+        _createCharacterInput(
+          name: 'Rename catalog container',
+          items: <String>['Backpack', 'Torch'],
+        ),
+      );
+      final sheetBefore = (await repository.getCharacterSheetById(summary.id))!;
+      final backpack = sheetBefore.equipment.items.singleWhere(
+        (item) => item.name == 'Backpack',
+      );
+      expect(backpack.isContainer, isTrue);
+
+      await expectLater(
+        repository.renameContainer(summary.id, backpack.id, 'Sack'),
+        throwsA(
+          isA<CharacterInventoryValidationError>()
+              .having((error) => error.code, 'code', 'invalid_target')
+              .having(
+                (error) => error.message,
+                'message',
+                'Selected item is not a custom container.',
+              ),
+        ),
+      );
+
+      final sheetAfter = (await repository.getCharacterSheetById(summary.id))!;
+      expect(
+        sheetAfter.equipment.items
+            .singleWhere((item) => item.id == backpack.id)
+            .name,
+        'Backpack',
+      );
+    },
+  );
 }
 
 Future<dynamic> _torchFor(

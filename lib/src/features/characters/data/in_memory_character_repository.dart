@@ -1031,6 +1031,64 @@ class InMemoryCharacterRepository implements CharacterRepository {
   }
 
   @override
+  Future<void> renameContainer(
+    String id,
+    String containerInventoryItemId,
+    String name,
+  ) async {
+    final trimmedName = name.trim();
+    if (trimmedName.isEmpty) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Container name cannot be empty.',
+      );
+    }
+
+    final summary = await getCharacterSummaryById(id);
+    if (summary == null) {
+      throw StateError('Character not found.');
+    }
+
+    final inventory = _inventoryByCharacterId[id];
+    if (inventory == null) {
+      throw StateError('Inventory not found.');
+    }
+
+    final index = inventory.indexWhere(
+      (item) => item.id == containerInventoryItemId,
+    );
+    if (index < 0) {
+      throw StateError('Container not found.');
+    }
+
+    final container = inventory[index];
+    if (!container.isContainer) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Selected item is not a container.',
+      );
+    }
+    // Renaming is scoped to custom containers created through this
+    // repository's container id convention; catalog containers keep their
+    // names.
+    final containerIdPattern = RegExp('^${RegExp.escape(id)}-container-\\d+\$');
+    if (!containerIdPattern.hasMatch(container.id)) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Selected item is not a custom container.',
+      );
+    }
+
+    // Only the instance display name changes; identity, contents,
+    // containment, and quantity are preserved.
+    final nextInventory = <_InMemoryInventoryItem>[...inventory];
+    nextInventory[index] = container.copyWith(name: trimmedName);
+    _validateProjectedInventoryInMemory(nextInventory);
+    _inventoryByCharacterId[id] = nextInventory;
+    _changes.add(null);
+  }
+
+  @override
   Future<CharacterDomainModel?> getCharacterSheetById(String id) async {
     final summary = await getCharacterSummaryById(id);
     if (summary == null) {

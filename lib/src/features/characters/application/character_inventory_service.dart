@@ -709,6 +709,75 @@ class CharacterInventoryService {
     _onCharacterChanged?.call(id);
   }
 
+  Future<void> renameContainer(
+    String id,
+    String containerInventoryItemId,
+    String name,
+  ) async {
+    final trimmedName = name.trim();
+    if (trimmedName.isEmpty) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Container name cannot be empty.',
+      );
+    }
+
+    final character = await _readDao.getCharacterRowById(id);
+    if (character == null) {
+      throw StateError('Character not found.');
+    }
+
+    final container = await _readDao.getInventoryItemById(
+      containerInventoryItemId,
+    );
+    if (container == null || container.characterId != id) {
+      throw StateError('Container not found for this character.');
+    }
+
+    final containerEquipmentId = container.equipmentDefinitionId;
+    if (containerEquipmentId == null || containerEquipmentId.isEmpty) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Selected item is not a container.',
+      );
+    }
+    final containerDefinition = await _readDao.getEquipmentDefinitionById(
+      containerEquipmentId,
+    );
+    // Renaming is scoped to usable custom containers: only an instance whose
+    // private container definition was created with it may be renamed. Shared
+    // reference definitions are never renamed, and legacy rows without
+    // definitions are never reclassified.
+    if (containerDefinition == null ||
+        !containerDefinition.isContainer ||
+        !containerDefinition.id.startsWith('inventory-container-')) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Selected item is not a custom container.',
+      );
+    }
+
+    // Only the instance display snapshot changes: identity, contents,
+    // containment, and quantity are preserved, and no definition row (private
+    // or shared) is rewritten.
+    await _database.transaction(() async {
+      final now = DateTime.now();
+      await _writeDao.updateCharacter(
+        id,
+        CharactersCompanion(updatedAt: Value(now)),
+      );
+      await _writeDao.updateInventoryItem(
+        containerInventoryItemId,
+        CharacterInventoryCompanion(
+          id: Value(containerInventoryItemId),
+          displayNameSnapshot: Value(trimmedName),
+        ),
+      );
+    });
+
+    _onCharacterChanged?.call(id);
+  }
+
   Future<void> _validateContainerCreation(
     String id,
     String containerId,

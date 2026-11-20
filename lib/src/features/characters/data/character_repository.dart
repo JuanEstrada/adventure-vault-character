@@ -120,6 +120,12 @@ abstract interface class CharacterRepository {
 
   Future<void> deleteContainer(String id, String containerInventoryItemId);
 
+  Future<void> renameContainer(
+    String id,
+    String containerInventoryItemId,
+    String name,
+  );
+
   Future<CharacterDomainModel?> getCharacterSheetById(String id);
 
   Stream<CharacterDomainModel?> watchCharacterSheetById(String id);

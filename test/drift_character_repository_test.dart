@@ -3532,6 +3532,161 @@ void main() {
       isTrue,
     );
   });
+
+  test(
+    'custom container rename persists a trimmed name with identity, contents, '
+    'and unrelated entries across SQLite reopen',
+    () async {
+      final fixture = await _RenameContainerFileFixture.create();
+      final repository = fixture.repository;
+      final summary = await repository.createCharacter(
+        _createInventoryCharacterInput(
+          name: 'Rename container',
+          items: ['Backpack', 'Torch'],
+        ),
+      );
+      final before = (await repository.getCharacterSheetById(summary.id))!;
+      final backpack = before.equipment.items.singleWhere(
+        (item) => item.name == 'Backpack',
+      );
+      final torch = before.equipment.items.singleWhere(
+        (item) => item.name == 'Torch',
+      );
+      final containerId = await repository.createContainer(
+        summary.id,
+        'Travel Satchel',
+      );
+      await repository.setInventoryItemContainer(
+        summary.id,
+        torch.id,
+        containerId,
+      );
+
+      await repository.renameContainer(
+        summary.id,
+        containerId,
+        '  Gem Satchel  ',
+      );
+
+      Future<void> expectRenamed() async {
+        final sheet = (await fixture.repository.getCharacterSheetById(
+          summary.id,
+        ))!;
+        final container = sheet.equipment.items.singleWhere(
+          (item) => item.id == containerId,
+        );
+        expect(container.name, 'Gem Satchel');
+        expect(container.isContainer, isTrue);
+        expect(container.quantity, 1);
+        expect(container.containerInventoryItemId, isNull);
+        final movedTorch = sheet.equipment.items.singleWhere(
+          (item) => item.id == torch.id,
+        );
+        expect(movedTorch.containerInventoryItemId, containerId);
+        expect(movedTorch.containerDisplayName, 'Gem Satchel');
+        expect(movedTorch.quantity, torch.quantity);
+        final unchangedBackpack = sheet.equipment.items.singleWhere(
+          (item) => item.id == backpack.id,
+        );
+        expect(unchangedBackpack.name, 'Backpack');
+        expect(sheet.equipment.inventoryInvariantReport.isValid, isTrue);
+      }
+
+      await expectRenamed();
+      await fixture.reopen();
+      await expectRenamed();
+    },
+  );
+
+  test(
+    'custom container rename rejects blank names without inventory writes',
+    () async {
+      final fixture = await _RenameContainerFileFixture.create();
+      final repository = fixture.repository;
+      final summary = await repository.createCharacter(
+        _createInventoryCharacterInput(
+          name: 'Rename blank',
+          items: ['Backpack', 'Torch'],
+        ),
+      );
+      final containerId = '${summary.id}-container-1';
+      await _seedDurableCustomContainer(
+        fixture.database,
+        characterId: summary.id,
+        containerId: containerId,
+        name: 'Travel Satchel',
+      );
+
+      for (final name in ['', '   ']) {
+        await expectLater(
+          repository.renameContainer(summary.id, containerId, name),
+          throwsA(
+            isA<CharacterInventoryValidationError>()
+                .having((error) => error.code, 'code', 'invalid_target')
+                .having(
+                  (error) => error.message,
+                  'message',
+                  'Container name cannot be empty.',
+                ),
+          ),
+        );
+      }
+
+      final sheet = (await repository.getCharacterSheetById(summary.id))!;
+      expect(sheet.equipment.items, hasLength(3));
+      final container = sheet.equipment.items.singleWhere(
+        (item) => item.id == containerId,
+      );
+      expect(container.name, 'Travel Satchel');
+      final row = await (fixture.database.select(
+        fixture.database.characterInventory,
+      )..where((table) => table.id.equals(containerId))).getSingle();
+      expect(row.displayNameSnapshot, 'Travel Satchel');
+    },
+  );
+
+  test(
+    'custom container rename rejects noncustom containers without writes',
+    () async {
+      final fixture = await _RenameContainerFileFixture.create();
+      final repository = fixture.repository;
+      final summary = await repository.createCharacter(
+        _createInventoryCharacterInput(
+          name: 'Rename catalog container',
+          items: ['Backpack', 'Torch'],
+        ),
+      );
+      final sheetBefore = (await repository.getCharacterSheetById(summary.id))!;
+      final backpack = sheetBefore.equipment.items.singleWhere(
+        (item) => item.name == 'Backpack',
+      );
+      expect(backpack.isContainer, isTrue);
+
+      await expectLater(
+        repository.renameContainer(summary.id, backpack.id, 'Sack'),
+        throwsA(
+          isA<CharacterInventoryValidationError>()
+              .having((error) => error.code, 'code', 'invalid_target')
+              .having(
+                (error) => error.message,
+                'message',
+                'Selected item is not a custom container.',
+              ),
+        ),
+      );
+
+      final sheetAfter = (await repository.getCharacterSheetById(summary.id))!;
+      final backpackAfter = sheetAfter.equipment.items.singleWhere(
+        (item) => item.id == backpack.id,
+      );
+      expect(backpackAfter.name, 'Backpack');
+      expect(backpackAfter.containerInventoryItemId, isNull);
+      final definition = await (fixture.database.select(
+        fixture.database.equipmentDefinitions,
+      )..where((table) => table.id.equals('equipment-backpack'))).getSingle();
+      expect(definition.name, 'Backpack');
+    },
+  );
 }
 
 CreateCharacterInput _createInventoryCharacterInput({
@@ -3698,3 +3853,88 @@ const _testCatalog = CompendiumCatalog(
     ],
   },
 );
+
+// A rename-focused file-backed fixture. It never depends on the working
+// createContainer metadata path; durable custom metadata is seeded directly
+// through Drift tables to mirror exactly what that path persists today.
+class _RenameContainerFileFixture {
+  _RenameContainerFileFixture(this.directory) {
+    _open();
+  }
+
+  final Directory directory;
+  late AppDatabase database;
+  late DriftCharacterRepository repository;
+
+  static Future<_RenameContainerFileFixture> create() async {
+    final directory = await Directory.systemTemp.createTemp(
+      'avc-rename-containers-',
+    );
+    final fixture = _RenameContainerFileFixture(directory);
+    addTearDown(() async {
+      fixture.repository.autoSaveService.dispose();
+      await fixture.database.close();
+      await directory.delete(recursive: true);
+    });
+    return fixture;
+  }
+
+  void _open() {
+    database = AppDatabase.executor(
+      NativeDatabase(File('${directory.path}/containers.sqlite')),
+    );
+    repository = DriftCharacterRepository(
+      database: database,
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+    repository.autoSaveService.dispose();
+  }
+
+  Future<void> reopen() async {
+    repository.autoSaveService.dispose();
+    await database.close();
+    _open();
+  }
+}
+
+// Exact current durable custom-container metadata: a private definition
+// (never a shared compendium row) plus an instance snapshot row.
+Future<void> _seedDurableCustomContainer(
+  AppDatabase database, {
+  required String characterId,
+  required String containerId,
+  required String name,
+}) async {
+  final definitionId = 'inventory-container-$containerId';
+  await database
+      .into(database.equipmentDefinitions)
+      .insert(
+        EquipmentDefinitionsCompanion.insert(
+          id: definitionId,
+          key: definitionId,
+          name: name,
+          category: 'gear',
+          isContainer: const Value(true),
+          isStackable: const Value(false),
+        ),
+      );
+  await database
+      .into(database.characterInventory)
+      .insert(
+        CharacterInventoryCompanion.insert(
+          id: containerId,
+          characterId: characterId,
+          equipmentDefinitionId: Value(definitionId),
+          trinketDefinitionId: const Value(null),
+          displayNameSnapshot: Value(name),
+          quantity: const Value(1),
+          isEquipped: const Value(false),
+          isCarried: const Value(false),
+          isFavorite: const Value(false),
+          containerInventoryItemId: const Value(null),
+          chargesCurrent: const Value(null),
+          chargesMax: const Value(null),
+          notes: const Value(''),
+        ),
+      );
+}

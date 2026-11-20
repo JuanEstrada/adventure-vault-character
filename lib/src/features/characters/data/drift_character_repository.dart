@@ -367,6 +367,19 @@ class DriftCharacterRepository implements CharacterRepository {
     );
   }
 
+  @override
+  Future<void> renameContainer(
+    String id,
+    String containerInventoryItemId,
+    String name,
+  ) async {
+    return _characterInventoryService.renameContainer(
+      id,
+      containerInventoryItemId,
+      name,
+    );
+  }
+
   Future<String> _nextContainerId(String characterId) async {
     var nextIndex = 1;
     final pattern = RegExp('^${RegExp.escape(characterId)}-container-(\\d+)');
