@@ -1,0 +1,30 @@
+# Close Inventory Container Follow-ups
+
+Scope: the open custom-container follow-ups in the current AVC handoff. Existing stack-operation verification is complete; no migration or inspection of real databases is in scope.
+
+## Specs
+
+- **S1** — “termina lastareas pendientes, todas”
+- **S2** — “Mover el contenido antes de borrar” — “Mover los objetos al inventario principal y eliminar solo el contenedor, conservando los objetos.”
+- **S3** — “Proteger las referencias, sin migración (recomendado)” — “Aplicar la protección en SQLite y en memoria. Los registros antiguos no se convierten en contenedores utilizables.”
+
+## Tasks
+
+- **T1** — S1, S3 — Protect inventory rows referenced by other items during zero-quantity cleanup; prove Drift and in-memory parity. Route: worker / verification. Done. Commit: `3e07c65` (base `e255a5f`).
+- **T2** — S1, S2 — Move direct contents to the character inventory root and delete only the selected container; verify the public flow and repository parity. Route: implementation / verification. Done. Commit: `12b7daa` (base `3e07c65`).
+- **T3** — S1 — Close the custom-container rename follow-up; verify persistent naming and preserved identity and contents, fixing only a demonstrated gap. Route: implementation if needed / verification. Implemented and functionally tested; independent verification blocked by network. Commits: `4064ffa` (repository) and `9bad5a5` (sheet/controller), on creation prerequisite `1169268`.
+- **T4** — S1–S3 — Reconcile the inventory specification and current project handoff with verified outcomes and explicit exclusions. Route: parent. Done. Commit: `ac8171f`.
+
+## Log
+
+- **L1** — User: “termina lastareas pendientes, todas”
+- **L2** — Selected “Mover el contenido antes de borrar” and “Proteger las referencias, sin migración (recomendado)”.
+- **L3** — Prior evidence: 29 existing focused stack tests and a file-backed SQLite probe passed. Two historical Qty0 diagnostics reproduced missing container classification, rejected placement, and a dangling synthetic reference after unguarded cleanup. The candidate protection worked in temporary SQLite and has not been applied to the working tree by the parent.
+- **L4** — T1 writer observed RED for both regressions (expected 1, actual 2) and 66 focused tests passing after the fix. Independent verification is running. Native assessment of the ambient worktree could not select a candidate with untracked files. The new Drift test currently references a helper absent from HEAD; do not stage pre-existing edits to satisfy it.
+- **L5** — The current sheet rename callback is a no-op. Both existing delete paths remove the selected row without relocating children; in-memory null assignment is also a pre-existing limitation. T2 must preserve direct children at the root without changing the behavior of unrelated move paths.
+- **L6** — T1 normalization removed dirty test dependencies and protected references across characters in SQLite. Writer: 67 focused passes; independent verifier: 5 focused passes, exit 0. The earlier 195-pass full suite predates this normalization.
+- **L7** — Isolated candidate testing established a pre-existing Dart compile error in HEAD: `The argument type 'String?' can't be assigned to the parameter type 'String'.` at `character_inventory_service.dart:439`. User selected “Sí, incluir solo la corrección de compilación”; isolate only the existing `validatedSplitStackId` correction in its own commit. All other pre-existing edits stay untouched and unstaged. T2 is running independently.
+- **L8** — Compile-only prerequisite committed as `e255a5f` and T1 isolated as `3e07c65` (359 changed lines). On the isolated slice: 6 focused tests, format and targeted analysis all exit 0; 5 independent T1 tests also exit 0. Native assessment of `e255a5f..3e07c65` is medium/under budget (`reviewDue: false`); no review started. Neither commit includes unrelated local edits.
+- **L9** — T2 RED: six targeted failures; GREEN: 82 focused passes and 202 full-suite passes in the workspace. Independent verification passed six focused cases plus one sheet and one controller case. Isolated verification initially exposed a custom-create fixture dependency and unowned adjacent test helpers; the fixture now uses two classified Backpack rows and the exact commit excludes all unowned lines. On the exact slice, 6 tests and format exit 0, analyzer exit 1 on two Material import deprecation infos only. Native assessment of `3e07c65..12b7daa` (537 changed lines, one behavior with its tests) is medium/under budget (`reviewDue: false`); no review started. No migration. Persisted cross-character links to recognized containers are pre-existing debt, not a supported inventory state.
+- **L10** — User selected “Sí, incluir la creación persistente por separado”. Only the authorized create fix was committed as `1169268`. The rename changes are isolated as repository/API `4064ffa` (499 changed lines) and user-facing wiring `9bad5a5` (391). Each exact range was assessed as medium, under budget, not due for native review. The integrated create → rename → SQLite reopen regression passes without ambient user edits: 8 targeted tests, format and 210 full-suite tests exit 0. Targeted analysis exits 1 only for three Material import deprecation infos. Independent rename verifier timed out on a network failure; no independent verdict or approval is claimed.
+- **L11** — `ac8171f` documents the new behavior and the remaining verification limit in `docs/specs/inventory-container-lifecycle.md`, with narrowly scoped links from the session resume, project snapshot and roadmap. Each edited section was read back and all new lifecycle links resolved. No migrations, real data access, push, or release. The next action is the independent rename check when the verifier is available.
