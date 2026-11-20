@@ -645,11 +645,35 @@ class CharacterInventoryService {
       throw StateError('Container not found for this character.');
     }
 
+    final containerEquipmentId = container.equipmentDefinitionId;
+    if (containerEquipmentId == null || containerEquipmentId.isEmpty) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Selected item is not a container.',
+      );
+    }
+    final containerDefinition = await _readDao.getEquipmentDefinitionById(
+      containerEquipmentId,
+    );
+    if (containerDefinition == null || !containerDefinition.isContainer) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Selected item is not a container.',
+      );
+    }
+
     await _database.transaction(() async {
       final now = DateTime.now();
       await _writeDao.updateCharacter(
         id,
         CharactersCompanion(updatedAt: Value(now)),
+      );
+      // Direct contents move to the character inventory root by clearing only
+      // their parent reference; contents are never deleted or rewritten, and
+      // rows nested below child containers keep their own references.
+      await _writeDao.clearInventoryContainerReferences(
+        characterId: id,
+        containerInventoryItemId: containerInventoryItemId,
       );
       await _writeDao.deleteInventoryItemById(containerInventoryItemId);
     });

@@ -280,6 +280,25 @@ class CharacterWriteDao {
     )..where((table) => table.id.equals(id))).go();
   }
 
+  Future<void> clearInventoryContainerReferences({
+    required String characterId,
+    required String containerInventoryItemId,
+  }) {
+    // Container deletion relocates direct contents to the character inventory
+    // root by clearing only their parent reference, scoped to the owning
+    // character. Legacy cross-owner references are left untouched.
+    return (_database.update(_database.characterInventory)..where(
+          (table) =>
+              table.characterId.equals(characterId) &
+              table.containerInventoryItemId.equals(containerInventoryItemId),
+        ))
+        .write(
+          const CharacterInventoryCompanion(
+            containerInventoryItemId: Value(null),
+          ),
+        );
+  }
+
   Future<int> deleteZeroQuantityInventoryByCharacterId(String characterId) {
     // Zero-quantity rows that still back another item's container reference
     // must survive cleanup, or stored items would point at deleted rows. The

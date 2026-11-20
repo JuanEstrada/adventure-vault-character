@@ -152,7 +152,10 @@ class _ContainerManagementDialogState extends State<ContainerManagementDialog> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Container'),
-        content: Text('Delete container "$containerName"?'),
+        content: Text(
+          'Delete container "$containerName"? Its contents move to the main '
+          'inventory.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -160,7 +163,22 @@ class _ContainerManagementDialogState extends State<ContainerManagementDialog> {
           ),
           ElevatedButton(
             onPressed: () async {
-              await widget.onDelete(containerId);
+              try {
+                await widget.onDelete(containerId);
+              } catch (error) {
+                // A rejected deletion must not silently dismiss as if it had
+                // succeeded: pop the confirmation and surface the failure in
+                // the management dialog.
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+                setState(() {
+                  _isProcessing = false;
+                  _error = error is String
+                      ? error
+                      : 'Failed to delete container.';
+                });
+                return;
+              }
               if (!ctx.mounted) return;
               Navigator.pop(ctx);
               widget.onDismiss();

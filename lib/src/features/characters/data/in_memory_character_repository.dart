@@ -1006,9 +1006,24 @@ class InMemoryCharacterRepository implements CharacterRepository {
       throw StateError('Container not found.');
     }
 
+    final container = inventory[index];
+    if (!container.isContainer) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Selected item is not a container.',
+      );
+    }
+
+    // Direct contents move to the character inventory root by clearing only
+    // their parent reference. copyWith cannot express that clear (a null
+    // argument silently retains the old parent), so the clearing is explicit
+    // here and is not used by ordinary reassignment paths.
     final nextInventory = <_InMemoryInventoryItem>[
-      ...inventory.sublist(0, index),
-      ...inventory.sublist(index + 1),
+      for (final item in inventory)
+        if (item.id != containerInventoryItemId)
+          item.containerInventoryItemId == containerInventoryItemId
+              ? item.withoutContainerReference()
+              : item,
     ];
 
     _inventoryByCharacterId[id] = nextInventory;
@@ -2179,6 +2194,26 @@ class _InMemoryInventoryItem {
   final String? containerInventoryItemId;
 
   int get totalWeight => (weightPerUnit ?? 0) * quantity;
+
+  /// Clears the stored container reference outright. Unlike [copyWith], which
+  /// silently retains the previous parent for a null argument, this performs
+  /// a real clear. Used only by container deletion relocation.
+  _InMemoryInventoryItem withoutContainerReference() {
+    return _InMemoryInventoryItem(
+      id: id,
+      name: name,
+      quantity: quantity,
+      isStackable: isStackable,
+      isEquipped: isEquipped,
+      isCarried: isCarried,
+      isFavorite: isFavorite,
+      weightPerUnit: weightPerUnit,
+      isContainer: isContainer,
+      chargesCurrent: chargesCurrent,
+      chargesMax: chargesMax,
+      containerInventoryItemId: null,
+    );
+  }
 
   _InMemoryInventoryItem copyWith({
     String? id,

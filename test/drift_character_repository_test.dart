@@ -3343,6 +3343,195 @@ void main() {
       expect(sheet!.equipment.carrying.totalWeight, 25);
     },
   );
+
+  test(
+    'deleteContainer moves direct contents to the character root and deletes '
+    'only the selected container',
+    () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'avc-delete-container-',
+      );
+      addTearDown(() async {
+        await directory.delete(recursive: true);
+      });
+
+      var database = AppDatabase.executor(
+        NativeDatabase(File('${directory.path}/delete-container.sqlite')),
+      );
+      var repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      repository.autoSaveService.dispose();
+      addTearDown(() async {
+        repository.autoSaveService.dispose();
+        await database.close();
+      });
+
+      final summary = await repository.createCharacter(
+        _createInventoryCharacterInput(
+          name: 'Delete container',
+          items: ['Backpack', 'Torch', 'Quarterstaff'],
+        ),
+      );
+      final initial = (await repository.getCharacterSheetById(summary.id))!;
+      final torch = initial.equipment.items.singleWhere(
+        (item) => item.name == 'Torch',
+      );
+      final staff = initial.equipment.items.singleWhere(
+        (item) => item.name == 'Quarterstaff',
+      );
+
+      final chestId = initial.equipment.items
+          .singleWhere((item) => item.name == 'Backpack')
+          .id;
+      final chest = await (database.select(
+        database.characterInventory,
+      )..where((item) => item.id.equals(chestId))).getSingle();
+      const pouchId = 'delete-container-nested-backpack';
+      await database
+          .into(database.characterInventory)
+          .insert(chest.toCompanion(false).copyWith(id: const Value(pouchId)));
+      await repository.setInventoryItemContainer(summary.id, pouchId, chestId);
+      await repository.setInventoryItemContainer(summary.id, torch.id, pouchId);
+      await repository.setInventoryItemContainer(summary.id, staff.id, chestId);
+
+      await (database.update(
+        database.characterInventory,
+      )..where((item) => item.id.equals(staff.id))).write(
+        const CharacterInventoryCompanion(
+          isFavorite: Value(true),
+          chargesCurrent: Value(2),
+          chargesMax: Value(5),
+        ),
+      );
+
+      // Deleting the outer backpack moves only the quarterstaff and the nested
+      // backpack to the root. The torch stays inside the nested backpack.
+      Future<void> expectChestDeleted() async {
+        final sheet = (await repository.getCharacterSheetById(summary.id))!;
+        expect(
+          sheet.equipment.items.any((item) => item.id == chestId),
+          isFalse,
+        );
+        final pouchAfter = sheet.equipment.items.singleWhere(
+          (item) => item.id == pouchId,
+        );
+        expect(pouchAfter.isContainer, isTrue);
+        expect(pouchAfter.containerInventoryItemId, isNull);
+        final torchAfter = sheet.equipment.items.singleWhere(
+          (item) => item.id == torch.id,
+        );
+        expect(torchAfter.containerInventoryItemId, pouchId);
+        expect(torchAfter.quantity, torch.quantity);
+        expect(torchAfter.isCarried, torch.isCarried);
+        final staffAfter = sheet.equipment.items.singleWhere(
+          (item) => item.id == staff.id,
+        );
+        expect(staffAfter.containerInventoryItemId, isNull);
+        expect(staffAfter.quantity, staff.quantity);
+        expect(staffAfter.isCarried, staff.isCarried);
+        expect(staffAfter.isEquipped, staff.isEquipped);
+        expect(staffAfter.isFavorite, isTrue);
+        expect(staffAfter.chargesCurrent, 2);
+        expect(staffAfter.chargesMax, 5);
+        expect(sheet.equipment.inventoryInvariantReport.isValid, isTrue);
+      }
+
+      await repository.deleteContainer(summary.id, chestId);
+      await expectChestDeleted();
+
+      // The persisted result survives closing and reopening the database.
+      repository.autoSaveService.dispose();
+      await database.close();
+      database = AppDatabase.executor(
+        NativeDatabase(File('${directory.path}/delete-container.sqlite')),
+      );
+      repository = DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      );
+      repository.autoSaveService.dispose();
+      await expectChestDeleted();
+    },
+  );
+
+  test('deleteContainer rejects non-container and other characters\' items '
+      'without mutation', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final repository = DriftCharacterRepository(
+      database: database,
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+    addTearDown(repository.autoSaveService.dispose);
+
+    final ownerSummary = await repository.createCharacter(
+      _createInventoryCharacterInput(
+        name: 'Delete owner',
+        items: ['Backpack', 'Torch'],
+      ),
+    );
+    final foreignSummary = await repository.createCharacter(
+      _createInventoryCharacterInput(name: 'Delete foreign', items: ['Torch']),
+    );
+    final ownerSheet = (await repository.getCharacterSheetById(
+      ownerSummary.id,
+    ))!;
+    final torch = ownerSheet.equipment.items.singleWhere(
+      (item) => item.name == 'Torch',
+    );
+    final backpack = ownerSheet.equipment.items.singleWhere(
+      (item) => item.name == 'Backpack',
+    );
+    await repository.setInventoryItemContainer(
+      ownerSummary.id,
+      torch.id,
+      backpack.id,
+    );
+    final foreignContainerId = await repository.createContainer(
+      foreignSummary.id,
+      'Foreign Chest',
+    );
+
+    await expectLater(
+      repository.deleteContainer(ownerSummary.id, torch.id),
+      throwsA(
+        isA<CharacterInventoryValidationError>()
+            .having((error) => error.code, 'code', 'invalid_target')
+            .having(
+              (error) => error.message,
+              'message',
+              'Selected item is not a container.',
+            ),
+      ),
+    );
+    await expectLater(
+      repository.deleteContainer(ownerSummary.id, foreignContainerId),
+      throwsStateError,
+    );
+
+    final ownerAfter = (await repository.getCharacterSheetById(
+      ownerSummary.id,
+    ))!;
+    expect(
+      ownerAfter.equipment.items.map((item) => item.id),
+      unorderedEquals(ownerSheet.equipment.items.map((item) => item.id)),
+    );
+    final torchAfter = ownerAfter.equipment.items.singleWhere(
+      (item) => item.id == torch.id,
+    );
+    expect(torchAfter.containerInventoryItemId, backpack.id);
+    expect(torchAfter.quantity, torch.quantity);
+    final foreignAfter = (await repository.getCharacterSheetById(
+      foreignSummary.id,
+    ))!;
+    expect(
+      foreignAfter.equipment.items.any((item) => item.id == foreignContainerId),
+      isTrue,
+    );
+  });
 }
 
 CreateCharacterInput _createInventoryCharacterInput({
