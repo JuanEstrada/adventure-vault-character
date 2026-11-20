@@ -591,9 +591,37 @@ class CharacterInventoryService {
     String containerId,
     String name,
   ) async {
-    await _validateContainerCreation(id, containerId, name);
-
     await _database.transaction(() async {
+      await _validateContainerCreation(id, containerId, name);
+
+      // A private definition gives this instance durable container metadata.
+      // Never replace a reference definition, even if an imported key collides.
+      final definitionBase = 'inventory-container-$containerId';
+      var definitionId = definitionBase;
+      var suffix = 0;
+      while (await (_database.select(_database.equipmentDefinitions)
+                ..where(
+                  (table) =>
+                      table.id.equals(definitionId) |
+                      table.key.equals(definitionId),
+                )
+                ..limit(1))
+              .getSingleOrNull() !=
+          null) {
+        definitionId = '$definitionBase-${++suffix}';
+      }
+      await _database
+          .into(_database.equipmentDefinitions)
+          .insert(
+            EquipmentDefinitionsCompanion.insert(
+              id: definitionId,
+              key: definitionId,
+              name: name,
+              category: 'gear',
+              isContainer: const Value(true),
+              isStackable: const Value(false),
+            ),
+          );
       final now = DateTime.now();
       await _writeDao.updateCharacter(
         id,
@@ -603,10 +631,10 @@ class CharacterInventoryService {
         CharacterInventoryCompanion.insert(
           id: containerId,
           characterId: id,
-          equipmentDefinitionId: Value(null),
+          equipmentDefinitionId: Value(definitionId),
           trinketDefinitionId: Value(null),
           displayNameSnapshot: Value(name),
-          quantity: Value(0),
+          quantity: Value(1),
           isEquipped: Value(false),
           isCarried: Value(false),
           isFavorite: Value(false),
@@ -691,6 +719,16 @@ class CharacterInventoryService {
         'invalid_target',
         'Container ID cannot be empty.',
       );
+    }
+
+    if (name.trim().isEmpty) {
+      throw const CharacterInventoryValidationError(
+        'invalid_target',
+        'Container name cannot be empty.',
+      );
+    }
+    if (await _readDao.getCharacterRowById(id) == null) {
+      throw StateError('Character not found.');
     }
 
     final normalizedContainerId = containerId.trim();
