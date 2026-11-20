@@ -414,7 +414,8 @@ class CharacterInventoryService {
         return;
       }
 
-      if (splitStackId == null) {
+      final validatedSplitStackId = splitStackId;
+      if (validatedSplitStackId == null) {
         await _writeDao.updateInventoryItem(
           source.id,
           CharacterInventoryCompanion(
@@ -436,7 +437,7 @@ class CharacterInventoryService {
       );
       await _writeDao.insertInventoryItem(
         CharacterInventoryCompanion.insert(
-          id: splitStackId,
+          id: validatedSplitStackId,
           characterId: id,
           equipmentDefinitionId: Value(source.equipmentDefinitionId),
           trinketDefinitionId: Value(source.trinketDefinitionId),
