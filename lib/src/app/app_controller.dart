@@ -356,7 +356,8 @@ class AppController extends ChangeNotifier {
       }
     } catch (_) {
       _state = _state.copyWith(
-        errorMessage: 'Failed to open the selected character.',
+        errorMessage:
+            'Failed to open the selected character. Select it again to retry.',
       );
     }
 

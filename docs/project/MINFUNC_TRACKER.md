@@ -41,7 +41,7 @@ tracker.
 | Inventory and resource actions required for basic live play are usable | Yes | Met | Inventory quantity, charges, carry/equip, and container assignment flows are implemented with deterministic validation and persistence. |
 | Rest flows update supported resources correctly | Yes | Met | Recovery service updates HP, slot usage, class resources, death saves, and tracked charges; repository tests verify persisted results. |
 || Core mutations persist correctly after reopen | Yes | Met | Spell-slot spend/restore mutations now persist and reopen correctly; inventory and rest mutations already persisted. |
-| Expected rejection and recoverable error states do not break the session loop | Yes | Unclear | Inventory rejection feedback is implemented, and several missing-data defaults exist in mapping, but recoverable read/write interruption coverage is not yet proven end-to-end. |
+| Expected rejection and recoverable error states do not break the session loop | Yes | Unclear | Inventory rejection feedback and missing-data defaults exist. A widget test backed by temporary SQLite now proves that a failed open shows retry guidance, a second selection opens the same character, and the stored ID, name, hit points, and inventory remain unchanged. A recoverable write interruption is still unverified end-to-end. |
 || Targeted automated coverage exists for the release-bar flows | Yes | Met | Coverage exists for create/edit/reopen, rests, combat, inventory, and spell-slot spend/restore with widget tests proving persistence and reopen. |
 
 ## S1 Explicit Exclusions

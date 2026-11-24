@@ -1,9 +1,17 @@
 import 'package:adventure_vault_character/src/app/adventure_vault_app.dart';
+import 'package:adventure_vault_character/src/features/characters/data/drift_character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/in_memory_character_repository.dart';
+import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
+import 'package:adventure_vault_character/src/features/characters/presentation/character_sheet_screen.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/in_memory_compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:adventure_vault_character/src/features/settings/data/in_memory_system_settings_repository.dart';
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -43,6 +51,111 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets(
+    'opening a saved character recovers from a temporary read error',
+    (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 1200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+      final compendium = InMemoryCompendiumRepository(_testCatalog);
+      final repository = _FailOnceOnOpenRepository(
+        database: database,
+        compendiumRepository: compendium,
+      );
+      // No production auto-save writes or timers are needed for this read test.
+      repository.autoSaveService.dispose();
+      final character = await repository.createCharacter(
+        CreateCharacterInput(
+          name: 'Ari the Ready',
+          raceName: 'Human',
+          backgroundId: 'acolyte',
+          backgroundName: 'Acolyte',
+          backgroundSummary: 'Temple acolyte',
+          abilityScoreMethod: 'manualPointAllocation',
+          abilityScoreProvenance: 'method=manualPointAllocation',
+          strength: 10,
+          dexterity: 12,
+          constitution: 13,
+          intelligence: 10,
+          wisdom: 14,
+          charisma: 8,
+          className: 'Wizard',
+          level: 2,
+          experience: 300,
+          equipmentLoadoutId: 'wizard-focus',
+          equipmentLoadoutLabel: 'Arcane focus kit',
+          startingMoneySummary: '0 gp',
+          selectedEquipmentItems: ['3 Torch'],
+          currentHitPoints: 7,
+          maximumHitPoints: 12,
+          temporaryHitPoints: 0,
+          spellState: const CharacterSpellStateInput(
+            selectionMode: CharacterSpellSelectionMode.spellbook,
+            selectedSpells: [],
+            slotUsages: [],
+          ),
+          finishingDetails: CharacterFinishingDetailsInput.empty(),
+        ),
+      );
+
+      Future<List<Object>> readSavedSheet() async {
+        final sheet = (await repository.getCharacterSheetById(character.id))!;
+        return [
+          sheet.id,
+          sheet.identity.name,
+          sheet.combat.hitPoints.current,
+          {
+            for (final item in sheet.equipment.items)
+              item.id: (item.name, item.quantity),
+          },
+        ];
+      }
+
+      final saved = await readSavedSheet();
+      await tester.pumpWidget(
+        AdventureVaultApp(
+          characterRepository: repository,
+          compendiumRepository: compendium,
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Continue offline'));
+      await tester.tap(find.text('Continue offline'));
+      await tester.pumpAndSettle();
+
+      final card = find.text(character.name);
+      final error = find.text(
+        'Failed to open the selected character. Select it again to retry.',
+      );
+      expect(card, findsOneWidget);
+      expect(error, findsNothing);
+
+      await tester.tap(card);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CharacterSheetScreen), findsNothing);
+      expect(card, findsOneWidget);
+      expect(error, findsOneWidget);
+      expect(await readSavedSheet(), saved);
+
+      await tester.tap(card);
+      await tester.pumpAndSettle();
+
+      final sheetScreen = find.byType(CharacterSheetScreen);
+      expect(sheetScreen, findsOneWidget);
+      expect(
+        tester.widget<CharacterSheetScreen>(sheetScreen).character.id,
+        character.id,
+      );
+      expect(find.text(character.name), findsWidgets);
+      expect(error, findsNothing);
+      expect(await readSavedSheet(), saved);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
   testWidgets('main menu opens compendium screen with source details', (
     WidgetTester tester,
@@ -1081,6 +1194,29 @@ void main() {
       );
     },
   );
+}
+
+class _FailOnceOnOpenRepository extends DriftCharacterRepository {
+  _FailOnceOnOpenRepository({
+    required super.database,
+    required super.compendiumRepository,
+  });
+
+  bool _failNextOpen = true;
+
+  // This widget test needs SQLite reads, not ongoing query subscriptions.
+  @override
+  Stream<List<CharacterSummary>> watchCharacterSummaries() =>
+      Stream.fromFuture(getCharacterSummaries());
+
+  @override
+  Stream<CharacterDomainModel?> watchCharacterSheetById(String id) {
+    if (_failNextOpen) {
+      _failNextOpen = false;
+      return Stream.error(StateError('Simulated temporary read failure'));
+    }
+    return Stream.fromFuture(getCharacterSheetById(id));
+  }
 }
 
 const _testCatalog = CompendiumCatalog(

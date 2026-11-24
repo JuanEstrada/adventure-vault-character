@@ -128,7 +128,19 @@ class _AdventureVaultAppState extends State<AdventureVaultApp> {
               onCreateCharacter: () {
                 unawaited(_controller.openCreateCharacter());
               },
-              onOpenCharacter: _controller.openCharacter,
+              onOpenCharacter: (characterId) async {
+                final messenger = ScaffoldMessenger.of(context);
+                messenger.hideCurrentSnackBar();
+                await _controller.openCharacter(characterId);
+                if (!context.mounted || !messenger.mounted) return;
+
+                final currentState = _controller.state;
+                final message = currentState.errorMessage;
+                if (currentState.screen == AppScreen.mainMenu &&
+                    message != null) {
+                  messenger.showSnackBar(SnackBar(content: Text(message)));
+                }
+              },
             ),
             AppScreen.settings => SystemSettingsScreen(
               includeCoinWeightInEncumbrance:
