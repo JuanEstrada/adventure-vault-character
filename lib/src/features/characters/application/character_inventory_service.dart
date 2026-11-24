@@ -691,6 +691,15 @@ class CharacterInventoryService {
     }
 
     await _database.transaction(() async {
+      if (await _readDao.hasForeignContainerReference(
+        characterId: id,
+        containerInventoryItemId: containerInventoryItemId,
+      )) {
+        throw const CharacterInventoryValidationError(
+          'invalid_target',
+          'Cannot delete a container referenced by another character.',
+        );
+      }
       final now = DateTime.now();
       await _writeDao.updateCharacter(
         id,

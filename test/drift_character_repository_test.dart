@@ -3564,6 +3564,105 @@ void main() {
     },
   );
 
+  test('deleteContainer rejects a reference from another character', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    addTearDown(database.close);
+    final repository = DriftCharacterRepository(
+      database: database,
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+    addTearDown(repository.autoSaveService.dispose);
+
+    final owner = await repository.createCharacter(
+      _createInventoryCharacterInput(
+        name: 'Container owner',
+        items: ['Backpack', 'Torch'],
+      ),
+    );
+    final holder = await repository.createCharacter(
+      _createInventoryCharacterInput(
+        name: 'Cross-reference holder',
+        items: ['Backpack', 'Torch'],
+      ),
+    );
+    final ownerSheet = (await repository.getCharacterSheetById(owner.id))!;
+    final holderSheet = (await repository.getCharacterSheetById(holder.id))!;
+    final ownerBackpack = ownerSheet.equipment.items.singleWhere(
+      (item) => item.name == 'Backpack',
+    );
+    final ownerTorch = ownerSheet.equipment.items.singleWhere(
+      (item) => item.name == 'Torch',
+    );
+    final holderBackpack = holderSheet.equipment.items.singleWhere(
+      (item) => item.name == 'Backpack',
+    );
+    final holderTorch = holderSheet.equipment.items.singleWhere(
+      (item) => item.name == 'Torch',
+    );
+    await repository.setInventoryItemContainer(
+      owner.id,
+      ownerTorch.id,
+      ownerBackpack.id,
+    );
+    // Seed a historical reference that the public assignment API forbids.
+    await (database.update(
+      database.characterInventory,
+    )..where((item) => item.id.equals(holderTorch.id))).write(
+      CharacterInventoryCompanion(
+        containerInventoryItemId: Value(ownerBackpack.id),
+      ),
+    );
+
+    Future<Map<String, Object>> inventorySnapshot(String id) async {
+      final sheet = (await repository.getCharacterSheetById(id))!;
+      return {
+        for (final item in sheet.equipment.items)
+          item.id: (
+            item.name,
+            item.quantity,
+            item.containerInventoryItemId,
+            item.containerDisplayName,
+            item.isCarried,
+            item.isEquipped,
+            item.isFavorite,
+          ),
+      };
+    }
+
+    final ownerBefore = await inventorySnapshot(owner.id);
+    final holderBefore = await inventorySnapshot(holder.id);
+    await expectLater(
+      repository.deleteContainer(owner.id, ownerBackpack.id),
+      throwsA(
+        isA<CharacterInventoryValidationError>()
+            .having((error) => error.code, 'code', 'invalid_target')
+            .having(
+              (error) => error.message,
+              'message',
+              'Cannot delete a container referenced by another character.',
+            ),
+      ),
+    );
+    expect(await inventorySnapshot(owner.id), ownerBefore);
+    expect(await inventorySnapshot(holder.id), holderBefore);
+
+    await repository.setInventoryItemContainer(
+      holder.id,
+      holderTorch.id,
+      holderBackpack.id,
+    );
+    final holderAfterRepair = await inventorySnapshot(holder.id);
+    await repository.deleteContainer(owner.id, ownerBackpack.id);
+    expect(await inventorySnapshot(holder.id), holderAfterRepair);
+
+    final ownerAfter = (await repository.getCharacterSheetById(owner.id))!;
+    final movedTorch = ownerAfter.equipment.items.single;
+    expect(movedTorch.id, ownerTorch.id);
+    expect(movedTorch.quantity, ownerTorch.quantity);
+    expect(movedTorch.isCarried, ownerTorch.isCarried);
+    expect(movedTorch.containerInventoryItemId, isNull);
+  });
+
   test('deleteContainer rejects non-container and other characters\' items '
       'without mutation', () async {
     final database = AppDatabase.executor(NativeDatabase.memory());

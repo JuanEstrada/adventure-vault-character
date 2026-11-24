@@ -137,6 +137,20 @@ class CharacterReadDao {
     )..where((table) => table.id.equals(id))).getSingleOrNull();
   }
 
+  Future<bool> hasForeignContainerReference({
+    required String characterId,
+    required String containerInventoryItemId,
+  }) async {
+    final matches = _database.select(_database.characterInventory)
+      ..where(
+        (table) =>
+            table.containerInventoryItemId.equals(containerInventoryItemId) &
+            table.characterId.equals(characterId).not(),
+      )
+      ..limit(1);
+    return await matches.getSingleOrNull() != null;
+  }
+
   Future<List<EquipmentDefinition>> getEquipmentDefinitionsByIds(
     Iterable<String> ids,
   ) {
