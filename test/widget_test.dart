@@ -8,6 +8,7 @@ import 'package:adventure_vault_character/src/features/characters/domain/charact
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
 import 'package:adventure_vault_character/src/features/characters/presentation/character_sheet_screen.dart';
+import 'package:adventure_vault_character/src/features/characters/presentation/edit_character_screen.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/in_memory_compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:adventure_vault_character/src/features/settings/data/in_memory_system_settings_repository.dart';
@@ -67,37 +68,7 @@ void main() {
       // No production auto-save writes or timers are needed for this read test.
       repository.autoSaveService.dispose();
       final character = await repository.createCharacter(
-        CreateCharacterInput(
-          name: 'Ari the Ready',
-          raceName: 'Human',
-          backgroundId: 'acolyte',
-          backgroundName: 'Acolyte',
-          backgroundSummary: 'Temple acolyte',
-          abilityScoreMethod: 'manualPointAllocation',
-          abilityScoreProvenance: 'method=manualPointAllocation',
-          strength: 10,
-          dexterity: 12,
-          constitution: 13,
-          intelligence: 10,
-          wisdom: 14,
-          charisma: 8,
-          className: 'Wizard',
-          level: 2,
-          experience: 300,
-          equipmentLoadoutId: 'wizard-focus',
-          equipmentLoadoutLabel: 'Arcane focus kit',
-          startingMoneySummary: '0 gp',
-          selectedEquipmentItems: ['3 Torch'],
-          currentHitPoints: 7,
-          maximumHitPoints: 12,
-          temporaryHitPoints: 0,
-          spellState: const CharacterSpellStateInput(
-            selectionMode: CharacterSpellSelectionMode.spellbook,
-            selectedSpells: [],
-            slotUsages: [],
-          ),
-          finishingDetails: CharacterFinishingDetailsInput.empty(),
-        ),
+        _savedWizardInput('Ari the Ready'),
       );
 
       Future<List<Object>> readSavedSheet() async {
@@ -1142,6 +1113,85 @@ void main() {
   });
 
   testWidgets(
+    'a failed edit keeps the draft visible and lets the player retry',
+    (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(1200, 4200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final compendium = InMemoryCompendiumRepository(_testCatalog);
+      final repository = _FailOnceOnSaveRepository(
+        compendiumRepository: compendium,
+      );
+      const originalName = 'Ari Before Editing';
+      const updatedName = 'Ari After Editing';
+      final character = await repository.createCharacter(
+        _savedWizardInput(originalName),
+      );
+      await tester.pumpWidget(
+        AdventureVaultApp(
+          characterRepository: repository,
+          compendiumRepository: compendium,
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Continue offline'));
+      await tester.tap(find.text('Continue offline'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(originalName));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(TextButton, 'Edit'));
+      await tester.pumpAndSettle();
+
+      final nameField = find.byType(TextFormField).first;
+      final save = find.widgetWithText(FilledButton, 'Save changes');
+      final error = find.text('The character could not be updated locally.');
+      await tester.enterText(nameField, updatedName);
+      expect(error, findsNothing);
+      await tester.ensureVisible(save);
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+
+      expect(error, findsOneWidget);
+      expect(repository.attemptedNames, [updatedName]);
+      expect(find.byType(CharacterSheetScreen), findsNothing);
+      final draft = tester.widget<EditableText>(
+        find.descendant(of: nameField, matching: find.byType(EditableText)),
+      );
+      expect(draft.controller.text, updatedName);
+      expect(tester.widget<FilledButton>(save).onPressed, isNotNull);
+
+      await tester.ensureVisible(save);
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+
+      expect(repository.attemptedNames, [updatedName, updatedName]);
+      expect(repository.savedNames, [
+        updatedName,
+      ], reason: 'Retry persistence error: ${repository.retryError}');
+      expect(error, findsNothing);
+      final screen = find.byType(CharacterSheetScreen);
+      // Pending async work is not necessarily represented by scheduled frames.
+      for (var i = 0; i < 10 && screen.evaluate().isEmpty; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      final edit =
+          find.byType(EditCharacterScreen).evaluate().firstOrNull?.widget
+              as EditCharacterScreen?;
+      expect(
+        screen,
+        findsOneWidget,
+        reason:
+            'Editor saving: ${edit?.isSaving}, error: ${edit?.errorMessage}; '
+            'sheet reads: ${repository.sheetReadCount}',
+      );
+      final displayed = tester.widget<CharacterSheetScreen>(screen).character;
+      expect(
+        (displayed.id, displayed.identity.name),
+        (character.id, updatedName),
+      );
+    },
+  );
+
+  testWidgets(
     'create screen shows blocked state when compendium is incomplete',
     (WidgetTester tester) async {
       const incompleteCatalog = CompendiumCatalog(
@@ -1218,6 +1268,82 @@ class _FailOnceOnOpenRepository extends DriftCharacterRepository {
     return Stream.fromFuture(getCharacterSheetById(id));
   }
 }
+
+class _FailOnceOnSaveRepository extends InMemoryCharacterRepository {
+  _FailOnceOnSaveRepository({required super.compendiumRepository})
+    : super.empty();
+
+  final attemptedNames = <String>[];
+  final savedNames = <String>[];
+  Object? retryError;
+  int sheetReadCount = 0;
+
+  // Provide a fresh cancellation future on the widget test clock; the
+  // controller integration test exercises the real Drift watches and writes.
+  @override
+  Stream<CharacterDomainModel?> watchCharacterSheetById(String id) {
+    sheetReadCount++;
+    return Stream.multi((updates) async {
+      updates.onCancel = () async {};
+      try {
+        updates.add(await getCharacterSheetById(id));
+      } catch (error, stack) {
+        updates.addError(error, stack);
+      }
+    });
+  }
+
+  @override
+  Future<CharacterSummary> updateCharacter(
+    String id,
+    CreateCharacterInput input,
+  ) async {
+    attemptedNames.add(input.name);
+    if (attemptedNames.length == 1) {
+      throw StateError('Simulated temporary save failure');
+    }
+    try {
+      final summary = await super.updateCharacter(id, input);
+      savedNames.add(summary.name);
+      return summary;
+    } catch (error) {
+      retryError = error;
+      rethrow;
+    }
+  }
+}
+
+CreateCharacterInput _savedWizardInput(String name) => CreateCharacterInput(
+  name: name,
+  raceName: 'Human',
+  backgroundId: 'acolyte',
+  backgroundName: 'Acolyte',
+  backgroundSummary: 'Temple acolyte',
+  abilityScoreMethod: 'manualPointAllocation',
+  abilityScoreProvenance: 'method=manualPointAllocation',
+  strength: 10,
+  dexterity: 12,
+  constitution: 13,
+  intelligence: 10,
+  wisdom: 14,
+  charisma: 8,
+  className: 'Wizard',
+  level: 2,
+  experience: 300,
+  equipmentLoadoutId: 'wizard-focus',
+  equipmentLoadoutLabel: 'Arcane focus kit',
+  startingMoneySummary: '0 gp',
+  selectedEquipmentItems: ['3 Torch'],
+  currentHitPoints: 7,
+  maximumHitPoints: 12,
+  temporaryHitPoints: 0,
+  spellState: const CharacterSpellStateInput(
+    selectionMode: CharacterSpellSelectionMode.spellbook,
+    selectedSpells: [],
+    slotUsages: [],
+  ),
+  finishingDetails: CharacterFinishingDetailsInput.empty(),
+);
 
 const _testCatalog = CompendiumCatalog(
   races: <String>['Human', 'Dragonborn (Black)', 'Elf', 'Dwarf', 'Halfling'],

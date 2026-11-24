@@ -1,13 +1,18 @@
 import 'package:adventure_vault_character/src/app/app_controller.dart';
 import 'package:adventure_vault_character/src/core/navigation/app_screen.dart';
+import 'package:adventure_vault_character/src/features/characters/data/drift_character_repository.dart';
 import 'package:adventure_vault_character/src/features/characters/data/in_memory_character_repository.dart';
+import 'package:adventure_vault_character/src/features/characters/data/local/app_database.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_domain_model.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/character_finishing_details.dart';
+import 'package:adventure_vault_character/src/features/characters/domain/character_summary.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/create_character_input.dart';
 import 'package:adventure_vault_character/src/features/characters/domain/equipment_summary_view_data.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/data/in_memory_compendium_repository.dart';
 import 'package:adventure_vault_character/src/features/compendium/domain/compendium_catalog.dart';
 import 'package:adventure_vault_character/src/features/settings/data/in_memory_system_settings_repository.dart';
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -96,6 +101,116 @@ void main() {
     expect(repository.fullLoadCount, 1);
     expect(controller.state.screen, AppScreen.createCharacter);
   });
+
+  test(
+    'a late SQLite edit failure rolls back and commits once on retry',
+    () async {
+      final database = AppDatabase.executor(NativeDatabase.memory());
+      addTearDown(database.close);
+      final compendium = InMemoryCompendiumRepository(_buildTransferCatalog());
+      final repository = _RecordingSqliteRepository(
+        database: database,
+        compendiumRepository: compendium,
+      );
+      repository.autoSaveService.dispose();
+      const originalName = 'Ari Before Editing';
+      const updatedName = 'Ari After Editing';
+      const injectedFailure = 'Simulated late character write failure';
+      final seed = await repository.createCharacter(
+        _createCharacterInput(name: originalName, items: ['3 Torch']),
+      );
+      final controller = AppController(
+        characterRepository: repository,
+        compendiumRepository: compendium,
+        systemSettingsRepository: InMemorySystemSettingsRepository(),
+      );
+      addTearDown(controller.dispose);
+      await controller.initialize();
+      controller.continueOffline();
+      await controller.openCharacter(seed.id);
+      await controller.loadEditableCharacter(seed.id);
+      expect(controller.state.screen, AppScreen.editCharacter);
+      expect(controller.state.errorMessage, isNull);
+
+      Future<CharacterDomainModel> readSaved() async =>
+          (await repository.getCharacterSheetById(seed.id))!;
+      Map<String, (String, int)> inventory(CharacterDomainModel sheet) => {
+        for (final item in sheet.equipment.items)
+          item.id: (item.name, item.quantity),
+      };
+
+      final previous = await readSaved();
+      final previousInventory = inventory(previous);
+      expect(previousInventory.values, [('Torch', 3)]);
+      final changed = _createCharacterInput(
+        name: updatedName,
+        items: ['3 Torch'],
+      );
+
+      // The trigger fires only after the new name is visible in this
+      // transaction. ABORT cancels the statement, not the transaction itself.
+      await database.customStatement('''
+        CREATE TEMP TRIGGER reject_character_finishing_write
+        BEFORE INSERT ON character_finishing_details
+        WHEN (SELECT name FROM characters WHERE id = NEW.character_id) = '$updatedName'
+        BEGIN
+          SELECT RAISE(ABORT, '$injectedFailure');
+        END
+      ''');
+      await controller.saveEditedCharacter(changed);
+
+      expect(repository.attemptedIds, [seed.id]);
+      expect(repository.committedIds, isEmpty);
+      expect(repository.lastFailure.toString(), contains(injectedFailure));
+      expect(controller.state.screen, AppScreen.editCharacter);
+      expect(
+        controller.state.errorMessage,
+        'The character could not be updated locally.',
+      );
+      expect(controller.state.isSavingCharacter, isFalse);
+      expect(
+        controller.state.characterEditorController?.draft.name,
+        updatedName,
+      );
+      final afterFailure = await readSaved();
+      expect(
+        (afterFailure.id, afterFailure.identity.name),
+        (seed.id, originalName),
+      );
+      expect(
+        afterFailure.combat.hitPoints.current,
+        previous.combat.hitPoints.current,
+      );
+      expect(inventory(afterFailure), previousInventory);
+      final oldSummary = (await repository.getCharacterSummaries()).single;
+      expect((oldSummary.id, oldSummary.name), (seed.id, originalName));
+
+      await database.customStatement(
+        'DROP TRIGGER reject_character_finishing_write',
+      );
+      await controller.saveEditedCharacter(
+        controller.state.characterEditorController!.draft,
+      );
+
+      expect(repository.attemptedIds, [seed.id, seed.id]);
+      expect(repository.committedIds, [seed.id]);
+      expect(controller.state.screen, AppScreen.characterSheet);
+      expect(controller.state.errorMessage, isNull);
+      expect(controller.state.isSavingCharacter, isFalse);
+      final shown = controller.state.selectedCharacterSheet!;
+      expect((shown.id, shown.identity.name), (seed.id, updatedName));
+      final afterRetry = await readSaved();
+      expect((afterRetry.id, afterRetry.identity.name), (seed.id, updatedName));
+      expect(
+        afterRetry.combat.hitPoints.current,
+        previous.combat.hitPoints.current,
+      );
+      expect(inventory(afterRetry), previousInventory);
+      final newSummary = (await repository.getCharacterSummaries()).single;
+      expect((newSummary.id, newSummary.name), (seed.id, updatedName));
+    },
+    timeout: const Timeout(Duration(seconds: 30)),
+  );
 
   test(
     'transfer inventory stack routes through the controller mutation path',
@@ -540,6 +655,33 @@ CompendiumCatalog _buildCatalog({
       sections: const <CompendiumSectionSourcePolicy>[],
     ),
   );
+}
+
+class _RecordingSqliteRepository extends DriftCharacterRepository {
+  _RecordingSqliteRepository({
+    required super.database,
+    required super.compendiumRepository,
+  });
+
+  final attemptedIds = <String>[];
+  final committedIds = <String>[];
+  Object? lastFailure;
+
+  @override
+  Future<CharacterSummary> updateCharacter(
+    String id,
+    CreateCharacterInput input,
+  ) async {
+    attemptedIds.add(id);
+    try {
+      final updated = await super.updateCharacter(id, input);
+      committedIds.add(id);
+      return updated;
+    } catch (error) {
+      lastFailure = error;
+      rethrow;
+    }
+  }
 }
 
 class _RecordingCompendiumRepository implements CompendiumRepository {
