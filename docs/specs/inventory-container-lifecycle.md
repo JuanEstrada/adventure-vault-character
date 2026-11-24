@@ -12,7 +12,7 @@
 
 - Independent checks passed for zero-quantity reference protection and for deletion. SQLite checks covered persistence on reopen.
 - Independent verification of committed rename slice `9bad5a5` passed eight tests. It covered the sheet action and creating, renaming, and reopening a custom container with its identity, name, and contents preserved.
-- General move-to-root via a nullable reference is still a separate in-memory issue. Explicit deletion clears the reference through its own path.
+- Moving a whole item to the inventory root clears its container reference in both Drift and the in-memory repository, without changing the item's identity, quantity, or carried state.
 - Deletion rejects a stored cross-character reference before writing: `Cannot delete a container referenced by another character.` This prevents a new dangling link; it does not repair any existing ones. No real database was opened, and no migration was run.
 
 See the [work log](../../odd/tasks/inventory-containers.md) for the exact scope, checks, and commit boundaries.

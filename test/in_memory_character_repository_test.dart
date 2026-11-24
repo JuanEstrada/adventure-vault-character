@@ -927,6 +927,84 @@ void main() {
     },
   );
 
+  test('setInventoryItemContainer assigns an item to a container', () async {
+    final repository = InMemoryCharacterRepository.empty(
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+    final summary = await repository.createCharacter(
+      _createCharacterInput(name: 'Place item', items: ['Backpack', 'Torch']),
+    );
+    final before = (await repository.getCharacterSheetById(summary.id))!;
+    final backpack = before.equipment.items.singleWhere(
+      (item) => item.name == 'Backpack',
+    );
+    final torch = before.equipment.items.singleWhere(
+      (item) => item.name == 'Torch',
+    );
+
+    await repository.setInventoryItemContainer(
+      summary.id,
+      torch.id,
+      backpack.id,
+    );
+
+    final after = (await repository.getCharacterSheetById(summary.id))!;
+    final placed = after.equipment.items.singleWhere(
+      (item) => item.id == torch.id,
+    );
+    expect(placed.containerInventoryItemId, backpack.id);
+    expect(placed.containerDisplayName, backpack.name);
+    expect(placed.quantity, torch.quantity);
+    expect(placed.isCarried, torch.isCarried);
+    expect(
+      after.equipment.items.map((item) => item.id),
+      unorderedEquals(before.equipment.items.map((item) => item.id)),
+    );
+  });
+
+  test('setInventoryItemContainer moves an item back to the root', () async {
+    final repository = InMemoryCharacterRepository.empty(
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+    final summary = await repository.createCharacter(
+      _createCharacterInput(name: 'Remove item', items: ['Backpack', 'Torch']),
+    );
+    final before = (await repository.getCharacterSheetById(summary.id))!;
+    final backpack = before.equipment.items.singleWhere(
+      (item) => item.name == 'Backpack',
+    );
+    final torch = before.equipment.items.singleWhere(
+      (item) => item.name == 'Torch',
+    );
+    await repository.setInventoryItemContainer(
+      summary.id,
+      torch.id,
+      backpack.id,
+    );
+    final placedSheet = (await repository.getCharacterSheetById(summary.id))!;
+    final placed = placedSheet.equipment.items.singleWhere(
+      (item) => item.id == torch.id,
+    );
+    expect(placed.containerInventoryItemId, backpack.id);
+
+    await repository.setInventoryItemContainer(summary.id, torch.id, null);
+
+    final after = (await repository.getCharacterSheetById(summary.id))!;
+    final moved = after.equipment.items.singleWhere(
+      (item) => item.id == torch.id,
+    );
+    expect(moved.containerInventoryItemId, isNull);
+    expect(moved.containerDisplayName, isNull);
+    expect(moved.quantity, placed.quantity);
+    expect(moved.isCarried, placed.isCarried);
+    expect(moved.isEquipped, placed.isEquipped);
+    expect(
+      after.equipment.items.map((item) => item.id),
+      unorderedEquals(before.equipment.items.map((item) => item.id)),
+    );
+    expect(after.equipment.inventoryInvariantReport.isValid, isTrue);
+  });
+
   test(
     'retireZeroQuantityInventoryStacks removes zero-quantity rows',
     () async {

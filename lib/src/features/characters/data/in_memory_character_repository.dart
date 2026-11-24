@@ -926,23 +926,29 @@ class InMemoryCharacterRepository implements CharacterRepository {
       throw StateError('Inventory not found.');
     }
 
-    if (containerInventoryItemId != null &&
-        containerInventoryItemId.isNotEmpty) {
-      final targetContainer = inventory.where(
-        (item) => item.id == containerInventoryItemId,
-      );
-      if (targetContainer.isEmpty || !targetContainer.first.isContainer) {
-        throw StateError('Target item is not a container.');
+    if (containerInventoryItemId == null || containerInventoryItemId.isEmpty) {
+      final index = inventory.indexWhere((item) => item.id == inventoryItemId);
+      if (index < 0) {
+        throw StateError('Inventory item not found.');
       }
+      final next = [...inventory];
+      next[index] = inventory[index].withoutContainerReference();
+      _inventoryByCharacterId[id] = next;
+      _changes.add(null);
+      return;
+    }
+
+    final targetContainer = inventory.where(
+      (item) => item.id == containerInventoryItemId,
+    );
+    if (targetContainer.isEmpty || !targetContainer.first.isContainer) {
+      throw StateError('Target item is not a container.');
     }
 
     await _updateInventoryItem(
       id,
       inventoryItemId,
-      containerInventoryItemId:
-          containerInventoryItemId == null || containerInventoryItemId.isEmpty
-          ? null
-          : containerInventoryItemId,
+      containerInventoryItemId: containerInventoryItemId,
       updateContainer: true,
     );
   }
