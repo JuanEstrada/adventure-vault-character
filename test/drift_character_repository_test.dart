@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -14,6 +15,51 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('fixture stops auto-save before closing its database', () async {
+    final database = AppDatabase.executor(NativeDatabase.memory());
+    late Timer autoSaveTimer;
+    addTearDown(() async {
+      try {
+        expect(
+          autoSaveTimer.isActive,
+          isFalse,
+          reason: 'Auto-save must not schedule writes after database.close.',
+        );
+      } finally {
+        // Keep a failed lifecycle assertion from leaking its timer or database.
+        autoSaveTimer.cancel();
+        await database.close();
+      }
+    });
+
+    final repository = runZoned(
+      () => DriftCharacterRepository(
+        database: database,
+        compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+      ),
+      zoneSpecification: ZoneSpecification(
+        createPeriodicTimer: (self, parent, zone, duration, callback) {
+          autoSaveTimer = parent.createPeriodicTimer(zone, duration, callback);
+          return autoSaveTimer;
+        },
+      ),
+    );
+
+    addTearDown(repository.autoSaveService.dispose);
+
+    final summary = await repository.createCharacter(
+      _createInventoryCharacterInput(
+        name: 'Fixture lifecycle',
+        items: <String>['Torch'],
+      ),
+    );
+    expect(await repository.getCharacterSummaryById(summary.id), isNotNull);
+    expect(autoSaveTimer.isActive, isTrue);
+    // Leave a change queued: cancellation, not an empty queue, must prevent
+    // future timer callbacks from trying to write to the closed database.
+    repository.autoSaveService.recordChange(summary.id);
+  });
+
   test(
     'createCharacter persists v8 character rows and normalized loadout data for sheet',
     () async {
@@ -24,6 +70,8 @@ void main() {
         database: database,
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
+
+      addTearDown(repository.autoSaveService.dispose);
 
       final summary = await repository.createCharacter(
         const CreateCharacterInput(
@@ -199,6 +247,8 @@ void main() {
         database: database,
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
+
+      addTearDown(repository.autoSaveService.dispose);
 
       final created = await repository.createCharacter(
         const CreateCharacterInput(
@@ -441,6 +491,8 @@ void main() {
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
 
+      addTearDown(repository.autoSaveService.dispose);
+
       await expectLater(
         () => repository.createCharacter(
           const CreateCharacterInput(
@@ -539,6 +591,8 @@ void main() {
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
 
+      addTearDown(repository.autoSaveService.dispose);
+
       final summary = await repository.createCharacter(
         const CreateCharacterInput(
           name: 'Nim',
@@ -619,6 +673,8 @@ void main() {
       database: database,
       compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
     );
+
+    addTearDown(repository.autoSaveService.dispose);
 
     final summary = await repository.createCharacter(
       const CreateCharacterInput(
@@ -729,6 +785,8 @@ void main() {
       compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
     );
 
+    addTearDown(repository.autoSaveService.dispose);
+
     final summary = await repository.createCharacter(
       const CreateCharacterInput(
         name: 'Mira',
@@ -801,6 +859,8 @@ void main() {
       database: database,
       compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
     );
+
+    addTearDown(repository.autoSaveService.dispose);
 
     final summary = await repository.createCharacter(
       const CreateCharacterInput(
@@ -913,6 +973,8 @@ void main() {
       compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
     );
 
+    addTearDown(repository.autoSaveService.dispose);
+
     final summary = await repository.createCharacter(
       const CreateCharacterInput(
         name: 'Tarin',
@@ -998,6 +1060,8 @@ void main() {
         database: database,
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
+
+      addTearDown(repository.autoSaveService.dispose);
 
       final summary = await repository.createCharacter(
         const CreateCharacterInput(
@@ -1113,6 +1177,8 @@ void main() {
       compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
     );
 
+    addTearDown(repository.autoSaveService.dispose);
+
     final summary = await repository.createCharacter(
       const CreateCharacterInput(
         name: 'Lia',
@@ -1219,6 +1285,8 @@ void main() {
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
 
+      addTearDown(repository.autoSaveService.dispose);
+
       final summary = await repository.createCharacter(
         const CreateCharacterInput(
           name: 'Bryn',
@@ -1296,6 +1364,8 @@ void main() {
         database: database,
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
+
+      addTearDown(repository.autoSaveService.dispose);
 
       final summary = await repository.createCharacter(
         const CreateCharacterInput(
@@ -1386,6 +1456,8 @@ void main() {
       compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
     );
 
+    addTearDown(repository.autoSaveService.dispose);
+
     final summary = await repository.createCharacter(
       const CreateCharacterInput(
         name: 'Splitter',
@@ -1469,6 +1541,8 @@ void main() {
         database: database,
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
+
+      addTearDown(repository.autoSaveService.dispose);
 
       final summary = await repository.createCharacter(
         const CreateCharacterInput(
@@ -1593,6 +1667,8 @@ void main() {
       compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
     );
 
+    addTearDown(repository.autoSaveService.dispose);
+
     final summary = await repository.createCharacter(
       const CreateCharacterInput(
         name: 'Merger',
@@ -1669,6 +1745,8 @@ void main() {
         database: database,
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
+
+      addTearDown(repository.autoSaveService.dispose);
 
       final summary = await repository.createCharacter(
         const CreateCharacterInput(
@@ -1760,6 +1838,8 @@ void main() {
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
 
+      addTearDown(repository.autoSaveService.dispose);
+
       final summary = await repository.createCharacter(
         _createInventoryCharacterInput(
           name: 'Transfer whole stack drift',
@@ -1808,6 +1888,8 @@ void main() {
         database: database,
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
+
+      addTearDown(repository.autoSaveService.dispose);
 
       final summary = await repository.createCharacter(
         _createInventoryCharacterInput(
@@ -1864,6 +1946,8 @@ void main() {
         database: database,
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
+
+      addTearDown(repository.autoSaveService.dispose);
 
       final summary = await repository.createCharacter(
         _createInventoryCharacterInput(
@@ -1933,6 +2017,8 @@ void main() {
         database: database,
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
+
+      addTearDown(repository.autoSaveService.dispose);
 
       final summary = await repository.createCharacter(
         const CreateCharacterInput(
@@ -2031,6 +2117,8 @@ void main() {
         database: database,
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
+
+      addTearDown(repository.autoSaveService.dispose);
 
       final summary = await repository.createCharacter(
         const CreateCharacterInput(
@@ -2151,6 +2239,8 @@ void main() {
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
 
+      addTearDown(repository.autoSaveService.dispose);
+
       final summary = await repository.createCharacter(
         _createInventoryCharacterInput(
           name: 'Transfer overflow drift',
@@ -2219,6 +2309,8 @@ void main() {
         database: database,
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
+
+      addTearDown(repository.autoSaveService.dispose);
 
       final summary = await repository.createCharacter(
         _createInventoryCharacterInput(
@@ -2311,6 +2403,8 @@ void main() {
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
 
+      addTearDown(repository.autoSaveService.dispose);
+
       final summary = await repository.createCharacter(
         _createInventoryCharacterInput(
           name: 'Transfer cycle drift',
@@ -2385,6 +2479,8 @@ void main() {
         database: database,
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
+
+      addTearDown(repository.autoSaveService.dispose);
 
       final summary = await repository.createCharacter(
         _createInventoryCharacterInput(
@@ -2492,6 +2588,8 @@ void main() {
         database: database,
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
+
+      addTearDown(repository.autoSaveService.dispose);
 
       final summary = await repository.createCharacter(
         const CreateCharacterInput(
@@ -2820,6 +2918,8 @@ void main() {
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
 
+      addTearDown(repository.autoSaveService.dispose);
+
       final summary = await repository.createCharacter(
         const CreateCharacterInput(
           name: 'Mira',
@@ -2940,6 +3040,8 @@ void main() {
       database: database,
       compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
     );
+
+    addTearDown(repository.autoSaveService.dispose);
 
     final summary = await repository.createCharacter(
       const CreateCharacterInput(
@@ -3099,6 +3201,8 @@ void main() {
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
 
+      addTearDown(repository.autoSaveService.dispose);
+
       final summary = await repository.createCharacter(
         const CreateCharacterInput(
           name: 'Rin',
@@ -3176,6 +3280,8 @@ void main() {
         database: database,
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
+
+      addTearDown(repository.autoSaveService.dispose);
 
       final summary = await repository.createCharacter(
         const CreateCharacterInput(
@@ -3265,6 +3371,8 @@ void main() {
         database: database,
         compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
       );
+
+      addTearDown(repository.autoSaveService.dispose);
 
       final summary = await repository.createCharacter(
         const CreateCharacterInput(
