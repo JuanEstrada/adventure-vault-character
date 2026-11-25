@@ -15,6 +15,372 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('SQLite spell slot restore undoes spend across a new connection', () async {
+    final fixture = await _SpellSlotFileFixture.create();
+    final repository = fixture.repository;
+    final summary = await repository.createCharacter(_spellSlotInput());
+    expect(await fixture.slots(summary.id), [(1, 0, 0, 4), (2, 1, 0, 2)]);
+
+    await repository.spendSpellSlot(summary.id, spellLevel: 1, slotIndex: 0);
+    expect(await fixture.slots(summary.id), [(1, 0, 1, 4), (2, 1, 0, 2)]);
+    await fixture.reopen();
+    expect(await fixture.slots(summary.id), [(1, 0, 1, 4), (2, 1, 0, 2)]);
+
+    Object? restoreError;
+    try {
+      await fixture.repository.restoreSpellSlot(
+        summary.id,
+        spellLevel: 1,
+        slotIndex: 0,
+      );
+    } catch (error) {
+      restoreError = error;
+    }
+    final afterRestore = await fixture.slots(summary.id);
+    await fixture.reopen();
+    final afterReopen = await fixture.slots(summary.id);
+    // Read both states before asserting so a production failure still exercises
+    // real close/reopen, rather than stopping at the thrown restoration error.
+    expect(
+      [restoreError, afterRestore, afterReopen],
+      [
+        null,
+        [(1, 0, 0, 4), (2, 1, 0, 2)],
+        [(1, 0, 0, 4), (2, 1, 0, 2)],
+      ],
+      reason: 'Restore must undo the spend, not reject or spend another slot.',
+    );
+  });
+
+  test(
+    'SQLite spell slot spend accepts the higher-level sheet index',
+    () async {
+      final fixture = await _SpellSlotFileFixture.create();
+      final summary = await fixture.repository.createCharacter(
+        _spellSlotInput(),
+      );
+      final sheet = (await fixture.repository.getCharacterSheetById(
+        summary.id,
+      ))!;
+      final slot = sheet.spellcasting!.slotProgression.singleWhere(
+        (slot) => slot.spellLevel == 2,
+      );
+      expect(
+        (slot.spellLevel, slot.slotIndex, slot.slotsExpended, slot.slotsMax),
+        (2, 1, 0, 2),
+      );
+      Object? spendError;
+      try {
+        await fixture.repository.spendSpellSlot(
+          summary.id,
+          spellLevel: slot.spellLevel,
+          slotIndex: slot.slotIndex,
+        );
+      } catch (error) {
+        spendError = error;
+      }
+      final afterSpend = await fixture.slots(summary.id);
+      await fixture.reopen();
+      expect(
+        [spendError, afterSpend, await fixture.slots(summary.id)],
+        [
+          null,
+          [(1, 0, 0, 4), (2, 1, 1, 2)],
+          [(1, 0, 0, 4), (2, 1, 1, 2)],
+        ],
+        reason: 'The same level/index passed by the sheet must be spendable.',
+      );
+    },
+  );
+
+  for (final level in [3, 5, 17]) {
+    test(
+      'SQLite sheet slot rows support repeated spend and restore at level $level',
+      () async {
+        final fixture = await _SpellSlotFileFixture.create();
+        final summary = await fixture.repository.createCharacter(
+          _spellSlotInput(level: level),
+        );
+        expect(
+          await fixture.repository.autoSaveService.flushPendingChanges(),
+          1,
+        );
+        final initial = await fixture.slots(summary.id);
+        // Level 5 includes a non-last higher-level row with local index zero;
+        // level 17 includes a last-row index greater than that row's maximum.
+        expect(initial.last.$2, initial.length - 1);
+        for (final slot in initial.take(initial.length - 1)) {
+          expect(slot.$2, 0);
+        }
+        final expected = initial.toList();
+        for (var row = 0; row < initial.length; row++) {
+          final (spellLevel, slotIndex, _, maximum) = initial[row];
+          for (final spending in [true, false]) {
+            for (var step = 1; step <= maximum; step++) {
+              if (spending) {
+                await fixture.repository.spendSpellSlot(
+                  summary.id,
+                  spellLevel: spellLevel,
+                  slotIndex: slotIndex,
+                );
+              } else {
+                await fixture.repository.restoreSpellSlot(
+                  summary.id,
+                  spellLevel: spellLevel,
+                  slotIndex: slotIndex,
+                );
+              }
+              expected[row] = (
+                spellLevel,
+                slotIndex,
+                spending ? step : maximum - step,
+                maximum,
+              );
+              expect(await fixture.slots(summary.id), expected);
+              expect(
+                await fixture.repository.autoSaveService.flushPendingChanges(),
+                1,
+              );
+              expect(
+                await fixture.repository.autoSaveService.flushPendingChanges(),
+                0,
+              );
+              await fixture.reopen();
+              expect(await fixture.slots(summary.id), expected);
+            }
+            // At full or zero, rejection must not mutate any row or notify saves.
+            await expectLater(
+              spending
+                  ? fixture.repository.spendSpellSlot(
+                      summary.id,
+                      spellLevel: spellLevel,
+                      slotIndex: slotIndex,
+                    )
+                  : fixture.repository.restoreSpellSlot(
+                      summary.id,
+                      spellLevel: spellLevel,
+                      slotIndex: slotIndex,
+                    ),
+              throwsA(
+                isA<StateError>().having(
+                  (error) => error.message,
+                  'message',
+                  spending
+                      ? 'Spell slot usage exceeds the derived slot maximum.'
+                      : 'Slot $slotIndex at level $spellLevel is not expended.',
+                ),
+              ),
+            );
+            expect(await fixture.slots(summary.id), expected);
+            expect(
+              await fixture.repository.autoSaveService.flushPendingChanges(),
+              0,
+            );
+            await fixture.reopen();
+            expect(await fixture.slots(summary.id), expected);
+          }
+        }
+        expect(await fixture.slots(summary.id), initial);
+      },
+    );
+  }
+
+  test(
+    'SQLite wrong sheet indices and empty restore leave state unchanged',
+    () async {
+      final fixture = await _SpellSlotFileFixture.create();
+      final summary = await fixture.repository.createCharacter(
+        _spellSlotInput(),
+      );
+      expect(await fixture.repository.autoSaveService.flushPendingChanges(), 1);
+      final initial = await fixture.slots(summary.id);
+      for (final spending in [true, false]) {
+        for (final (spellLevel, slotIndex) in [
+          (1, -1),
+          (1, 1),
+          (2, 0),
+          (2, 2),
+          (9, 0),
+        ]) {
+          await expectLater(
+            spending
+                ? fixture.repository.spendSpellSlot(
+                    summary.id,
+                    spellLevel: spellLevel,
+                    slotIndex: slotIndex,
+                  )
+                : fixture.repository.restoreSpellSlot(
+                    summary.id,
+                    spellLevel: spellLevel,
+                    slotIndex: slotIndex,
+                  ),
+            throwsA(
+              isA<StateError>().having(
+                (error) => error.message,
+                'message',
+                spellLevel == 9
+                    ? 'Spell slot level is not available for this character.'
+                    : 'Slot $slotIndex at level $spellLevel does not exist.',
+              ),
+            ),
+          );
+          expect(await fixture.slots(summary.id), initial);
+          expect(
+            await fixture.repository.autoSaveService.flushPendingChanges(),
+            0,
+          );
+          await fixture.reopen();
+          expect(await fixture.slots(summary.id), initial);
+        }
+      }
+      for (final slot in initial) {
+        await expectLater(
+          fixture.repository.restoreSpellSlot(
+            summary.id,
+            spellLevel: slot.$1,
+            slotIndex: slot.$2,
+          ),
+          throwsA(
+            isA<StateError>().having(
+              (error) => error.message,
+              'message',
+              'Slot ${slot.$2} at level ${slot.$1} is not expended.',
+            ),
+          ),
+        );
+        expect(await fixture.slots(summary.id), initial);
+        expect(
+          await fixture.repository.autoSaveService.flushPendingChanges(),
+          0,
+        );
+        await fixture.reopen();
+        expect(await fixture.slots(summary.id), initial);
+      }
+    },
+  );
+
+  test('SQLite restore preserves expenditure at other spell levels', () async {
+    final fixture = await _SpellSlotFileFixture.create();
+    final summary = await fixture.repository.createCharacter(
+      _spellSlotInput(
+        usages: const [
+          CharacterSpellSlotUsageInput(
+            spellLevel: 1,
+            expendedSlotIndices: ['1'],
+          ),
+          CharacterSpellSlotUsageInput(
+            spellLevel: 2,
+            expendedSlotIndices: ['0', '1'],
+          ),
+        ],
+      ),
+    );
+    expect(await fixture.repository.autoSaveService.flushPendingChanges(), 1);
+    expect(await fixture.slots(summary.id), [(1, 0, 1, 4), (2, 1, 2, 2)]);
+    for (final remaining in [1, 0]) {
+      await fixture.repository.restoreSpellSlot(
+        summary.id,
+        spellLevel: 2,
+        slotIndex: 1,
+      );
+      expect(await fixture.slots(summary.id), [
+        (1, 0, 1, 4),
+        (2, 1, remaining, 2),
+      ]);
+      expect(await fixture.repository.autoSaveService.flushPendingChanges(), 1);
+      await fixture.reopen();
+      expect(await fixture.slots(summary.id), [
+        (1, 0, 1, 4),
+        (2, 1, remaining, 2),
+      ]);
+    }
+  });
+
+  for (final className in ['Wizard', 'Warlock']) {
+    test(
+      'SQLite $className spell slot rests survive new connections',
+      () async {
+        final fixture = await _SpellSlotFileFixture.create();
+        final summary = await fixture.repository.createCharacter(
+          _spellSlotInput(className: className),
+        );
+        final isPact = className == 'Warlock';
+        final spellLevel = isPact ? 2 : 1;
+        final spent = isPact ? [(2, 0, 1, 2)] : [(1, 0, 1, 4), (2, 1, 0, 2)];
+        final recovered = isPact
+            ? [(2, 0, 0, 2)]
+            : [(1, 0, 0, 4), (2, 1, 0, 2)];
+        await fixture.repository.spendSpellSlot(
+          summary.id,
+          spellLevel: spellLevel,
+          slotIndex: 0,
+        );
+        expect(await fixture.slots(summary.id), spent);
+        await fixture.repository.applyShortRest(summary.id);
+        expect(await fixture.slots(summary.id), isPact ? recovered : spent);
+        await fixture.reopen();
+        expect(await fixture.slots(summary.id), isPact ? recovered : spent);
+        if (isPact) {
+          await fixture.repository.spendSpellSlot(
+            summary.id,
+            spellLevel: spellLevel,
+            slotIndex: 0,
+          );
+          expect(await fixture.slots(summary.id), spent);
+        }
+        await fixture.repository.applyLongRest(summary.id);
+        expect(await fixture.slots(summary.id), recovered);
+        await fixture.reopen();
+        expect(await fixture.slots(summary.id), recovered);
+      },
+    );
+  }
+
+  test(
+    'SQLite spell slot rejections leave sheet and pending saves unchanged',
+    () async {
+      final fixture = await _SpellSlotFileFixture.create();
+      final summary = await fixture.repository.createCharacter(
+        _spellSlotInput(
+          level: 1,
+          usages: const [
+            CharacterSpellSlotUsageInput(
+              spellLevel: 1,
+              expendedSlotIndices: ['1', '2'],
+            ),
+          ],
+        ),
+      );
+      expect(await fixture.repository.autoSaveService.flushPendingChanges(), 1);
+      expect(await fixture.slots(summary.id), [(1, 0, 2, 2)]);
+      for (final spellLevel in [1, 9]) {
+        await expectLater(
+          fixture.repository.spendSpellSlot(
+            summary.id,
+            spellLevel: spellLevel,
+            slotIndex: 0,
+          ),
+          throwsA(
+            isA<StateError>().having(
+              (error) => error.message,
+              'message',
+              spellLevel == 1
+                  ? 'Spell slot usage exceeds the derived slot maximum.'
+                  : 'Spell slot level is not available for this character.',
+            ),
+          ),
+        );
+        expect(await fixture.slots(summary.id), [(1, 0, 2, 2)]);
+        expect(
+          await fixture.repository.autoSaveService.flushPendingChanges(),
+          0,
+        );
+        await fixture.reopen();
+        expect(await fixture.slots(summary.id), [(1, 0, 2, 2)]);
+      }
+    },
+  );
+
   test('fixture stops auto-save before closing its database', () async {
     final database = AppDatabase.executor(NativeDatabase.memory());
     late Timer autoSaveTimer;
@@ -3893,6 +4259,96 @@ void main() {
       )..where((table) => table.id.equals('equipment-backpack'))).getSingle();
       expect(definition.name, 'Backpack');
     },
+  );
+}
+
+// Each fixture owns only its unique system-temp directory. Cancel the periodic
+// timer immediately (before any async work) so no in-flight auto-save can race
+// database.close. Explicit repository writes remain awaited by every test.
+class _SpellSlotFileFixture {
+  _SpellSlotFileFixture(this.directory) {
+    _open();
+  }
+
+  final Directory directory;
+  late AppDatabase database;
+  late DriftCharacterRepository repository;
+
+  static Future<_SpellSlotFileFixture> create() async {
+    final directory = await Directory.systemTemp.createTemp('avc-spell-slots-');
+    final fixture = _SpellSlotFileFixture(directory);
+    addTearDown(() async {
+      fixture.repository.autoSaveService.dispose();
+      await fixture.database.close();
+      await directory.delete(recursive: true);
+    });
+    return fixture;
+  }
+
+  void _open() {
+    database = AppDatabase.executor(
+      NativeDatabase(File('${directory.path}/slots.sqlite')),
+    );
+    repository = DriftCharacterRepository(
+      database: database,
+      compendiumRepository: InMemoryCompendiumRepository(_testCatalog),
+    );
+    repository.autoSaveService.dispose();
+  }
+
+  Future<void> reopen() async {
+    repository.autoSaveService.dispose();
+    await database.close();
+    _open();
+  }
+
+  Future<List<(int, int, int, int)>> slots(String id) async {
+    final sheet = (await repository.getCharacterSheetById(id))!;
+    return [
+      for (final slot in sheet.spellcasting!.slotProgression)
+        (slot.spellLevel, slot.slotIndex, slot.slotsExpended, slot.slotsMax),
+    ];
+  }
+}
+
+CreateCharacterInput _spellSlotInput({
+  String className = 'Wizard',
+  int level = 3,
+  List<CharacterSpellSlotUsageInput> usages = const [],
+}) {
+  final base = _createInventoryCharacterInput(name: 'Slot audit', items: []);
+  return CreateCharacterInput(
+    name: base.name,
+    raceName: base.raceName,
+    backgroundId: base.backgroundId,
+    backgroundName: base.backgroundName,
+    backgroundSummary: base.backgroundSummary,
+    abilityScoreMethod: base.abilityScoreMethod,
+    abilityScoreProvenance: base.abilityScoreProvenance,
+    strength: base.strength,
+    dexterity: base.dexterity,
+    constitution: base.constitution,
+    intelligence: base.intelligence,
+    wisdom: base.wisdom,
+    charisma: base.charisma,
+    className: className,
+    level: level,
+    experience: level == 1 ? 0 : 900,
+    equipmentLoadoutId: base.equipmentLoadoutId,
+    equipmentLoadoutLabel: base.equipmentLoadoutLabel,
+    startingMoneySummary: base.startingMoneySummary,
+    selectedEquipmentItems: base.selectedEquipmentItems,
+    currentHitPoints: base.currentHitPoints,
+    maximumHitPoints: base.maximumHitPoints,
+    temporaryHitPoints: base.temporaryHitPoints,
+    spellState: CharacterSpellStateInput(
+      selectionMode: className == 'Warlock'
+          ? CharacterSpellSelectionMode.known
+          : CharacterSpellSelectionMode.spellbook,
+      selectedSpells: const [],
+      slotUsages: usages,
+    ),
+    finishingDetails: base.finishingDetails,
   );
 }
 

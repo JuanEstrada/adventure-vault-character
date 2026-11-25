@@ -117,17 +117,11 @@ class CharacterRecoveryService {
       className: row.className,
       level: row.level,
     );
-    final matchingSlots = slotProgression
-        .where((slot) => slot.spellLevel == spellLevel)
-        .toList();
-    if (matchingSlots.isEmpty) {
-      throw StateError('Spell slot level is not available for this character.');
-    }
-
-    final matchingSlot = matchingSlots[slotIndex];
-    if (matchingSlot.slotsMax <= slotIndex) {
-      throw StateError('Slot $slotIndex at level $spellLevel does not exist.');
-    }
+    final matchingSlot = _resolveSheetSlot(
+      slotProgression,
+      spellLevel: spellLevel,
+      slotIndex: slotIndex,
+    );
 
     final persistedUsages = await _readDao.getSpellSlotUsagesByCharacterId(id);
     final existingUsage = persistedUsages
@@ -141,16 +135,6 @@ class CharacterRecoveryService {
         );
     if (currentExpendedCount >= matchingSlot.slotsMax) {
       throw StateError('Spell slot usage exceeds the derived slot maximum.');
-    }
-
-    final currentExplicitIndices =
-        CharacterSpellSlotUsageCodec.explicitIndicesFromSerialized(
-          currentSerialized,
-        );
-    if (currentExplicitIndices.contains(slotIndex.toString())) {
-      throw StateError(
-        'Slot $slotIndex at level $spellLevel is already expended.',
-      );
     }
 
     final updatedSerialized =
@@ -201,17 +185,11 @@ class CharacterRecoveryService {
       className: row.className,
       level: row.level,
     );
-    final matchingSlots = slotProgression
-        .where((slot) => slot.spellLevel == spellLevel)
-        .toList();
-    if (matchingSlots.isEmpty) {
-      throw StateError('Spell slot level is not available for this character.');
-    }
-
-    final matchingSlot = matchingSlots[slotIndex];
-    if (matchingSlot.slotsMax <= slotIndex) {
-      throw StateError('Slot $slotIndex at level $spellLevel does not exist.');
-    }
+    final matchingSlot = _resolveSheetSlot(
+      slotProgression,
+      spellLevel: spellLevel,
+      slotIndex: slotIndex,
+    );
 
     final persistedUsages = await _readDao.getSpellSlotUsagesByCharacterId(id);
     final existingUsage = persistedUsages
@@ -223,24 +201,18 @@ class CharacterRecoveryService {
         CharacterSpellSlotUsageCodec.expendedCountFromSerialized(
           currentSerialized,
         );
-    if (currentExpendedCount >= matchingSlot.slotsMax) {
+    if (currentExpendedCount > matchingSlot.slotsMax) {
       throw StateError('Spell slot usage exceeds the derived slot maximum.');
     }
 
-    final currentExplicitIndices =
-        CharacterSpellSlotUsageCodec.explicitIndicesFromSerialized(
-          currentSerialized,
-        );
-    if (currentExplicitIndices.contains(slotIndex.toString())) {
-      throw StateError(
-        'Slot $slotIndex at level $spellLevel is already expended.',
-      );
+    if (currentExpendedCount == 0) {
+      throw StateError('Slot $slotIndex at level $spellLevel is not expended.');
     }
 
     final updatedSerialized =
         CharacterSpellSlotUsageCodec.serializeUpdatedIndices(
           currentSerialized: currentSerialized,
-          expendedCount: currentExpendedCount + 1,
+          expendedCount: currentExpendedCount - 1,
         );
 
     await _database.transaction(() async {
@@ -268,6 +240,28 @@ class CharacterRecoveryService {
     });
 
     _onCharacterChanged?.call(id);
+  }
+
+  CharacterSpellSlotProgression _resolveSheetSlot(
+    List<CharacterSpellSlotProgression> progression, {
+    required int spellLevel,
+    required int slotIndex,
+  }) {
+    final rowIndex = progression.indexWhere(
+      (slot) => slot.spellLevel == spellLevel,
+    );
+    if (rowIndex < 0) {
+      throw StateError('Spell slot level is not available for this character.');
+    }
+    // CharacterSpellRules yields one aggregate row per level. Preserve the
+    // CharacterDomainMapper public contract: last row uses its progression
+    // index; all other rows use the within-level index (zero). This is not an
+    // index into the expendable slots, so do not compare it with slotsMax.
+    final sheetIndex = rowIndex == progression.length - 1 ? rowIndex : 0;
+    if (slotIndex != sheetIndex) {
+      throw StateError('Slot $slotIndex at level $spellLevel does not exist.');
+    }
+    return progression[rowIndex];
   }
 
   String _serializeExpendedSlotIndices({
